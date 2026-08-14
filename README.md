@@ -2,7 +2,7 @@
 
 ## 📖 Descripción
 
-**Mi Ruta Cafetera** es una plataforma web desarrollada para dar a conocer la cultura cafetera, los lugares turísticos y las experiencias relacionadas con el café en nuestra región.
+**Mi Ruta Cafetera** es una plataforma móvil desarrollada para dar a conocer la cultura cafetera, los lugares turísticos y las experiencias relacionadas con el café en nuestra región.
 
 El proyecto busca conectar a los visitantes con diferentes destinos cafeteros, permitiéndoles conocer información sobre lugares de interés, rutas y experiencias, contribuyendo así a la promoción del turismo y la cultura cafetera.
 
@@ -17,7 +17,7 @@ Para el desarrollo de **Mi Ruta Cafetera** trabajaremos con las siguientes tecno
 * HTML5
 * CSS3
 * JavaScript
-* [Tecnología del frontend que utilicen]
+* Flutter
 
 ### Backend
 
@@ -64,7 +64,7 @@ Entre las principales funcionalidades de **Mi Ruta Cafetera** se encuentran:
 Primero, clona el repositorio desde GitHub:
 
 ```bash
-git clone 
+git clone https://github.com/mirutacafetera/mi-ruta-cafetera.git
 ```
 
 Luego ingresa a la carpeta del proyecto:
