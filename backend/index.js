@@ -78,12 +78,11 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB conectado correctamente');
-  })
-  .catch((error) => {
-    console.error('❌ Error al conectar con MongoDB:', error.message);
-  })
-  .finally(() => {
+
     app.listen(PORT, () => {
       console.log(`Servidor funcionando en http://localhost:${PORT} ✈️`);
     });
+  })
+  .catch((error) => {
+    console.error('❌ Error al conectar con MongoDB:', error.message);
   });
