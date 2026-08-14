@@ -64,7 +64,7 @@ Entre las principales funcionalidades de **Mi Ruta Cafetera** se encuentran:
 Primero, clona el repositorio desde GitHub:
 
 ```bash
-git clone URL_DEL_REPOSITORIO
+git clone 
 ```
 
 Luego ingresa a la carpeta del proyecto:
@@ -116,7 +116,7 @@ Crear un archivo `.env` dentro de la carpeta `backend`:
 
 ```env
 PORT=3000
-MONGODB_URI=tu_conexion_de_mongodb
+MONGODB_URI=mongodb+srv://mirutacafetera:anasofiamauro.@mirutacafetera.ibteu0d.mongodb.net/?appName=MiRutaCafetera
 ```
 
 > No subir el archivo `.env` a GitHub. Se recomienda agregarlo al archivo `.gitignore`.
@@ -174,10 +174,9 @@ mi-ruta-cafetera/
 
 ### Aprendices SENA
 
-* **[Nombre del aprendiz 1]**
-* **[Nombre del aprendiz 2]**
-* **[Nombre del aprendiz 3]**
-* **[Nombre del aprendiz 4]**
+* **Ana María Ramos Rojas**
+* **Sofia Durán Medina**
+* **Elver Mauricio Fernandez Elizalde**
 
 ---
 
