@@ -28,6 +28,7 @@ const adminContenidoRoutes = require('./routes/admin/contenido.routes');
 const adminEstadisticasRoutes = require('./routes/admin/estadisticas.routes');
 
 const sitioTuristicoRoutes = require('./routes/sitios/sitioturistico.routes');
+const cuentaSitiosRoutes = require('./routes/sitios/cuentaSitios.routes');
 const informacionRoutes = require('./routes/sitios/informacion.routes');
 const multimediaRoutes = require('./routes/sitios/multimedia.routes');
 const actividadesRoutes = require('./routes/sitios/actividades.routes');
@@ -56,6 +57,7 @@ app.use('/api/admin/contenido', adminContenidoRoutes);
 app.use('/api/admin/estadisticas', adminEstadisticasRoutes);
 
 app.use('/api/sitiosturisticos', sitioTuristicoRoutes);
+app.use('/api/cuentas-sitios', cuentaSitiosRoutes);
 app.use('/api/sitiosturisticos/informacion', informacionRoutes);
 app.use('/api/sitiosturisticos/multimedia', multimediaRoutes);
 app.use('/api/sitiosturisticos/actividades', actividadesRoutes);
@@ -78,8 +80,7 @@ mongoose
     console.log('MongoDB conectado correctamente');
   })
   .catch((error) => {
-    console.error('Error al conectar con MongoDB:');
-    console.error(error.message);
+    console.error('Error al conectar con MongoDB:', error.message);
   })
   .finally(() => {
     app.listen(PORT, () => {

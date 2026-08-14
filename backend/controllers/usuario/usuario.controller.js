@@ -1,6 +1,58 @@
 const Usuario = require('../../models/usuario/usuario');
 
-// OBTENER PERFIL
+const crearUsuario = async (req, res) => {
+  try {
+    const {
+      nombre,
+      apellido,
+      correo,
+      password,
+      telefono,
+      ciudad,
+      fotoPerfil
+    } = req.body;
+
+    const usuarioExistente = await Usuario.findOne({ correo });
+
+    if (usuarioExistente) {
+      return res.status(400).json({
+        mensaje: 'El correo ya está registrado'
+      });
+    }
+
+    const nuevoUsuario = new Usuario({
+      nombre,
+      apellido,
+      correo,
+      password,
+      telefono,
+      ciudad,
+      fotoPerfil
+    });
+
+    await nuevoUsuario.save();
+
+    res.status(201).json({
+      mensaje: 'Usuario creado correctamente',
+      usuario: {
+        id: nuevoUsuario._id,
+        nombre: nuevoUsuario.nombre,
+        apellido: nuevoUsuario.apellido,
+        correo: nuevoUsuario.correo,
+        telefono: nuevoUsuario.telefono,
+        ciudad: nuevoUsuario.ciudad,
+        fotoPerfil: nuevoUsuario.fotoPerfil
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      mensaje: 'Error al crear el usuario',
+      error: error.message
+    });
+  }
+};
+
 const obtenerUsuario = async (req, res) => {
   try {
     const usuario = await Usuario.findById(req.params.id)
@@ -22,8 +74,6 @@ const obtenerUsuario = async (req, res) => {
   }
 };
 
-
-// ACTUALIZAR PERFIL
 const actualizarUsuario = async (req, res) => {
   try {
     const {
@@ -68,8 +118,6 @@ const actualizarUsuario = async (req, res) => {
   }
 };
 
-
-// ELIMINAR CUENTA
 const eliminarUsuario = async (req, res) => {
   try {
     const usuario = await Usuario.findByIdAndDelete(req.params.id);
@@ -93,14 +141,8 @@ const eliminarUsuario = async (req, res) => {
 };
 
 module.exports = {
+  crearUsuario,
   obtenerUsuario,
   actualizarUsuario,
   eliminarUsuario
 };
-
-console.log('CARGANDO USUARIO CONTROLLER');
-console.log({
-  obtenerUsuario: typeof obtenerUsuario,
-  actualizarUsuario: typeof actualizarUsuario,
-  eliminarUsuario: typeof eliminarUsuario
-});
