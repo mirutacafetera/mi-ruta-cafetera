@@ -21,12 +21,14 @@ const rutaRoutes = require('./routes/usuario/ruta.routes');
 const visitaRoutes = require('./routes/usuario/visita.routes');
 
 const adminAuthRoutes = require('./routes/admin/auth.routes');
+const administradorRoutes = require('./routes/admin/administrador.routes');
 const adminSitiosRoutes = require('./routes/admin/sitios.routes');
 const adminUsuariosRoutes = require('./routes/admin/usuarios.routes');
 const adminResenasRoutes = require('./routes/admin/resenas.routes');
 const adminContenidoRoutes = require('./routes/admin/contenido.routes');
 const adminEstadisticasRoutes = require('./routes/admin/estadisticas.routes');
 
+const sitioAuthRoutes = require('./routes/sitios/auth.routes');
 const sitioTuristicoRoutes = require('./routes/sitios/sitioturistico.routes');
 const cuentaSitiosRoutes = require('./routes/sitios/cuentaSitios.routes');
 const informacionRoutes = require('./routes/sitios/informacion.routes');
@@ -50,12 +52,14 @@ app.use('/api/rutas', rutaRoutes);
 app.use('/api/visitas', visitaRoutes);
 
 app.use('/api/admin/auth', adminAuthRoutes);
+app.use('/api/administradores', administradorRoutes);
 app.use('/api/admin/sitios', adminSitiosRoutes);
 app.use('/api/admin/usuarios', adminUsuariosRoutes);
 app.use('/api/admin/resenas', adminResenasRoutes);
 app.use('/api/admin/contenido', adminContenidoRoutes);
 app.use('/api/admin/estadisticas', adminEstadisticasRoutes);
 
+app.use('/api/sitios/auth', sitioAuthRoutes);
 app.use('/api/sitiosturisticos', sitioTuristicoRoutes);
 app.use('/api/cuentas-sitios', cuentaSitiosRoutes);
 app.use('/api/sitiosturisticos/informacion', informacionRoutes);
@@ -73,7 +77,6 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
