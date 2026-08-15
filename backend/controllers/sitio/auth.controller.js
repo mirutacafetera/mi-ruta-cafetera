@@ -2,11 +2,92 @@ const CuentaSitio = require('../../models/sitio/cuentaSitios');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+
+// ==========================================
+// REGISTRAR CUENTA DEL SITIO
+// ==========================================
+const registrar = async (req, res) => {
+  try {
+    const {
+      nombre,
+      apellido,
+      correo,
+      password,
+      telefono
+    } = req.body;
+
+    // Validar campos obligatorios
+    if (!nombre || !apellido || !correo || !password) {
+      return res.status(400).json({
+        mensaje: 'Nombre, apellido, correo y contraseña son obligatorios'
+      });
+    }
+
+    // Comprobar si ya existe
+    const cuentaExistente = await CuentaSitio.findOne({
+      correo: correo.toLowerCase()
+    });
+
+    if (cuentaExistente) {
+      return res.status(400).json({
+        mensaje: 'El correo ya está registrado'
+      });
+    }
+
+    // Encriptar contraseña
+    const passwordEncriptada = await bcrypt.hash(password, 10);
+
+    // Crear cuenta
+    const nuevaCuenta = new CuentaSitio({
+      nombre,
+      apellido,
+      correo: correo.toLowerCase(),
+      password: passwordEncriptada,
+      telefono
+    });
+
+    await nuevaCuenta.save();
+
+    res.status(201).json({
+      mensaje: 'Cuenta del sitio creada correctamente',
+      cuenta: {
+        id: nuevaCuenta._id,
+        nombre: nuevaCuenta.nombre,
+        apellido: nuevaCuenta.apellido,
+        correo: nuevaCuenta.correo,
+        telefono: nuevaCuenta.telefono,
+        activo: nuevaCuenta.activo,
+        rol: 'sitio'
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al registrar cuenta del sitio:', error);
+
+    res.status(500).json({
+      mensaje: 'Error al crear la cuenta del sitio',
+      error: error.message
+    });
+  }
+};
+
+
+// ==========================================
+// INICIAR SESIÓN
+// ==========================================
 const iniciarSesion = async (req, res) => {
   try {
     const { correo, password } = req.body;
 
-    const cuenta = await CuentaSitio.findOne({ correo });
+    if (!correo || !password) {
+      return res.status(400).json({
+        mensaje: 'Correo y contraseña son obligatorios'
+      });
+    }
+
+    const cuenta = await CuentaSitio.findOne({
+      correo: correo.toLowerCase()
+    });
 
     if (!cuenta) {
       return res.status(404).json({
@@ -42,7 +123,7 @@ const iniciarSesion = async (req, res) => {
       }
     );
 
-    res.json({
+    res.status(200).json({
       mensaje: 'Inicio de sesión del sitio exitoso',
       token,
       cuenta: {
@@ -56,13 +137,17 @@ const iniciarSesion = async (req, res) => {
     });
 
   } catch (error) {
+    console.error('Error al iniciar sesión como sitio:', error);
+
     res.status(500).json({
-      mensaje: 'Error al iniciar sesión como sitio',
+      mensaje: 'Error al iniciar sesión',
       error: error.message
     });
   }
 };
 
+
 module.exports = {
+  registrar,
   iniciarSesion
 };
