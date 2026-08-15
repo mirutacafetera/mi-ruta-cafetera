@@ -5,13 +5,15 @@ const administradorSchema = new mongoose.Schema(
     nombre: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      minlength: 2
     },
 
     apellido: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      minlength: 2
     },
 
     email: {

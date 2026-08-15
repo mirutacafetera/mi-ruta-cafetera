@@ -1,7 +1,14 @@
-const Administrador = require('../../models/admin/administrador');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const crearAdministrador = async (req, res) => {
+const Administrador = require('../../models/admin/administrador');
+
+
+// =====================================================
+// REGISTRAR ADMINISTRADOR
+// =====================================================
+
+const registrarAdministrador = async (req, res) => {
   try {
     const {
       nombre,
@@ -10,43 +17,153 @@ const crearAdministrador = async (req, res) => {
       password
     } = req.body;
 
-    const administradorExistente = await Administrador.findOne({ email });
-
-    if (administradorExistente) {
+    // Validar campos obligatorios
+    if (!nombre || !apellido || !email || !password) {
       return res.status(400).json({
-        mensaje: 'El correo ya está registrado'
+        mensaje: 'Nombre, apellido, email y contraseña son obligatorios'
       });
     }
 
+    // Normalizar email
+    const emailNormalizado = email.toLowerCase().trim();
+
+    // Verificar si ya existe
+    const administradorExistente = await Administrador.findOne({
+      email: emailNormalizado
+    });
+
+    if (administradorExistente) {
+      return res.status(400).json({
+        mensaje: 'El email ya está registrado'
+      });
+    }
+
+    // Encriptar contraseña
     const passwordEncriptada = await bcrypt.hash(password, 10);
 
-    const nuevoAdministrador = new Administrador({
+    // Crear administrador
+    const administrador = new Administrador({
       nombre,
       apellido,
-      email,
+      email: emailNormalizado,
       password: passwordEncriptada
     });
 
-    await nuevoAdministrador.save();
+    await administrador.save();
 
     res.status(201).json({
-      mensaje: 'Administrador creado correctamente',
+      mensaje: 'Administrador registrado correctamente',
       administrador: {
-        id: nuevoAdministrador._id,
-        nombre: nuevoAdministrador.nombre,
-        apellido: nuevoAdministrador.apellido,
-        email: nuevoAdministrador.email,
-        activo: nuevoAdministrador.activo
+        id: administrador._id,
+        nombre: administrador.nombre,
+        apellido: administrador.apellido,
+        email: administrador.email,
+        activo: administrador.activo
       }
     });
 
   } catch (error) {
+    console.error('Error al registrar administrador:', error);
+
     res.status(500).json({
-      mensaje: 'Error al crear el administrador',
+      mensaje: 'Error al registrar administrador',
       error: error.message
     });
   }
 };
+
+
+// =====================================================
+// INICIAR SESIÓN
+// =====================================================
+
+const iniciarSesionAdministrador = async (req, res) => {
+  try {
+    const {
+      email,
+      password
+    } = req.body;
+
+    // Validar campos
+    if (!email || !password) {
+      return res.status(400).json({
+        mensaje: 'Email y contraseña son obligatorios'
+      });
+    }
+
+    // Normalizar email
+    const emailNormalizado = email.toLowerCase().trim();
+
+    // Buscar administrador
+    const administrador = await Administrador.findOne({
+      email: emailNormalizado
+    });
+
+    if (!administrador) {
+      return res.status(401).json({
+        mensaje: 'Email o contraseña incorrectos'
+      });
+    }
+
+    // Verificar estado
+    if (!administrador.activo) {
+      return res.status(403).json({
+        mensaje: 'El administrador está inactivo'
+      });
+    }
+
+    // Comparar contraseña
+    const passwordCorrecta = await bcrypt.compare(
+      password,
+      administrador.password
+    );
+
+    if (!passwordCorrecta) {
+      return res.status(401).json({
+        mensaje: 'Email o contraseña incorrectos'
+      });
+    }
+
+    // Crear JWT
+    const token = jwt.sign(
+      {
+        id: administrador._id,
+        email: administrador.email,
+        rol: 'admin'
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '24h'
+      }
+    );
+
+    res.status(200).json({
+      mensaje: 'Inicio de sesión exitoso',
+      token,
+      administrador: {
+        id: administrador._id,
+        nombre: administrador.nombre,
+        apellido: administrador.apellido,
+        email: administrador.email,
+        rol: 'admin',
+        activo: administrador.activo
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al iniciar sesión:', error);
+
+    res.status(500).json({
+      mensaje: 'Error al iniciar sesión',
+      error: error.message
+    });
+  }
+};
+
+
+// =====================================================
+// OBTENER ADMINISTRADOR POR ID
+// =====================================================
 
 const obtenerAdministrador = async (req, res) => {
   try {
@@ -59,7 +176,7 @@ const obtenerAdministrador = async (req, res) => {
       });
     }
 
-    res.json(administrador);
+    res.status(200).json(administrador);
 
   } catch (error) {
     res.status(500).json({
@@ -68,6 +185,11 @@ const obtenerAdministrador = async (req, res) => {
     });
   }
 };
+
+
+// =====================================================
+// ACTUALIZAR ADMINISTRADOR
+// =====================================================
 
 const actualizarAdministrador = async (req, res) => {
   try {
@@ -78,12 +200,61 @@ const actualizarAdministrador = async (req, res) => {
       activo
     } = req.body;
 
+    const datosActualizar = {
+      nombre,
+      apellido,
+      email: email ? email.toLowerCase().trim() : undefined,
+      activo
+    };
+
+    const administrador = await Administrador.findByIdAndUpdate(
+      req.params.id,
+      datosActualizar,
+      {
+        new: true,
+        runValidators: true
+      }
+    ).select('-password');
+
+    if (!administrador) {
+      return res.status(404).json({
+        mensaje: 'Administrador no encontrado'
+      });
+    }
+
+    res.status(200).json({
+      mensaje: 'Administrador actualizado correctamente',
+      administrador
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      mensaje: 'Error al actualizar el administrador',
+      error: error.message
+    });
+  }
+};
+
+
+// =====================================================
+// CAMBIAR ESTADO DEL ADMINISTRADOR
+// =====================================================
+
+const cambiarEstadoAdministrador = async (req, res) => {
+  try {
+    const {
+      activo
+    } = req.body;
+
+    if (typeof activo !== 'boolean') {
+      return res.status(400).json({
+        mensaje: 'El campo activo debe ser true o false'
+      });
+    }
+
     const administrador = await Administrador.findByIdAndUpdate(
       req.params.id,
       {
-        nombre,
-        apellido,
-        email,
         activo
       },
       {
@@ -98,44 +269,30 @@ const actualizarAdministrador = async (req, res) => {
       });
     }
 
-    res.json({
-      mensaje: 'Administrador actualizado correctamente',
+    res.status(200).json({
+      mensaje: activo
+        ? 'Administrador activado correctamente'
+        : 'Administrador desactivado correctamente',
       administrador
     });
 
   } catch (error) {
     res.status(500).json({
-      mensaje: 'Error al actualizar el administrador',
+      mensaje: 'Error al cambiar el estado del administrador',
       error: error.message
     });
   }
 };
 
-const eliminarAdministrador = async (req, res) => {
-  try {
-    const administrador = await Administrador.findByIdAndDelete(req.params.id);
 
-    if (!administrador) {
-      return res.status(404).json({
-        mensaje: 'Administrador no encontrado'
-      });
-    }
-
-    res.json({
-      mensaje: 'Administrador eliminado correctamente'
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al eliminar el administrador',
-      error: error.message
-    });
-  }
-};
+// =====================================================
+// EXPORTAR
+// =====================================================
 
 module.exports = {
-  crearAdministrador,
+  registrarAdministrador,
+  iniciarSesionAdministrador,
   obtenerAdministrador,
   actualizarAdministrador,
-  eliminarAdministrador
+  cambiarEstadoAdministrador
 };
