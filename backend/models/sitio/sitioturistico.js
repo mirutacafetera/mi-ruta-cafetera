@@ -54,7 +54,7 @@ const sitioTuristicoSchema = new mongoose.Schema(
       trim: true
     },
 
-    correo: {
+    correos: {
       type: String,
       default: '',
       trim: true,
