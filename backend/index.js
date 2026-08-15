@@ -19,17 +19,35 @@ app.use(express.json());
 // RUTAS DE USUARIO
 // =====================================================
 
-const authRoutes = require('./routes/usuario/auth.routes');
-const usuarioRoutes = require('./routes/usuario/usuario.routes');
-const categoriaRoutes = require('./routes/usuario/categoria.routes');
-const sitioRoutes = require('./routes/usuario/sitio.routes');
-const resenaRoutes = require('./routes/usuario/resena.routes');
-const favoritoRoutes = require('./routes/usuario/favorito.routes');
-const mapaOfflineRoutes = require('./routes/usuario/mapasoffline.routes');
-const notificacionRoutes = require('./routes/usuario/notificacion.routes');
-const reservaRoutes = require('./routes/usuario/reserva.routes');
-const rutaRoutes = require('./routes/usuario/ruta.routes');
-const visitaRoutes = require('./routes/usuario/visita.routes');
+const usuarioRoutes =
+  require('./routes/usuario/usuario.routes');
+
+const categoriaRoutes =
+  require('./routes/usuario/categoria.routes');
+
+const sitioRoutes =
+  require('./routes/usuario/sitio.routes');
+
+const resenaRoutes =
+  require('./routes/usuario/resena.routes');
+
+const favoritoRoutes =
+  require('./routes/usuario/favorito.routes');
+
+const mapaOfflineRoutes =
+  require('./routes/usuario/mapasoffline.routes');
+
+const notificacionRoutes =
+  require('./routes/usuario/notificacion.routes');
+
+const reservaRoutes =
+  require('./routes/usuario/reserva.routes');
+
+const rutaRoutes =
+  require('./routes/usuario/ruta.routes');
+
+const visitaRoutes =
+  require('./routes/usuario/visita.routes');
 
 
 // =====================================================
@@ -94,48 +112,114 @@ const contenidoSitioRoutes =
 // API USUARIO
 // =====================================================
 
-app.use('/api/auth', authRoutes);
-app.use('/api/usuarios', usuarioRoutes);
-app.use('/api/categorias', categoriaRoutes);
-app.use('/api/sitios', sitioRoutes);
-app.use('/api/resenas', resenaRoutes);
-app.use('/api/favoritos', favoritoRoutes);
-app.use('/api/mapas-offline', mapaOfflineRoutes);
-app.use('/api/notificaciones', notificacionRoutes);
-app.use('/api/reservas', reservaRoutes);
-app.use('/api/rutas', rutaRoutes);
-app.use('/api/visitas', visitaRoutes);
+// Registro
+// POST /api/usuarios/registrar
+
+// Login
+// POST /api/usuarios/login
+
+// Perfil
+// GET    /api/usuarios/:id
+// PUT    /api/usuarios/:id
+// DELETE /api/usuarios/:id
+
+app.use(
+  '/api/usuarios',
+  usuarioRoutes
+);
+
+app.use(
+  '/api/categorias',
+  categoriaRoutes
+);
+
+app.use(
+  '/api/sitios',
+  sitioRoutes
+);
+
+app.use(
+  '/api/resenas',
+  resenaRoutes
+);
+
+app.use(
+  '/api/favoritos',
+  favoritoRoutes
+);
+
+app.use(
+  '/api/mapas-offline',
+  mapaOfflineRoutes
+);
+
+app.use(
+  '/api/notificaciones',
+  notificacionRoutes
+);
+
+app.use(
+  '/api/reservas',
+  reservaRoutes
+);
+
+app.use(
+  '/api/rutas',
+  rutaRoutes
+);
+
+app.use(
+  '/api/visitas',
+  visitaRoutes
+);
 
 
 // =====================================================
 // API ADMINISTRADOR
 // =====================================================
 
+// Administración de administradores
+// POST   /api/admin/administradores/registrar
+// POST   /api/admin/administradores/login
+// GET    /api/admin/administradores/:id
+// PUT    /api/admin/administradores/:id
+// DELETE /api/admin/administradores/:id
+
 app.use(
   '/api/admin/administradores',
   administradorRoutes
 );
 
+
+// Administración de sitios
 app.use(
   '/api/admin/sitios',
   adminSitiosRoutes
 );
 
+
+// Administración de usuarios
 app.use(
   '/api/admin/usuarios',
   adminUsuariosRoutes
 );
 
+
+// Administración de reseñas
 app.use(
   '/api/admin/resenas',
   adminResenasRoutes
 );
 
+
+// Administración de contenido
 app.use(
   '/api/admin/contenido',
   adminContenidoRoutes
 );
 
+
+// Estadísticas administrativas
 app.use(
   '/api/admin/estadisticas',
   adminEstadisticasRoutes
@@ -146,51 +230,70 @@ app.use(
 // API SITIOS TURÍSTICOS
 // =====================================================
 
+// Autenticación de sitios turísticos
 app.use(
   '/api/sitios/auth',
   sitioAuthRoutes
 );
 
+
+// Información general de sitios turísticos
 app.use(
   '/api/sitiosturisticos',
   sitioTuristicoRoutes
 );
 
+
+// Cuentas de sitios
 app.use(
   '/api/cuentas-sitios',
   cuentaSitiosRoutes
 );
 
+
+// Información
 app.use(
   '/api/sitiosturisticos/informacion',
   informacionRoutes
 );
 
+
+// Multimedia
 app.use(
   '/api/sitiosturisticos/multimedia',
   multimediaRoutes
 );
 
+
+// Actividades
 app.use(
   '/api/sitiosturisticos/actividades',
   actividadesRoutes
 );
 
+
+// Reseñas
 app.use(
   '/api/sitiosturisticos/resenas',
   resenasSitioRoutes
 );
 
+
+// Reservas
 app.use(
   '/api/sitiosturisticos/reservas',
   reservasSitioRoutes
 );
 
+
+// Estadísticas
 app.use(
   '/api/sitiosturisticos/estadisticas',
   estadisticasSitioRoutes
 );
 
+
+// Contenido
 app.use(
   '/api/sitiosturisticos/contenido',
   contenidoSitioRoutes
@@ -202,9 +305,11 @@ app.use(
 // =====================================================
 
 app.get('/', (req, res) => {
+
   res.json({
     mensaje: 'API Mi Ruta Cafetera funcionando correctamente'
   });
+
 });
 
 
@@ -216,17 +321,23 @@ const PORT = process.env.PORT || 3000;
 
 mongoose
   .connect(process.env.MONGO_URI)
+
   .then(() => {
 
-    console.log('✅ MongoDB conectado correctamente');
+    console.log(
+      '✅ MongoDB conectado correctamente'
+    );
 
     app.listen(PORT, () => {
+
       console.log(
         `Servidor funcionando en http://localhost:${PORT} ✈️`
       );
+
     });
 
   })
+
   .catch((error) => {
 
     console.error(
