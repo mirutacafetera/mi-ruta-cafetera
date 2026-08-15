@@ -14,7 +14,7 @@ const sitioTuristicoSchema = new mongoose.Schema(
       trim: true
     },
 
-    categoria: {
+    categorias: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Categoria',
       required: true
