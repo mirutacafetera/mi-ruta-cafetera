@@ -3,15 +3,28 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  crearAdministrador,
+  registrarAdministrador,
+  iniciarSesionAdministrador,
   obtenerAdministrador,
   actualizarAdministrador,
-  eliminarAdministrador
+  cambiarEstadoAdministrador
 } = require('../../controllers/admin/administrador.controller');
 
-router.post('/', crearAdministrador);
+
+// Registrar administrador
+router.post('/registrar', registrarAdministrador);
+
+// Login
+router.post('/login', iniciarSesionAdministrador);
+
+// Obtener administrador
 router.get('/:id', obtenerAdministrador);
+
+// Actualizar administrador
 router.put('/:id', actualizarAdministrador);
-router.delete('/:id', eliminarAdministrador);
+
+// Activar / desactivar
+router.patch('/:id/estado', cambiarEstadoAdministrador);
+
 
 module.exports = router;

@@ -1,146 +1,100 @@
 const CuentaSitio = require('../../models/sitio/cuentaSitios');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// CREAR CUENTA DE SITIO
-const crearCuentaSitio = async (req, res) => {
+
+// =====================================================
+// INICIAR SESIÓN CUENTA DEL SITIO
+// =====================================================
+
+const iniciarSesion = async (req, res) => {
   try {
-    const {
-      nombre,
-      apellido,
-      correo,
-      password,
-      telefono
-    } = req.body;
 
-    const cuentaExistente = await CuentaSitio.findOne({ correo });
+    const { correo, password } = req.body;
 
-    if (cuentaExistente) {
+    // Validar campos
+    if (!correo || !password) {
       return res.status(400).json({
-        mensaje: 'El correo ya está registrado'
+        mensaje: 'Correo y contraseña son obligatorios'
       });
     }
 
-    const nuevaCuenta = new CuentaSitio({
-      nombre,
-      apellido,
-      correo,
-      password,
-      telefono
-    });
-
-    await nuevaCuenta.save();
-
-    res.status(201).json({
-      mensaje: 'Cuenta del sitio creada correctamente',
-      cuenta: {
-        id: nuevaCuenta._id,
-        nombre: nuevaCuenta.nombre,
-        apellido: nuevaCuenta.apellido,
-        correo: nuevaCuenta.correo,
-        telefono: nuevaCuenta.telefono,
-        activo: nuevaCuenta.activo
-      }
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al crear la cuenta del sitio',
-      error: error.message
-    });
-  }
-};
-
-
-// OBTENER CUENTA
-const obtenerCuentaSitio = async (req, res) => {
-  try {
-    const cuenta = await CuentaSitio.findById(req.params.id);
+    // Buscar cuenta
+    const cuenta = await CuentaSitio.findOne({
+      correo: correo.toLowerCase()
+    }).select('+password');
 
     if (!cuenta) {
-      return res.status(404).json({
-        mensaje: 'Cuenta del sitio no encontrada'
+      return res.status(401).json({
+        mensaje: 'Correo o contraseña incorrectos'
       });
     }
 
-    res.json(cuenta);
+    // Verificar si está activa
+    if (!cuenta.activo) {
+      return res.status(403).json({
+        mensaje: 'La cuenta del sitio está inactiva'
+      });
+    }
 
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al obtener la cuenta',
-      error: error.message
-    });
-  }
-};
+    // Comparar contraseña
+    const passwordCorrecta = await bcrypt.compare(
+      password,
+      cuenta.password
+    );
 
+    if (!passwordCorrecta) {
+      return res.status(401).json({
+        mensaje: 'Correo o contraseña incorrectos'
+      });
+    }
 
-// ACTUALIZAR CUENTA
-const actualizarCuentaSitio = async (req, res) => {
-  try {
-    const {
-      nombre,
-      apellido,
-      telefono
-    } = req.body;
-
-    const cuenta = await CuentaSitio.findByIdAndUpdate(
-      req.params.id,
+    // Crear token
+    const token = jwt.sign(
       {
-        nombre,
-        apellido,
-        telefono
+        id: cuenta._id,
+        rol: 'sitio'
       },
+      process.env.JWT_SECRET,
       {
-        new: true,
-        runValidators: true
+        expiresIn: '7d'
       }
     );
 
-    if (!cuenta) {
-      return res.status(404).json({
-        mensaje: 'Cuenta del sitio no encontrada'
-      });
-    }
-
-    res.json({
-      mensaje: 'Cuenta actualizada correctamente',
-      cuenta
+    // Respuesta
+    res.status(200).json({
+      mensaje: 'Inicio de sesión del sitio exitoso',
+      token,
+      cuenta: {
+        id: cuenta._id,
+        nombre: cuenta.nombre,
+        apellido: cuenta.apellido,
+        correo: cuenta.correo,
+        telefono: cuenta.telefono,
+        rol: 'sitio',
+        activo: cuenta.activo
+      }
     });
 
   } catch (error) {
+
+    console.error(
+      'Error al iniciar sesión como sitio:',
+      error
+    );
+
     res.status(500).json({
-      mensaje: 'Error al actualizar la cuenta',
+      mensaje: 'Error al iniciar sesión como sitio',
       error: error.message
     });
   }
 };
 
 
-// ELIMINAR CUENTA
-const eliminarCuentaSitio = async (req, res) => {
-  try {
-    const cuenta = await CuentaSitio.findByIdAndDelete(req.params.id);
-
-    if (!cuenta) {
-      return res.status(404).json({
-        mensaje: 'Cuenta del sitio no encontrada'
-      });
-    }
-
-    res.json({
-      mensaje: 'Cuenta del sitio eliminada correctamente'
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al eliminar la cuenta',
-      error: error.message
-    });
-  }
-};
-
+// =====================================================
+// EXPORTAR
+// =====================================================
 
 module.exports = {
-  crearCuentaSitio,
-  obtenerCuentaSitio,
-  actualizarCuentaSitio,
-  eliminarCuentaSitio
+  iniciarSesion
 };
