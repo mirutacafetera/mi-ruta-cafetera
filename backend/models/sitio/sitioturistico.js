@@ -54,11 +54,28 @@ const sitioTuristicoSchema = new mongoose.Schema(
       trim: true
     },
 
-    correo: {
+    correos: {
       type: String,
       default: '',
       trim: true,
       lowercase: true
+    },
+
+    sitioWeb: {
+      type: String,
+      default: '',
+      trim: true
+    },
+
+    imagen: {
+      type: String,
+      default: '',
+      trim: true
+    },
+
+    imagenes: {
+      type: [String],
+      default: []
     },
 
     horario: {
