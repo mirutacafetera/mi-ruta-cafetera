@@ -3,20 +3,15 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  crearCuentaSitio,
-  obtenerCuentaSitio,
-  actualizarCuentaSitio,
-  eliminarCuentaSitio
+  iniciarSesion
 } = require('../../controllers/sitio/cuentaSitios.controller');
 
 
-router.post('/', crearCuentaSitio);
+// =====================================================
+// AUTENTICACIÓN DE CUENTA DEL SITIO
+// =====================================================
 
-router.get('/:id', obtenerCuentaSitio);
-
-router.put('/:id', actualizarCuentaSitio);
-
-router.delete('/:id', eliminarCuentaSitio);
+router.post('/login', iniciarSesion);
 
 
 module.exports = router;

@@ -77,33 +77,39 @@ const adminEstadisticasRoutes =
 // RUTAS DE SITIOS TURÍSTICOS
 // =====================================================
 
-const sitioAuthRoutes =
-  require('./routes/sitios/auth.routes');
-
-const sitioTuristicoRoutes =
-  require('./routes/sitios/sitioturistico.routes');
-
+// Cuenta del sitio / Login
 const cuentaSitiosRoutes =
   require('./routes/sitios/cuentaSitios.routes');
 
+// Información general del sitio turístico
+const sitioTuristicoRoutes =
+  require('./routes/sitios/sitioturistico.routes');
+
+// Información adicional
 const informacionRoutes =
   require('./routes/sitios/informacion.routes');
 
+// Multimedia
 const multimediaRoutes =
   require('./routes/sitios/multimedia.routes');
 
+// Actividades
 const actividadesRoutes =
   require('./routes/sitios/actividades.routes');
 
+// Reseñas
 const resenasSitioRoutes =
   require('./routes/sitios/resenas.routes');
 
+// Reservas
 const reservasSitioRoutes =
   require('./routes/sitios/reservas.routes');
 
+// Estadísticas
 const estadisticasSitioRoutes =
   require('./routes/sitios/estadisticas.routes');
 
+// Contenido
 const contenidoSitioRoutes =
   require('./routes/sitios/contenido.routes');
 
@@ -111,17 +117,6 @@ const contenidoSitioRoutes =
 // =====================================================
 // API USUARIO
 // =====================================================
-
-// Registro
-// POST /api/usuarios/registrar
-
-// Login
-// POST /api/usuarios/login
-
-// Perfil
-// GET    /api/usuarios/:id
-// PUT    /api/usuarios/:id
-// DELETE /api/usuarios/:id
 
 app.use(
   '/api/usuarios',
@@ -178,48 +173,31 @@ app.use(
 // API ADMINISTRADOR
 // =====================================================
 
-// Administración de administradores
-// POST   /api/admin/administradores/registrar
-// POST   /api/admin/administradores/login
-// GET    /api/admin/administradores/:id
-// PUT    /api/admin/administradores/:id
-// DELETE /api/admin/administradores/:id
-
 app.use(
   '/api/admin/administradores',
   administradorRoutes
 );
 
-
-// Administración de sitios
 app.use(
   '/api/admin/sitios',
   adminSitiosRoutes
 );
 
-
-// Administración de usuarios
 app.use(
   '/api/admin/usuarios',
   adminUsuariosRoutes
 );
 
-
-// Administración de reseñas
 app.use(
   '/api/admin/resenas',
   adminResenasRoutes
 );
 
-
-// Administración de contenido
 app.use(
   '/api/admin/contenido',
   adminContenidoRoutes
 );
 
-
-// Estadísticas administrativas
 app.use(
   '/api/admin/estadisticas',
   adminEstadisticasRoutes
@@ -227,73 +205,100 @@ app.use(
 
 
 // =====================================================
-// API SITIOS TURÍSTICOS
+// API CUENTA DE SITIOS TURÍSTICOS
 // =====================================================
 
-// Autenticación de sitios turísticos
-app.use(
-  '/api/sitios/auth',
-  sitioAuthRoutes
-);
+// Login:
+// POST /api/cuentas-sitios/login
 
-
-// Información general de sitios turísticos
-app.use(
-  '/api/sitiosturisticos',
-  sitioTuristicoRoutes
-);
-
-
-// Cuentas de sitios
 app.use(
   '/api/cuentas-sitios',
   cuentaSitiosRoutes
 );
 
 
-// Información
+// =====================================================
+// API SITIOS TURÍSTICOS
+// =====================================================
+
+// GET    /api/sitiosturisticos
+// GET    /api/sitiosturisticos/:id
+// POST   /api/sitiosturisticos
+// PUT    /api/sitiosturisticos/:id
+// PATCH  /api/sitiosturisticos/:id/activar
+// PATCH  /api/sitiosturisticos/:id/desactivar
+// DELETE /api/sitiosturisticos/:id
+
+app.use(
+  '/api/sitiosturisticos',
+  sitioTuristicoRoutes
+);
+
+
+// =====================================================
+// INFORMACIÓN DE SITIOS
+// =====================================================
+
 app.use(
   '/api/sitiosturisticos/informacion',
   informacionRoutes
 );
 
 
-// Multimedia
+// =====================================================
+// MULTIMEDIA
+// =====================================================
+
 app.use(
   '/api/sitiosturisticos/multimedia',
   multimediaRoutes
 );
 
 
-// Actividades
+// =====================================================
+// ACTIVIDADES
+// =====================================================
+
 app.use(
   '/api/sitiosturisticos/actividades',
   actividadesRoutes
 );
 
 
-// Reseñas
+// =====================================================
+// RESEÑAS DE SITIOS
+// =====================================================
+
 app.use(
   '/api/sitiosturisticos/resenas',
   resenasSitioRoutes
 );
 
 
-// Reservas
+// =====================================================
+// RESERVAS DE SITIOS
+// =====================================================
+
 app.use(
   '/api/sitiosturisticos/reservas',
   reservasSitioRoutes
 );
 
 
-// Estadísticas
+// =====================================================
+// ESTADÍSTICAS DE SITIOS
+// =====================================================
+
 app.use(
   '/api/sitiosturisticos/estadisticas',
   estadisticasSitioRoutes
 );
 
 
-// Contenido
+// =====================================================
+// CONTENIDO DE SITIOS
+// =====================================================
+
 app.use(
   '/api/sitiosturisticos/contenido',
   contenidoSitioRoutes
@@ -314,7 +319,21 @@ app.get('/', (req, res) => {
 
 
 // =====================================================
-// SERVIDOR
+// MANEJO DE RUTA NO ENCONTRADA
+// =====================================================
+
+app.use((req, res) => {
+
+  res.status(404).json({
+    mensaje: 'Ruta no encontrada',
+    ruta: req.originalUrl
+  });
+
+});
+
+
+// =====================================================
+// CONEXIÓN A MONGODB Y SERVIDOR
 // =====================================================
 
 const PORT = process.env.PORT || 3000;
@@ -331,7 +350,7 @@ mongoose
     app.listen(PORT, () => {
 
       console.log(
-        `Servidor funcionando en http://localhost:${PORT} ✈️`
+        `🚀 Servidor funcionando en http://localhost:${PORT}`
       );
 
     });

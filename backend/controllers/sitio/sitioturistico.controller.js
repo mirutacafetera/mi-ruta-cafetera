@@ -1,14 +1,24 @@
+const mongoose = require('mongoose');
 const SitioTuristico = require('../../models/sitio/sitioturistico');
+
+
+// =====================================================
+// OBTENER TODOS LOS SITIOS ACTIVOS
+// =====================================================
 
 const obtenerSitios = async (req, res) => {
   try {
-    const sitios = await SitioTuristico.find({
-      activo: true
-    }).populate('categoria');
 
-    res.json(sitios);
+    const sitios = await SitioTuristico
+      .find({ activo: true })
+      .populate('categoria');
+
+    res.status(200).json(sitios);
 
   } catch (error) {
+
+    console.error('Error al obtener sitios:', error);
+
     res.status(500).json({
       mensaje: 'Error al obtener sitios turísticos',
       error: error.message
@@ -16,9 +26,25 @@ const obtenerSitios = async (req, res) => {
   }
 };
 
+
+// =====================================================
+// OBTENER SITIO POR ID
+// =====================================================
+
 const obtenerSitio = async (req, res) => {
   try {
-    const sitio = await SitioTuristico.findById(req.params.id)
+
+    const { id } = req.params;
+
+    // Validar ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        mensaje: 'ID de sitio turístico no válido'
+      });
+    }
+
+    const sitio = await SitioTuristico
+      .findById(id)
       .populate('categoria');
 
     if (!sitio) {
@@ -27,9 +53,12 @@ const obtenerSitio = async (req, res) => {
       });
     }
 
-    res.json(sitio);
+    res.status(200).json(sitio);
 
   } catch (error) {
+
+    console.error('Error al obtener sitio:', error);
+
     res.status(500).json({
       mensaje: 'Error al obtener sitio turístico',
       error: error.message
@@ -37,13 +66,20 @@ const obtenerSitio = async (req, res) => {
   }
 };
 
+
+// =====================================================
+// CREAR SITIO
+// =====================================================
+
 const crearSitio = async (req, res) => {
   try {
+
     const sitio = new SitioTuristico(req.body);
 
     await sitio.save();
 
-    const sitioCreado = await SitioTuristico.findById(sitio._id)
+    const sitioCreado = await SitioTuristico
+      .findById(sitio._id)
       .populate('categoria');
 
     res.status(201).json({
@@ -52,6 +88,9 @@ const crearSitio = async (req, res) => {
     });
 
   } catch (error) {
+
+    console.error('Error al crear sitio:', error);
+
     res.status(500).json({
       mensaje: 'Error al crear sitio turístico',
       error: error.message
@@ -59,16 +98,32 @@ const crearSitio = async (req, res) => {
   }
 };
 
+
+// =====================================================
+// ACTUALIZAR SITIO
+// =====================================================
+
 const actualizarSitio = async (req, res) => {
   try {
-    const sitio = await SitioTuristico.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true
-      }
-    ).populate('categoria');
+
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        mensaje: 'ID de sitio turístico no válido'
+      });
+    }
+
+    const sitio = await SitioTuristico
+      .findByIdAndUpdate(
+        id,
+        req.body,
+        {
+          new: true,
+          runValidators: true
+        }
+      )
+      .populate('categoria');
 
     if (!sitio) {
       return res.status(404).json({
@@ -76,12 +131,15 @@ const actualizarSitio = async (req, res) => {
       });
     }
 
-    res.json({
+    res.status(200).json({
       mensaje: 'Sitio turístico actualizado correctamente',
       sitio
     });
 
   } catch (error) {
+
+    console.error('Error al actualizar sitio:', error);
+
     res.status(500).json({
       mensaje: 'Error al actualizar sitio turístico',
       error: error.message
@@ -89,10 +147,24 @@ const actualizarSitio = async (req, res) => {
   }
 };
 
+
+// =====================================================
+// DESACTIVAR SITIO
+// =====================================================
+
 const desactivarSitio = async (req, res) => {
   try {
+
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        mensaje: 'ID de sitio turístico no válido'
+      });
+    }
+
     const sitio = await SitioTuristico.findByIdAndUpdate(
-      req.params.id,
+      id,
       {
         activo: false
       },
@@ -107,12 +179,15 @@ const desactivarSitio = async (req, res) => {
       });
     }
 
-    res.json({
+    res.status(200).json({
       mensaje: 'Sitio turístico desactivado correctamente',
       sitio
     });
 
   } catch (error) {
+
+    console.error('Error al desactivar sitio:', error);
+
     res.status(500).json({
       mensaje: 'Error al desactivar sitio turístico',
       error: error.message
@@ -120,10 +195,24 @@ const desactivarSitio = async (req, res) => {
   }
 };
 
+
+// =====================================================
+// ACTIVAR SITIO
+// =====================================================
+
 const activarSitio = async (req, res) => {
   try {
+
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        mensaje: 'ID de sitio turístico no válido'
+      });
+    }
+
     const sitio = await SitioTuristico.findByIdAndUpdate(
-      req.params.id,
+      id,
       {
         activo: true
       },
@@ -138,12 +227,15 @@ const activarSitio = async (req, res) => {
       });
     }
 
-    res.json({
+    res.status(200).json({
       mensaje: 'Sitio turístico activado correctamente',
       sitio
     });
 
   } catch (error) {
+
+    console.error('Error al activar sitio:', error);
+
     res.status(500).json({
       mensaje: 'Error al activar sitio turístico',
       error: error.message
@@ -151,11 +243,23 @@ const activarSitio = async (req, res) => {
   }
 };
 
+
+// =====================================================
+// ELIMINAR SITIO
+// =====================================================
+
 const eliminarSitio = async (req, res) => {
   try {
-    const sitio = await SitioTuristico.findByIdAndDelete(
-      req.params.id
-    );
+
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        mensaje: 'ID de sitio turístico no válido'
+      });
+    }
+
+    const sitio = await SitioTuristico.findByIdAndDelete(id);
 
     if (!sitio) {
       return res.status(404).json({
@@ -163,17 +267,21 @@ const eliminarSitio = async (req, res) => {
       });
     }
 
-    res.json({
+    res.status(200).json({
       mensaje: 'Sitio turístico eliminado correctamente'
     });
 
   } catch (error) {
+
+    console.error('Error al eliminar sitio:', error);
+
     res.status(500).json({
       mensaje: 'Error al eliminar sitio turístico',
       error: error.message
     });
   }
 };
+
 
 module.exports = {
   obtenerSitios,
