@@ -159,24 +159,28 @@ La estructura general del proyecto será:
 mi-ruta-cafetera/
 │
 ├── backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── config/
-│   │   └── app.js
-│   │
-│   ├── .env
-│   ├── .gitignore
-│   ├── package.json
-│   └── server.js
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── .env             
+│   ├── index.js
+│   ├── package.json    
+│   └── package-lock.json  
 │
 ├── frontend/
-│   ├── css/
-│   ├── js/
-│   ├── img/
-│   └── index.html
+│   ├── android/
+│   ├── ios/
+│   ├── lib/
+│   ├── linux/
+│   ├── macos/
+│   ├── test/
+│   ├── web/
+│   ├── windows/
+│   ├── pubspec.yaml  
+│   ├── pubspec.lock  
+│   └── README.md
 │
+├── .gitignore
 └── README.md
 ```
 
