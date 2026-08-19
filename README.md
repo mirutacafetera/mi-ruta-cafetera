@@ -129,6 +129,8 @@ MONGODB_URI=mongodb+srv://mirutacafetera:anasofiamauro.@mirutacafetera.ibteu0d.m
 
 Para iniciar el servidor en modo desarrollo:
 
+backend:
+
 ```bash
 npm run dev
 ```
@@ -137,6 +139,12 @@ Si todo está correctamente configurado, el servidor estará disponible en:
 
 ```text
 http://localhost:3000
+```
+
+frontend con flutter:
+
+```bash
+flutter run
 ```
 
 ---
