@@ -36,6 +36,8 @@ const resenasSitioRoutes = require('./routes/sitios/resenas.routes');
 const reservasSitioRoutes = require('./routes/sitios/reservas.routes');
 const estadisticasSitioRoutes = require('./routes/sitios/estadisticas.routes');
 const contenidoSitioRoutes = require('./routes/sitios/contenido.routes');
+const categoriaSitioRoutes = require('./routes/sitios/categoria.routes');
+
 
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/categorias', categoriaRoutes);
@@ -65,6 +67,7 @@ app.use('/api/sitiosturisticos/resenas', resenasSitioRoutes);
 app.use('/api/sitiosturisticos/reservas', reservasSitioRoutes);
 app.use('/api/sitiosturisticos/estadisticas', estadisticasSitioRoutes);
 app.use('/api/sitiosturisticos/contenido', contenidoSitioRoutes);
+app.use('/api/categorias-sitios', categoriaSitioRoutes);
 
 app.get('/', (req, res) => {
     res.json({
