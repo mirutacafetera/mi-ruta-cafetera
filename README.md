@@ -100,6 +100,7 @@ El backend utiliza:
 npm install express
 npm install mongodb
 npm install dotenv
+npm install jsonwebtoken
 ```
 
 Para instalar **Nodemon** como dependencia de desarrollo:
