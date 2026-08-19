@@ -144,6 +144,8 @@ http://localhost:3000
 frontend con flutter:
 
 ```bash
+cd frontend
+flutter pub get
 flutter run
 ```
 
