@@ -99,6 +99,7 @@ El backend utiliza:
 ```bash
 npm install express
 npm install mongodb
+npm install mongoose
 npm install dotenv
 npm install jsonwebtoken
 ```
