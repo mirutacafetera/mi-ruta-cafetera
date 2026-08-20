@@ -37,8 +37,16 @@ class SitioTuristico {
     required this.activo,
   });
 
+  /// Función auxiliar para convertir números o Strings a double de manera segura
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
   factory SitioTuristico.fromJson(Map<String, dynamic> json) {
-    // Manejo flexible para categoria (si Express hace .populate('categoria') o si envía solo el ID)
+    // 1. Manejo flexible para la categoría (populada o solo ID/texto)
     String categoriaNombre = '';
     if (json['categoria'] != null) {
       if (json['categoria'] is Map) {
@@ -48,29 +56,47 @@ class SitioTuristico {
       }
     }
 
-    // Extraer latitud y longitud directamente de la BD
-    final double lat = (json['latitud'] as num?)?.toDouble() ?? 0.0;
-    final double lng = (json['longitud'] as num?)?.toDouble() ?? 0.0;
+    // 2. Extraer Latitud buscando en múltiples variantes posibles del JSON
+    double lat = _parseDouble(
+      json['latitud'] ?? 
+      json['lat'] ?? 
+      json['latitude'] ?? 
+      (json['ubicacion'] is Map ? json['ubicacion']['lat'] : null)
+    );
+
+    // 3. Extraer Longitud buscando en múltiples variantes posibles del JSON
+    double lng = _parseDouble(
+      json['longitud'] ?? 
+      json['lng'] ?? 
+      json['longitude'] ?? 
+      (json['ubicacion'] is Map ? json['ubicacion']['lng'] : null)
+    );
+
+    // 4. Extraer lista de imágenes
+    List<String> listaImagenes = [];
+    if (json['imagenes'] != null && json['imagenes'] is List) {
+      listaImagenes = List<String>.from(
+        (json['imagenes'] as List).map((item) => item.toString()),
+      );
+    }
 
     return SitioTuristico(
-      id: json['_id'] ?? '',
-      nombre: json['nombre'] ?? '',
-      descripcion: json['descripcion'] ?? '',
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
+      nombre: json['nombre']?.toString() ?? '',
+      descripcion: json['descripcion']?.toString() ?? '',
       categoria: categoriaNombre,
-      direccion: json['direccion'] ?? '',
-      ciudad: json['ciudad'] ?? 'Garzón',
-      departamento: json['departamento'] ?? 'Huila',
+      direccion: json['direccion']?.toString() ?? '',
+      ciudad: json['ciudad']?.toString() ?? 'Garzón',
+      departamento: json['departamento']?.toString() ?? 'Huila',
       ubicacion: LatLng(lat, lng),
-      telefono: json['telefono'] ?? '',
-      correo: json['correo'] ?? '',
-      sitioWeb: json['sitioWeb'] ?? '',
-      imagen: json['imagen'] ?? '',
-      imagenes: json['imagenes'] != null
-          ? List<String>.from(json['imagenes'])
-          : [],
-      horario: json['horario'] ?? '',
-      precioDesde: (json['precioDesde'] as num?)?.toDouble() ?? 0.0,
-      activo: json['activo'] ?? true,
+      telefono: json['telefono']?.toString() ?? '',
+      correo: json['correo']?.toString() ?? '',
+      sitioWeb: json['sitioWeb']?.toString() ?? json['web']?.toString() ?? '',
+      imagen: json['imagen']?.toString() ?? json['imagenUrl']?.toString() ?? '',
+      imagenes: listaImagenes,
+      horario: json['horario']?.toString() ?? '',
+      precioDesde: _parseDouble(json['precioDesde'] ?? json['precio']),
+      activo: json['activo'] is bool ? json['activo'] : true,
     );
   }
 }
