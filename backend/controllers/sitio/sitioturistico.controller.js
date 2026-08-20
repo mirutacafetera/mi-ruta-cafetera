@@ -73,18 +73,20 @@ const obtenerSitio = async (req, res) => {
 
 const crearSitio = async (req, res) => {
   try {
+    // insertMany acepta tanto un objeto único {} como un arreglo de objetos [{...}, {...}]
+    const resultado = await SitioTuristico.insertMany(req.body);
 
-    const sitio = new SitioTuristico(req.body);
+    // Si enviamos un array cargará todos, si es un objeto único lo envuelve en array
+    const ids = Array.isArray(resultado) 
+      ? resultado.map(item => item._id) 
+      : [resultado._id];
 
-    await sitio.save();
-
-    const sitioCreado = await SitioTuristico
-      .findById(sitio._id)
-      .populate('categoria');
+    // Traemos los datos creados haciendo el populate correspondiente
+    const sitiosCreados = await SitioTuristico.find({ _id: { $in: ids } }).populate('categoria');
 
     res.status(201).json({
-      mensaje: 'Sitio turístico creado correctamente',
-      sitio: sitioCreado
+      mensaje: 'Sitio(s) turístico(s) creado(s) correctamente',
+      sitios: sitiosCreados
     });
 
   } catch (error) {
