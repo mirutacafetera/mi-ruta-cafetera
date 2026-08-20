@@ -149,6 +149,12 @@ flutter pub get
 flutter run
 ```
 
+Por último tienes que tener instalado el paquete de peticiones HTTP en tu proyecto Flutter ejecutando en la terminal:
+
+```bash
+flutter pub add http
+```
+
 ---
 
 ## 📁 Estructura del proyecto
