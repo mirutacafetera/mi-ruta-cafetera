@@ -220,4 +220,4 @@ El proyecto se encuentra actualmente en proceso de desarrollo. Se irán agregand
 
 ## 📄 Licencia
 
-Este proyecto fue desarrollado con fines educativos como parte del proceso de formación del SENA.
+Este proyecto fue desa
