@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/mapa_screen.dart';
+
+import 'screens/admin/admin_screen.dart';
 
 void main() {
   runApp(const MiRutaCafeteraApp());
@@ -14,10 +15,15 @@ class MiRutaCafeteraApp extends StatelessWidget {
       title: 'Mi Ruta Cafetera',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.brown,
+        ),
         useMaterial3: true,
       ),
-      home: const MapaScreen(),
+      home: const AdminScreen(
+        nombre: 'Administrador',
+        email: 'admin@mirutacafetera.com',
+      ),
     );
   }
 }
