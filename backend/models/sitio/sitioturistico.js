@@ -10,32 +10,26 @@ const sitioTuristicoSchema = new mongoose.Schema(
 
     descripcion: {
       type: String,
-      required: true,
-      trim: true
-    },
-
-    categoria: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Categoria',
-      required: true
+      trim: true,
+      default: 'Sin descripción'
     },
 
     direccion: {
       type: String,
-      default: '',
-      trim: true
+      trim: true,
+      default: ''
     },
 
     ciudad: {
       type: String,
-      default: 'Garzón',
-      trim: true
+      trim: true,
+      default: 'Garzón'
     },
 
     departamento: {
       type: String,
-      default: 'Huila',
-      trim: true
+      trim: true,
+      default: 'Huila'
     },
 
     latitud: {
@@ -48,51 +42,74 @@ const sitioTuristicoSchema = new mongoose.Schema(
       required: true
     },
 
+    categoria: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'CategoriaSitio',
+      required: true
+    },
+
+    etiquetas: [
+      {
+        type: String,
+        trim: true
+      }
+    ],
+
+    // ==================================================
+    // IMPORTANTE:
+    // Los documentos existentes en MongoDB utilizan
+    // "activo", NO "estado".
+    // ==================================================
+    activo: {
+      type: Boolean,
+      default: true
+    },
+
+    // ==================================================
+    // Información adicional que ya existe en tus
+    // documentos de MongoDB.
+    // ==================================================
+
     telefono: {
       type: String,
-      default: '',
-      trim: true
+      trim: true,
+      default: ''
     },
 
     correos: {
       type: String,
-      default: '',
       trim: true,
-      lowercase: true
+      default: ''
     },
 
     sitioWeb: {
       type: String,
-      default: '',
-      trim: true
+      trim: true,
+      default: ''
     },
 
     imagen: {
       type: String,
-      default: '',
-      trim: true
+      trim: true,
+      default: ''
     },
 
-    imagenes: {
-      type: [String],
-      default: []
-    },
+    imagenes: [
+      {
+        type: String,
+        trim: true
+      }
+    ],
 
     horario: {
       type: String,
-      default: '',
-      trim: true
+      trim: true,
+      default: ''
     },
 
     precioDesde: {
       type: Number,
-      default: 0,
-      min: 0
-    },
-
-    activo: {
-      type: Boolean,
-      default: true
+      default: 0
     }
   },
   {
@@ -100,4 +117,7 @@ const sitioTuristicoSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('SitioTuristico', sitioTuristicoSchema);
+module.exports = mongoose.model(
+  'SitioTuristico',
+  sitioTuristicoSchema
+);
