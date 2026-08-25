@@ -3,21 +3,38 @@ const express = require('express');
 const router = express.Router();
 
 const {
-    obtenerCategorias,
-    obtenerCategoria,
-    crearCategoria,
-    actualizarCategoria,
-    eliminarCategoria
-} = require('../../controllers/sitio/categoria.controller');
+  obtenerCategorias,
+  obtenerCategoria,
+  crearCategoria,
+  actualizarCategoria,
+  eliminarCategoria
+} = require(
+  '../../controllers/sitio/categoria.controller'
+);
 
-router.get('/', obtenerCategorias);
+router.get(
+  '/',
+  obtenerCategorias
+);
 
-router.get('/:id', obtenerCategoria);
+router.get(
+  '/:id',
+  obtenerCategoria
+);
 
-router.post('/', crearCategoria);
+router.post(
+  '/',
+  crearCategoria
+);
 
-router.put('/:id', actualizarCategoria);
+router.put(
+  '/:id',
+  actualizarCategoria
+);
 
-router.delete('/:id', eliminarCategoria);
+router.delete(
+  '/:id',
+  eliminarCategoria
+);
 
 module.exports = router;
