@@ -91,17 +91,14 @@ const adminEstadisticasRoutes = require(
   './routes/admin/estadisticas.routes'
 );
 
+const authSitioRoutes = require(
+  './routes/admin/authsitio.routes'
+);
+
+
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
-
-const cuentaSitiosRoutes = require(
-  './routes/sitios/cuentaSitios.routes'
-);
-
-const sitioTuristicoRoutes = require(
-  './routes/sitios/sitioturistico.routes'
-);
 
 const informacionRoutes = require(
   './routes/sitios/informacion.routes'
@@ -228,9 +225,9 @@ app.use(
 // ======================================================
 
 app.use(
-  '/api/cuentas-sitios',
-  cuentaSitiosRoutes
-);
+  '/api/admin/authsitio',
+  authSitioRoutes
+)
 
 app.use(
   '/api/categorias-sitios',
@@ -276,18 +273,6 @@ app.use(
   contenidoSitioRoutes
 );
 
-// ======================================================
-// SITIOS TURÍSTICOS PRINCIPALES
-// ======================================================
-//
-// IMPORTANTE:
-// Esta ruta va DESPUÉS de las subrutas anteriores.
-//
-
-app.use(
-  '/api/sitiosturisticos',
-  sitioTuristicoRoutes
-);
 
 // ======================================================
 // RUTA PRINCIPAL
@@ -369,14 +354,73 @@ const MONGO_URI =
 // ======================================================
 
 mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log('MongoDB conectado correctamente ✅');
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log(
+      '=========================================='
+    );
 
-        app.listen(PORT, () => {
-            console.log(`Servidor funcionando en http://localhost:${PORT}🚀`);
-        });
-    })
-    .catch((error) => {
-        console.error('Error al conectar con MongoDB:', error.message);
-    });
+    console.log(
+      '✅ MongoDB conectado correctamente'
+    );
+
+    console.log(
+      `📦 Base de datos: ${
+        mongoose.connection.name
+      }`
+    );
+
+    console.log(
+      '=========================================='
+    );
+
+    // --------------------------------------------------
+    // INICIAR SERVIDOR
+    // --------------------------------------------------
+
+    app.listen(
+      PORT,
+      () => {
+        console.log(
+          `🚀 Servidor funcionando en http://localhost:${PORT}`
+        );
+
+        console.log(
+          '📍 API de sitios: /api/sitiosturisticos'
+        );
+
+        console.log(
+          '📂 API de categorías: /api/categorias-sitios'
+        );
+
+        console.log(
+          '❤️ Health check: /api/health'
+        );
+
+        console.log(
+          '=========================================='
+        );
+      }
+    );
+  })
+  .catch(
+    (error) => {
+      console.error(
+        '=========================================='
+      );
+
+      console.error(
+        '❌ ERROR AL CONECTAR CON MONGODB'
+      );
+
+      console.error(
+        error.message
+      );
+
+      console.error(
+        '=========================================='
+      );
+
+      process.exit(1);
+    }
+  );
