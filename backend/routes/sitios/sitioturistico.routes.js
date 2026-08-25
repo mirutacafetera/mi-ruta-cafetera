@@ -10,33 +10,43 @@ const {
   desactivarSitio,
   activarSitio,
   eliminarSitio
-} = require('../../controllers/sitio/sitioturistico.controller');
+} = require(
+  '../../controllers/sitio/sitioturistico.controller'
+);
 
+router.get(
+  '/',
+  obtenerSitios
+);
 
-// =====================================================
-// SITIOS TURÍSTICOS
-// =====================================================
+router.patch(
+  '/:id/desactivar',
+  desactivarSitio
+);
 
-// Obtener todos los sitios activos
-router.get('/', obtenerSitios);
+router.patch(
+  '/:id/activar',
+  activarSitio
+);
 
-// Obtener un sitio por ID
-router.get('/:id', obtenerSitio);
+router.get(
+  '/:id',
+  obtenerSitio
+);
 
-// Crear sitio
-router.post('/', crearSitio);
+router.post(
+  '/',
+  crearSitio
+);
 
-// Actualizar sitio
-router.put('/:id', actualizarSitio);
+router.put(
+  '/:id',
+  actualizarSitio
+);
 
-// Desactivar sitio
-router.patch('/:id/desactivar', desactivarSitio);
-
-// Activar sitio
-router.patch('/:id/activar', activarSitio);
-
-// Eliminar sitio
-router.delete('/:id', eliminarSitio);
-
+router.delete(
+  '/:id',
+  eliminarSitio
+);
 
 module.exports = router;
