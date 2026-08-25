@@ -1,7 +1,28 @@
 const mongoose = require('mongoose');
 
-const sitioTuristicoSchema = new mongoose.Schema(
+const sitioSchema = new mongoose.Schema(
   {
+    // ==============================
+    // DATOS DE ACCESO
+    // ==============================
+
+    correo: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true
+    },
+
+    password: {
+      type: String,
+      required: true
+    },
+
+    // ==============================
+    // INFORMACIÓN DEL SITIO
+    // ==============================
+
     nombre: {
       type: String,
       required: true,
@@ -54,13 +75,6 @@ const sitioTuristicoSchema = new mongoose.Schema(
       trim: true
     },
 
-    correos: {
-      type: String,
-      default: '',
-      trim: true,
-      lowercase: true
-    },
-
     sitioWeb: {
       type: String,
       default: '',
@@ -100,4 +114,5 @@ const sitioTuristicoSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('SitioTuristico', sitioTuristicoSchema);
+module.exports =
+  mongoose.models.Sitio || mongoose.model('Sitio', sitioSchema);

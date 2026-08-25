@@ -1,4 +1,4 @@
-const SitioTuristico = require('../../models/sitio/sitioturistico');
+const SitioTuristico = require('../../models/admin/sitio');
 
 const obtenerMultimedia = async (req, res) => {
   try {
