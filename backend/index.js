@@ -369,73 +369,14 @@ const MONGO_URI =
 // ======================================================
 
 mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log(
-      '=========================================='
-    );
+    .connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log('MongoDB conectado correctamente ✅');
 
-    console.log(
-      '✅ MongoDB conectado correctamente'
-    );
-
-    console.log(
-      `📦 Base de datos: ${
-        mongoose.connection.name
-      }`
-    );
-
-    console.log(
-      '=========================================='
-    );
-
-    // --------------------------------------------------
-    // INICIAR SERVIDOR
-    // --------------------------------------------------
-
-    app.listen(
-      PORT,
-      () => {
-        console.log(
-          `🚀 Servidor funcionando en http://localhost:${PORT}`
-        );
-
-        console.log(
-          '📍 API de sitios: /api/sitiosturisticos'
-        );
-
-        console.log(
-          '📂 API de categorías: /api/categorias-sitios'
-        );
-
-        console.log(
-          '❤️ Health check: /api/health'
-        );
-
-        console.log(
-          '=========================================='
-        );
-      }
-    );
-  })
-  .catch(
-    (error) => {
-      console.error(
-        '=========================================='
-      );
-
-      console.error(
-        '❌ ERROR AL CONECTAR CON MONGODB'
-      );
-
-      console.error(
-        error.message
-      );
-
-      console.error(
-        '=========================================='
-      );
-
-      process.exit(1);
-    }
-  );
+        app.listen(PORT, () => {
+            console.log(`Servidor funcionando en http://localhost:${PORT}🚀`);
+        });
+    })
+    .catch((error) => {
+        console.error('Error al conectar con MongoDB:', error.message);
+    });

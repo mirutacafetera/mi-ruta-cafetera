@@ -19,5 +19,3 @@ module.exports = {
   obtenerCategorias
 };
 
-console.log('CARGANDO CATEGORIAS CONTROLLER');
-console.log('obtenerCategorias:', typeof obtenerCategorias);
