@@ -71,10 +71,6 @@ const administradorRoutes = require(
   './routes/admin/administrador.routes'
 );
 
-const adminSitiosRoutes = require(
-  './routes/admin/sitios.routes'
-);
-
 const adminUsuariosRoutes = require(
   './routes/admin/usuarios.routes'
 );
@@ -95,14 +91,14 @@ const authSitioRoutes = require(
   './routes/admin/authsitio.routes'
 );
 
+const categoriaSitioRoutes = require(
+  './routes/admin/categoria.routes'
+);
+
 
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
-
-const informacionRoutes = require(
-  './routes/sitios/informacion.routes'
-);
 
 const multimediaRoutes = require(
   './routes/sitios/multimedia.routes'
@@ -120,17 +116,10 @@ const reservasSitioRoutes = require(
   './routes/sitios/reservas.routes'
 );
 
-const estadisticasSitioRoutes = require(
-  './routes/sitios/estadisticas.routes'
-);
-
 const contenidoSitioRoutes = require(
   './routes/sitios/contenido.routes'
 );
 
-const categoriaSitioRoutes = require(
-  './routes/sitios/categoria.routes'
-);
 
 // ======================================================
 // RUTAS DE USUARIOS
@@ -196,11 +185,6 @@ app.use(
 );
 
 app.use(
-  '/api/admin/sitios',
-  adminSitiosRoutes
-);
-
-app.use(
   '/api/admin/usuarios',
   adminUsuariosRoutes
 );
@@ -239,11 +223,6 @@ app.use(
 // ======================================================
 
 app.use(
-  '/api/sitiosturisticos/informacion',
-  informacionRoutes
-);
-
-app.use(
   '/api/sitiosturisticos/multimedia',
   multimediaRoutes
 );
@@ -261,11 +240,6 @@ app.use(
 app.use(
   '/api/sitiosturisticos/reservas',
   reservasSitioRoutes
-);
-
-app.use(
-  '/api/sitiosturisticos/estadisticas',
-  estadisticasSitioRoutes
 );
 
 app.use(
