@@ -99,7 +99,9 @@ El backend utiliza:
 ```bash
 npm install express
 npm install mongodb
+npm install mongoose
 npm install dotenv
+npm install jsonwebtoken
 ```
 
 Para instalar **Nodemon** como dependencia de desarrollo:
@@ -116,7 +118,7 @@ Crear un archivo `.env` dentro de la carpeta `backend`:
 
 ```env
 PORT=3000
-MONGODB_URI=mongodb+srv://mirutacafetera:anasofiamauro.@mirutacafetera.ibteu0d.mongodb.net/?appName=MiRutaCafetera
+MONGO_URI=mongodb+srv://mirutacafetera:anamaurosofia@mirutacafetera.ibteu0d.mongodb.net/?appName=MiRutaCafetera
 ```
 
 > No subir el archivo `.env` a GitHub. Se recomienda agregarlo al archivo `.gitignore`.
@@ -127,6 +129,8 @@ MONGODB_URI=mongodb+srv://mirutacafetera:anasofiamauro.@mirutacafetera.ibteu0d.m
 
 Para iniciar el servidor en modo desarrollo:
 
+backend:
+
 ```bash
 npm run dev
 ```
@@ -135,6 +139,20 @@ Si todo está correctamente configurado, el servidor estará disponible en:
 
 ```text
 http://localhost:3000
+```
+
+frontend con flutter:
+
+```bash
+cd frontend
+flutter pub get
+flutter run
+```
+
+Por último tienes que tener instalado el paquete de peticiones HTTP en tu proyecto Flutter ejecutando en la terminal:
+
+```bash
+flutter pub add http
 ```
 
 ---
@@ -147,24 +165,28 @@ La estructura general del proyecto será:
 mi-ruta-cafetera/
 │
 ├── backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── config/
-│   │   └── app.js
-│   │
-│   ├── .env
-│   ├── .gitignore
-│   ├── package.json
-│   └── server.js
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── .env             
+│   ├── index.js
+│   ├── package.json    
+│   └── package-lock.json  
 │
 ├── frontend/
-│   ├── css/
-│   ├── js/
-│   ├── img/
-│   └── index.html
+│   ├── android/
+│   ├── ios/
+│   ├── lib/
+│   ├── linux/
+│   ├── macos/
+│   ├── test/
+│   ├── web/
+│   ├── windows/
+│   ├── pubspec.yaml  
+│   ├── pubspec.lock  
+│   └── README.md
 │
+├── .gitignore
 └── README.md
 ```
 
@@ -198,4 +220,4 @@ El proyecto se encuentra actualmente en proceso de desarrollo. Se irán agregand
 
 ## 📄 Licencia
 
-Este proyecto fue desarrollado con fines educativos como parte del proceso de formación del SENA.
+Este proyecto fue desa
