@@ -34,7 +34,7 @@ const registrarAdministrador = async (req, res) => {
 
     if (administradorExistente) {
       return res.status(400).json({
-        mensaje: 'El email ya está registrado'
+        mensaje: 'El email ya esta registrado'
       });
     }
 
@@ -108,7 +108,7 @@ const iniciarSesionAdministrador = async (req, res) => {
     // Verificar estado
     if (!administrador.activo) {
       return res.status(403).json({
-        mensaje: 'El administrador está inactivo'
+        mensaje: 'El administrador esta inactivo'
       });
     }
 

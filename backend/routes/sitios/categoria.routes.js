@@ -7,7 +7,7 @@ const {
   obtenerCategoria,
   crearCategoria,
   actualizarCategoria,
-  eliminarCategoria
+  eliminarCategoria,
 } = require(
   '../../controllers/sitio/categoria.controller'
 );
