@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../widgets/admin_drawer.dart';
+import '../mapa_screen.dart';
 import 'admin_sitio_list_screen.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -24,6 +25,19 @@ class _AdminScreenState extends State<AdminScreen> {
     setState(() {
       _opcionSeleccionada = opcion;
     });
+  }
+
+  // =====================================================
+  // ABRIR MAPA
+  // =====================================================
+
+  void _abrirMapa() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MapaScreen(),
+      ),
+    );
   }
 
   @override
@@ -117,16 +131,211 @@ class _AdminScreenState extends State<AdminScreen> {
   // =====================================================
 
   Widget _inicio() {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Text(
-          'Bienvenido al panel de administración\n'
-          'Mi Ruta Cafetera',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 850,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 20),
+
+              // =================================================
+              // BIENVENIDA
+              // =================================================
+
+              const Icon(
+                Icons.admin_panel_settings,
+                size: 70,
+                color: Color(0xFF1B5E20),
+              ),
+
+              const SizedBox(height: 16),
+
+              Text(
+                'Bienvenido, ${widget.nombre}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              const Text(
+                'Panel de administración\n'
+                'Mi Ruta Cafetera',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 17,
+                  color: Colors.grey,
+                ),
+              ),
+
+              const SizedBox(height: 35),
+
+              // =================================================
+              // BOTÓN DEL MAPA
+              // =================================================
+
+              Card(
+                elevation: 4,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: _abrirMapa,
+                  child: Container(
+                    padding: const EdgeInsets.all(22),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF1B5E20),
+                    ),
+                    child: const Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            Icons.map,
+                            size: 32,
+                            color: Color(0xFF1B5E20),
+                          ),
+                        ),
+
+                        SizedBox(width: 18),
+
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Mapa turístico',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 21,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              SizedBox(height: 5),
+
+                              Text(
+                                'Visualiza los sitios turísticos, '
+                                'categorías y rutas por carretera.',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // =================================================
+              // GESTIÓN DE SITIOS
+              // =================================================
+
+              Card(
+                elevation: 2,
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFFE8F5E9),
+                    child: Icon(
+                      Icons.location_on,
+                      color: Color(0xFF1B5E20),
+                    ),
+                  ),
+
+                  title: const Text(
+                    'Gestionar sitios turísticos',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  subtitle: const Text(
+                    'Crear, editar y administrar sitios turísticos.',
+                  ),
+
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 18,
+                  ),
+
+                  onTap: () {
+                    _cambiarOpcion('sitios');
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // =================================================
+              // INFORMACIÓN DEL ADMINISTRADOR
+              // =================================================
+
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Color(0xFFE8F5E9),
+                        child: Icon(
+                          Icons.person,
+                          color: Color(0xFF1B5E20),
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.nombre,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+
+                            const SizedBox(height: 4),
+
+                            Text(
+                              widget.email,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+            ],
           ),
         ),
       ),
