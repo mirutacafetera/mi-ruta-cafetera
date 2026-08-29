@@ -1,18 +1,17 @@
 import 'package:latlong2/latlong.dart';
 
-import 'categoria_model.dart';
-
 class SitioTuristicoModel {
   final String id;
   final String nombre;
   final String descripcion;
-  final CategoriaModel? categoria;
   final String direccion;
   final String ciudad;
   final String departamento;
+
   final double latitud;
   final double longitud;
-  final List<String> etiquetas;
+
+  final CategoriaReferencia? categoria;
 
   final bool activo;
 
@@ -20,15 +19,22 @@ class SitioTuristicoModel {
     required this.id,
     required this.nombre,
     required this.descripcion,
-    required this.categoria,
     required this.direccion,
     required this.ciudad,
     required this.departamento,
     required this.latitud,
     required this.longitud,
-    required this.etiquetas,
+    required this.categoria,
     required this.activo,
   });
+
+  bool get tieneCoordenadas {
+    return latitud >= -90 &&
+        latitud <= 90 &&
+        longitud >= -180 &&
+        longitud <= 180 &&
+        !(latitud == 0 && longitud == 0);
+  }
 
   LatLng get ubicacion {
     return LatLng(
@@ -37,83 +43,73 @@ class SitioTuristicoModel {
     );
   }
 
+  String get categoriaId {
+    return categoria?.id ?? '';
+  }
+
+  String get categoriaNombre {
+    return categoria?.nombre ?? '';
+  }
+
   factory SitioTuristicoModel.fromJson(
     Map<String, dynamic> json,
   ) {
-    CategoriaModel? categoria;
+    final dynamic categoriaJson =
+        json['categoria'] ??
+        json['categoriaId'] ??
+        json['categoria_id'];
 
-    final categoriaJson =
-        json['categoria'];
+    CategoriaReferencia? categoria;
 
-    if (categoriaJson
-        is Map<String, dynamic>) {
-      categoria =
-          CategoriaModel.fromJson(
-        categoriaJson,
+    if (categoriaJson is Map) {
+      categoria = CategoriaReferencia.fromJson(
+        Map<String, dynamic>.from(categoriaJson),
       );
-    } else if (categoriaJson is Map) {
-      categoria =
-          CategoriaModel.fromJson(
-        Map<String, dynamic>.from(
-          categoriaJson,
-        ),
+    } else if (categoriaJson != null) {
+      categoria = CategoriaReferencia(
+        id: categoriaJson.toString(),
+        nombre: '',
       );
     }
 
     return SitioTuristicoModel(
-      id: _stringValue(
+      id: _string(
         json['_id'] ?? json['id'],
       ),
-
-      nombre: _stringValue(
+      nombre: _string(
         json['nombre'],
         fallback: 'Sin nombre',
       ),
-
-      descripcion: _stringValue(
+      descripcion: _string(
         json['descripcion'],
-        fallback:
-            'Sin descripción disponible.',
+        fallback: 'Sin descripción',
       ),
-
-      categoria: categoria,
-
-      direccion: _stringValue(
+      direccion: _string(
         json['direccion'],
       ),
-
-      ciudad: _stringValue(
+      ciudad: _string(
         json['ciudad'],
         fallback: 'Garzón',
       ),
-
-      departamento: _stringValue(
+      departamento: _string(
         json['departamento'],
         fallback: 'Huila',
       ),
-
-      latitud:
-          _doubleValue(json['latitud']),
-
-      longitud:
-          _doubleValue(json['longitud']),
-
-      etiquetas:
-          _stringList(json['etiquetas']),
-
-      // ==================================================
-      // Mongo usa "activo"
-      // ==================================================
-      activo:
-          json['activo'] is bool
-              ? json['activo'] as bool
-              : json['estado'] is bool
-                  ? json['estado'] as bool
-                  : true,
+      latitud: _double(
+        json['latitud'],
+      ),
+      longitud: _double(
+        json['longitud'],
+      ),
+      categoria: categoria,
+      activo: _bool(
+        json['activo'],
+        fallback: true,
+      ),
     );
   }
 
-  static String _stringValue(
+  static String _string(
     dynamic value, {
     String fallback = '',
   }) {
@@ -121,53 +117,83 @@ class SitioTuristicoModel {
       return fallback;
     }
 
-    final valueString =
-        value.toString().trim();
+    final texto = value.toString().trim();
 
-    if (valueString.isEmpty) {
-      return fallback;
-    }
-
-    return valueString;
+    return texto.isEmpty ? fallback : texto;
   }
 
-  static double _doubleValue(
+  static double _double(
     dynamic value,
   ) {
-    if (value == null) {
-      return 0.0;
-    }
-
     if (value is num) {
       return value.toDouble();
     }
 
     if (value is String) {
-      return double.tryParse(value) ?? 0.0;
+      return double.tryParse(value) ?? 0;
     }
 
-    return 0.0;
+    if (value is Map) {
+      final dynamic interno =
+          value[r'$numberDouble'] ??
+          value['value'];
+
+      if (interno is num) {
+        return interno.toDouble();
+      }
+
+      if (interno != null) {
+        return double.tryParse(
+              interno.toString(),
+            ) ??
+            0;
+      }
+    }
+
+    return 0;
   }
 
-  static List<String> _stringList(
-    dynamic value,
-  ) {
-    if (value is! List) {
-      return [];
+  static bool _bool(
+    dynamic value, {
+    bool fallback = false,
+  }) {
+    if (value is bool) {
+      return value;
     }
 
-    return value
-        .where(
-          (item) => item != null,
-        )
-        .map(
-          (item) => item
-              .toString()
-              .trim(),
-        )
-        .where(
-          (item) => item.isNotEmpty,
-        )
-        .toList();
+    if (value is String) {
+      return value.toLowerCase() == 'true';
+    }
+
+    return fallback;
+  }
+}
+
+class CategoriaReferencia {
+  final String id;
+  final String nombre;
+
+  const CategoriaReferencia({
+    required this.id,
+    required this.nombre,
+  });
+
+  factory CategoriaReferencia.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return CategoriaReferencia(
+      id: _string(
+        json['_id'] ?? json['id'],
+      ),
+      nombre: _string(
+        json['nombre'],
+      ),
+    );
+  }
+
+  static String _string(
+    dynamic value,
+  ) {
+    return value?.toString().trim() ?? '';
   }
 }
