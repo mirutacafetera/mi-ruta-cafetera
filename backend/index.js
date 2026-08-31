@@ -71,10 +71,6 @@ const administradorRoutes = require(
   './routes/admin/administrador.routes'
 );
 
-const adminSitiosRoutes = require(
-  './routes/admin/sitios.routes'
-);
-
 const adminUsuariosRoutes = require(
   './routes/admin/usuarios.routes'
 );
@@ -91,21 +87,18 @@ const adminEstadisticasRoutes = require(
   './routes/admin/estadisticas.routes'
 );
 
+const authSitioRoutes = require(
+  './routes/admin/authsitio.routes'
+);
+
+const categoriaSitioRoutes = require(
+  './routes/admin/categoria.routes'
+);
+
+
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
-
-const cuentaSitiosRoutes = require(
-  './routes/sitios/cuentaSitios.routes'
-);
-
-const sitioTuristicoRoutes = require(
-  './routes/sitios/sitioturistico.routes'
-);
-
-const informacionRoutes = require(
-  './routes/sitios/informacion.routes'
-);
 
 const multimediaRoutes = require(
   './routes/sitios/multimedia.routes'
@@ -123,17 +116,10 @@ const reservasSitioRoutes = require(
   './routes/sitios/reservas.routes'
 );
 
-const estadisticasSitioRoutes = require(
-  './routes/sitios/estadisticas.routes'
-);
-
 const contenidoSitioRoutes = require(
   './routes/sitios/contenido.routes'
 );
 
-const categoriaSitioRoutes = require(
-  './routes/sitios/categoria.routes'
-);
 
 // ======================================================
 // RUTAS DE USUARIOS
@@ -199,11 +185,6 @@ app.use(
 );
 
 app.use(
-  '/api/admin/sitios',
-  adminSitiosRoutes
-);
-
-app.use(
   '/api/admin/usuarios',
   adminUsuariosRoutes
 );
@@ -228,9 +209,9 @@ app.use(
 // ======================================================
 
 app.use(
-  '/api/cuentas-sitios',
-  cuentaSitiosRoutes
-);
+  '/api/admin/authsitio',
+  authSitioRoutes
+)
 
 app.use(
   '/api/categorias-sitios',
@@ -240,11 +221,6 @@ app.use(
 // ======================================================
 // SUBRUTAS DE SITIOS TURÍSTICOS
 // ======================================================
-
-app.use(
-  '/api/sitiosturisticos/informacion',
-  informacionRoutes
-);
 
 app.use(
   '/api/sitiosturisticos/multimedia',
@@ -267,27 +243,10 @@ app.use(
 );
 
 app.use(
-  '/api/sitiosturisticos/estadisticas',
-  estadisticasSitioRoutes
-);
-
-app.use(
   '/api/sitiosturisticos/contenido',
   contenidoSitioRoutes
 );
 
-// ======================================================
-// SITIOS TURÍSTICOS PRINCIPALES
-// ======================================================
-//
-// IMPORTANTE:
-// Esta ruta va DESPUÉS de las subrutas anteriores.
-//
-
-app.use(
-  '/api/sitiosturisticos',
-  sitioTuristicoRoutes
-);
 
 // ======================================================
 // RUTA PRINCIPAL

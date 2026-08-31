@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const Categoria = require(
-  '../../models/sitio/categoria.js'
+  '../../models/admin/categoria.js'
 );
 
 const obtenerCategorias = async (req, res) => {

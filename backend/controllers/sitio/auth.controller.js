@@ -75,32 +75,38 @@ const registrar = async (req, res) => {
 // ==========================================
 // INICIAR SESIÓN
 // ==========================================
+
 const iniciarSesion = async (req, res) => {
   try {
+
     const { correo, password } = req.body;
 
+    // Validar campos
     if (!correo || !password) {
       return res.status(400).json({
         mensaje: 'Correo y contraseña son obligatorios'
       });
     }
 
+    // Buscar cuenta
     const cuenta = await CuentaSitio.findOne({
       correo: correo.toLowerCase()
-    });
+    }).select('+password');
 
     if (!cuenta) {
-      return res.status(404).json({
-        mensaje: 'Cuenta del sitio no encontrada'
+      return res.status(401).json({
+        mensaje: 'Correo o contraseña incorrectos'
       });
     }
 
+    // Verificar si está activa
     if (!cuenta.activo) {
       return res.status(403).json({
-        mensaje: 'Cuenta del sitio inactiva'
+        mensaje: 'La cuenta del sitio está inactiva'
       });
     }
 
+    // Comparar contraseña
     const passwordCorrecta = await bcrypt.compare(
       password,
       cuenta.password
@@ -108,10 +114,11 @@ const iniciarSesion = async (req, res) => {
 
     if (!passwordCorrecta) {
       return res.status(401).json({
-        mensaje: 'Contraseña incorrecta'
+        mensaje: 'Correo o contraseña incorrectos'
       });
     }
 
+    // Crear token
     const token = jwt.sign(
       {
         id: cuenta._id,
@@ -123,6 +130,7 @@ const iniciarSesion = async (req, res) => {
       }
     );
 
+    // Respuesta
     res.status(200).json({
       mensaje: 'Inicio de sesión del sitio exitoso',
       token,
@@ -132,20 +140,24 @@ const iniciarSesion = async (req, res) => {
         apellido: cuenta.apellido,
         correo: cuenta.correo,
         telefono: cuenta.telefono,
-        rol: 'sitio'
+        rol: 'sitio',
+        activo: cuenta.activo
       }
     });
 
   } catch (error) {
-    console.error('Error al iniciar sesión como sitio:', error);
+
+    console.error(
+      'Error al iniciar sesión como sitio:',
+      error
+    );
 
     res.status(500).json({
-      mensaje: 'Error al iniciar sesión',
+      mensaje: 'Error al iniciar sesión como sitio',
       error: error.message
     });
   }
 };
-
 
 module.exports = {
   registrar,

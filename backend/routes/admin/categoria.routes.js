@@ -9,7 +9,7 @@ const {
   actualizarCategoria,
   eliminarCategoria
 } = require(
-  '../../controllers/sitio/categoria.controller'
+  '../../controllers/admin/categoria.controller'
 );
 
 router.get(

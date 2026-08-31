@@ -2,6 +2,19 @@ const mongoose = require('mongoose');
 
 const sitioTuristicoSchema = new mongoose.Schema(
   {
+    correo: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true
+    },
+
+    password: {
+      type: String,
+      required: true
+    },
+
     nombre: {
       type: String,
       required: true,
@@ -55,20 +68,10 @@ const sitioTuristicoSchema = new mongoose.Schema(
       }
     ],
 
-    // ==================================================
-    // IMPORTANTE:
-    // Los documentos existentes en MongoDB utilizan
-    // "activo", NO "estado".
-    // ==================================================
     activo: {
       type: Boolean,
       default: true
     },
-
-    // ==================================================
-    // Información adicional que ya existe en tus
-    // documentos de MongoDB.
-    // ==================================================
 
     telefono: {
       type: String,
