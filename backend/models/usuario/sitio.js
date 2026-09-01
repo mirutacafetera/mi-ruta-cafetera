@@ -10,9 +10,45 @@ const sitioSchema = new mongoose.Schema(
 
     descripcion: {
       type: String,
-      required: true,
+      default: 'Sin descripción',
       trim: true
     },
+
+    direccion: {
+      type: String,
+      default: '',
+      trim: true
+    },
+
+    ciudad: {
+      type: String,
+      default: 'Garzón',
+      trim: true
+    },
+
+    departamento: {
+      type: String,
+      default: 'Huila',
+      trim: true
+    },
+
+    // ==========================================================
+    // UBICACIÓN
+    // ==========================================================
+
+    latitud: {
+      type: Number,
+      required: true
+    },
+
+    longitud: {
+      type: Number,
+      required: true
+    },
+
+    // ==========================================================
+    // CATEGORÍA
+    // ==========================================================
 
     categoria: {
       type: mongoose.Schema.Types.ObjectId,
@@ -20,22 +56,9 @@ const sitioSchema = new mongoose.Schema(
       required: true
     },
 
-    direccion: {
-      type: String,
-      default: ''
-    },
-
-    ubicacion: {
-      latitud: {
-        type: Number,
-        default: 0
-      },
-
-      longitud: {
-        type: Number,
-        default: 0
-      }
-    },
+    // ==========================================================
+    // MULTIMEDIA
+    // ==========================================================
 
     fotos: [
       {
@@ -49,13 +72,18 @@ const sitioSchema = new mongoose.Schema(
       }
     ],
 
+    // ==========================================================
+    // ESTADO
+    // ==========================================================
+
     activo: {
       type: Boolean,
       default: true
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    collection: 'sitioturisticos'
   }
 );
 
