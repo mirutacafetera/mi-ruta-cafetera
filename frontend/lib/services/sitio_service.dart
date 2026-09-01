@@ -9,51 +9,53 @@ class SitioService {
   Future<List<SitioTuristicoModel>> obtenerSitios() async {
     final response = await http
         .get(
-          Uri.parse(ApiConfig.sitiosUrl),
+          Uri.parse(
+            ApiConfig.sitiosUrl,
+          ),
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 20),
         );
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Error al obtener sitios: ${response.statusCode}',
+        'Error al obtener sitios: '
+        '${response.statusCode}',
       );
     }
 
-    final dynamic decoded = jsonDecode(response.body);
+    final dynamic decoded =
+        jsonDecode(response.body);
 
-    List<dynamic> data;
+    List<dynamic> data = [];
 
     if (decoded is List) {
       data = decoded;
-    } else if (decoded is Map<String, dynamic>) {
+    } else if (decoded is Map) {
       final dynamic sitios =
           decoded['sitios'] ??
+          decoded['sitiosTuristicos'] ??
           decoded['data'] ??
-          [];
+          decoded['results'];
 
-      data = sitios is List ? sitios : [];
-    } else {
-      data = [];
+      if (sitios is List) {
+        data = sitios;
+      }
     }
 
-    final sitios = data
+    return data
         .whereType<Map>()
         .map(
           (item) => SitioTuristicoModel.fromJson(
             Map<String, dynamic>.from(item),
           ),
         )
-        .where((sitio) => sitio.activo)
         .where(
           (sitio) =>
-              sitio.latitud != 0.0 &&
-              sitio.longitud != 0.0,
+              sitio.activo &&
+              sitio.tieneCoordenadas,
         )
         .toList();
-
-    return sitios;
   }
 
   Future<SitioTuristicoModel> obtenerSitioPorId(
@@ -66,23 +68,27 @@ class SitioService {
           ),
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 15),
         );
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Error al obtener el sitio: ${response.statusCode}',
+        'Error al obtener sitio: '
+        '${response.statusCode}',
       );
     }
 
-    final dynamic decoded = jsonDecode(response.body);
+    final dynamic decoded =
+        jsonDecode(response.body);
 
-    if (decoded is! Map<String, dynamic>) {
+    if (decoded is! Map) {
       throw Exception(
         'Respuesta inválida del servidor.',
       );
     }
 
-    return SitioTuristicoModel.fromJson(decoded);
+    return SitioTuristicoModel.fromJson(
+      Map<String, dynamic>.from(decoded),
+    );
   }
 }

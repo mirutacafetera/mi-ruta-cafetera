@@ -9,33 +9,37 @@ class CategoriaService {
   Future<List<CategoriaModel>> obtenerCategorias() async {
     final response = await http
         .get(
-          Uri.parse(ApiConfig.categoriasSitiosUrl),
+          Uri.parse(
+            ApiConfig.categoriasSitiosUrl,
+          ),
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 15),
         );
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Error al obtener categorías: ${response.statusCode}',
+        'Error al obtener categorías: '
+        '${response.statusCode}',
       );
     }
 
-    final dynamic decoded = jsonDecode(response.body);
+    final dynamic decoded =
+        jsonDecode(response.body);
 
-    List<dynamic> data;
+    List<dynamic> data = [];
 
     if (decoded is List) {
       data = decoded;
-    } else if (decoded is Map<String, dynamic>) {
+    } else if (decoded is Map) {
       final dynamic categorias =
           decoded['categorias'] ??
           decoded['data'] ??
-          [];
+          decoded['results'];
 
-      data = categorias is List ? categorias : [];
-    } else {
-      data = [];
+      if (categorias is List) {
+        data = categorias;
+      }
     }
 
     return data
@@ -45,7 +49,9 @@ class CategoriaService {
             Map<String, dynamic>.from(item),
           ),
         )
-        .where((categoria) => categoria.estado)
+        .where(
+          (categoria) => categoria.estado,
+        )
         .toList();
   }
 
@@ -59,23 +65,27 @@ class CategoriaService {
           ),
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 15),
         );
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Error al obtener categoría: ${response.statusCode}',
+        'Error al obtener categoría: '
+        '${response.statusCode}',
       );
     }
 
-    final dynamic decoded = jsonDecode(response.body);
+    final dynamic decoded =
+        jsonDecode(response.body);
 
-    if (decoded is! Map<String, dynamic>) {
+    if (decoded is! Map) {
       throw Exception(
         'Respuesta inválida del servidor.',
       );
     }
 
-    return CategoriaModel.fromJson(decoded);
+    return CategoriaModel.fromJson(
+      Map<String, dynamic>.from(decoded),
+    );
   }
 }
