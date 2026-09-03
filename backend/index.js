@@ -87,7 +87,7 @@ const adminEstadisticasRoutes = require(
   './routes/admin/estadisticas.routes'
 );
 
-const authSitioRoutes = require(
+const adminAuthSitioRoutes = require(
   './routes/admin/authsitio.routes'
 );
 
@@ -119,6 +119,11 @@ const reservasSitioRoutes = require(
 const contenidoSitioRoutes = require(
   './routes/sitios/contenido.routes'
 );
+
+const authSitioRoutes = require(
+  './routes/sitios/auth.routes'
+);
+
 
 
 // ======================================================
@@ -210,8 +215,8 @@ app.use(
 
 app.use(
   '/api/admin/authsitio',
-  authSitioRoutes
-)
+  adminAuthSitioRoutes
+);
 
 app.use(
   '/api/categorias-sitios',
@@ -245,6 +250,11 @@ app.use(
 app.use(
   '/api/sitiosturisticos/contenido',
   contenidoSitioRoutes
+);
+
+app.use(
+  '/api/sitios/auth',
+  authSitioRoutes
 );
 
 
