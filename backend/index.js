@@ -1,11 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-
 require('dotenv').config();
 
 const app = express();
-
 
 // ======================================================
 // CONFIGURACIÓN GENERAL
@@ -15,17 +13,11 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use(
-  express.urlencoded({
-    extended: true
-  })
-);
-
+app.use(express.urlencoded({ extended: true }));
 
 // ======================================================
 // IMPORTACIÓN DE RUTAS
 // ======================================================
-
 
 // ------------------------------------------------------
 // RUTAS DE USUARIOS
@@ -70,7 +62,6 @@ const rutaRoutes = require(
 const visitaRoutes = require(
   './routes/usuario/visita.routes'
 );
-
 
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
@@ -184,7 +175,6 @@ app.use(
   visitaRoutes
 );
 
-
 // ======================================================
 // RUTAS DE ADMINISTRACIÓN
 // ======================================================
@@ -214,7 +204,6 @@ app.use(
   adminEstadisticasRoutes
 );
 
-
 // ======================================================
 // RUTAS DE CUENTAS Y CATEGORÍAS DE SITIOS
 // ======================================================
@@ -222,13 +211,12 @@ app.use(
 app.use(
   '/api/admin/authsitio',
   authSitioRoutes
-);
+)
 
 app.use(
   '/api/categorias-sitios',
   categoriaSitioRoutes
 );
-
 
 // ======================================================
 // SUBRUTAS DE SITIOS TURÍSTICOS
@@ -267,19 +255,13 @@ app.use(
 app.get(
   '/',
   (req, res) => {
-
     res.status(200).json({
-
       mensaje:
         'API Mi Ruta Mágica del Café funcionando correctamente',
-
       estado: 'OK'
-
     });
-
   }
 );
-
 
 // ======================================================
 // RUTA DE PRUEBA DE CONEXIÓN
@@ -288,21 +270,15 @@ app.get(
 app.get(
   '/api/health',
   (req, res) => {
-
     res.status(200).json({
-
       servidor: 'OK',
-
       mongodb:
         mongoose.connection.readyState === 1
           ? 'CONECTADO'
           : 'NO CONECTADO'
-
     });
-
   }
 );
-
 
 // ======================================================
 // 404 - RUTA NO ENCONTRADA
@@ -310,20 +286,12 @@ app.get(
 
 app.use(
   (req, res) => {
-
     res.status(404).json({
-
-      mensaje:
-        'Ruta no encontrada',
-
-      ruta:
-        req.originalUrl
-
+      mensaje: 'Ruta no encontrada',
+      ruta: req.originalUrl
     });
-
   }
 );
-
 
 // ======================================================
 // MANEJO GLOBAL DE ERRORES
@@ -331,28 +299,21 @@ app.use(
 
 app.use(
   (err, req, res, next) => {
-
     console.error(
       '❌ Error no capturado:',
       err.stack
     );
 
     res.status(500).json({
-
       mensaje:
         'Error interno del servidor',
-
-      error:
-        err.message
-
+      error: err.message
     });
-
   }
 );
 
-
 // ======================================================
-// CONFIGURACIÓN DE MONGODB
+// MONGODB
 // ======================================================
 
 const PORT =
@@ -362,16 +323,13 @@ const MONGO_URI =
   process.env.MONGO_URI ||
   'mongodb://127.0.0.1:27017/mirutacafetera';
 
-
 // ======================================================
 // CONEXIÓN A MONGODB
 // ======================================================
 
 mongoose
   .connect(MONGO_URI)
-
   .then(() => {
-
     console.log(
       '=========================================='
     );
@@ -390,7 +348,6 @@ mongoose
       '=========================================='
     );
 
-
     // --------------------------------------------------
     // INICIAR SERVIDOR
     // --------------------------------------------------
@@ -398,13 +355,8 @@ mongoose
     app.listen(
       PORT,
       () => {
-
         console.log(
           `🚀 Servidor funcionando en http://localhost:${PORT}`
-        );
-
-        console.log(
-          '👤 API de usuarios: /api/usuarios'
         );
 
         console.log(
@@ -422,15 +374,11 @@ mongoose
         console.log(
           '=========================================='
         );
-
       }
     );
-
   })
-
   .catch(
     (error) => {
-
       console.error(
         '=========================================='
       );
@@ -448,6 +396,5 @@ mongoose
       );
 
       process.exit(1);
-
     }
   );

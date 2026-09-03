@@ -3,9 +3,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
-import '../config/api_config.dart';
-import '../models/sitio_turistico_model.dart';
-
 class RutaResultado {
   final List<LatLng> puntos;
   final double distanciaMetros;
@@ -17,103 +14,98 @@ class RutaResultado {
     required this.duracionSegundos,
   });
 
-  double get distanciaKm {
-    return distanciaMetros / 1000;
-  }
+  double get distanciaKm => distanciaMetros / 1000;
 
-  double get duracionMinutos {
-    return duracionSegundos / 60;
-  }
+  double get duracionMinutos => duracionSegundos / 60;
 }
 
 class RoutingService {
+  static const String _baseUrl =
+      'https://router.project-osrm.org';
+
+  /// Calcula una ruta real por carretera utilizando OSRM.
+  ///
+  /// Los puntos deben estar en el orden:
+  ///
+  /// inicio -> parada 1 -> parada 2 -> destino
+  ///
+  /// OSRM se encarga de encontrar las calles y carreteras
+  /// disponibles entre los puntos.
   Future<RutaResultado> calcularRuta(
-    List<SitioTuristicoModel> sitios,
+    List<LatLng> puntos,
   ) async {
-    if (sitios.length < 2) {
+    if (puntos.length < 2) {
       throw Exception(
-        'Se necesitan mínimo 2 sitios.',
+        'Se necesitan al menos dos puntos para calcular una ruta.',
       );
     }
 
-    final puntos = sitios.map(
-      (sitio) => {
-        'latitud': sitio.latitud,
-        'longitud': sitio.longitud,
-      },
-    ).toList();
+    final coordenadas = puntos
+        .map(
+          (punto) =>
+              '${punto.longitude},${punto.latitude}',
+        )
+        .join(';');
+
+    final uri = Uri.parse(
+      '$_baseUrl/route/v1/driving/$coordenadas'
+      '?overview=full'
+      '&geometries=geojson'
+      '&steps=true',
+    );
 
     final response = await http
-        .post(
-          Uri.parse(
-            ApiConfig.calcularRutaUrl,
-          ),
+        .get(
+          uri,
           headers: {
-            'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
-          body: jsonEncode({
-            'puntos': puntos,
-          }),
         )
         .timeout(
-          const Duration(seconds: 60),
+          const Duration(seconds: 20),
         );
 
     if (response.statusCode != 200) {
       throw Exception(
-        'El servidor respondió '
-        '${response.statusCode}: '
-        '${response.body}',
+        'OSRM respondió con código ${response.statusCode}.',
       );
     }
 
-    final dynamic decoded =
+    final Map<String, dynamic> data =
         jsonDecode(response.body);
 
-    if (decoded is! Map) {
+    if (data['code'] != 'Ok') {
       throw Exception(
-        'Respuesta inválida del servidor.',
+        'No fue posible calcular la ruta.',
       );
     }
 
-    final data =
-        Map<String, dynamic>.from(decoded);
+    final routes = data['routes'];
 
-    if (data['ok'] != true) {
+    if (routes is! List || routes.isEmpty) {
       throw Exception(
-        data['mensaje']?.toString() ??
-            'No fue posible calcular la ruta.',
+        'OSRM no devolvió ninguna ruta.',
       );
     }
 
-    final dynamic rutaData =
-        data['ruta'];
+    final route =
+        Map<String, dynamic>.from(routes.first);
 
-    if (rutaData is! Map) {
+    final geometry = route['geometry'];
+
+    if (geometry is! Map) {
       throw Exception(
-        'El servidor no devolvió la ruta.',
+        'La respuesta de OSRM no contiene geometría.',
       );
     }
 
-    final ruta =
-        Map<String, dynamic>.from(rutaData);
+    final coordinates =
+        geometry['coordinates'];
 
-    final dynamic geometria =
-        ruta['geometria'] ??
-        ruta['geometry'];
-
-    if (geometria is! Map) {
+    if (coordinates is! List ||
+        coordinates.isEmpty) {
       throw Exception(
-        'La ruta no contiene geometría.',
-      );
-    }
-
-    final dynamic coordinates =
-        geometria['coordinates'];
-
-    if (coordinates is! List) {
-      throw Exception(
-        'La geometría no contiene coordenadas.',
+        'La ruta no contiene coordenadas.',
       );
     }
 
@@ -121,67 +113,33 @@ class RoutingService {
 
     for (final item in coordinates) {
       if (item is List && item.length >= 2) {
-        final longitud =
-            _toDouble(item[0]);
+        final longitude =
+            (item[0] as num).toDouble();
 
-        final latitud =
-            _toDouble(item[1]);
+        final latitude =
+            (item[1] as num).toDouble();
 
-        if (_coordenadaValida(
-          latitud,
-          longitud,
-        )) {
-          puntosRuta.add(
-            LatLng(
-              latitud,
-              longitud,
-            ),
-          );
-        }
+        puntosRuta.add(
+          LatLng(
+            latitude,
+            longitude,
+          ),
+        );
       }
     }
 
     if (puntosRuta.length < 2) {
       throw Exception(
-        'La geometría de carretera es insuficiente.',
+        'La geometría de la ruta es insuficiente.',
       );
     }
 
     return RutaResultado(
       puntos: puntosRuta,
-      distanciaMetros: _toDouble(
-        ruta['distancia'] ??
-            ruta['distance'],
-      ),
-      duracionSegundos: _toDouble(
-        ruta['duracion'] ??
-            ruta['duration'],
-      ),
+      distanciaMetros:
+          (route['distance'] as num).toDouble(),
+      duracionSegundos:
+          (route['duration'] as num).toDouble(),
     );
-  }
-
-  double _toDouble(
-    dynamic value,
-  ) {
-    if (value is num) {
-      return value.toDouble();
-    }
-
-    if (value is String) {
-      return double.tryParse(value) ?? 0;
-    }
-
-    return 0;
-  }
-
-  bool _coordenadaValida(
-    double latitud,
-    double longitud,
-  ) {
-    return latitud >= -90 &&
-        latitud <= 90 &&
-        longitud >= -180 &&
-        longitud <= 180 &&
-        !(latitud == 0 && longitud == 0);
   }
 }

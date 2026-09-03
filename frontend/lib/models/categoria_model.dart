@@ -13,12 +13,11 @@ class CategoriaModel {
     required this.estado,
   });
 
-  factory CategoriaModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory CategoriaModel.fromJson(Map<String, dynamic> json) {
     return CategoriaModel(
       id: _stringValue(
         json['_id'] ?? json['id'],
+        fallback: '',
       ),
       nombre: _stringValue(
         json['nombre'],
@@ -26,15 +25,15 @@ class CategoriaModel {
       ),
       descripcion: _stringValue(
         json['descripcion'],
+        fallback: '',
       ),
       icono: _stringValue(
         json['icono'],
         fallback: 'location_on',
       ),
-      estado: _boolValue(
-        json['estado'],
-        fallback: true,
-      ),
+      estado: json['estado'] is bool
+          ? json['estado'] as bool
+          : true,
     );
   }
 
@@ -46,28 +45,12 @@ class CategoriaModel {
       return fallback;
     }
 
-    final texto = value.toString().trim();
+    final valueString = value.toString().trim();
 
-    return texto.isEmpty ? fallback : texto;
-  }
-
-  static bool _boolValue(
-    dynamic value, {
-    bool fallback = false,
-  }) {
-    if (value is bool) {
-      return value;
+    if (valueString.isEmpty) {
+      return fallback;
     }
 
-    if (value is String) {
-      return value.toLowerCase() == 'true';
-    }
-
-    return fallback;
-  }
-
-  @override
-  String toString() {
-    return 'CategoriaModel(id: $id, nombre: $nombre)';
+    return valueString;
   }
 }
