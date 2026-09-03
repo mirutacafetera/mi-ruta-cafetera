@@ -12,6 +12,14 @@ const brevo = new BrevoClient({
 });
 
 
+console.log('==========================================');
+console.log('CONFIGURACIÓN BREVO');
+console.log('API KEY cargada:', !!process.env.BREVO_API_KEY);
+console.log('BREVO_NOMBRE:', process.env.BREVO_NOMBRE);
+console.log('BREVO_EMAIL:', process.env.BREVO_EMAIL);
+console.log('==========================================');
+
+
 // =====================================================
 // ENVIAR CÓDIGO DE VERIFICACIÓN
 // =====================================================
