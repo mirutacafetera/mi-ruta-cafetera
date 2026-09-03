@@ -1,126 +1,16 @@
-const mongoose = require('mongoose');
+const express = require('express');
 
-const sitioTuristicoSchema = new mongoose.Schema(
-  {
-    correo: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true
-    },
+const {
+  crearCuentaSitio
+} = require('../../controllers/admin/authsitio.controller');
 
-    password: {
-      type: String,
-      required: true
-    },
+const router = express.Router();
 
-    nombre: {
-      type: String,
-      required: true,
-      trim: true
-    },
+// ======================================================
+// CUENTAS DE SITIOS
+// ======================================================
 
-    descripcion: {
-      type: String,
-      trim: true,
-      default: 'Sin descripción'
-    },
+// El administrador crea una cuenta para un sitio existente
+router.post('/cuenta', crearCuentaSitio);
 
-    direccion: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-
-    ciudad: {
-      type: String,
-      trim: true,
-      default: 'Garzón'
-    },
-
-    departamento: {
-      type: String,
-      trim: true,
-      default: 'Huila'
-    },
-
-    latitud: {
-      type: Number,
-      required: true
-    },
-
-    longitud: {
-      type: Number,
-      required: true
-    },
-
-    categoria: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'CategoriaSitio',
-      required: true
-    },
-
-    etiquetas: [
-      {
-        type: String,
-        trim: true
-      }
-    ],
-
-    activo: {
-      type: Boolean,
-      default: true
-    },
-
-    telefono: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-
-    correos: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-
-    sitioWeb: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-
-    imagen: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-
-    imagenes: [
-      {
-        type: String,
-        trim: true
-      }
-    ],
-
-    horario: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-
-    precioDesde: {
-      type: Number,
-      default: 0
-    }
-  },
-  {
-    timestamps: true
-  }
-);
-
-module.exports = mongoose.model(
-  'SitioTuristico',
-  sitioTuristicoSchema
-);
+module.exports = router;

@@ -1,23 +1,17 @@
 const express = require('express');
 
 const {
-  crearSitio,
-  obtenerSitios,
-  obtenerSitio,
-  actualizarSitio,
-  eliminarSitio
+  crearCuentaSitio
 } = require('../../controllers/admin/authsitio.controller');
 
 const router = express.Router();
 
-router.post('/', crearSitio);
+// ======================================================
+// CREAR CUENTA DEL SITIO
+// ======================================================
 
-router.get('/', obtenerSitios);
-
-router.get('/:id', obtenerSitio);
-
-router.put('/:id', actualizarSitio);
-
-router.delete('/:id', eliminarSitio);
+// El administrador crea una cuenta para un sitio
+// turístico que ya existe.
+router.post('/cuenta', crearCuentaSitio);
 
 module.exports = router;

@@ -1,165 +1,153 @@
-const SitioTuristico = require('../../models/admin/authsitio');
+const bcrypt = require('bcryptjs');
 
-const crearSitio = async (req, res) => {
+const SitioTuristico = require('../../models/admin/sitio');
+const CuentaSitio = require('../../models/sitio/auth');
+
+// ======================================================
+// CREAR CUENTA PARA UN SITIO
+// ======================================================
+
+const crearCuentaSitio = async (req, res) => {
   try {
     const {
+      sitioId,
+      nombre,
+      apellido,
       correo,
       password,
-      nombre,
-      descripcion,
-      direccion,
-      ciudad,
-      departamento,
-      latitud,
-      longitud,
-      categoria,
-      etiquetas,
-      activo,
-      telefono,
-      correos,
-      sitioWeb,
-      imagen,
-      imagenes,
-      horario,
-      precioDesde
+      telefono
     } = req.body;
 
-    const sitioExistente = await SitioTuristico.findOne({ correo });
+    // --------------------------------------------------
+    // VALIDAR CAMPOS OBLIGATORIOS
+    // --------------------------------------------------
 
-    if (sitioExistente) {
+    if (
+      !sitioId ||
+      !nombre ||
+      !apellido ||
+      !correo ||
+      !password
+    ) {
+      return res.status(400).json({
+        mensaje:
+          'sitioId, nombre, apellido, correo y password son obligatorios'
+      });
+    }
+
+    // --------------------------------------------------
+    // VERIFICAR QUE EL SITIO EXISTA
+    // --------------------------------------------------
+
+    const sitio = await SitioTuristico.findById(sitioId);
+
+    if (!sitio) {
+      return res.status(404).json({
+        mensaje: 'El sitio turístico no existe'
+      });
+    }
+
+    // --------------------------------------------------
+    // VERIFICAR QUE EL SITIO ESTÉ ACTIVO
+    // --------------------------------------------------
+
+    if (!sitio.activo) {
+      return res.status(400).json({
+        mensaje: 'El sitio turístico está inactivo'
+      });
+    }
+
+    // --------------------------------------------------
+    // VERIFICAR SI EL SITIO YA TIENE UNA CUENTA
+    // --------------------------------------------------
+
+    const cuentaExistente = await CuentaSitio.findOne({
+      sitioId
+    });
+
+    if (cuentaExistente) {
+      return res.status(400).json({
+        mensaje: 'Este sitio ya tiene una cuenta'
+      });
+    }
+
+    // --------------------------------------------------
+    // NORMALIZAR CORREO
+    // --------------------------------------------------
+
+    const correoNormalizado = correo
+      .toLowerCase()
+      .trim();
+
+    // --------------------------------------------------
+    // VERIFICAR SI EL CORREO YA EXISTE
+    // --------------------------------------------------
+
+    const correoExistente = await CuentaSitio.findOne({
+      correo: correoNormalizado
+    });
+
+    if (correoExistente) {
       return res.status(400).json({
         mensaje: 'El correo ya está registrado'
       });
     }
 
-    const sitio = new SitioTuristico({
-      correo,
+    // --------------------------------------------------
+    // ENCRIPTAR CONTRASEÑA
+    // --------------------------------------------------
+
+    const passwordEncriptada = await bcrypt.hash(
       password,
-      nombre,
-      descripcion,
-      direccion,
-      ciudad,
-      departamento,
-      latitud,
-      longitud,
-      categoria,
-      etiquetas,
-      activo,
-      telefono,
-      correos,
-      sitioWeb,
-      imagen,
-      imagenes,
-      horario,
-      precioDesde
+      10
+    );
+
+    // --------------------------------------------------
+    // CREAR CUENTA
+    // --------------------------------------------------
+
+    const cuenta = new CuentaSitio({
+      sitioId,
+      nombre: nombre.trim(),
+      apellido: apellido.trim(),
+      correo: correoNormalizado,
+      password: passwordEncriptada,
+      telefono: telefono ? telefono.trim() : ''
     });
 
-    await sitio.save();
+    await cuenta.save();
+
+    // --------------------------------------------------
+    // RESPUESTA
+    // --------------------------------------------------
 
     res.status(201).json({
-      mensaje: 'Sitio turístico creado correctamente',
-      sitio
-    });
-  } catch (error) {
-    console.error(error);
+      mensaje: 'Cuenta del sitio creada correctamente',
 
-    res.status(500).json({
-      mensaje: 'Error al crear el sitio turístico',
-      error: error.message
-    });
-  }
-};
-
-const obtenerSitios = async (req, res) => {
-  try {
-    const sitios = await SitioTuristico.find()
-      .populate('categoria');
-
-    res.status(200).json(sitios);
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al obtener los sitios turísticos',
-      error: error.message
-    });
-  }
-};
-
-const obtenerSitio = async (req, res) => {
-  try {
-    const sitio = await SitioTuristico.findById(req.params.id)
-      .populate('categoria');
-
-    if (!sitio) {
-      return res.status(404).json({
-        mensaje: 'Sitio turístico no encontrado'
-      });
-    }
-
-    res.status(200).json(sitio);
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al obtener el sitio turístico',
-      error: error.message
-    });
-  }
-};
-
-const actualizarSitio = async (req, res) => {
-  try {
-    const sitio = await SitioTuristico.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true
+      cuenta: {
+        id: cuenta._id,
+        sitioId: cuenta.sitioId,
+        nombre: cuenta.nombre,
+        apellido: cuenta.apellido,
+        correo: cuenta.correo,
+        telefono: cuenta.telefono,
+        activo: cuenta.activo
       }
-    );
-
-    if (!sitio) {
-      return res.status(404).json({
-        mensaje: 'Sitio turístico no encontrado'
-      });
-    }
-
-    res.status(200).json({
-      mensaje: 'Sitio turístico actualizado correctamente',
-      sitio
     });
   } catch (error) {
+    console.error('Error al crear cuenta del sitio:', error);
+
     res.status(500).json({
-      mensaje: 'Error al actualizar el sitio turístico',
+      mensaje: 'Error al crear la cuenta del sitio',
       error: error.message
     });
   }
 };
 
-const eliminarSitio = async (req, res) => {
-  try {
-    const sitio = await SitioTuristico.findByIdAndDelete(
-      req.params.id
-    );
-
-    if (!sitio) {
-      return res.status(404).json({
-        mensaje: 'Sitio turístico no encontrado'
-      });
-    }
-
-    res.status(200).json({
-      mensaje: 'Sitio turístico eliminado correctamente'
-    });
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al eliminar el sitio turístico',
-      error: error.message
-    });
-  }
-};
+// ======================================================
+// EXPORTAR
+// ======================================================
 
 module.exports = {
-  crearSitio,
-  obtenerSitios,
-  obtenerSitio,
-  actualizarSitio,
-  eliminarSitio
+  crearCuentaSitio
 };

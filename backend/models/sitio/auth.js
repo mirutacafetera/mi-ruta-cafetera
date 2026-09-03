@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 
-
-// ==========================================
-// ESQUEMA DE CUENTA DEL SITIO
-// ==========================================
-
 const authSitioSchema = new mongoose.Schema(
   {
+    // Sitio turístico al que pertenece la cuenta
+    sitioId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SitioTuristico',
+      required: true,
+      unique: true
+    },
 
     nombre: {
       type: String,
@@ -38,38 +40,14 @@ const authSitioSchema = new mongoose.Schema(
 
     telefono: {
       type: String,
-      trim: true
+      trim: true,
+      default: ''
     },
 
     activo: {
       type: Boolean,
       default: true
     },
-
-
-    // ==========================================
-    // VERIFICACIÓN DE CORREO
-    // ==========================================
-
-    isVerified: {
-      type: Boolean,
-      default: false
-    },
-
-    codigoVerificacion: {
-      type: String,
-      default: null
-    },
-
-    codigoVerificacionExpiracion: {
-      type: Date,
-      default: null
-    },
-
-
-    // ==========================================
-    // RECUPERACIÓN DE CONTRASEÑA
-    // ==========================================
 
     codigoRecuperacion: {
       type: String,
@@ -90,31 +68,15 @@ const authSitioSchema = new mongoose.Schema(
       type: Date,
       default: null
     }
-
   },
   {
-    timestamps: true
+    timestamps: true,
+    collection: 'authsitios'
   }
 );
 
-
-// ==========================================
-// MODELO
-// ==========================================
-
-// Evita registrar nuevamente el modelo
-// si Mongoose ya lo tiene cargado.
-
 const CuentaSitio =
   mongoose.models.authSitio ||
-  mongoose.model(
-    'authSitio',
-    authSitioSchema
-  );
-
-
-// ==========================================
-// EXPORTAR
-// ==========================================
+  mongoose.model('authSitio', authSitioSchema);
 
 module.exports = CuentaSitio;
