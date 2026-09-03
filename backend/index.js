@@ -1,6 +1,9 @@
 const express = require('express');
+
 const mongoose = require('mongoose');
+
 const cors = require('cors');
+
 require('dotenv').config();
 
 const app = express();
@@ -13,7 +16,11 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  express.urlencoded({
+    extended: true
+  })
+);
 
 // ======================================================
 // IMPORTACIÓN DE RUTAS
@@ -91,10 +98,13 @@ const adminAuthSitioRoutes = require(
   './routes/admin/authsitio.routes'
 );
 
+const adminSitioRoutes = require(
+  './routes/admin/sitio.routes'
+);
+
 const categoriaSitioRoutes = require(
   './routes/admin/categoria.routes'
 );
-
 
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
@@ -123,8 +133,6 @@ const contenidoSitioRoutes = require(
 const authSitioRoutes = require(
   './routes/sitios/auth.routes'
 );
-
-
 
 // ======================================================
 // RUTAS DE USUARIOS
@@ -210,12 +218,17 @@ app.use(
 );
 
 // ======================================================
-// RUTAS DE CUENTAS Y CATEGORÍAS DE SITIOS
+// RUTAS DE CUENTAS Y SITIOS
 // ======================================================
 
 app.use(
   '/api/admin/authsitio',
   adminAuthSitioRoutes
+);
+
+app.use(
+  '/api/admin/sitios',
+  adminSitioRoutes
 );
 
 app.use(
@@ -256,7 +269,6 @@ app.use(
   '/api/sitios/auth',
   authSitioRoutes
 );
-
 
 // ======================================================
 // RUTA PRINCIPAL
@@ -375,6 +387,14 @@ mongoose
 
         console.log(
           '📂 API de categorías: /api/categorias-sitios'
+        );
+
+        console.log(
+          '👨‍💼 API admin sitios: /api/admin/sitios'
+        );
+
+        console.log(
+          '🔐 API cuentas sitios: /api/admin/authsitio'
         );
 
         console.log(
