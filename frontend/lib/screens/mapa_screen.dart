@@ -6,8 +6,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 
-import '../widgets/mapa/mapa_ruta_panel.dart';
-
 import '../config/api_config.dart';
 
 // ============================================================
@@ -956,58 +954,54 @@ class _MapaScreenState
   // SELECCIONAR / DESELECCIONAR SITIO
   // ==========================================================
 
-// Gestiona la selección múltiple durante la creación de una ruta.
-// La selección modifica únicamente _sitiosSeleccionados; no altera
-// la lista de sitios que permanece visible en el mapa.
-void _alternarSeleccionSitio(
-  SitioTuristicoItem sitio,
-) {
-  if (!_modoCrearRuta) {
-    _mostrarDetalles(sitio);
-    return;
+  void _alternarSeleccionSitio(
+    SitioTuristicoItem sitio,
+  ) {
+    if (!_modoCrearRuta) {
+      _mostrarDetalles(
+        sitio,
+      );
+      return;
+    }
+
+    setState(() {
+      final existe =
+          _sitiosSeleccionados.any(
+        (item) =>
+            item.id == sitio.id,
+      );
+
+      if (existe) {
+        _sitiosSeleccionados
+            .removeWhere(
+          (item) =>
+              item.id == sitio.id,
+        );
+      } else {
+        _sitiosSeleccionados
+            .add(sitio);
+      }
+
+      _mostrarPanelRuta =
+          _sitiosSeleccionados
+              .isNotEmpty;
+    });
   }
-
-  setState(() {
-    final indice = _sitiosSeleccionados.indexWhere(
-      (item) => item.id == sitio.id,
-    );
-
-    if (indice >= 0) {
-      _sitiosSeleccionados.removeAt(indice);
-    } else {
-      _sitiosSeleccionados.add(sitio);
-    }
-
-    _mostrarPanelRuta =
-        _sitiosSeleccionados.isNotEmpty;
-
-    // Mientras el usuario modifica la selección,
-    // la ruta calculada anteriormente deja de ser válida.
-    _puntosRuta = [];
-    _distanciaRuta = 0;
-    _duracionRuta = 0;
-
-    if (_sitiosSeleccionados.length < 2) {
-      _mensajeRuta = 'Selecciona mínimo 2 sitios';
-    } else {
-      _mensajeRuta =
-          '${_sitiosSeleccionados.length} sitios seleccionados';
-    }
-  });
-}
 
   // ==========================================================
   // COMPROBAR SI UN SITIO ESTÁ SELECCIONADO
   // ==========================================================
 
- // Comprueba si el sitio forma parte de la selección actual de la ruta.
-bool _estaSeleccionado(
-  SitioTuristicoItem sitio,
-) {
-  return _sitiosSeleccionados.any(
-    (item) => item.id == sitio.id,
-  );
-}
+  bool _estaSeleccionado(
+    SitioTuristicoItem sitio,
+  ) {
+    return _sitiosSeleccionados
+        .any(
+      (item) =>
+          item.id == sitio.id,
+    );
+  }
+
   // ==========================================================
   // ACTIVAR MODO CREAR RUTA
   // ==========================================================
@@ -4173,7 +4167,7 @@ bool _estaSeleccionado(
           AppBar(
         title:
             const Text(
-          'Mi Ruta Cafetera',
+          'Mi Ruta Mágica del Café',
           style:
               TextStyle(
             color:
@@ -4335,7 +4329,7 @@ bool _estaSeleccionado(
           // PANEL INFERIOR DE RUTA
           // ==================================================
 
-
+          _construirPanelRuta(),
 
           // ==================================================
           // INDICADOR DE CARGA

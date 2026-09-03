@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../services/admin_sitio_service.dart';
-import '../../widgets/sitio_form_sheet.dart';
+import '../../services/admin/admin_sitio_service.dart';
+import '../../widgets/admin/sitio_form_sheet.dart';
 
 class AdminSitioListScreen extends StatefulWidget {
   const AdminSitioListScreen({super.key});
@@ -13,488 +13,962 @@ class AdminSitioListScreen extends StatefulWidget {
 
 class _AdminSitioListScreenState
     extends State<AdminSitioListScreen> {
-  late Future<List<dynamic>> _sitiosFuture;
+  List<Map<String, dynamic>> _sitios = [];
+  List<Map<String, dynamic>> _categorias = [];
+
+  bool _cargando = true;
+  String _busqueda = '';
 
   @override
   void initState() {
     super.initState();
-    _cargarSitios();
+    _cargarDatos();
   }
 
-  // =====================================================
-  // CARGAR SITIOS
-  // =====================================================
+  // ============================================================
+  // CARGAR SITIOS Y CATEGORÍAS
+  // ============================================================
 
-  void _cargarSitios() {
-    setState(() {
-      _sitiosFuture = AdminSitioService.obtenerSitios();
-    });
-  }
+  Future<void> _cargarDatos() async {
+    if (mounted) {
+      setState(() {
+        _cargando = true;
+      });
+    }
 
-  // =====================================================
-  // CREAR SITIO
-  // =====================================================
+    try {
+      // Obtener sitios desde /admin/authsitio
+      final List<dynamic> respuestaSitios =
+          await AdminSitioService.obtenerSitios();
 
-  Future<void> _crearSitio() async {
-    final resultado = await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return const SitioFormSheet();
-      },
-    );
+      // Obtener categorías desde /categorias-sitios
+      final List<dynamic> respuestaCategorias =
+          await AdminSitioService.obtenerCategorias();
 
-    // Si el formulario se cerró después de guardar,
-    // volvemos a consultar el backend.
-    if (resultado != null && mounted) {
-      _cargarSitios();
+      final sitios = respuestaSitios
+          .whereType<Map>()
+          .map(
+            (sitio) =>
+                Map<String, dynamic>.from(sitio),
+          )
+          .toList();
+
+      final categorias = respuestaCategorias
+          .whereType<Map>()
+          .map(
+            (categoria) =>
+                Map<String, dynamic>.from(categoria),
+          )
+          .toList();
+
+      if (!mounted) return;
+
+      setState(() {
+        _sitios = sitios;
+        _categorias = categorias;
+        _cargando = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _cargando = false;
+      });
+
+      _mostrarMensaje(
+        'Error al cargar los datos: $e',
+        error: true,
+      );
     }
   }
 
-  // =====================================================
-  // EDITAR SITIO
-  // =====================================================
+  // ============================================================
+  // FILTRAR SITIOS
+  // ============================================================
 
-  Future<void> _editarSitio(Map<String, dynamic> sitio) async {
-    final resultado = await showModalBottomSheet(
+  List<Map<String, dynamic>> get _sitiosFiltrados {
+    if (_busqueda.trim().isEmpty) {
+      return _sitios;
+    }
+
+    final texto = _busqueda.toLowerCase().trim();
+
+    return _sitios.where((sitio) {
+      final nombre =
+          (sitio['nombre'] ?? '')
+              .toString()
+              .toLowerCase();
+
+      final ciudad =
+          (sitio['ciudad'] ?? '')
+              .toString()
+              .toLowerCase();
+
+      final direccion =
+          (sitio['direccion'] ?? '')
+              .toString()
+              .toLowerCase();
+
+      return nombre.contains(texto) ||
+          ciudad.contains(texto) ||
+          direccion.contains(texto);
+    }).toList();
+  }
+
+  // ============================================================
+  // CREAR SITIO
+  // ============================================================
+
+  Future<void> _crearSitio() async {
+    final resultado =
+        await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return SitioFormSheet(
-          sitio: sitio,
+          categorias: _categorias,
         );
       },
     );
 
-    // Volvemos a cargar la lista después de editar.
-    if (resultado != null && mounted) {
-      _cargarSitios();
+    if (resultado == true) {
+      await _cargarDatos();
     }
   }
 
-  // =====================================================
-  // DESACTIVAR SITIO
-  // =====================================================
+  // ============================================================
+  // EDITAR SITIO
+  // ============================================================
 
-  Future<void> _desactivarSitio(String id) async {
-    try {
-      await AdminSitioService.desactivarSitio(id);
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Sitio turístico desactivado correctamente',
-          ),
-        ),
-      );
-
-      _cargarSitios();
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'No se pudo desactivar el sitio: $e',
-          ),
-        ),
-      );
-    }
-  }
-
-  // =====================================================
-  // CONFIRMAR DESACTIVACIÓN
-  // =====================================================
-
-  Future<void> _confirmarDesactivacion(
-    String id,
-    String nombre,
+  Future<void> _editarSitio(
+    Map<String, dynamic> sitio,
   ) async {
-    final confirmar = await showDialog<bool>(
+    final resultado =
+        await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return SitioFormSheet(
+          sitio: sitio,
+          categorias: _categorias,
+        );
+      },
+    );
+
+    if (resultado == true) {
+      await _cargarDatos();
+    }
+  }
+
+  // ============================================================
+  // ELIMINAR SITIO
+  // ============================================================
+
+  Future<void> _eliminarSitio(
+    Map<String, dynamic> sitio,
+  ) async {
+    final id = _obtenerId(sitio);
+
+    if (id == null || id.isEmpty) {
+      _mostrarMensaje(
+        'No se encontró el ID del sitio.',
+        error: true,
+      );
+      return;
+    }
+
+    final nombre =
+        (sitio['nombre'] ?? 'este sitio').toString();
+
+    final confirmar =
+        await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text(
-            'Desactivar sitio',
+            'Eliminar sitio',
           ),
           content: Text(
-            '¿Estás seguro de que deseas desactivar "$nombre"?',
+            '¿Seguro que deseas eliminar "$nombre"?',
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context, false);
+                Navigator.pop(
+                  context,
+                  false,
+                );
               },
-              child: const Text('Cancelar'),
+              child: const Text(
+                'Cancelar',
+              ),
             ),
-            ElevatedButton(
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
               onPressed: () {
-                Navigator.pop(context, true);
+                Navigator.pop(
+                  context,
+                  true,
+                );
               },
-              child: const Text('Desactivar'),
+              child: const Text(
+                'Eliminar',
+              ),
             ),
           ],
         );
       },
     );
 
-    if (confirmar == true) {
-      await _desactivarSitio(id);
+    if (confirmar != true) {
+      return;
+    }
+
+    try {
+      await AdminSitioService.eliminarSitio(id);
+
+      if (!mounted) return;
+
+      _mostrarMensaje(
+        'Sitio eliminado correctamente.',
+      );
+
+      await _cargarDatos();
+    } catch (e) {
+      if (!mounted) return;
+
+      _mostrarMensaje(
+        'Error al eliminar el sitio: $e',
+        error: true,
+      );
     }
   }
 
-  // =====================================================
+  // ============================================================
+  // OBTENER ID
+  // ============================================================
+
+  String? _obtenerId(
+    Map<String, dynamic> sitio,
+  ) {
+    final id = sitio['_id'] ?? sitio['id'];
+
+    if (id == null) {
+      return null;
+    }
+
+    if (id is Map) {
+      return id[r'$oid']?.toString();
+    }
+
+    return id.toString();
+  }
+
+  // ============================================================
+  // OBTENER CATEGORÍA
+  // ============================================================
+
+  String _obtenerCategoria(
+    Map<String, dynamic> sitio,
+  ) {
+    final categoria = sitio['categoria'];
+
+    if (categoria == null) {
+      return 'Sin categoría';
+    }
+
+    if (categoria is String) {
+      return categoria;
+    }
+
+    if (categoria is Map) {
+      return (
+        categoria['nombre'] ??
+        categoria['name'] ??
+        'Sin categoría'
+      ).toString();
+    }
+
+    return categoria.toString();
+  }
+
+  // ============================================================
+  // ESTADO
+  // ============================================================
+
+  bool _estaActivo(
+    Map<String, dynamic> sitio,
+  ) {
+    // Tu base de datos utiliza "activo".
+    final activo = sitio['activo'];
+
+    if (activo is bool) {
+      return activo;
+    }
+
+    // Compatibilidad con documentos antiguos.
+    final estado = sitio['estado'];
+
+    if (estado is bool) {
+      return estado;
+    }
+
+    return true;
+  }
+
+  // ============================================================
+  // MENSAJE
+  // ============================================================
+
+  void _mostrarMensaje(
+    String mensaje, {
+    bool error = false,
+  }) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+        .hideCurrentSnackBar();
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor:
+            error ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  // ============================================================
   // BUILD
-  // =====================================================
+  // ============================================================
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder<List<dynamic>>(
-        future: _sitiosFuture,
-        builder: (context, snapshot) {
-          // =================================================
-          // CARGANDO
-          // =================================================
+  Widget build(
+    BuildContext context,
+  ) {
+    return Column(
+      children: [
+        _barraSuperior(),
+        _barraBusqueda(),
+        Expanded(
+          child: _cargando
+              ? const Center(
+                  child:
+                      CircularProgressIndicator(),
+                )
+              : _contenido(),
+        ),
+      ],
+    );
+  }
 
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+  // ============================================================
+  // BARRA SUPERIOR
+  // ============================================================
 
-          // =================================================
-          // ERROR
-          // =================================================
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 60,
-                      color: Colors.red,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    const Text(
-                      'No se pudieron cargar los sitios turísticos',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+  Widget _barraSuperior() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        8,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sitios turísticos',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(
+                        fontWeight:
+                            FontWeight.bold,
                       ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Text(
-                      '${snapshot.error}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    ElevatedButton.icon(
-                      onPressed: _cargarSitios,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reintentar'),
-                    ),
-                  ],
                 ),
-              ),
-            );
-          }
-
-          // =================================================
-          // SIN DATOS
-          // =================================================
-
-          final sitios = snapshot.data ?? [];
-
-          if (sitios.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.location_off,
-                      size: 70,
-                      color: Colors.grey,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    const Text(
-                      'No hay sitios turísticos',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
-                      'Agrega el primer sitio turístico.',
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    ElevatedButton.icon(
-                      onPressed: _crearSitio,
-                      icon: const Icon(Icons.add),
-                      label: const Text(
-                        'Crear sitio',
-                      ),
-                    ),
-                  ],
+                const SizedBox(
+                  height: 4,
                 ),
-              ),
-            );
-          }
-
-          // =================================================
-          // LISTA DE SITIOS
-          // =================================================
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              _cargarSitios();
-              await _sitiosFuture;
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: sitios.length,
-              itemBuilder: (context, index) {
-                final sitio = sitios[index];
-
-                final String id =
-                    sitio['_id']?.toString() ??
-                    sitio['id']?.toString() ??
-                    '';
-
-                final String nombre =
-                    sitio['nombre']?.toString() ??
-                    'Sin nombre';
-
-                final String descripcion =
-                    sitio['descripcion']?.toString() ??
-                    'Sin descripción';
-
-                final String categoria =
-                    sitio['categoria']?.toString() ??
-                    'Sin categoría';
-
-                final String direccion =
-                    sitio['direccion']?.toString() ??
-                    'Sin dirección';
-
-                final bool activo =
-                    sitio['activo'] != false;
-
-                return Card(
-                  margin: const EdgeInsets.only(
-                    bottom: 14,
+                Text(
+                  '${_sitios.length} sitios registrados',
+                  style: TextStyle(
+                    color:
+                        Colors.grey.shade600,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        // =====================================
-                        // NOMBRE
-                        // =====================================
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Actualizar',
+            onPressed:
+                _cargando ? null : _cargarDatos,
+            icon: const Icon(
+              Icons.refresh,
+            ),
+          ),
+          const SizedBox(
+            width: 4,
+          ),
+          FilledButton.icon(
+            onPressed: _crearSitio,
+            icon: const Icon(
+              Icons.add,
+            ),
+            label: const Text(
+              'Nuevo sitio',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on,
-                              color: Color(0xFF1B5E20),
-                            ),
+  // ============================================================
+  // BUSCADOR
+  // ============================================================
 
-                            const SizedBox(width: 8),
+  Widget _barraBusqueda() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        4,
+        16,
+        12,
+      ),
+      child: TextField(
+        onChanged: (valor) {
+          setState(() {
+            _busqueda = valor;
+          });
+        },
+        decoration: InputDecoration(
+          hintText:
+              'Buscar por nombre, ciudad o dirección...',
+          prefixIcon: const Icon(
+            Icons.search,
+          ),
+          suffixIcon:
+              _busqueda.isNotEmpty
+                  ? IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _busqueda = '';
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.clear,
+                      ),
+                    )
+                  : null,
+          border: OutlineInputBorder(
+            borderRadius:
+                BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
 
-                            Expanded(
-                              child: Text(
-                                nombre,
-                                style: const TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold,
+  // ============================================================
+  // CONTENIDO
+  // ============================================================
+
+  Widget _contenido() {
+    final sitios = _sitiosFiltrados;
+
+    if (sitios.isEmpty) {
+      return _sinResultados();
+    }
+
+    return RefreshIndicator(
+      onRefresh: _cargarDatos,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(
+          16,
+          4,
+          16,
+          24,
+        ),
+        itemCount: sitios.length,
+        itemBuilder: (
+          context,
+          index,
+        ) {
+          return _tarjetaSitio(
+            sitios[index],
+          );
+        },
+      ),
+    );
+  }
+
+  // ============================================================
+  // SIN RESULTADOS
+  // ============================================================
+
+  Widget _sinResultados() {
+    return Center(
+      child: Padding(
+        padding:
+            const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment:
+              MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.location_off_outlined,
+              size: 70,
+              color:
+                  Colors.grey.shade400,
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            Text(
+              _busqueda.isEmpty
+                  ? 'No hay sitios registrados'
+                  : 'No se encontraron sitios',
+              textAlign:
+                  TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight:
+                    FontWeight.bold,
+              ),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            Text(
+              _busqueda.isEmpty
+                  ? 'Puedes registrar el primer sitio turístico.'
+                  : 'Prueba con otro nombre, ciudad o dirección.',
+              textAlign:
+                  TextAlign.center,
+              style: TextStyle(
+                color:
+                    Colors.grey.shade600,
+              ),
+            ),
+            if (_busqueda.isEmpty) ...[
+              const SizedBox(
+                height: 20,
+              ),
+              FilledButton.icon(
+                onPressed: _crearSitio,
+                icon: const Icon(
+                  Icons.add,
+                ),
+                label: const Text(
+                  'Registrar sitio',
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // TARJETA DEL SITIO
+  // ============================================================
+
+  Widget _tarjetaSitio(
+    Map<String, dynamic> sitio,
+  ) {
+    final nombre =
+        (sitio['nombre'] ?? 'Sin nombre')
+            .toString();
+
+    final descripcion =
+        (sitio['descripcion'] ??
+                'Sin descripción')
+            .toString();
+
+    final ciudad =
+        (sitio['ciudad'] ?? '')
+            .toString();
+
+    final direccion =
+        (sitio['direccion'] ?? '')
+            .toString();
+
+    final categoria =
+        _obtenerCategoria(sitio);
+
+    final activo =
+        _estaActivo(sitio);
+
+    final imagen =
+        _obtenerImagen(sitio);
+
+    return Card(
+      margin:
+          const EdgeInsets.only(
+        bottom: 12,
+      ),
+      elevation: 2,
+      clipBehavior:
+          Clip.antiAlias,
+      child: Padding(
+        padding:
+            const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+          children: [
+            _imagenSitio(imagen),
+            const SizedBox(
+              width: 14,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          nombre,
+                          style:
+                              const TextStyle(
+                            fontSize: 17,
+                            fontWeight:
+                                FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        onSelected:
+                            (opcion) {
+                          if (opcion ==
+                              'editar') {
+                            _editarSitio(
+                              sitio,
+                            );
+                          }
+
+                          if (opcion ==
+                              'eliminar') {
+                            _eliminarSitio(
+                              sitio,
+                            );
+                          }
+                        },
+                        itemBuilder:
+                            (context) =>
+                                const [
+                          PopupMenuItem(
+                            value:
+                                'editar',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons
+                                      .edit_outlined,
                                 ),
-                              ),
-                            ),
-
-                            PopupMenuButton<String>(
-                              onSelected: (opcion) {
-                                if (opcion == 'editar') {
-                                  _editarSitio(sitio);
-                                }
-
-                                if (opcion == 'desactivar') {
-                                  _confirmarDesactivacion(
-                                    id,
-                                    nombre,
-                                  );
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'editar',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit),
-                                      SizedBox(width: 8),
-                                      Text('Editar'),
-                                    ],
-                                  ),
+                                SizedBox(
+                                  width: 10,
                                 ),
-                                const PopupMenuItem(
-                                  value: 'desactivar',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.block,
-                                        color: Colors.red,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Desactivar',
-                                      ),
-                                    ],
-                                  ),
+                                Text(
+                                  'Editar',
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        // =====================================
-                        // CATEGORÍA
-                        // =====================================
-
-                        Chip(
-                          label: Text(categoria),
-                          avatar: const Icon(
-                            Icons.category,
-                            size: 18,
                           ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        // =====================================
-                        // DESCRIPCIÓN
-                        // =====================================
-
-                        Text(
-                          descripcion,
-                          style: const TextStyle(
-                            fontSize: 15,
-                          ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        // =====================================
-                        // DIRECCIÓN
-                        // =====================================
-
-                        Row(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.place,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
-
-                            const SizedBox(width: 6),
-
-                            Expanded(
-                              child: Text(
-                                direccion,
-                                style: const TextStyle(
-                                  color: Colors.grey,
+                          PopupMenuItem(
+                            value:
+                                'eliminar',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons
+                                      .delete_outline,
+                                  color:
+                                      Colors.red,
                                 ),
-                              ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  'Eliminar',
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      _etiqueta(
+                        categoria,
+                        Icons
+                            .category_outlined,
+                      ),
+                      if (ciudad.isNotEmpty)
+                        _etiqueta(
+                          ciudad,
+                          Icons
+                              .location_city_outlined,
                         ),
-
-                        const SizedBox(height: 10),
-
-                        // =====================================
-                        // ESTADO
-                        // =====================================
-
-                        Row(
-                          children: [
-                            Icon(
-                              activo
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              size: 18,
-                              color: activo
-                                  ? Colors.green
-                                  : Colors.red,
+                      _estado(
+                        activo,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Text(
+                    descripcion,
+                    maxLines: 2,
+                    overflow:
+                        TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color:
+                          Colors.grey.shade700,
+                    ),
+                  ),
+                  if (direccion.isNotEmpty) ...[
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons
+                              .location_on_outlined,
+                          size: 16,
+                          color: Colors
+                              .grey
+                              .shade600,
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Expanded(
+                          child: Text(
+                            direccion,
+                            maxLines: 1,
+                            overflow:
+                                TextOverflow
+                                    .ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors
+                                  .grey
+                                  .shade600,
                             ),
-
-                            const SizedBox(width: 6),
-
-                            Text(
-                              activo
-                                  ? 'Activo'
-                                  : 'Inactivo',
-                              style: TextStyle(
-                                color: activo
-                                    ? Colors.green
-                                    : Colors.red,
-                                fontWeight:
-                                    FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                );
-              },
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // IMAGEN
+  // ============================================================
+
+  String? _obtenerImagen(
+    Map<String, dynamic> sitio,
+  ) {
+    final imagen = sitio['imagen'];
+
+    if (imagen != null &&
+        imagen.toString().trim().isNotEmpty) {
+      return imagen.toString();
+    }
+
+    final imagenes =
+        sitio['imagenes'];
+
+    if (imagenes is List &&
+        imagenes.isNotEmpty) {
+      final primera =
+          imagenes.first;
+
+      if (primera != null &&
+          primera
+              .toString()
+              .trim()
+              .isNotEmpty) {
+        return primera.toString();
+      }
+    }
+
+    return null;
+  }
+
+  Widget _imagenSitio(
+    String? imagen,
+  ) {
+    if (imagen == null ||
+        imagen.isEmpty) {
+      return Container(
+        width: 90,
+        height: 90,
+        decoration:
+            BoxDecoration(
+          color:
+              Colors.green.shade50,
+          borderRadius:
+              BorderRadius.circular(
+            10,
+          ),
+        ),
+        child: Icon(
+          Icons.place_outlined,
+          size: 42,
+          color:
+              Colors.green.shade700,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius:
+          BorderRadius.circular(10),
+      child: Image.network(
+        imagen,
+        width: 90,
+        height: 90,
+        fit: BoxFit.cover,
+        errorBuilder: (
+          context,
+          error,
+          stackTrace,
+        ) {
+          return Container(
+            width: 90,
+            height: 90,
+            color:
+                Colors.green.shade50,
+            child: Icon(
+              Icons
+                  .broken_image_outlined,
+              size: 38,
+              color:
+                  Colors.grey.shade500,
             ),
           );
         },
       ),
+    );
+  }
 
-      // =====================================================
-      // BOTÓN AGREGAR
-      // =====================================================
+  // ============================================================
+  // ETIQUETA
+  // ============================================================
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: _crearSitio,
-        backgroundColor: const Color(0xFF1B5E20),
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
+  Widget _etiqueta(
+    String texto,
+    IconData icono,
+  ) {
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 5,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            Colors.grey.shade100,
+        borderRadius:
+            BorderRadius.circular(
+          20,
+        ),
+      ),
+      child: Row(
+        mainAxisSize:
+            MainAxisSize.min,
+        children: [
+          Icon(
+            icono,
+            size: 14,
+            color:
+                Colors.grey.shade700,
+          ),
+          const SizedBox(
+            width: 4,
+          ),
+          Text(
+            texto,
+            style:
+                const TextStyle(
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // ESTADO
+  // ============================================================
+
+  Widget _estado(
+    bool activo,
+  ) {
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 5,
+      ),
+      decoration:
+          BoxDecoration(
+        color: activo
+            ? Colors.green.shade50
+            : Colors.red.shade50,
+        borderRadius:
+            BorderRadius.circular(
+          20,
+        ),
+      ),
+      child: Text(
+        activo
+            ? 'Activo'
+            : 'Inactivo',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight:
+              FontWeight.w600,
+          color: activo
+              ? Colors.green.shade700
+              : Colors.red.shade700,
+        ),
       ),
     );
   }

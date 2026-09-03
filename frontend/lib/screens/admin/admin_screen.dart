@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../widgets/admin_drawer.dart';
+import '../../widgets/admin/admin_drawer.dart';
 import '../mapa_screen.dart';
+
 import 'admin_sitio_list_screen.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -20,6 +21,10 @@ class AdminScreen extends StatefulWidget {
 
 class _AdminScreenState extends State<AdminScreen> {
   String _opcionSeleccionada = 'inicio';
+
+  // =====================================================
+  // CAMBIAR OPCIÓN
+  // =====================================================
 
   void _cambiarOpcion(String opcion) {
     setState(() {
@@ -40,21 +45,25 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
+  // =====================================================
+  // BUILD
+  // =====================================================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_tituloPantalla()),
+        title: Text(
+          _tituloPantalla(),
+        ),
         backgroundColor: const Color(0xFF1B5E20),
         foregroundColor: Colors.white,
       ),
-
       drawer: AdminDrawer(
         nombre: widget.nombre,
         email: widget.email,
         onOpcionSeleccionada: _cambiarOpcion,
       ),
-
       body: _crearContenido(),
     );
   }
@@ -101,19 +110,27 @@ class _AdminScreenState extends State<AdminScreen> {
         return _inicio();
 
       case 'estadisticas':
-        return _proximamente('Estadísticas');
+        return _proximamente(
+          'Estadísticas',
+        );
 
       case 'sitios':
         return _sitios();
 
       case 'contenido':
-        return _proximamente('Contenido');
+        return _proximamente(
+          'Contenido',
+        );
 
       case 'resenas':
-        return _proximamente('Reseñas');
+        return _proximamente(
+          'Reseñas',
+        );
 
       case 'usuarios':
-        return _proximamente('Usuarios');
+        return _proximamente(
+          'Usuarios',
+        );
 
       case 'perfil':
         return _perfil();
@@ -141,7 +158,9 @@ class _AdminScreenState extends State<AdminScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(
+                height: 20,
+              ),
 
               // =================================================
               // BIENVENIDA
@@ -153,7 +172,9 @@ class _AdminScreenState extends State<AdminScreen> {
                 color: Color(0xFF1B5E20),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(
+                height: 16,
+              ),
 
               Text(
                 'Bienvenido, ${widget.nombre}',
@@ -164,7 +185,9 @@ class _AdminScreenState extends State<AdminScreen> {
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(
+                height: 8,
+              ),
 
               const Text(
                 'Panel de administración\n'
@@ -176,7 +199,9 @@ class _AdminScreenState extends State<AdminScreen> {
                 ),
               ),
 
-              const SizedBox(height: 35),
+              const SizedBox(
+                height: 35,
+              ),
 
               // =================================================
               // BOTÓN DEL MAPA
@@ -204,7 +229,9 @@ class _AdminScreenState extends State<AdminScreen> {
                           ),
                         ),
 
-                        SizedBox(width: 18),
+                        SizedBox(
+                          width: 18,
+                        ),
 
                         Expanded(
                           child: Column(
@@ -220,7 +247,9 @@ class _AdminScreenState extends State<AdminScreen> {
                                 ),
                               ),
 
-                              SizedBox(height: 5),
+                              SizedBox(
+                                height: 5,
+                              ),
 
                               Text(
                                 'Visualiza los sitios turísticos, '
@@ -244,7 +273,9 @@ class _AdminScreenState extends State<AdminScreen> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(
+                height: 20,
+              ),
 
               // =================================================
               // GESTIÓN DE SITIOS
@@ -260,30 +291,30 @@ class _AdminScreenState extends State<AdminScreen> {
                       color: Color(0xFF1B5E20),
                     ),
                   ),
-
                   title: const Text(
                     'Gestionar sitios turísticos',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   subtitle: const Text(
                     'Crear, editar y administrar sitios turísticos.',
                   ),
-
                   trailing: const Icon(
                     Icons.arrow_forward_ios,
                     size: 18,
                   ),
-
                   onTap: () {
-                    _cambiarOpcion('sitios');
+                    _cambiarOpcion(
+                      'sitios',
+                    );
                   },
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(
+                height: 30,
+              ),
 
               // =================================================
               // INFORMACIÓN DEL ADMINISTRADOR
@@ -303,7 +334,9 @@ class _AdminScreenState extends State<AdminScreen> {
                         ),
                       ),
 
-                      const SizedBox(width: 14),
+                      const SizedBox(
+                        width: 14,
+                      ),
 
                       Expanded(
                         child: Column(
@@ -318,7 +351,9 @@ class _AdminScreenState extends State<AdminScreen> {
                               ),
                             ),
 
-                            const SizedBox(height: 4),
+                            const SizedBox(
+                              height: 4,
+                            ),
 
                             Text(
                               widget.email,
@@ -334,7 +369,9 @@ class _AdminScreenState extends State<AdminScreen> {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(
+                height: 30,
+              ),
             ],
           ),
         ),
@@ -354,7 +391,9 @@ class _AdminScreenState extends State<AdminScreen> {
   // OPCIONES QUE TODAVÍA NO DESARROLLAMOS
   // =====================================================
 
-  Widget _proximamente(String nombre) {
+  Widget _proximamente(
+    String nombre,
+  ) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -365,7 +404,9 @@ class _AdminScreenState extends State<AdminScreen> {
             color: Colors.grey,
           ),
 
-          const SizedBox(height: 15),
+          const SizedBox(
+            height: 15,
+          ),
 
           Text(
             '$nombre\nPróximamente',
@@ -395,7 +436,9 @@ class _AdminScreenState extends State<AdminScreen> {
             color: Color(0xFF1B5E20),
           ),
 
-          const SizedBox(height: 15),
+          const SizedBox(
+            height: 15,
+          ),
 
           Text(
             widget.nombre,
@@ -405,9 +448,13 @@ class _AdminScreenState extends State<AdminScreen> {
             ),
           ),
 
-          const SizedBox(height: 5),
+          const SizedBox(
+            height: 5,
+          ),
 
-          Text(widget.email),
+          Text(
+            widget.email,
+          ),
         ],
       ),
     );
