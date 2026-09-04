@@ -70,6 +70,10 @@ const visitaRoutes = require(
   './routes/usuario/visita.routes'
 );
 
+const chatRoutes = require(
+  './routes/usuario/chat.routes'
+);
+
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
@@ -186,6 +190,11 @@ app.use(
 app.use(
   '/api/visitas',
   visitaRoutes
+);
+
+app.use(
+  '/api/chat',
+  chatRoutes
 );
 
 // ======================================================
