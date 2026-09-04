@@ -18,12 +18,10 @@ class SitioFormSheet extends StatefulWidget {
   bool get esEdicion => sitio != null;
 
   @override
-  State<SitioFormSheet> createState() =>
-      _SitioFormSheetState();
+  State<SitioFormSheet> createState() => _SitioFormSheetState();
 }
 
-class _SitioFormSheetState
-    extends State<SitioFormSheet> {
+class _SitioFormSheetState extends State<SitioFormSheet> {
   // =====================================================
   // FORMULARIO
   // =====================================================
@@ -31,57 +29,38 @@ class _SitioFormSheetState
   final _formKey = GlobalKey<FormState>();
 
   // =====================================================
-  // CONTROLADORES
+  // CONTROLADORES - CUENTA DEL SITIO
   // =====================================================
 
-  final _correoController =
-      TextEditingController();
+  final _nombreCuentaController = TextEditingController();
+  final _apellidoCuentaController = TextEditingController();
+  final _correoController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _telefonoCuentaController = TextEditingController();
 
-  final _passwordController =
-      TextEditingController();
+  // =====================================================
+  // CONTROLADORES - SITIO TURÍSTICO
+  // =====================================================
 
-  final _nombreController =
-      TextEditingController();
-
-  final _descripcionController =
-      TextEditingController();
-
-  final _direccionController =
-      TextEditingController();
-
-  final _ciudadController =
-      TextEditingController();
-
-  final _departamentoController =
-      TextEditingController();
-
-  final _latitudController =
-      TextEditingController();
-
-  final _longitudController =
-      TextEditingController();
-
-  final _telefonoController =
-      TextEditingController();
-
-  final _correosController =
-      TextEditingController();
-
-  final _sitioWebController =
-      TextEditingController();
-
-  final _horarioController =
-      TextEditingController();
-
-  final _precioDesdeController =
-      TextEditingController();
+  final _nombreController = TextEditingController();
+  final _descripcionController = TextEditingController();
+  final _direccionController = TextEditingController();
+  final _ciudadController = TextEditingController();
+  final _departamentoController = TextEditingController();
+  final _latitudController = TextEditingController();
+  final _longitudController = TextEditingController();
+  final _telefonoController = TextEditingController();
+  final _correosController = TextEditingController();
+  final _sitioWebController = TextEditingController();
+  final _horarioController = TextEditingController();
+  final _precioDesdeController = TextEditingController();
+  final _etiquetasController = TextEditingController();
 
   // =====================================================
   // IMAGE PICKER
   // =====================================================
 
-  final ImagePicker _picker =
-      ImagePicker();
+  final ImagePicker _picker = ImagePicker();
 
   Uint8List? _imagenBytes;
 
@@ -126,8 +105,46 @@ class _SitioFormSheetState
   void _cargarDatosSitio(
     Map<String, dynamic> sitio,
   ) {
-    _correoController.text =
-        sitio['correo']?.toString() ?? '';
+    // ===================================================
+    // DATOS DE LA CUENTA
+    // ===================================================
+
+    final cuenta = sitio['cuenta'];
+
+    if (cuenta is Map) {
+      _nombreCuentaController.text =
+          cuenta['nombre']?.toString() ?? '';
+
+      _apellidoCuentaController.text =
+          cuenta['apellido']?.toString() ?? '';
+
+      _correoController.text =
+          cuenta['correo']?.toString() ?? '';
+
+      _telefonoCuentaController.text =
+          cuenta['telefono']?.toString() ?? '';
+    } else {
+      _nombreCuentaController.text =
+          sitio['nombreCuenta']?.toString() ?? '';
+
+      _apellidoCuentaController.text =
+          sitio['apellidoCuenta']?.toString() ?? '';
+
+      _correoController.text =
+          sitio['correo']?.toString() ?? '';
+
+      _telefonoCuentaController.text =
+          sitio['telefonoCuenta']?.toString() ?? '';
+    }
+
+    // La contraseña no se carga desde el backend.
+    // Si se quiere cambiar, se escribe una nueva.
+
+    _passwordController.clear();
+
+    // ===================================================
+    // DATOS DEL SITIO
+    // ===================================================
 
     _nombreController.text =
         sitio['nombre']?.toString() ?? '';
@@ -164,6 +181,25 @@ class _SitioFormSheetState
 
     _precioDesdeController.text =
         sitio['precioDesde']?.toString() ?? '0';
+
+    // ===================================================
+    // ETIQUETAS
+    // ===================================================
+
+    final etiquetas = sitio['etiquetas'];
+
+    if (etiquetas is List) {
+      _etiquetasController.text = etiquetas
+          .map((etiqueta) => etiqueta.toString())
+          .join(', ');
+    } else {
+      _etiquetasController.text =
+          etiquetas?.toString() ?? '';
+    }
+
+    // ===================================================
+    // ESTADO
+    // ===================================================
 
     _activo = sitio['activo'] != false;
 
@@ -203,8 +239,9 @@ class _SitioFormSheetState
         sitio['imagen']?.toString() ?? '';
 
     if (imagenPrincipal.isNotEmpty &&
-        !_imagenesExistentes
-            .contains(imagenPrincipal)) {
+        !_imagenesExistentes.contains(
+          imagenPrincipal,
+        )) {
       _imagenesExistentes.insert(
         0,
         imagenPrincipal,
@@ -218,8 +255,14 @@ class _SitioFormSheetState
 
   @override
   void dispose() {
+    // Cuenta
+    _nombreCuentaController.dispose();
+    _apellidoCuentaController.dispose();
     _correoController.dispose();
     _passwordController.dispose();
+    _telefonoCuentaController.dispose();
+
+    // Sitio
     _nombreController.dispose();
     _descripcionController.dispose();
     _direccionController.dispose();
@@ -232,6 +275,7 @@ class _SitioFormSheetState
     _sitioWebController.dispose();
     _horarioController.dispose();
     _precioDesdeController.dispose();
+    _etiquetasController.dispose();
 
     super.dispose();
   }
@@ -242,8 +286,7 @@ class _SitioFormSheetState
 
   Future<void> _seleccionarImagen() async {
     try {
-      final imagen =
-          await _picker.pickImage(
+      final imagen = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
       );
@@ -252,8 +295,7 @@ class _SitioFormSheetState
         return;
       }
 
-      final bytes =
-          await imagen.readAsBytes();
+      final bytes = await imagen.readAsBytes();
 
       if (!mounted) {
         return;
@@ -274,6 +316,22 @@ class _SitioFormSheetState
   }
 
   // =====================================================
+  // OBTENER ETIQUETAS
+  // =====================================================
+
+  List<String> _obtenerEtiquetas() {
+    return _etiquetasController.text
+        .split(',')
+        .map(
+          (etiqueta) => etiqueta.trim(),
+        )
+        .where(
+          (etiqueta) => etiqueta.isNotEmpty,
+        )
+        .toList();
+  }
+
+  // =====================================================
   // GUARDAR
   // =====================================================
 
@@ -283,7 +341,7 @@ class _SitioFormSheetState
     }
 
     // ===================================================
-    // CATEGORÍA
+    // VALIDAR CATEGORÍA
     // ===================================================
 
     if (_categoriaSeleccionada == null ||
@@ -295,7 +353,7 @@ class _SitioFormSheetState
     }
 
     // ===================================================
-    // LATITUD
+    // VALIDAR LATITUD
     // ===================================================
 
     final latitud = double.tryParse(
@@ -303,15 +361,14 @@ class _SitioFormSheetState
     );
 
     // ===================================================
-    // LONGITUD
+    // VALIDAR LONGITUD
     // ===================================================
 
     final longitud = double.tryParse(
       _longitudController.text.trim(),
     );
 
-    if (latitud == null ||
-        longitud == null) {
+    if (latitud == null || longitud == null) {
       _mostrarMensaje(
         'La latitud y longitud deben ser números válidos.',
       );
@@ -324,11 +381,39 @@ class _SitioFormSheetState
 
     final precio =
         double.tryParse(
-              _precioDesdeController
-                  .text
-                  .trim(),
-            ) ??
-            0;
+          _precioDesdeController.text.trim(),
+        ) ??
+        0;
+
+    // ===================================================
+    // ETIQUETAS
+    // ===================================================
+
+    final etiquetas = _obtenerEtiquetas();
+
+    // ===================================================
+    // VALIDAR CUENTA AL CREAR
+    // ===================================================
+
+    if (!widget.esEdicion) {
+      if (_nombreCuentaController.text
+              .trim()
+              .isEmpty ||
+          _apellidoCuentaController.text
+              .trim()
+              .isEmpty ||
+          _correoController.text
+              .trim()
+              .isEmpty ||
+          _passwordController.text
+              .trim()
+              .isEmpty) {
+        _mostrarMensaje(
+          'Completa todos los datos obligatorios de la cuenta.',
+        );
+        return;
+      }
+    }
 
     setState(() {
       _guardando = true;
@@ -350,45 +435,82 @@ class _SitioFormSheetState
               : '';
 
       // =================================================
-      // CREAR SITIO
+      // CREAR SITIO + CUENTA
       // =================================================
 
       if (!widget.esEdicion) {
         await AdminSitioService.crearSitio(
+          // ------------------------------------------------
+          // CUENTA
+          // ------------------------------------------------
+
+          nombreCuenta:
+              _nombreCuentaController.text.trim(),
+
+          apellidoCuenta:
+              _apellidoCuentaController.text.trim(),
+
           correo:
               _correoController.text.trim(),
+
           password:
               _passwordController.text.trim(),
+
+          telefonoCuenta:
+              _telefonoCuentaController.text.trim(),
+
+          // ------------------------------------------------
+          // SITIO
+          // ------------------------------------------------
+
           nombre:
               _nombreController.text.trim(),
+
           descripcion:
               _descripcionController.text.trim(),
+
           categoria:
               _categoriaSeleccionada!,
+
+          etiquetas:
+              etiquetas,
+
           direccion:
               _direccionController.text.trim(),
+
           ciudad:
               _ciudadController.text.trim(),
+
           departamento:
               _departamentoController.text.trim(),
+
           latitud:
               latitud,
+
           longitud:
               longitud,
+
           activo:
               _activo,
+
           telefono:
               _telefonoController.text.trim(),
+
           correos:
               _correosController.text.trim(),
+
           sitioWeb:
               _sitioWebController.text.trim(),
+
           imagen:
               imagenPrincipal,
+
           imagenes:
               imagenes,
+
           horario:
               _horarioController.text.trim(),
+
           precioDesde:
               precio,
         );
@@ -400,11 +522,9 @@ class _SitioFormSheetState
 
       else {
         final id =
-            widget.sitio?['_id']
-                    ?.toString() ??
-                widget.sitio?['id']
-                    ?.toString() ??
-                '';
+            widget.sitio?['_id']?.toString() ??
+            widget.sitio?['id']?.toString() ??
+            '';
 
         if (id.isEmpty) {
           throw Exception(
@@ -414,40 +534,59 @@ class _SitioFormSheetState
 
         await AdminSitioService.actualizarSitio(
           id: id,
-          correo:
-              _correoController.text.trim(),
-          password:
-              _passwordController.text.trim(),
+
+          // ------------------------------------------------
+          // DATOS DEL SITIO
+          // ------------------------------------------------
+
           nombre:
               _nombreController.text.trim(),
+
           descripcion:
               _descripcionController.text.trim(),
+
           categoria:
               _categoriaSeleccionada!,
+
+          etiquetas:
+              etiquetas,
+
           direccion:
               _direccionController.text.trim(),
+
           ciudad:
               _ciudadController.text.trim(),
+
           departamento:
               _departamentoController.text.trim(),
+
           latitud:
               latitud,
+
           longitud:
               longitud,
+
           activo:
               _activo,
+
           telefono:
               _telefonoController.text.trim(),
+
           correos:
               _correosController.text.trim(),
+
           sitioWeb:
               _sitioWebController.text.trim(),
+
           imagen:
               imagenPrincipal,
+
           imagenes:
               imagenes,
+
           horario:
               _horarioController.text.trim(),
+
           precioDesde:
               precio,
         );
@@ -464,7 +603,7 @@ class _SitioFormSheetState
       _mostrarMensaje(
         widget.esEdicion
             ? 'Sitio turístico actualizado correctamente.'
-            : 'Sitio turístico creado correctamente.',
+            : 'Sitio turístico y cuenta creados correctamente.',
       );
 
       Navigator.pop(
@@ -478,9 +617,9 @@ class _SitioFormSheetState
 
       _mostrarMensaje(
         e.toString().replaceFirst(
-              'Exception: ',
-              '',
-            ),
+          'Exception: ',
+          '',
+        ),
       );
     } finally {
       if (mounted) {
@@ -498,8 +637,7 @@ class _SitioFormSheetState
   void _mostrarMensaje(
     String mensaje,
   ) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
       ),
@@ -520,17 +658,16 @@ class _SitioFormSheetState
     bool obscureText = false,
   }) {
     return Padding(
-      padding:
-          const EdgeInsets.only(
+      padding: const EdgeInsets.only(
         bottom: 15,
       ),
       child: TextFormField(
         controller: controller,
-        maxLines: maxLines,
+        maxLines:
+            obscureText ? 1 : maxLines,
         keyboardType: keyboardType,
         obscureText: obscureText,
-        decoration:
-            InputDecoration(
+        decoration: InputDecoration(
           labelText: label,
           border:
               const OutlineInputBorder(),
@@ -539,17 +676,16 @@ class _SitioFormSheetState
                   ? Icon(icon)
                   : null,
         ),
-        validator:
-            obligatorio
-                ? (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
-                      return 'Este campo es obligatorio';
-                    }
+        validator: obligatorio
+            ? (value) {
+                if (value == null ||
+                    value.trim().isEmpty) {
+                  return 'Este campo es obligatorio';
+                }
 
-                    return null;
-                  }
-                : null,
+                return null;
+              }
+            : null,
       ),
     );
   }
@@ -572,10 +708,6 @@ class _SitioFormSheetState
                     .size
                     .height *
                 0.92,
-
-        // =================================================
-        // SOLO APARIENCIA
-        // =================================================
 
         decoration:
             const BoxDecoration(
@@ -605,9 +737,11 @@ class _SitioFormSheetState
               SingleChildScrollView(
             child: Form(
               key: _formKey,
+
               child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment.start,
+
                 children: [
                   // =================================================
                   // ENCABEZADO
@@ -620,6 +754,7 @@ class _SitioFormSheetState
                           esEdicion
                               ? 'Editar sitio turístico'
                               : 'Nuevo sitio turístico',
+
                           style:
                               const TextStyle(
                             fontSize: 22,
@@ -628,6 +763,7 @@ class _SitioFormSheetState
                           ),
                         ),
                       ),
+
                       IconButton(
                         onPressed: () {
                           Navigator.pop(
@@ -652,7 +788,8 @@ class _SitioFormSheetState
 
                   const Text(
                     'Datos de acceso',
-                    style: TextStyle(
+                    style:
+                        TextStyle(
                       fontSize: 18,
                       fontWeight:
                           FontWeight.bold,
@@ -664,8 +801,26 @@ class _SitioFormSheetState
                   ),
 
                   _campoTexto(
+                    _nombreCuentaController,
+                    'Nombre del responsable',
+                    icon:
+                        Icons.person,
+                    obligatorio:
+                        !esEdicion,
+                  ),
+
+                  _campoTexto(
+                    _apellidoCuentaController,
+                    'Apellido del responsable',
+                    icon:
+                        Icons.person_outline,
+                    obligatorio:
+                        !esEdicion,
+                  ),
+
+                  _campoTexto(
                     _correoController,
-                    'Correo',
+                    'Correo de acceso',
                     icon:
                         Icons.email,
                     keyboardType:
@@ -681,10 +836,18 @@ class _SitioFormSheetState
                         : 'Contraseña',
                     icon:
                         Icons.lock,
-                    obscureText:
-                        true,
+                    obscureText: true,
                     obligatorio:
                         !esEdicion,
+                  ),
+
+                  _campoTexto(
+                    _telefonoCuentaController,
+                    'Teléfono de la cuenta',
+                    icon:
+                        Icons.phone,
+                    keyboardType:
+                        TextInputType.phone,
                   ),
 
                   // =================================================
@@ -697,7 +860,8 @@ class _SitioFormSheetState
 
                   const Text(
                     'Información del sitio',
-                    style: TextStyle(
+                    style:
+                        TextStyle(
                       fontSize: 18,
                       fontWeight:
                           FontWeight.bold,
@@ -710,7 +874,7 @@ class _SitioFormSheetState
 
                   _campoTexto(
                     _nombreController,
-                    'Nombre',
+                    'Nombre del sitio',
                     icon:
                         Icons.place,
                     obligatorio: true,
@@ -719,8 +883,8 @@ class _SitioFormSheetState
                   _campoTexto(
                     _descripcionController,
                     'Descripción',
-                    icon: Icons
-                        .description,
+                    icon:
+                        Icons.description,
                     maxLines: 4,
                     obligatorio: true,
                   ),
@@ -731,8 +895,7 @@ class _SitioFormSheetState
 
                   Padding(
                     padding:
-                        const EdgeInsets
-                            .only(
+                        const EdgeInsets.only(
                       bottom: 15,
                     ),
                     child:
@@ -740,6 +903,7 @@ class _SitioFormSheetState
                             String>(
                       value:
                           _categoriaSeleccionada,
+
                       decoration:
                           const InputDecoration(
                         labelText:
@@ -751,20 +915,20 @@ class _SitioFormSheetState
                           Icons.category,
                         ),
                       ),
+
                       items: widget
                           .categorias
                           .map(
                         (categoria) {
                           final id =
-                              categoria[
-                                      '_id']
+                              categoria['_id']
                                   ?.toString();
 
                           final nombre =
                               categoria[
-                                          'nombre']
-                                      ?.toString() ??
-                                  'Sin nombre';
+                                      'nombre']
+                                  ?.toString() ??
+                              'Sin nombre';
 
                           if (id == null ||
                               id.isEmpty) {
@@ -783,6 +947,7 @@ class _SitioFormSheetState
                               DropdownMenuItem<
                                   String>>()
                           .toList(),
+
                       onChanged:
                           (value) {
                         setState(() {
@@ -790,6 +955,7 @@ class _SitioFormSheetState
                               value;
                         });
                       },
+
                       validator:
                           (value) {
                         if (value ==
@@ -804,21 +970,48 @@ class _SitioFormSheetState
                   ),
 
                   // =================================================
+                  // ETIQUETAS
+                  // =================================================
+
+                  _campoTexto(
+                    _etiquetasController,
+                    'Etiquetas',
+                    icon:
+                        Icons.label,
+                  ),
+
+                  const Padding(
+                    padding:
+                        EdgeInsets.only(
+                      bottom: 15,
+                    ),
+                    child: Text(
+                      'Separa las etiquetas con comas. Ejemplo: café, naturaleza, aventura',
+                      style:
+                          TextStyle(
+                        color:
+                            Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+
+                  // =================================================
                   // DIRECCIÓN
                   // =================================================
 
                   _campoTexto(
                     _direccionController,
                     'Dirección',
-                    icon: Icons
-                        .location_on,
+                    icon:
+                        Icons.location_on,
                   ),
 
                   _campoTexto(
                     _ciudadController,
                     'Ciudad',
-                    icon: Icons
-                        .location_city,
+                    icon:
+                        Icons.location_city,
                     obligatorio: true,
                   ),
 
@@ -840,7 +1033,8 @@ class _SitioFormSheetState
 
                   const Text(
                     'Ubicación',
-                    style: TextStyle(
+                    style:
+                        TextStyle(
                       fontSize: 18,
                       fontWeight:
                           FontWeight.bold,
@@ -861,16 +1055,20 @@ class _SitioFormSheetState
                           keyboardType:
                               const TextInputType
                                   .numberWithOptions(
-                            decimal: true,
-                            signed: true,
+                            decimal:
+                                true,
+                            signed:
+                                true,
                           ),
                           obligatorio:
                               true,
                         ),
                       ),
+
                       const SizedBox(
                         width: 10,
                       ),
+
                       Expanded(
                         child:
                             _campoTexto(
@@ -879,8 +1077,10 @@ class _SitioFormSheetState
                           keyboardType:
                               const TextInputType
                                   .numberWithOptions(
-                            decimal: true,
-                            signed: true,
+                            decimal:
+                                true,
+                            signed:
+                                true,
                           ),
                           obligatorio:
                               true,
@@ -890,7 +1090,7 @@ class _SitioFormSheetState
                   ),
 
                   // =================================================
-                  // CONTACTO
+                  // INFORMACIÓN DE CONTACTO
                   // =================================================
 
                   const SizedBox(
@@ -898,8 +1098,9 @@ class _SitioFormSheetState
                   ),
 
                   const Text(
-                    'Información de contacto',
-                    style: TextStyle(
+                    'Información de contacto del sitio',
+                    style:
+                        TextStyle(
                       fontSize: 18,
                       fontWeight:
                           FontWeight.bold,
@@ -912,7 +1113,7 @@ class _SitioFormSheetState
 
                   _campoTexto(
                     _telefonoController,
-                    'Teléfono',
+                    'Teléfono del sitio',
                     icon:
                         Icons.phone,
                     keyboardType:
@@ -922,8 +1123,8 @@ class _SitioFormSheetState
                   _campoTexto(
                     _correosController,
                     'Correo de contacto',
-                    icon: Icons
-                        .email_outlined,
+                    icon:
+                        Icons.email_outlined,
                     keyboardType:
                         TextInputType
                             .emailAddress,
@@ -948,7 +1149,8 @@ class _SitioFormSheetState
 
                   const Text(
                     'Información turística',
-                    style: TextStyle(
+                    style:
+                        TextStyle(
                       fontSize: 18,
                       fontWeight:
                           FontWeight.bold,
@@ -969,8 +1171,8 @@ class _SitioFormSheetState
                   _campoTexto(
                     _precioDesdeController,
                     'Precio desde',
-                    icon: Icons
-                        .attach_money,
+                    icon:
+                        Icons.attach_money,
                     keyboardType:
                         const TextInputType
                             .numberWithOptions(
@@ -989,17 +1191,22 @@ class _SitioFormSheetState
                   SwitchListTile(
                     contentPadding:
                         EdgeInsets.zero,
+
                     title:
                         const Text(
                       'Sitio activo',
                     ),
+
                     subtitle:
                         Text(
                       _activo
                           ? 'El sitio está activo'
                           : 'El sitio está inactivo',
                     ),
-                    value: _activo,
+
+                    value:
+                        _activo,
+
                     onChanged:
                         (value) {
                       setState(() {
@@ -1018,8 +1225,9 @@ class _SitioFormSheetState
                   // =================================================
 
                   const Text(
-                    'Imagen',
-                    style: TextStyle(
+                    'Imagen principal',
+                    style:
+                        TextStyle(
                       fontSize: 18,
                       fontWeight:
                           FontWeight.bold,
@@ -1033,10 +1241,13 @@ class _SitioFormSheetState
                   GestureDetector(
                     onTap:
                         _seleccionarImagen,
-                    child: Container(
+
+                    child:
+                        Container(
                       width:
                           double.infinity,
                       height: 180,
+
                       decoration:
                           BoxDecoration(
                         color:
@@ -1047,11 +1258,11 @@ class _SitioFormSheetState
                               Colors.grey.shade400,
                         ),
                         borderRadius:
-                            BorderRadius
-                                .circular(
+                            BorderRadius.circular(
                           12,
                         ),
                       ),
+
                       child:
                           _imagenBytes !=
                                   null
@@ -1145,26 +1356,33 @@ class _SitioFormSheetState
                     width:
                         double.infinity,
                     height: 50,
+
                     child:
                         ElevatedButton.icon(
                       onPressed:
                           _guardando
                               ? null
                               : _guardar,
-                      icon: _guardando
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child:
-                                  CircularProgressIndicator(
-                                strokeWidth:
-                                    2,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.save,
-                            ),
-                      label: Text(
+
+                      icon:
+                          _guardando
+                              ? const SizedBox(
+                                  width:
+                                      20,
+                                  height:
+                                      20,
+                                  child:
+                                      CircularProgressIndicator(
+                                    strokeWidth:
+                                        2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.save,
+                                ),
+
+                      label:
+                          Text(
                         _guardando
                             ? 'Guardando...'
                             : esEdicion

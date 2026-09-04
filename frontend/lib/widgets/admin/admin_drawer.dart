@@ -18,7 +18,7 @@ class AdminDrawer extends StatelessWidget {
       child: Column(
         children: [
           // =====================================================
-          // ENCABEZADO DEL ADMINISTRADOR
+          // INFORMACIÓN DEL ADMINISTRADOR
           // =====================================================
 
           UserAccountsDrawerHeader(
@@ -47,12 +47,8 @@ class AdminDrawer extends StatelessWidget {
           // =====================================================
 
           ListTile(
-            leading: const Icon(
-              Icons.dashboard,
-            ),
-            title: const Text(
-              'Inicio',
-            ),
+            leading: const Icon(Icons.dashboard),
+            title: const Text('Inicio'),
             onTap: () {
               onOpcionSeleccionada('inicio');
               Navigator.pop(context);
@@ -64,12 +60,8 @@ class AdminDrawer extends StatelessWidget {
           // =====================================================
 
           ListTile(
-            leading: const Icon(
-              Icons.bar_chart,
-            ),
-            title: const Text(
-              'Estadísticas',
-            ),
+            leading: const Icon(Icons.bar_chart),
+            title: const Text('Estadísticas'),
             onTap: () {
               onOpcionSeleccionada('estadisticas');
               Navigator.pop(context);
@@ -81,12 +73,8 @@ class AdminDrawer extends StatelessWidget {
           // =====================================================
 
           ListTile(
-            leading: const Icon(
-              Icons.location_on,
-            ),
-            title: const Text(
-              'Sitios turísticos',
-            ),
+            leading: const Icon(Icons.location_on),
+            title: const Text('Sitios turísticos'),
             onTap: () {
               onOpcionSeleccionada('sitios');
               Navigator.pop(context);
@@ -98,12 +86,8 @@ class AdminDrawer extends StatelessWidget {
           // =====================================================
 
           ListTile(
-            leading: const Icon(
-              Icons.category,
-            ),
-            title: const Text(
-              'Categorías',
-            ),
+            leading: const Icon(Icons.category),
+            title: const Text('Categorías'),
             onTap: () {
               onOpcionSeleccionada('categorias');
               Navigator.pop(context);
@@ -115,12 +99,8 @@ class AdminDrawer extends StatelessWidget {
           // =====================================================
 
           ListTile(
-            leading: const Icon(
-              Icons.article,
-            ),
-            title: const Text(
-              'Contenido',
-            ),
+            leading: const Icon(Icons.article),
+            title: const Text('Contenido'),
             onTap: () {
               onOpcionSeleccionada('contenido');
               Navigator.pop(context);
@@ -132,12 +112,8 @@ class AdminDrawer extends StatelessWidget {
           // =====================================================
 
           ListTile(
-            leading: const Icon(
-              Icons.star,
-            ),
-            title: const Text(
-              'Reseñas',
-            ),
+            leading: const Icon(Icons.star),
+            title: const Text('Reseñas'),
             onTap: () {
               onOpcionSeleccionada('resenas');
               Navigator.pop(context);
@@ -149,12 +125,8 @@ class AdminDrawer extends StatelessWidget {
           // =====================================================
 
           ListTile(
-            leading: const Icon(
-              Icons.people,
-            ),
-            title: const Text(
-              'Usuarios',
-            ),
+            leading: const Icon(Icons.people),
+            title: const Text('Usuarios'),
             onTap: () {
               onOpcionSeleccionada('usuarios');
               Navigator.pop(context);
@@ -168,17 +140,17 @@ class AdminDrawer extends StatelessWidget {
           // =====================================================
 
           ListTile(
-            leading: const Icon(
-              Icons.person,
-            ),
-            title: const Text(
-              'Mi cuenta',
-            ),
+            leading: const Icon(Icons.person),
+            title: const Text('Mi cuenta'),
             onTap: () {
               onOpcionSeleccionada('perfil');
               Navigator.pop(context);
             },
           ),
+
+          // =====================================================
+          // ESPACIO
+          // =====================================================
 
           const Spacer(),
 
@@ -203,9 +175,7 @@ class AdminDrawer extends StatelessWidget {
             },
           ),
 
-          const SizedBox(
-            height: 15,
-          ),
+          const SizedBox(height: 15),
         ],
       ),
     );
