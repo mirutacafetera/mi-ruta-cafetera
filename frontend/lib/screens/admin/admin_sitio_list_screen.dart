@@ -4,7 +4,9 @@ import '../../services/admin/admin_sitio_service.dart';
 import '../../widgets/admin/sitio_form_sheet.dart';
 
 class AdminSitioListScreen extends StatefulWidget {
-  const AdminSitioListScreen({super.key});
+  const AdminSitioListScreen({
+    super.key,
+  });
 
   @override
   State<AdminSitioListScreen> createState() =>
@@ -13,11 +15,19 @@ class AdminSitioListScreen extends StatefulWidget {
 
 class _AdminSitioListScreenState
     extends State<AdminSitioListScreen> {
+  // ============================================================
+  // DATOS
+  // ============================================================
+
   List<Map<String, dynamic>> _sitios = [];
   List<Map<String, dynamic>> _categorias = [];
 
   bool _cargando = true;
   String _busqueda = '';
+
+  // ============================================================
+  // INIT
+  // ============================================================
 
   @override
   void initState() {
@@ -37,31 +47,53 @@ class _AdminSitioListScreenState
     }
 
     try {
-      // Obtener sitios desde /admin/authsitio
+      // ========================================================
+      // OBTENER SITIOS
+      //
+      // GET /api/admin/sitios
+      // ========================================================
+
       final List<dynamic> respuestaSitios =
           await AdminSitioService.obtenerSitios();
 
-      // Obtener categorías desde /categorias-sitios
+      // ========================================================
+      // OBTENER CATEGORÍAS DE SITIOS
+      //
+      // GET /api/categorias-sitios
+      // ========================================================
+
       final List<dynamic> respuestaCategorias =
           await AdminSitioService.obtenerCategorias();
+
+      // ========================================================
+      // CONVERTIR SITIOS
+      // ========================================================
 
       final sitios = respuestaSitios
           .whereType<Map>()
           .map(
-            (sitio) =>
-                Map<String, dynamic>.from(sitio),
+            (sitio) => Map<String, dynamic>.from(
+              sitio,
+            ),
           )
           .toList();
+
+      // ========================================================
+      // CONVERTIR CATEGORÍAS
+      // ========================================================
 
       final categorias = respuestaCategorias
           .whereType<Map>()
           .map(
-            (categoria) =>
-                Map<String, dynamic>.from(categoria),
+            (categoria) => Map<String, dynamic>.from(
+              categoria,
+            ),
           )
           .toList();
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       setState(() {
         _sitios = sitios;
@@ -69,7 +101,9 @@ class _AdminSitioListScreenState
         _cargando = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       setState(() {
         _cargando = false;
@@ -91,28 +125,37 @@ class _AdminSitioListScreenState
       return _sitios;
     }
 
-    final texto = _busqueda.toLowerCase().trim();
+    final texto = _busqueda
+        .toLowerCase()
+        .trim();
 
-    return _sitios.where((sitio) {
-      final nombre =
-          (sitio['nombre'] ?? '')
-              .toString()
-              .toLowerCase();
+    return _sitios.where(
+      (sitio) {
+        final nombre =
+            (sitio['nombre'] ?? '')
+                .toString()
+                .toLowerCase();
 
-      final ciudad =
-          (sitio['ciudad'] ?? '')
-              .toString()
-              .toLowerCase();
+        final ciudad =
+            (sitio['ciudad'] ?? '')
+                .toString()
+                .toLowerCase();
 
-      final direccion =
-          (sitio['direccion'] ?? '')
-              .toString()
-              .toLowerCase();
+        final direccion =
+            (sitio['direccion'] ?? '')
+                .toString()
+                .toLowerCase();
 
-      return nombre.contains(texto) ||
-          ciudad.contains(texto) ||
-          direccion.contains(texto);
-    }).toList();
+        final categoria =
+            _obtenerCategoria(sitio)
+                .toLowerCase();
+
+        return nombre.contains(texto) ||
+            ciudad.contains(texto) ||
+            direccion.contains(texto) ||
+            categoria.contains(texto);
+      },
+    ).toList();
   }
 
   // ============================================================
@@ -182,7 +225,8 @@ class _AdminSitioListScreenState
     }
 
     final nombre =
-        (sitio['nombre'] ?? 'este sitio').toString();
+        (sitio['nombre'] ?? 'este sitio')
+            .toString();
 
     final confirmar =
         await showDialog<bool>(
@@ -231,9 +275,13 @@ class _AdminSitioListScreenState
     }
 
     try {
-      await AdminSitioService.eliminarSitio(id);
+      await AdminSitioService.eliminarSitio(
+        id,
+      );
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       _mostrarMensaje(
         'Sitio eliminado correctamente.',
@@ -241,7 +289,9 @@ class _AdminSitioListScreenState
 
       await _cargarDatos();
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       _mostrarMensaje(
         'Error al eliminar el sitio: $e',
@@ -257,7 +307,8 @@ class _AdminSitioListScreenState
   String? _obtenerId(
     Map<String, dynamic> sitio,
   ) {
-    final id = sitio['_id'] ?? sitio['id'];
+    final id =
+        sitio['_id'] ?? sitio['id'];
 
     if (id == null) {
       return null;
@@ -277,16 +328,41 @@ class _AdminSitioListScreenState
   String _obtenerCategoria(
     Map<String, dynamic> sitio,
   ) {
-    final categoria = sitio['categoria'];
+    final categoria =
+        sitio['categoria'];
 
     if (categoria == null) {
       return 'Sin categoría';
     }
 
+    // Si viene como ID
     if (categoria is String) {
+      // Intentamos buscar el nombre dentro
+      // de las categorías cargadas.
+      final categoriaEncontrada =
+          _categorias.cast<Map<String, dynamic>?>().firstWhere(
+        (item) =>
+            item?['_id']?.toString() ==
+            categoria,
+        orElse: () => null,
+      );
+
+      if (categoriaEncontrada != null) {
+        return (
+          categoriaEncontrada['nombre'] ??
+          'Sin categoría'
+        ).toString();
+      }
+
       return categoria;
     }
 
+    // Si viene poblada desde MongoDB:
+    //
+    // {
+    //   "_id": "...",
+    //   "nombre": "..."
+    // }
     if (categoria is Map) {
       return (
         categoria['nombre'] ??
@@ -299,38 +375,50 @@ class _AdminSitioListScreenState
   }
 
   // ============================================================
-  // ESTADO
+  // OBTENER ESTADO
   // ============================================================
 
   bool _estaActivo(
     Map<String, dynamic> sitio,
   ) {
-    // Tu base de datos utiliza "activo".
+    // ========================================================
+    // CAMPO ACTUAL DEL MODELO:
+    //
+    // activo
+    // ========================================================
+
     final activo = sitio['activo'];
 
     if (activo is bool) {
       return activo;
     }
 
-    // Compatibilidad con documentos antiguos.
+    // ========================================================
+    // COMPATIBILIDAD CON DOCUMENTOS ANTIGUOS
+    // ========================================================
+
     final estado = sitio['estado'];
 
     if (estado is bool) {
       return estado;
     }
 
+    // Si no existe el campo,
+    // asumimos que está activo.
     return true;
   }
 
   // ============================================================
-  // MENSAJE
+  // MOSTRAR MENSAJE
   // ============================================================
 
   void _mostrarMensaje(
     String mensaje, {
     bool error = false,
   }) {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     ScaffoldMessenger.of(context)
         .hideCurrentSnackBar();
@@ -340,7 +428,9 @@ class _AdminSitioListScreenState
       SnackBar(
         content: Text(mensaje),
         backgroundColor:
-            error ? Colors.red : Colors.green,
+            error
+                ? Colors.red
+                : Colors.green,
       ),
     );
   }
@@ -357,6 +447,7 @@ class _AdminSitioListScreenState
       children: [
         _barraSuperior(),
         _barraBusqueda(),
+
         Expanded(
           child: _cargando
               ? const Center(
@@ -375,7 +466,8 @@ class _AdminSitioListScreenState
 
   Widget _barraSuperior() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
+      padding:
+          const EdgeInsets.fromLTRB(
         16,
         16,
         16,
@@ -398,9 +490,11 @@ class _AdminSitioListScreenState
                             FontWeight.bold,
                       ),
                 ),
+
                 const SizedBox(
                   height: 4,
                 ),
+
                 Text(
                   '${_sitios.length} sitios registrados',
                   style: TextStyle(
@@ -411,17 +505,22 @@ class _AdminSitioListScreenState
               ],
             ),
           ),
+
           IconButton(
             tooltip: 'Actualizar',
             onPressed:
-                _cargando ? null : _cargarDatos,
+                _cargando
+                    ? null
+                    : _cargarDatos,
             icon: const Icon(
               Icons.refresh,
             ),
           ),
+
           const SizedBox(
             width: 4,
           ),
+
           FilledButton.icon(
             onPressed: _crearSitio,
             icon: const Icon(
@@ -442,7 +541,8 @@ class _AdminSitioListScreenState
 
   Widget _barraBusqueda() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
+      padding:
+          const EdgeInsets.fromLTRB(
         16,
         4,
         16,
@@ -454,28 +554,38 @@ class _AdminSitioListScreenState
             _busqueda = valor;
           });
         },
-        decoration: InputDecoration(
+        decoration:
+            InputDecoration(
           hintText:
-              'Buscar por nombre, ciudad o dirección...',
-          prefixIcon: const Icon(
+              'Buscar por nombre, ciudad, dirección o categoría...',
+
+          prefixIcon:
+              const Icon(
             Icons.search,
           ),
+
           suffixIcon:
               _busqueda.isNotEmpty
                   ? IconButton(
                       onPressed: () {
                         setState(() {
-                          _busqueda = '';
+                          _busqueda =
+                              '';
                         });
                       },
-                      icon: const Icon(
+                      icon:
+                          const Icon(
                         Icons.clear,
                       ),
                     )
                   : null,
-          border: OutlineInputBorder(
+
+          border:
+              OutlineInputBorder(
             borderRadius:
-                BorderRadius.circular(12),
+                BorderRadius.circular(
+              12,
+            ),
           ),
         ),
       ),
@@ -487,7 +597,8 @@ class _AdminSitioListScreenState
   // ============================================================
 
   Widget _contenido() {
-    final sitios = _sitiosFiltrados;
+    final sitios =
+        _sitiosFiltrados;
 
     if (sitios.isEmpty) {
       return _sinResultados();
@@ -496,17 +607,17 @@ class _AdminSitioListScreenState
     return RefreshIndicator(
       onRefresh: _cargarDatos,
       child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(
+        padding:
+            const EdgeInsets.fromLTRB(
           16,
           4,
           16,
           24,
         ),
-        itemCount: sitios.length,
-        itemBuilder: (
-          context,
-          index,
-        ) {
+        itemCount:
+            sitios.length,
+        itemBuilder:
+            (context, index) {
           return _tarjetaSitio(
             sitios[index],
           );
@@ -529,33 +640,39 @@ class _AdminSitioListScreenState
               MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.location_off_outlined,
+              Icons
+                  .location_off_outlined,
               size: 70,
               color:
                   Colors.grey.shade400,
             ),
+
             const SizedBox(
               height: 16,
             ),
+
             Text(
               _busqueda.isEmpty
                   ? 'No hay sitios registrados'
                   : 'No se encontraron sitios',
               textAlign:
                   TextAlign.center,
-              style: const TextStyle(
+              style:
+                  const TextStyle(
                 fontSize: 20,
                 fontWeight:
                     FontWeight.bold,
               ),
             ),
+
             const SizedBox(
               height: 8,
             ),
+
             Text(
               _busqueda.isEmpty
                   ? 'Puedes registrar el primer sitio turístico.'
-                  : 'Prueba con otro nombre, ciudad o dirección.',
+                  : 'Prueba con otro nombre, ciudad, dirección o categoría.',
               textAlign:
                   TextAlign.center,
               style: TextStyle(
@@ -563,16 +680,21 @@ class _AdminSitioListScreenState
                     Colors.grey.shade600,
               ),
             ),
+
             if (_busqueda.isEmpty) ...[
               const SizedBox(
                 height: 20,
               ),
+
               FilledButton.icon(
-                onPressed: _crearSitio,
-                icon: const Icon(
+                onPressed:
+                    _crearSitio,
+                icon:
+                    const Icon(
                   Icons.add,
                 ),
-                label: const Text(
+                label:
+                    const Text(
                   'Registrar sitio',
                 ),
               ),
@@ -591,7 +713,8 @@ class _AdminSitioListScreenState
     Map<String, dynamic> sitio,
   ) {
     final nombre =
-        (sitio['nombre'] ?? 'Sin nombre')
+        (sitio['nombre'] ??
+                'Sin nombre')
             .toString();
 
     final descripcion =
@@ -608,13 +731,19 @@ class _AdminSitioListScreenState
             .toString();
 
     final categoria =
-        _obtenerCategoria(sitio);
+        _obtenerCategoria(
+      sitio,
+    );
 
     final activo =
-        _estaActivo(sitio);
+        _estaActivo(
+      sitio,
+    );
 
     final imagen =
-        _obtenerImagen(sitio);
+        _obtenerImagen(
+      sitio,
+    );
 
     return Card(
       margin:
@@ -631,15 +760,23 @@ class _AdminSitioListScreenState
           crossAxisAlignment:
               CrossAxisAlignment.start,
           children: [
-            _imagenSitio(imagen),
+            _imagenSitio(
+              imagen,
+            ),
+
             const SizedBox(
               width: 14,
             ),
+
             Expanded(
               child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment.start,
                 children: [
+                  // =================================================
+                  // NOMBRE + MENÚ
+                  // =================================================
+
                   Row(
                     children: [
                       Expanded(
@@ -653,7 +790,9 @@ class _AdminSitioListScreenState
                           ),
                         ),
                       ),
-                      PopupMenuButton<String>(
+
+                      PopupMenuButton<
+                          String>(
                         onSelected:
                             (opcion) {
                           if (opcion ==
@@ -673,17 +812,20 @@ class _AdminSitioListScreenState
                         itemBuilder:
                             (context) =>
                                 const [
-                          PopupMenuItem(
+                          PopupMenuItem<
+                              String>(
                             value:
                                 'editar',
-                            child: Row(
+                            child:
+                                Row(
                               children: [
                                 Icon(
                                   Icons
                                       .edit_outlined,
                                 ),
                                 SizedBox(
-                                  width: 10,
+                                  width:
+                                      10,
                                 ),
                                 Text(
                                   'Editar',
@@ -691,10 +833,13 @@ class _AdminSitioListScreenState
                               ],
                             ),
                           ),
-                          PopupMenuItem(
+
+                          PopupMenuItem<
+                              String>(
                             value:
                                 'eliminar',
-                            child: Row(
+                            child:
+                                Row(
                               children: [
                                 Icon(
                                   Icons
@@ -703,7 +848,8 @@ class _AdminSitioListScreenState
                                       Colors.red,
                                 ),
                                 SizedBox(
-                                  width: 10,
+                                  width:
+                                      10,
                                 ),
                                 Text(
                                   'Eliminar',
@@ -715,9 +861,15 @@ class _AdminSitioListScreenState
                       ),
                     ],
                   ),
+
                   const SizedBox(
                     height: 5,
                   ),
+
+                  // =================================================
+                  // CATEGORÍA + CIUDAD + ESTADO
+                  // =================================================
+
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -727,34 +879,51 @@ class _AdminSitioListScreenState
                         Icons
                             .category_outlined,
                       ),
-                      if (ciudad.isNotEmpty)
+
+                      if (ciudad
+                          .isNotEmpty)
                         _etiqueta(
                           ciudad,
                           Icons
                               .location_city_outlined,
                         ),
+
                       _estado(
                         activo,
                       ),
                     ],
                   ),
+
                   const SizedBox(
                     height: 8,
                   ),
+
+                  // =================================================
+                  // DESCRIPCIÓN
+                  // =================================================
+
                   Text(
                     descripcion,
                     maxLines: 2,
                     overflow:
                         TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style:
+                        TextStyle(
                       color:
                           Colors.grey.shade700,
                     ),
                   ),
-                  if (direccion.isNotEmpty) ...[
+
+                  // =================================================
+                  // DIRECCIÓN
+                  // =================================================
+
+                  if (direccion
+                      .isNotEmpty) ...[
                     const SizedBox(
                       height: 8,
                     ),
+
                     Row(
                       children: [
                         Icon(
@@ -765,18 +934,23 @@ class _AdminSitioListScreenState
                               .grey
                               .shade600,
                         ),
+
                         const SizedBox(
                           width: 5,
                         ),
+
                         Expanded(
-                          child: Text(
+                          child:
+                              Text(
                             direccion,
                             maxLines: 1,
                             overflow:
                                 TextOverflow
                                     .ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
+                            style:
+                                TextStyle(
+                              fontSize:
+                                  13,
                               color: Colors
                                   .grey
                                   .shade600,
@@ -796,16 +970,20 @@ class _AdminSitioListScreenState
   }
 
   // ============================================================
-  // IMAGEN
+  // OBTENER IMAGEN
   // ============================================================
 
   String? _obtenerImagen(
     Map<String, dynamic> sitio,
   ) {
-    final imagen = sitio['imagen'];
+    final imagen =
+        sitio['imagen'];
 
     if (imagen != null &&
-        imagen.toString().trim().isNotEmpty) {
+        imagen
+            .toString()
+            .trim()
+            .isNotEmpty) {
       return imagen.toString();
     }
 
@@ -828,6 +1006,10 @@ class _AdminSitioListScreenState
 
     return null;
   }
+
+  // ============================================================
+  // IMAGEN
+  // ============================================================
 
   Widget _imagenSitio(
     String? imagen,
@@ -857,13 +1039,16 @@ class _AdminSitioListScreenState
 
     return ClipRRect(
       borderRadius:
-          BorderRadius.circular(10),
+          BorderRadius.circular(
+        10,
+      ),
       child: Image.network(
         imagen,
         width: 90,
         height: 90,
         fit: BoxFit.cover,
-        errorBuilder: (
+        errorBuilder:
+            (
           context,
           error,
           stackTrace,
@@ -919,9 +1104,11 @@ class _AdminSitioListScreenState
             color:
                 Colors.grey.shade700,
           ),
+
           const SizedBox(
             width: 4,
           ),
+
           Text(
             texto,
             style:
@@ -961,7 +1148,8 @@ class _AdminSitioListScreenState
         activo
             ? 'Activo'
             : 'Inactivo',
-        style: TextStyle(
+        style:
+            TextStyle(
           fontSize: 12,
           fontWeight:
               FontWeight.w600,

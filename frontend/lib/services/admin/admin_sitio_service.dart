@@ -24,7 +24,7 @@ class AdminSitioService {
 
   static Future<List<dynamic>> obtenerSitios() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/admin/authsitio'),
+      Uri.parse('$baseUrl/admin/sitios'),
     );
 
     if (response.statusCode == 200) {
@@ -47,35 +47,34 @@ class AdminSitioService {
   }
 
   // =====================================================
-  // OBTENER TODAS LAS CATEGORÍAS
+  // OBTENER TODAS LAS CATEGORÍAS DE SITIOS
   // =====================================================
 
   static Future<List<dynamic>> obtenerCategorias() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/admin/categorias')
+      Uri.parse('$baseUrl/categorias-sitios'),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
+      // -------------------------------------------------
       // Caso 1:
-      // El backend devuelve directamente:
-      //
-      // [
-      //   {...},
-      //   {...}
-      // ]
+      // El backend devuelve directamente una lista
+      // -------------------------------------------------
 
       if (data is List) {
         return data;
       }
 
+      // -------------------------------------------------
       // Caso 2:
       // El backend devuelve:
       //
       // {
       //   "categorias": [...]
       // }
+      // -------------------------------------------------
 
       if (data is Map<String, dynamic>) {
         final categorias = data['categorias'];
@@ -105,7 +104,7 @@ class AdminSitioService {
     String id,
   ) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/admin/authsitio/$id'),
+      Uri.parse('$baseUrl/admin/sitios/$id'),
     );
 
     if (response.statusCode == 200) {
@@ -128,12 +127,33 @@ class AdminSitioService {
   }
 
   // =====================================================
-  // CREAR SITIO TURÍSTICO
+  // CREAR SITIO TURÍSTICO + CUENTA
+  // =====================================================
+  //
+  // PRIMERO:
+  //   POST /api/admin/sitios
+  //
+  // DESPUÉS:
+  //   POST /api/admin/authsitio/cuenta
+  //
+  // La cuenta necesita el ID del sitio recién creado.
   // =====================================================
 
-  static Future<void> crearSitio({
+  static Future<Map<String, dynamic>> crearSitio({
+    // ---------------------------------------------------
+    // DATOS DE LA CUENTA
+    // ---------------------------------------------------
+
+    required String nombreCuenta,
+    required String apellidoCuenta,
     required String correo,
     required String password,
+    String telefonoCuenta = '',
+
+    // ---------------------------------------------------
+    // DATOS DEL SITIO
+    // ---------------------------------------------------
+
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -152,14 +172,16 @@ class AdminSitioService {
     String horario = '',
     double precioDesde = 0,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/admin/authsitio'),
+    // ===================================================
+    // 1. CREAR SITIO TURÍSTICO
+    // ===================================================
+
+    final responseSitio = await http.post(
+      Uri.parse('$baseUrl/admin/sitios'),
       headers: {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'correo': correo,
-        'password': password,
         'nombre': nombre,
         'descripcion': descripcion,
         'direccion': direccion,
@@ -180,22 +202,119 @@ class AdminSitioService {
       }),
     );
 
-    if (response.statusCode != 201) {
+    if (responseSitio.statusCode != 201) {
       throw Exception(
         'Error al crear el sitio turístico: '
-        '${response.statusCode} - ${response.body}',
+        '${responseSitio.statusCode} - '
+        '${responseSitio.body}',
       );
     }
+
+    // ===================================================
+    // 2. LEER EL SITIO CREADO
+    // ===================================================
+
+    final dataSitio = jsonDecode(
+      responseSitio.body,
+    );
+
+    if (dataSitio is! Map<String, dynamic>) {
+      throw Exception(
+        'La respuesta al crear el sitio '
+        'no tiene el formato esperado.',
+      );
+    }
+
+    // El controller devuelve:
+    //
+    // {
+    //   "mensaje": "...",
+    //   "sitio": {...}
+    // }
+
+    final sitioCreado = dataSitio['sitio'];
+
+    if (sitioCreado is! Map<String, dynamic>) {
+      throw Exception(
+        'El servidor no devolvió el sitio creado.',
+      );
+    }
+
+    final sitioId =
+        sitioCreado['_id']?.toString() ?? '';
+
+    if (sitioId.isEmpty) {
+      throw Exception(
+        'No se pudo obtener el ID del sitio creado.',
+      );
+    }
+
+    // ===================================================
+    // 3. CREAR CUENTA DEL SITIO
+    // ===================================================
+
+    final responseCuenta = await http.post(
+      Uri.parse('$baseUrl/admin/authsitio/cuenta'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'sitioId': sitioId,
+        'nombre': nombreCuenta,
+        'apellido': apellidoCuenta,
+        'correo': correo,
+        'password': password,
+        'telefono': telefonoCuenta,
+      }),
+    );
+
+    if (responseCuenta.statusCode != 201) {
+      throw Exception(
+        'El sitio fue creado, pero no se pudo crear '
+        'su cuenta: '
+        '${responseCuenta.statusCode} - '
+        '${responseCuenta.body}',
+      );
+    }
+
+    // ===================================================
+    // 4. DEVOLVER RESULTADO
+    // ===================================================
+
+    final dataCuenta = jsonDecode(
+      responseCuenta.body,
+    );
+
+    return {
+      'sitio': sitioCreado,
+      'cuenta': dataCuenta is Map<String, dynamic>
+          ? dataCuenta['cuenta']
+          : null,
+    };
   }
 
   // =====================================================
   // ACTUALIZAR SITIO TURÍSTICO
   // =====================================================
+  //
+  // IMPORTANTE:
+  // correo y password NO se envían aquí.
+  //
+  // El backend actual NO tiene una ruta para actualizar
+  // la cuenta del sitio.
+  //
+  // Estos parámetros se mantienen opcionales para que
+  // el formulario pueda seguir funcionando mientras
+  // trabajamos posteriormente la actualización de cuenta.
+  // =====================================================
 
   static Future<void> actualizarSitio({
     required String id,
+
+    // Se mantienen para compatibilidad con el formulario.
     String? correo,
     String? password,
+
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -234,20 +353,12 @@ class AdminSitioService {
       'precioDesde': precioDesde,
     };
 
-    // El correo solamente se envía
-    // si se quiere actualizar.
-    if (correo != null && correo.trim().isNotEmpty) {
-      datos['correo'] = correo.trim();
-    }
-
-    // La contraseña solamente se envía
-    // si se quiere cambiar.
-    if (password != null && password.trim().isNotEmpty) {
-      datos['password'] = password.trim();
-    }
+    // ===================================================
+    // ACTUALIZAR SITIO
+    // ===================================================
 
     final response = await http.put(
-      Uri.parse('$baseUrl/admin/authsitio/$id'),
+      Uri.parse('$baseUrl/admin/sitios/$id'),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -270,7 +381,7 @@ class AdminSitioService {
     String id,
   ) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/admin/authsitio/$id'),
+      Uri.parse('$baseUrl/admin/sitios/$id'),
     );
 
     if (response.statusCode != 200) {
