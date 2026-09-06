@@ -1,11 +1,16 @@
-const Sitio = require('../../models/usuario/sitio');
+const SitioTuristico = require('../../models/admin/sitio');
 
-// OBTENER TODOS LOS SITIOS
+// ============================================================
+// OBTENER TODOS LOS SITIOS TURÍSTICOS
+// ============================================================
+
 const obtenerSitios = async (req, res) => {
   try {
-    const sitios = await Sitio.find({
+    const sitios = await SitioTuristico.find({
       activo: true
-    }).populate('categoria');
+    })
+      .populate('categoria')
+      .sort({ nombre: 1 });
 
     res.json(sitios);
 
@@ -18,10 +23,13 @@ const obtenerSitios = async (req, res) => {
 };
 
 
+// ============================================================
 // OBTENER UN SITIO
+// ============================================================
+
 const obtenerSitio = async (req, res) => {
   try {
-    const sitio = await Sitio.findById(req.params.id)
+    const sitio = await SitioTuristico.findById(req.params.id)
       .populate('categoria');
 
     if (!sitio) {
@@ -41,18 +49,27 @@ const obtenerSitio = async (req, res) => {
 };
 
 
+// ============================================================
 // BUSCAR SITIOS
+// ============================================================
+
 const buscarSitios = async (req, res) => {
   try {
     const { nombre } = req.query;
 
-    const sitios = await Sitio.find({
+    if (!nombre || !nombre.trim()) {
+      return res.json([]);
+    }
+
+    const sitios = await SitioTuristico.find({
       nombre: {
-        $regex: nombre,
+        $regex: nombre.trim(),
         $options: 'i'
       },
       activo: true
-    }).populate('categoria');
+    })
+      .populate('categoria')
+      .sort({ nombre: 1 });
 
     res.json(sitios);
 
@@ -65,13 +82,18 @@ const buscarSitios = async (req, res) => {
 };
 
 
+// ============================================================
 // FILTRAR POR CATEGORÍA
+// ============================================================
+
 const filtrarPorCategoria = async (req, res) => {
   try {
-    const sitios = await Sitio.find({
+    const sitios = await SitioTuristico.find({
       categoria: req.params.categoriaId,
       activo: true
-    }).populate('categoria');
+    })
+      .populate('categoria')
+      .sort({ nombre: 1 });
 
     res.json(sitios);
 
@@ -82,6 +104,11 @@ const filtrarPorCategoria = async (req, res) => {
     });
   }
 };
+
+
+// ============================================================
+// EXPORTACIONES
+// ============================================================
 
 module.exports = {
   obtenerSitios,

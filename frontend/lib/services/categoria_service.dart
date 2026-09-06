@@ -6,6 +6,10 @@ import '../config/api_config.dart';
 import '../models/categoria_model.dart';
 
 class CategoriaService {
+  // ============================================================
+  // OBTENER TODAS LAS CATEGORÍAS DE SITIOS
+  // ============================================================
+
   Future<List<CategoriaModel>> obtenerCategorias() async {
     final response = await http
         .get(
@@ -17,11 +21,14 @@ class CategoriaService {
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Error al obtener categorías: ${response.statusCode}',
+        'Error al obtener categorías de sitios: '
+        '${response.statusCode}',
       );
     }
 
-    final dynamic decoded = jsonDecode(response.body);
+    final dynamic decoded = jsonDecode(
+      response.body,
+    );
 
     List<dynamic> data;
 
@@ -29,9 +36,12 @@ class CategoriaService {
       data = decoded;
     } else if (decoded is Map<String, dynamic>) {
       final dynamic categorias =
-          decoded['categorias'] ??
-          decoded['data'] ??
-          [];
+              decoded['categorias'] ??
+              decoded['categoriasSitios'] ??
+              decoded['data'] ??
+              decoded['value'] ??
+              decoded['results'] ??
+            [];
 
       data = categorias is List ? categorias : [];
     } else {
@@ -45,9 +55,15 @@ class CategoriaService {
             Map<String, dynamic>.from(item),
           ),
         )
-        .where((categoria) => categoria.estado)
+        .where(
+          (categoria) => categoria.activo || categoria.estado,
+        )
         .toList();
   }
+
+  // ============================================================
+  // OBTENER UNA CATEGORÍA POR ID
+  // ============================================================
 
   Future<CategoriaModel> obtenerCategoriaPorId(
     String id,
@@ -64,11 +80,14 @@ class CategoriaService {
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Error al obtener categoría: ${response.statusCode}',
+        'Error al obtener categoría de sitio: '
+        '${response.statusCode}',
       );
     }
 
-    final dynamic decoded = jsonDecode(response.body);
+    final dynamic decoded = jsonDecode(
+      response.body,
+    );
 
     if (decoded is! Map<String, dynamic>) {
       throw Exception(
@@ -76,6 +95,8 @@ class CategoriaService {
       );
     }
 
-    return CategoriaModel.fromJson(decoded);
+    return CategoriaModel.fromJson(
+      decoded,
+    );
   }
 }

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../widgets/admin/admin_drawer.dart';
-import '../mapa_screen.dart';
-
+import '../mapa_screen_2.dart';
 import 'admin_sitio_list_screen.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -40,7 +39,7 @@ class _AdminScreenState extends State<AdminScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const MapaScreen(),
+        builder: (context) => const MapaScreen2(),
       ),
     );
   }
@@ -161,10 +160,6 @@ class _AdminScreenState extends State<AdminScreen> {
               const SizedBox(
                 height: 20,
               ),
-
-              // =================================================
-              // BIENVENIDA
-              // =================================================
 
               const Icon(
                 Icons.admin_panel_settings,
@@ -388,7 +383,7 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   // =====================================================
-  // OPCIONES QUE TODAVÍA NO DESARROLLAMOS
+  // OPCIONES PENDIENTES
   // =====================================================
 
   Widget _proximamente(
