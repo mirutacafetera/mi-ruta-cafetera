@@ -8,6 +8,7 @@ class ApiConfig {
   // ============================================================
 
   static String get baseUrl {
+    // Flutter Web / Chrome
     if (kIsWeb) {
       return 'http://localhost:3000/api';
     }
@@ -17,27 +18,38 @@ class ApiConfig {
   }
 
   // ============================================================
-  // SITIOS / PUNTOS DE INTERÉS
+  // CHAT
+  // ============================================================
   //
-  // Consulta pública utilizada por la aplicación del usuario
-  // para cargar los sitios que aparecen en el mapa.
+  // Backend:
+  // POST /api/chat
+  //
+  // ============================================================
+
+  static String get chatUrl {
+    return '$baseUrl/chat';
+  }
+
+  // ============================================================
+  // SITIOS / PUNTOS DE INTERÉS
+  // ============================================================
   //
   // Backend:
   // GET /api/sitios
+  //
   // ============================================================
 
   static String get sitiosUrl {
-  return '$baseUrl/sitios';
+    return '$baseUrl/sitios';
   }
 
   // ============================================================
   // CATEGORÍAS
-  //
-  // Consulta pública utilizada por la aplicación del usuario
-  // para cargar las categorías de los puntos de interés.
+  // ============================================================
   //
   // Backend:
   // GET /api/categorias
+  //
   // ============================================================
 
   static String get categoriasUrl {
@@ -46,14 +58,13 @@ class ApiConfig {
 
   // ============================================================
   // CATEGORÍAS DE SITIOS
+  // ============================================================
   //
-  // Se conserva por ahora.
-  //
-  // NO se elimina porque puede estar siendo utilizada por
-  // módulos administrativos u otras partes del proyecto.
+  // Se conserva porque puede ser utilizada por otros módulos.
   //
   // Backend:
   // /api/categorias-sitios
+  //
   // ============================================================
 
   static String get categoriasSitiosUrl {
@@ -62,9 +73,11 @@ class ApiConfig {
 
   // ============================================================
   // RUTAS
+  // ============================================================
   //
   // Backend:
   // /api/rutas
+  //
   // ============================================================
 
   static String get rutasUrl {
@@ -73,9 +86,11 @@ class ApiConfig {
 
   // ============================================================
   // CALCULAR RUTA
+  // ============================================================
   //
   // Backend:
   // POST /api/rutas/calcular
+  //
   // ============================================================
 
   static String get calcularRutaUrl {

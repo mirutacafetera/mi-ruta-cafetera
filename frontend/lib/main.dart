@@ -2,42 +2,43 @@ import 'package:flutter/material.dart';
 
 import 'screens/admin/admin_screen.dart';
 import 'screens/mapa_screen_2.dart';
+import 'screens/publico/bienvenida_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
-  runApp(const MiRutaCafeteraApp());
+  runApp(
+    const MiRutaCafeteraApp(),
+  );
 }
 
 class MiRutaCafeteraApp extends StatelessWidget {
-  const MiRutaCafeteraApp({super.key});
+  const MiRutaCafeteraApp({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mi Ruta Cafetera',
+      title: 'Mi Ruta Mágica del Café',
       debugShowCheckedModeBanner: false,
 
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.brown,
-        ),
-        useMaterial3: true,
-      ),
+      // ======================================================
+      // TEMA GLOBAL DE LA APLICACIÓN
+      // ======================================================
+      theme: AppTheme.light,
 
       // ======================================================
-      // RUTA INICIAL
+      // PÁGINA INICIAL
       // ======================================================
-
-      initialRoute: '/admin',
+      home: const BienvenidaScreen(),
 
       // ======================================================
-      // RUTAS DE LA APLICACIÓN
+      // RUTAS
       // ======================================================
-
       routes: {
         // ----------------------------------------------------
-        // ADMINISTRACIÓN
+        // ADMINISTRADOR
         // ----------------------------------------------------
-
         '/admin': (context) {
           return const AdminScreen(
             nombre: 'Administrador',
@@ -48,7 +49,6 @@ class MiRutaCafeteraApp extends StatelessWidget {
         // ----------------------------------------------------
         // MAPA
         // ----------------------------------------------------
-
         '/mapa': (context) {
           return const MapaScreen2();
         },
