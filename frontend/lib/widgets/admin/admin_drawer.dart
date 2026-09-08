@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'admin_drawer_header.dart';
+import 'admin_drawer_item.dart';
+import 'admin_drawer_logout.dart';
+
 class AdminDrawer extends StatelessWidget {
   final String nombre;
   final String email;
-  final void Function(String) onOpcionSeleccionada;
+  final Function(String) onOpcionSeleccionada;
 
   const AdminDrawer({
     super.key,
@@ -17,162 +21,77 @@ class AdminDrawer extends StatelessWidget {
     return Drawer(
       child: Column(
         children: [
-          // =====================================================
-          // INFORMACIÓN DEL ADMINISTRADOR
-          // =====================================================
-
-          UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(
-              color: Color(0xFF1B5E20),
-            ),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(
-                Icons.admin_panel_settings,
-                size: 35,
-                color: Color(0xFF1B5E20),
-              ),
-            ),
-            accountName: Text(
-              nombre,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            accountEmail: Text(email),
+          // Información del administrador
+          AdminDrawerHeader(
+            nombre: nombre,
+            email: email,
           ),
 
-          // =====================================================
-          // INICIO
-          // =====================================================
-
-          ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Inicio'),
-            onTap: () {
-              onOpcionSeleccionada('inicio');
-              Navigator.pop(context);
-            },
+          // Menú principal
+          AdminDrawerItem(
+            icon: Icons.dashboard,
+            titulo: 'Inicio',
+            opcion: 'inicio',
+            onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          // =====================================================
-          // ESTADÍSTICAS
-          // =====================================================
-
-          ListTile(
-            leading: const Icon(Icons.bar_chart),
-            title: const Text('Estadísticas'),
-            onTap: () {
-              onOpcionSeleccionada('estadisticas');
-              Navigator.pop(context);
-            },
+          AdminDrawerItem(
+            icon: Icons.bar_chart,
+            titulo: 'Estadísticas',
+            opcion: 'estadisticas',
+            onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          // =====================================================
-          // SITIOS TURÍSTICOS
-          // =====================================================
-
-          ListTile(
-            leading: const Icon(Icons.location_on),
-            title: const Text('Sitios turísticos'),
-            onTap: () {
-              onOpcionSeleccionada('sitios');
-              Navigator.pop(context);
-            },
+          AdminDrawerItem(
+            icon: Icons.location_on,
+            titulo: 'Sitios turísticos',
+            opcion: 'sitios',
+            onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          // =====================================================
-          // CATEGORÍAS
-          // =====================================================
-
-          ListTile(
-            leading: const Icon(Icons.category),
-            title: const Text('Categorías'),
-            onTap: () {
-              onOpcionSeleccionada('categorias');
-              Navigator.pop(context);
-            },
+          AdminDrawerItem(
+            icon: Icons.category,
+            titulo: 'Categorías',
+            opcion: 'categorias',
+            onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          // =====================================================
-          // CONTENIDO
-          // =====================================================
-
-          ListTile(
-            leading: const Icon(Icons.article),
-            title: const Text('Contenido'),
-            onTap: () {
-              onOpcionSeleccionada('contenido');
-              Navigator.pop(context);
-            },
+          AdminDrawerItem(
+            icon: Icons.article,
+            titulo: 'Contenido',
+            opcion: 'contenido',
+            onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          // =====================================================
-          // RESEÑAS
-          // =====================================================
-
-          ListTile(
-            leading: const Icon(Icons.star),
-            title: const Text('Reseñas'),
-            onTap: () {
-              onOpcionSeleccionada('resenas');
-              Navigator.pop(context);
-            },
+          AdminDrawerItem(
+            icon: Icons.star,
+            titulo: 'Reseñas',
+            opcion: 'resenas',
+            onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          // =====================================================
-          // USUARIOS
-          // =====================================================
-
-          ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text('Usuarios'),
-            onTap: () {
-              onOpcionSeleccionada('usuarios');
-              Navigator.pop(context);
-            },
+          AdminDrawerItem(
+            icon: Icons.people,
+            titulo: 'Usuarios',
+            opcion: 'usuarios',
+            onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
           const Divider(),
 
-          // =====================================================
-          // MI CUENTA
-          // =====================================================
-
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Mi cuenta'),
-            onTap: () {
-              onOpcionSeleccionada('perfil');
-              Navigator.pop(context);
-            },
+          // Mi cuenta
+          AdminDrawerItem(
+            icon: Icons.person,
+            titulo: 'Mi cuenta',
+            opcion: 'perfil',
+            onOpcionSeleccionada: onOpcionSeleccionada,
           ),
-
-          // =====================================================
-          // ESPACIO
-          // =====================================================
 
           const Spacer(),
 
-          // =====================================================
-          // CERRAR SESIÓN
-          // =====================================================
-
-          ListTile(
-            leading: const Icon(
-              Icons.logout,
-              color: Colors.red,
-            ),
-            title: const Text(
-              'Cerrar sesión',
-              style: TextStyle(
-                color: Colors.red,
-              ),
-            ),
-            onTap: () {
-              onOpcionSeleccionada('logout');
-              Navigator.pop(context);
-            },
+          // Cerrar sesión
+          AdminDrawerLogout(
+            onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
           const SizedBox(height: 15),
