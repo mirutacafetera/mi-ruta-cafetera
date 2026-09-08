@@ -78,6 +78,11 @@ const chatRoutes = require(
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
 
+// AUTENTICACIÓN DEL ADMINISTRADOR
+const adminAuthRoutes = require(
+  './routes/admin/authsitio.routes'
+);
+
 const administradorRoutes = require(
   './routes/admin/administrador.routes'
 );
@@ -201,25 +206,54 @@ app.use(
 // RUTAS DE ADMINISTRACIÓN
 // ======================================================
 
+// ------------------------------------------------------
+// AUTENTICACIÓN DEL ADMINISTRADOR
+// ------------------------------------------------------
+
+app.use(
+  '/api/admin/auth',
+  adminAuthRoutes
+);
+
+// ------------------------------------------------------
+// ADMINISTRADORES
+// ------------------------------------------------------
+
 app.use(
   '/api/admin/administradores',
   administradorRoutes
 );
+
+// ------------------------------------------------------
+// USUARIOS
+// ------------------------------------------------------
 
 app.use(
   '/api/admin/usuarios',
   adminUsuariosRoutes
 );
 
+// ------------------------------------------------------
+// RESEÑAS
+// ------------------------------------------------------
+
 app.use(
   '/api/admin/resenas',
   adminResenasRoutes
 );
 
+// ------------------------------------------------------
+// CONTENIDO
+// ------------------------------------------------------
+
 app.use(
   '/api/admin/contenido',
   adminContenidoRoutes
 );
+
+// ------------------------------------------------------
+// ESTADÍSTICAS
+// ------------------------------------------------------
 
 app.use(
   '/api/admin/estadisticas',
@@ -400,6 +434,10 @@ mongoose
 
         console.log(
           '👨‍💼 API admin sitios: /api/admin/sitios'
+        );
+
+        console.log(
+          '🔐 API autenticación admin: /api/admin/auth'
         );
 
         console.log(

@@ -1,16 +1,81 @@
-const express = require('express');
+const mongoose = require('mongoose');
 
-const {
-  crearCuentaSitio
-} = require('../../controllers/admin/authsitio.controller');
+const authAdminSchema = new mongoose.Schema(
+  {
+    nombre: {
+      type: String,
+      required: true,
+      trim: true
+    },
 
-const router = express.Router();
+    apellido: {
+      type: String,
+      required: true,
+      trim: true
+    },
 
-// ======================================================
-// CUENTAS DE SITIOS
-// ======================================================
+    correo: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true
+    },
 
-// El administrador crea una cuenta para un sitio existente
-router.post('/cuenta', crearCuentaSitio);
+    password: {
+      type: String,
+      required: true,
+      select: false
+    },
 
-module.exports = router;
+    telefono: {
+      type: String,
+      default: '',
+      trim: true
+    },
+
+    rol: {
+      type: String,
+      default: 'admin',
+      enum: ['admin']
+    },
+
+    activo: {
+      type: Boolean,
+      default: true
+    },
+
+    codigoRecuperacion: {
+      type: String,
+      default: null
+    },
+
+    codigoRecuperacionExpiracion: {
+      type: Date,
+      default: null
+    },
+
+    tokenRecuperacion: {
+      type: String,
+      default: null
+    },
+
+    tokenRecuperacionExpiracion: {
+      type: Date,
+      default: null
+    }
+  },
+  {
+    timestamps: true,
+    collection: 'authadmins'
+  }
+);
+
+const AuthAdmin =
+  mongoose.models.AuthAdmin ||
+  mongoose.model(
+    'AuthAdmin',
+    authAdminSchema
+  );
+
+module.exports = AuthAdmin;
