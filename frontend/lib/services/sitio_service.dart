@@ -31,6 +31,8 @@ class SitioService {
       final dynamic sitios =
           decoded['sitios'] ??
           decoded['data'] ??
+          decoded['value'] ??
+          decoded['results'] ??
           [];
 
       data = sitios is List ? sitios : [];
