@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 
-import '../../models/sitio_turistico_model.dart';
+import '../models/sitio_turistico_model.dart';
 
-class MapaEstadoRuta extends ChangeNotifier {
+  class MapaEstadoRuta extends ChangeNotifier {
+  static const int minSitios = 2;
+  static const int maxSitios = 4;
+
   final List<SitioTuristicoModel> _sitiosSeleccionados = [];
 
   bool _modoCrearRuta = false;
@@ -12,14 +15,25 @@ class MapaEstadoRuta extends ChangeNotifier {
 
   bool get modoCrearRuta => _modoCrearRuta;
 
-  int get cantidadSeleccionada =>
-      _sitiosSeleccionados.length;
+  int get cantidadSeleccionada => _sitiosSeleccionados.length;
 
-  bool get puedeCalcular =>
-      _sitiosSeleccionados.length >= 2;
+  bool get puedeCalcular => cantidadSeleccionada >= minSitios;
 
-  bool get limiteAlcanzado =>
-      _sitiosSeleccionados.length >= 4;
+  bool get limiteAlcanzado => cantidadSeleccionada >= maxSitios;
+
+  bool estaSeleccionado(SitioTuristicoModel sitio) {
+    return _sitiosSeleccionados.any(
+      (item) => item.id == sitio.id,
+    );
+  }
+
+  int numeroDeSitio(SitioTuristicoModel sitio) {
+    final index = _sitiosSeleccionados.indexWhere(
+      (item) => item.id == sitio.id,
+    );
+
+    return index == -1 ? 0 : index + 1;
+  }
 
   void iniciar() {
     _modoCrearRuta = true;
@@ -33,27 +47,7 @@ class MapaEstadoRuta extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool estaSeleccionado(
-    SitioTuristicoModel sitio,
-  ) {
-    return _sitiosSeleccionados.any(
-      (item) => item.id == sitio.id,
-    );
-  }
-
-  int numeroDeSitio(
-    SitioTuristicoModel sitio,
-  ) {
-    final index = _sitiosSeleccionados.indexWhere(
-      (item) => item.id == sitio.id,
-    );
-
-    return index == -1 ? 0 : index + 1;
-  }
-
-  bool alternarSitio(
-    SitioTuristicoModel sitio,
-  ) {
+  bool alternarSitio(SitioTuristicoModel sitio) {
     final index = _sitiosSeleccionados.indexWhere(
       (item) => item.id == sitio.id,
     );
@@ -64,17 +58,20 @@ class MapaEstadoRuta extends ChangeNotifier {
       return true;
     }
 
-    if (_sitiosSeleccionados.length >= 4) {
+    if (limiteAlcanzado) {
       return false;
     }
 
     _sitiosSeleccionados.add(sitio);
     notifyListeners();
-
     return true;
   }
 
   void limpiarSeleccion() {
+    if (_sitiosSeleccionados.isEmpty) {
+      return;
+    }
+
     _sitiosSeleccionados.clear();
     notifyListeners();
   }
