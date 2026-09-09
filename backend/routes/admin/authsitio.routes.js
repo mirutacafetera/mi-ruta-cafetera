@@ -1,17 +1,49 @@
 const express = require('express');
 
 const {
-  crearCuentaSitio
-} = require('../../controllers/admin/authsitio.controller');
+  iniciarSesionAdmin,
+  obtenerAdministrador,
+  recuperarPasswordAdmin,
+  verificarCodigoRecuperacionAdmin,
+  restablecerPasswordAdmin
+} = require(
+  '../../controllers/admin/authsitio.controller'
+);
 
 const router = express.Router();
 
 // ======================================================
-// CREAR CUENTA DEL SITIO
+// AUTENTICACIÓN DEL ADMINISTRADOR
 // ======================================================
 
-// El administrador crea una cuenta para un sitio
-// turístico que ya existe.
-router.post('/cuenta', crearCuentaSitio);
+// Iniciar sesión
+router.post(
+  '/login',
+  iniciarSesionAdmin
+);
+
+// Recuperar contraseña
+router.post(
+  '/recuperar-password',
+  recuperarPasswordAdmin
+);
+
+// Verificar código de recuperación
+router.post(
+  '/verificar-codigo-recuperacion',
+  verificarCodigoRecuperacionAdmin
+);
+
+// Restablecer contraseña
+router.post(
+  '/restablecer-password',
+  restablecerPasswordAdmin
+);
+
+// Obtener administrador
+router.get(
+  '/:id',
+  obtenerAdministrador
+);
 
 module.exports = router;
