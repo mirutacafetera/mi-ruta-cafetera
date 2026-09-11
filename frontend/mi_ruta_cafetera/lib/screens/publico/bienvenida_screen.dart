@@ -1,5 +1,11 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+import '../../google/google_button.dart';
+import '../../services/google_auth_service.dart';
 import '../auth/seleccion_rol_screen.dart';
 import 'home_publico_screen.dart';
 
@@ -20,6 +26,11 @@ class _BienvenidaScreenState
 
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+
+  bool _iniciandoGoogle = false;
+
+  StreamSubscription<GoogleSignInAuthenticationEvent>?
+      _googleAuthenticationSubscription;
 
   @override
   void initState() {
@@ -48,13 +59,87 @@ class _BienvenidaScreenState
     );
 
     _animationController.forward();
+
+    // En Web, el botón oficial de Google inicia el proceso
+    // y el resultado llega por authenticationEvents.
+    if (kIsWeb) {
+      _escucharAutenticacionGoogleWeb();
+    }
+  }
+
+  void _escucharAutenticacionGoogleWeb() {
+    _googleAuthenticationSubscription =
+        GoogleSignIn.instance.authenticationEvents.listen(
+      _manejarEventoGoogle,
+      onError: (Object error) {
+        if (!mounted) {
+          return;
+        }
+
+        setState(() {
+          _iniciandoGoogle = false;
+        });
+
+        _mostrarMensaje(
+          'No fue posible iniciar sesión con Google.',
+        );
+
+        debugPrint(
+          'Error de Google Sign-In Web: $error',
+        );
+      },
+    );
+  }
+
+  Future<void> _manejarEventoGoogle(
+    GoogleSignInAuthenticationEvent evento,
+  ) async {
+    if (evento
+        is! GoogleSignInAuthenticationEventSignIn) {
+      return;
+    }
+
+    final usuario = evento.user;
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _iniciandoGoogle = true;
+    });
+
+    _mostrarMensaje(
+      'Bienvenido, ${usuario.displayName ?? usuario.email}',
+    );
+
+    await Future.delayed(
+      const Duration(
+        milliseconds: 700,
+      ),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _iniciandoGoogle = false;
+    });
+
+    _comenzarExplorar();
   }
 
   @override
   void dispose() {
+    _googleAuthenticationSubscription?.cancel();
     _animationController.dispose();
     super.dispose();
   }
+
+  // ================================================================
+  // COMENZAR A EXPLORAR
+  // ================================================================
 
   void _comenzarExplorar() {
     Navigator.pushReplacement(
@@ -88,6 +173,10 @@ class _BienvenidaScreenState
     );
   }
 
+  // ================================================================
+  // ACCESO PRIVADO
+  // ================================================================
+
   void _abrirAccesoPrivado() {
     Navigator.push(
       context,
@@ -115,6 +204,125 @@ class _BienvenidaScreenState
         },
       ),
     );
+  }
+
+  // ================================================================
+  // INICIAR SESIÓN CON GOOGLE
+  // ================================================================
+
+  Future<void> _iniciarSesionConGoogle() async {
+    if (_iniciandoGoogle) {
+      return;
+    }
+
+    setState(() {
+      _iniciandoGoogle = true;
+    });
+
+    try {
+      /*
+       * Web:
+       *
+       * No llamamos authenticate() aquí.
+       * Google Identity Services exige el botón oficial
+       * proporcionado por google_sign_in_web.
+       */
+      if (kIsWeb) {
+        return;
+      }
+
+      /*
+       * Android / iOS:
+       *
+       * Estas plataformas sí utilizan authenticate().
+       */
+      final usuario =
+          await GoogleAuthService.instance.iniciarSesion();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (usuario == null) {
+        setState(() {
+          _iniciandoGoogle = false;
+        });
+        return;
+      }
+
+      _mostrarMensaje(
+        'Bienvenido, ${usuario.displayName ?? usuario.email}',
+      );
+
+      await Future.delayed(
+        const Duration(
+          milliseconds: 700,
+        ),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _iniciandoGoogle = false;
+      });
+
+      _comenzarExplorar();
+    } on GoogleSignInException catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _iniciandoGoogle = false;
+      });
+
+      _mostrarMensaje(
+        'No fue posible iniciar sesión con Google: '
+        '${e.description ?? e.code}',
+      );
+
+      debugPrint(
+        'GoogleSignInException: $e',
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _iniciandoGoogle = false;
+      });
+
+      _mostrarMensaje(
+        'Ocurrió un error al iniciar sesión con Google.',
+      );
+
+      debugPrint(
+        'Error Google Sign-In: $e',
+      );
+    }
+  }
+
+  // ================================================================
+  // MENSAJE
+  // ================================================================
+
+  void _mostrarMensaje(String mensaje) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            mensaje,
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(
+            seconds: 3,
+          ),
+        ),
+      );
   }
 
   @override
@@ -221,20 +429,20 @@ class _BienvenidaScreenState
                               width: 112,
                               height: 112,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(
-                                  0.13,
+                                color: Colors.white.withValues(
+                                  alpha: 0.13,
                                 ),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(
-                                    0.25,
+                                  color: Colors.white.withValues(
+                                    alpha: 0.25,
                                   ),
                                   width: 1.5,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(
-                                      0.18,
+                                    color: Colors.black.withValues(
+                                      alpha: 0.18,
                                     ),
                                     blurRadius: 30,
                                   ),
@@ -281,8 +489,8 @@ class _BienvenidaScreenState
                           Text(
                             'Descubre · Explora · Vive',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(
-                                0.82,
+                              color: Colors.white.withValues(
+                                alpha: 0.82,
                               ),
                               fontSize: 14,
                               letterSpacing: 2,
@@ -302,14 +510,14 @@ class _BienvenidaScreenState
                               vertical: 18,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(
-                                0.12,
+                              color: Colors.black.withValues(
+                                alpha: 0.12,
                               ),
                               borderRadius:
                                   BorderRadius.circular(22),
                               border: Border.all(
-                                color: Colors.white.withOpacity(
-                                  0.10,
+                                color: Colors.white.withValues(
+                                  alpha: 0.10,
                                 ),
                               ),
                             ),
@@ -331,8 +539,8 @@ class _BienvenidaScreenState
                                   'por descubrir.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(
-                                      0.84,
+                                    color: Colors.white.withValues(
+                                      alpha: 0.84,
                                     ),
                                     fontSize: 15,
                                     height: 1.5,
@@ -352,7 +560,60 @@ class _BienvenidaScreenState
                             onPressed: _comenzarExplorar,
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 18),
+
+                          // ==================================================
+                          // SEPARADOR
+                          // ==================================================
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: Colors.white.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
+                                child: Text(
+                                  'o continuar con',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(
+                                      alpha: 0.65,
+                                    ),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: Colors.white.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          // ==================================================
+                          // GOOGLE
+                          // ==================================================
+
+                          _BotonGoogle(
+                            onPressed: _iniciarSesionConGoogle,
+                            cargando: _iniciandoGoogle,
+                          ),
+
+                          const SizedBox(height: 18),
 
                           // ==================================================
                           // ACCESO PRIVADO
@@ -362,16 +623,16 @@ class _BienvenidaScreenState
                             onPressed: _abrirAccesoPrivado,
                             icon: Icon(
                               Icons.lock_outline_rounded,
-                              color: Colors.white.withOpacity(
-                                0.70,
+                              color: Colors.white.withValues(
+                                alpha: 0.70,
                               ),
                               size: 17,
                             ),
                             label: Text(
                               'Acceso privado',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(
-                                  0.75,
+                                color: Colors.white.withValues(
+                                  alpha: 0.75,
                                 ),
                                 fontSize: 13,
                               ),
@@ -390,21 +651,23 @@ class _BienvenidaScreenState
                             children: [
                               Icon(
                                 Icons.eco_outlined,
-                                color: Colors.white.withOpacity(
-                                  0.55,
+                                color: Colors.white.withValues(
+                                  alpha: 0.55,
                                 ),
                                 size: 16,
                               ),
                               const SizedBox(width: 8),
-                              Text(
-                                'Más que un destino, una historia por vivir',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(
-                                    0.65,
+                              Flexible(
+                                child: Text(
+                                  'Más que un destino, una historia por vivir',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(
+                                      alpha: 0.65,
+                                    ),
+                                    fontSize: 12,
+                                    fontStyle: FontStyle.italic,
                                   ),
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic,
                                 ),
                               ),
                             ],
@@ -475,7 +738,9 @@ class _BotonComenzarState extends State<_BotonComenzar> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.20),
+                color: Colors.black.withValues(
+                  alpha: 0.20,
+                ),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -516,6 +781,117 @@ class _BotonComenzarState extends State<_BotonComenzar> {
 }
 
 // ======================================================================
+// BOTON GOOGLE
+// ======================================================================
+
+class _BotonGoogle extends StatelessWidget {
+  final VoidCallback onPressed;
+  final bool cargando;
+
+  const _BotonGoogle({
+    required this.onPressed,
+    required this.cargando,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // ================================================================
+    // WEB
+    // ================================================================
+
+    if (kIsWeb) {
+      return Container(
+        width: double.infinity,
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(
+                alpha: 0.18,
+              ),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: crearBotonGoogleWeb(),
+      );
+    }
+
+    // ================================================================
+    // ANDROID / IOS
+    // ================================================================
+
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        elevation: 4,
+        shadowColor: Colors.black.withValues(
+          alpha: 0.18,
+        ),
+        child: InkWell(
+          onTap: cargando ? null : onPressed,
+          borderRadius: BorderRadius.circular(18),
+          child: AnimatedOpacity(
+            duration: const Duration(
+              milliseconds: 200,
+            ),
+            opacity: cargando ? 0.65 : 1,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (cargando)
+                  const SizedBox(
+                    width: 21,
+                    height: 21,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                else
+                  Container(
+                    width: 28,
+                    height: 28,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'G',
+                      style: TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF4285F4),
+                      ),
+                    ),
+                  ),
+                const SizedBox(width: 12),
+                Text(
+                  cargando
+                      ? 'Conectando con Google...'
+                      : 'Continuar con Google',
+                  style: const TextStyle(
+                    color: Color(0xFF333333),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+// ======================================================================
 // CIRCULO DECORATIVO
 // ======================================================================
 
@@ -534,7 +910,9 @@ class _CirculoDecorativo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: opacity),
+        color: Colors.white.withValues(
+          alpha: opacity,
+        ),
         shape: BoxShape.circle,
       ),
     );

@@ -105,7 +105,7 @@ class AdminInicio extends StatelessWidget {
                             'Visualiza los sitios turísticos, '
                             'categorías y rutas por carretera.',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.75),
+                              color: Colors.white.withValues(alpha: 0.75),
                               fontSize: 14,
                             ),
                           ),

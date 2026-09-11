@@ -205,7 +205,7 @@ class _HomePublicoScreenState
                     child: Icon(
                       Icons.local_cafe_rounded,
                       size: 170,
-                      color: Colors.white.withOpacity(
+                      color: Colors.white.withValues(alpha: 
                         0.06,
                       ),
                     ),
@@ -228,7 +228,7 @@ class _HomePublicoScreenState
                           'Hola, explorador 👋',
                           style: TextStyle(
                             color: Colors.white
-                                .withOpacity(0.78),
+                                .withValues(alpha: 0.78),
                             fontSize: 15,
                           ),
                         ),
@@ -252,7 +252,7 @@ class _HomePublicoScreenState
                           'experiencias del Huila.',
                           style: TextStyle(
                             color: Colors.white
-                                .withOpacity(0.82),
+                                .withValues(alpha: 0.82),
                             fontSize: 14,
                           ),
                         ),
@@ -306,7 +306,7 @@ class _HomePublicoScreenState
                           BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(
+                          color: Colors.black.withValues(alpha: 
                             0.06,
                           ),
                           blurRadius: 15,
@@ -506,7 +506,7 @@ class _HomePublicoScreenState
                                 'favoritos y crear tus rutas.',
                                 style: TextStyle(
                                   color: Colors.white
-                                      .withOpacity(0.78),
+                                      .withValues(alpha: 0.78),
                                   fontSize: 13,
                                   height: 1.4,
                                 ),
@@ -539,7 +539,7 @@ class _HomePublicoScreenState
                           Icons.local_cafe_rounded,
                           size: 75,
                           color: Colors.white
-                              .withOpacity(0.16),
+                              .withValues(alpha: 0.16),
                         ),
                       ],
                     ),
@@ -755,7 +755,7 @@ class _DestinoCardState
                 BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(
+                color: Colors.black.withValues(alpha: 
                   0.07,
                 ),
                 blurRadius: 14,
@@ -791,7 +791,7 @@ class _DestinoCardState
                           widget.icono,
                           size: 70,
                           color: Colors.white
-                              .withOpacity(0.25),
+                              .withValues(alpha: 0.25),
                         ),
                       ),
                       Positioned(

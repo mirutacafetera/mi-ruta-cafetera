@@ -27,7 +27,7 @@ class SitioSectionTitle extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: verdePrincipal.withOpacity(0.10),
+              color: verdePrincipal.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(13),
             ),
             child: Icon(

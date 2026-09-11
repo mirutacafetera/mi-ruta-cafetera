@@ -295,7 +295,7 @@ class _MapaScreenState
 
   bool _mostrarPanelRuta = false;
 
-  bool _mostrarCategorias = true;
+  final bool _mostrarCategorias = true;
 
   bool _mostrarEstilosMapa = false;
 
@@ -3565,7 +3565,7 @@ class _MapaScreenState
                 _estilosMapa
                     .length,
             separatorBuilder:
-                (_, __) =>
+                (_, _) =>
                     const SizedBox(
               width:
                   8,
@@ -4005,8 +4005,7 @@ class _MapaScreenState
                 ? BorderSide(
                     color:
                         ruta.color
-                            .withOpacity(
-                      0.35,
+                            .withValues(alpha: 0.35,
                     ),
                   )
                 : BorderSide.none,

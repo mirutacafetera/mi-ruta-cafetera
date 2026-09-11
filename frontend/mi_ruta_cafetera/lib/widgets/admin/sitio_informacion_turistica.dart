@@ -64,7 +64,7 @@ class SitioInformacionTuristica extends StatelessWidget {
             ),
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              activeColor: verdePrincipal,
+              activeThumbColor: verdePrincipal,
               title: const Text(
                 'Sitio activo',
                 style: TextStyle(
