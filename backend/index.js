@@ -144,6 +144,12 @@ const authSitioRoutes = require(
 );
 
 // ======================================================
+// RUTAS DE ayuda-reporte
+// ======================================================
+const reporteRoutes=require(
+  './routes/ayuda/reporte.routes'
+);
+// ======================================================
 // RUTAS DE USUARIOS
 // ======================================================
 
@@ -312,6 +318,16 @@ app.use(
   '/api/sitios/auth',
   authSitioRoutes
 );
+
+// ======================================================
+// SUBRUTAS DE SITIOS TURÍSTICOS
+// ======================================================
+app.use(
+  '/api/ayuda/reporte',
+   reporteRoutes
+);
+
+
 
 // ======================================================
 // RUTA PRINCIPAL
