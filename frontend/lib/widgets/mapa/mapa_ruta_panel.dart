@@ -6,20 +6,16 @@ import '../../models/sitio_turistico_model.dart';
 /// PANEL RESPONSIVE DE RUTA
 /// ============================================================
 ///
-/// Este widget NO calcula rutas.
+/// Este widget solamente presenta visualmente la información
+/// de una ruta.
+///
+/// No calcula rutas.
 /// No consulta APIs.
 /// No modifica servicios.
+/// No decide su posición dentro del mapa.
 ///
-/// Su única responsabilidad es mostrar visualmente:
-/// - nombre de la ruta
-/// - cantidad de sitios
-/// - sitios seleccionados
-/// - estado de cálculo
-/// - distancia
-/// - duración
-/// - mensaje
-///
-/// La lógica continúa perteneciendo a MapaScreen.
+/// La lógica pertenece a los controllers y servicios.
+/// MapaScreen2 coordina la presentación y las acciones.
 /// ============================================================
 
 class MapaRutaPanel extends StatelessWidget {
@@ -57,10 +53,6 @@ class MapaRutaPanel extends StatelessWidget {
     this.mostrarBotonGenerar = false,
   });
 
-  // ============================================================
-  // BUILD
-  // ============================================================
-
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -70,12 +62,6 @@ class MapaRutaPanel extends StatelessWidget {
 
     final bool pantallaPequena = ancho < 600;
     final bool pantallaMuyPequena = alto < 650;
-
-    final double margenHorizontal =
-        pantallaPequena ? 10 : 16;
-
-    final double margenInferior =
-        pantallaMuyPequena ? 8 : 14;
 
     final double radio =
         pantallaPequena ? 18 : 22;
@@ -88,25 +74,21 @@ class MapaRutaPanel extends StatelessWidget {
             ? alto * 0.32
             : alto * 0.38;
 
-    return Positioned(
-      left: margenHorizontal,
-      right: margenHorizontal,
-      bottom: margenInferior,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: maxAltura,
-        ),
-        child: Material(
-          elevation: 10,
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(radio),
-          clipBehavior: Clip.antiAlias,
-          child: _contenido(
-            context,
-            pantallaPequena,
-            pantallaMuyPequena,
-            padding,
-          ),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: maxAltura,
+      ),
+      child: Material(
+        elevation: 10,
+        color: Colors.white,
+        borderRadius:
+            BorderRadius.circular(radio),
+        clipBehavior: Clip.antiAlias,
+        child: _contenido(
+          context,
+          pantallaPequena,
+          pantallaMuyPequena,
+          padding,
         ),
       ),
     );
@@ -128,18 +110,15 @@ class MapaRutaPanel extends StatelessWidget {
         padding: EdgeInsets.all(padding),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
           children: [
-            _cabecera(
-              pantallaPequena,
-            ),
+            _cabecera(pantallaPequena),
 
             const SizedBox(height: 8),
 
             if (sitios.isNotEmpty)
-              _recorrido(
-                pantallaPequena,
-              ),
+              _recorrido(pantallaPequena),
 
             if (calculando) ...[
               const SizedBox(height: 8),
@@ -150,9 +129,7 @@ class MapaRutaPanel extends StatelessWidget {
                 distancia.isNotEmpty &&
                 duracion.isNotEmpty) ...[
               const SizedBox(height: 10),
-              _resumenRuta(
-                pantallaPequena,
-              ),
+              _resumenRuta(pantallaPequena),
             ],
 
             if (mensaje.trim().isNotEmpty) ...[
@@ -163,9 +140,7 @@ class MapaRutaPanel extends StatelessWidget {
             if (mostrarBotonGenerar &&
                 onGenerarRuta != null) ...[
               const SizedBox(height: 10),
-              _botonGenerar(
-                pantallaPequena,
-              ),
+              _botonGenerar(pantallaPequena),
             ],
           ],
         ),
@@ -177,11 +152,10 @@ class MapaRutaPanel extends StatelessWidget {
   // CABECERA
   // ============================================================
 
-  Widget _cabecera(
-    bool pantallaPequena,
-  ) {
+  Widget _cabecera(bool pantallaPequena) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment:
+          CrossAxisAlignment.center,
       children: [
         Container(
           width: pantallaPequena ? 40 : 46,
@@ -196,7 +170,8 @@ class MapaRutaPanel extends StatelessWidget {
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: pantallaPequena ? 15 : 17,
+              fontSize:
+                  pantallaPequena ? 15 : 17,
             ),
           ),
         ),
@@ -207,17 +182,21 @@ class MapaRutaPanel extends StatelessWidget {
 
         Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
               Text(
                 titulo,
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                overflow:
+                    TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize:
                       pantallaPequena ? 15 : 17,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF3E2A20),
+                  fontWeight:
+                      FontWeight.w700,
+                  color:
+                      const Color(0xFF3E2A20),
                 ),
               ),
 
@@ -229,11 +208,13 @@ class MapaRutaPanel extends StatelessWidget {
                     : '${sitios.length} '
                         '${sitios.length == 1 ? 'sitio' : 'sitios'} seleccionados',
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                overflow:
+                    TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize:
                       pantallaPequena ? 11 : 12,
-                  color: Colors.grey.shade600,
+                  color:
+                      Colors.grey.shade600,
                 ),
               ),
             ],
@@ -244,12 +225,15 @@ class MapaRutaPanel extends StatelessWidget {
 
         IconButton(
           tooltip: 'Cerrar ruta',
-          visualDensity: VisualDensity.compact,
+          visualDensity:
+              VisualDensity.compact,
           onPressed: onCerrar,
           icon: Icon(
             Icons.close,
-            size: pantallaPequena ? 21 : 23,
-            color: Colors.grey.shade700,
+            size:
+                pantallaPequena ? 21 : 23,
+            color:
+                Colors.grey.shade700,
           ),
         ),
       ],
@@ -266,21 +250,26 @@ class MapaRutaPanel extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        horizontal: pantallaPequena ? 9 : 12,
-        vertical: pantallaPequena ? 8 : 10,
+        horizontal:
+            pantallaPequena ? 9 : 12,
+        vertical:
+            pantallaPequena ? 8 : 10,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F3EF),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius:
+            BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Icon(
                 Icons.route,
-                size: pantallaPequena ? 17 : 19,
+                size:
+                    pantallaPequena ? 17 : 19,
                 color: colorRuta,
               ),
 
@@ -291,9 +280,13 @@ class MapaRutaPanel extends StatelessWidget {
                   'Recorrido',
                   style: TextStyle(
                     fontSize:
-                        pantallaPequena ? 11 : 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey.shade700,
+                        pantallaPequena
+                            ? 11
+                            : 12,
+                    fontWeight:
+                        FontWeight.w700,
+                    color:
+                        Colors.grey.shade700,
                   ),
                 ),
               ),
@@ -304,13 +297,17 @@ class MapaRutaPanel extends StatelessWidget {
 
           Text(
             _textoRecorrido(),
-            maxLines: pantallaPequena ? 2 : 3,
-            overflow: TextOverflow.ellipsis,
+            maxLines:
+                pantallaPequena ? 2 : 3,
+            overflow:
+                TextOverflow.ellipsis,
             style: TextStyle(
               fontSize:
                   pantallaPequena ? 12 : 13,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF3E2A20),
+              fontWeight:
+                  FontWeight.w600,
+              color:
+                  const Color(0xFF3E2A20),
               height: 1.25,
             ),
           ),
@@ -329,17 +326,15 @@ class MapaRutaPanel extends StatelessWidget {
     }
 
     return sitios
-        .map(
-          (sitio) {
-            final ciudad = sitio.ciudad.trim();
+        .map((sitio) {
+          final ciudad = sitio.ciudad.trim();
 
-            if (ciudad.isNotEmpty) {
-              return ciudad;
-            }
+          if (ciudad.isNotEmpty) {
+            return ciudad;
+          }
 
-            return sitio.nombre;
-          },
-        )
+          return sitio.nombre;
+        })
         .join(' → ');
   }
 
@@ -349,11 +344,14 @@ class MapaRutaPanel extends StatelessWidget {
 
   Widget _estadoCalculando() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: const LinearProgressIndicator(
+          borderRadius:
+              BorderRadius.circular(10),
+          child:
+              const LinearProgressIndicator(
             minHeight: 4,
           ),
         ),
@@ -365,7 +363,8 @@ class MapaRutaPanel extends StatelessWidget {
             const SizedBox(
               width: 15,
               height: 15,
-              child: CircularProgressIndicator(
+              child:
+                  CircularProgressIndicator(
                 strokeWidth: 2,
               ),
             ),
@@ -376,10 +375,12 @@ class MapaRutaPanel extends StatelessWidget {
               child: Text(
                 'Calculando recorrido por carretera...',
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                overflow:
+                    TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.grey.shade700,
+                  color:
+                      Colors.grey.shade700,
                 ),
               ),
             ),
@@ -404,7 +405,8 @@ class MapaRutaPanel extends StatelessWidget {
             valor: distancia,
             titulo: 'Distancia',
             color: colorRuta,
-            pantallaPequena: pantallaPequena,
+            pantallaPequena:
+                pantallaPequena,
           ),
         ),
 
@@ -416,7 +418,8 @@ class MapaRutaPanel extends StatelessWidget {
             valor: duracion,
             titulo: 'Tiempo estimado',
             color: colorRuta,
-            pantallaPequena: pantallaPequena,
+            pantallaPequena:
+                pantallaPequena,
           ),
         ),
       ],
@@ -436,20 +439,24 @@ class MapaRutaPanel extends StatelessWidget {
   }) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: pantallaPequena ? 9 : 12,
-        vertical: pantallaPequena ? 8 : 10,
+        horizontal:
+            pantallaPequena ? 9 : 12,
+        vertical:
+            pantallaPequena ? 8 : 10,
       ),
       decoration: BoxDecoration(
         border: Border.all(
           color: Colors.grey.shade200,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius:
+            BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           Icon(
             icono,
-            size: pantallaPequena ? 19 : 21,
+            size:
+                pantallaPequena ? 19 : 21,
             color: color,
           ),
 
@@ -467,10 +474,15 @@ class MapaRutaPanel extends StatelessWidget {
                       TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize:
-                        pantallaPequena ? 13 : 14,
-                    fontWeight: FontWeight.bold,
+                        pantallaPequena
+                            ? 13
+                            : 14,
+                    fontWeight:
+                        FontWeight.bold,
                     color:
-                        const Color(0xFF30251F),
+                        const Color(
+                      0xFF30251F,
+                    ),
                   ),
                 ),
 
@@ -483,8 +495,11 @@ class MapaRutaPanel extends StatelessWidget {
                       TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize:
-                        pantallaPequena ? 9 : 10,
-                    color: Colors.grey.shade600,
+                        pantallaPequena
+                            ? 9
+                            : 10,
+                    color:
+                        Colors.grey.shade600,
                   ),
                 ),
               ],
@@ -525,16 +540,19 @@ class MapaRutaPanel extends StatelessWidget {
         onPressed: onGenerarRuta,
         icon: Icon(
           Icons.route,
-          size: pantallaPequena ? 18 : 20,
+          size:
+              pantallaPequena ? 18 : 20,
         ),
         label: Text(
           'GENERAR RUTA (${sitios.length} sitios)',
           maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+          overflow:
+              TextOverflow.ellipsis,
           style: TextStyle(
             fontSize:
                 pantallaPequena ? 12 : 13,
-            fontWeight: FontWeight.bold,
+            fontWeight:
+                FontWeight.bold,
           ),
         ),
         style: ElevatedButton.styleFrom(
@@ -547,10 +565,13 @@ class MapaRutaPanel extends StatelessWidget {
           ),
           padding: EdgeInsets.symmetric(
             horizontal: 12,
-            vertical: pantallaPequena ? 9 : 11,
+            vertical:
+                pantallaPequena ? 9 : 11,
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(13),
+          shape:
+              RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(13),
           ),
         ),
       ),

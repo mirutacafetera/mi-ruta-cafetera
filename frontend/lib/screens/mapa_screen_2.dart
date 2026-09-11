@@ -66,10 +66,6 @@ class _MapaScreen2State
       _actualizarPantalla,
     );
 
-    _busquedaController.addListener(
-      _buscar,
-    );
-
     _mapaController.cargarDatos();
   }
 
@@ -81,10 +77,6 @@ class _MapaScreen2State
 
     _rutaController.removeListener(
       _actualizarPantalla,
-    );
-
-    _busquedaController.removeListener(
-      _buscar,
     );
 
     _busquedaController.dispose();
@@ -107,12 +99,6 @@ class _MapaScreen2State
   // ============================================================
   // BÚSQUEDA
   // ============================================================
-
-  void _buscar() {
-    _mapaController.buscar(
-      _busquedaController.text,
-    );
-  }
 
   void _limpiarBusqueda() {
     _busquedaController.clear();
@@ -540,122 +526,91 @@ class _MapaScreen2State
   // PANEL DE RUTA
   // ============================================================
 
-  Widget _panelRuta() {
-    return MapaRutaPanel(
-      titulo:
-          _rutaController.nombreRuta,
-      sitios:
-          _rutaController
-              .sitiosSeleccionados,
-      distancia:
-          _rutaController.rutaResultado ==
-                  null
-              ? ''
-              : '${_rutaController.rutaResultado!.distanciaKm.toStringAsFixed(2)} km',
-      duracion:
-          _rutaController.rutaResultado ==
-                  null
-              ? ''
-              : '${_rutaController.rutaResultado!.duracionMinutos.toStringAsFixed(0)} min',
-      mensaje:
-          _rutaController.mensaje ??
-              '',
-      calculando:
-          _rutaController.calculando,
-      colorRuta:
-          Colors.orange,
-      onCerrar:
-          _cancelarRuta,
-      onGenerarRuta:
-          _calcularRuta,
-      mostrarBotonGenerar:
-          _rutaController
-                  .sitiosSeleccionados
-                  .length >=
-              2,
-    );
-  }
+Widget _panelRuta() {
+  return MapaRutaPanel(
+    titulo: _rutaController.nombreRuta,
+    sitios: _rutaController.sitiosSeleccionados,
+    distancia: _rutaController.rutaResultado == null
+        ? ''
+        : '${_rutaController.rutaResultado!.distanciaKm.toStringAsFixed(2)} km',
+    duracion: _rutaController.rutaResultado == null
+        ? ''
+        : '${_rutaController.rutaResultado!.duracionMinutos.toStringAsFixed(0)} min',
+    mensaje: _rutaController.mensaje ?? '',
+    calculando: _rutaController.calculando,
+    colorRuta: Colors.orange,
+    onCerrar: _cancelarRuta,
+    onGenerarRuta: _calcularRuta,
+    mostrarBotonGenerar:
+        _rutaController.sitiosSeleccionados.length >= 2,
+  );
+}
 
   // ============================================================
   // BARRA INFERIOR
   // ============================================================
 
-  Widget _barraInferior() {
-    if (_rutaController.modoCrearRuta) {
-      return MapaSelectorRuta(
-        activo: true,
-        sitiosSeleccionados:
-            _rutaController
-                .sitiosSeleccionados,
-        onIniciar:
-            _iniciarRuta,
-        onCancelar:
-            _cancelarRuta,
-        onCalcular:
-            _calcularRuta,
-      );
-    }
-
-    return Row(
-      children: [
-        Expanded(
-          child: MapaSelectorRuta(
-            activo: false,
-            sitiosSeleccionados:
-                const [],
-            onIniciar:
-                _iniciarRuta,
-            onCancelar:
-                _cancelarRuta,
-            onCalcular:
-                _calcularRuta,
-          ),
-        ),
-        const SizedBox(
-          width: 8,
-        ),
-        SizedBox(
-          width: 115,
-          height: 52,
-          child: Material(
-            color: Colors.white,
-            borderRadius:
-                BorderRadius.circular(26),
-            elevation: 4,
-            child: InkWell(
-              onTap:
-                  _mostrarRutasPredefinidas,
-              borderRadius:
-                  BorderRadius.circular(26),
-              child: const Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.route,
-                    color: Colors.brown,
-                    size: 21,
-                  ),
-                  SizedBox(
-                    width: 6,
-                  ),
-                  Text(
-                    'Rutas',
-                    style: TextStyle(
-                      color: Colors.brown,
-                      fontWeight:
-                          FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+Widget _barraInferior() {
+  if (_rutaController.modoCrearRuta) {
+    return MapaSelectorRuta(
+      activo: true,
+      sitiosSeleccionados:
+          _rutaController.sitiosSeleccionados,
+      onIniciar: _iniciarRuta,
+      onCancelar: _cancelarRuta,
+      onCalcular: _calcularRuta,
     );
   }
 
+  return Row(
+    children: [
+      Expanded(
+        child: MapaSelectorRuta(
+          activo: false,
+          sitiosSeleccionados: const [],
+          onIniciar: _iniciarRuta,
+          onCancelar: _cancelarRuta,
+          onCalcular: _calcularRuta,
+        ),
+      ),
+      const SizedBox(width: 8),
+      SizedBox(
+        width: 115,
+        height: 52,
+        child: Material(
+          color: Colors.white,
+          borderRadius:
+              BorderRadius.circular(26),
+          elevation: 4,
+          child: InkWell(
+            onTap: _mostrarRutasPredefinidas,
+            borderRadius:
+                BorderRadius.circular(26),
+            child: const Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.route,
+                  color: Colors.brown,
+                  size: 21,
+                ),
+                SizedBox(width: 6),
+                Text(
+                  'Rutas',
+                  style: TextStyle(
+                    color: Colors.brown,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
   // ============================================================
   // BUILD
   // ============================================================
@@ -755,8 +710,7 @@ class _MapaScreen2State
                     resultados:
                         _mapaController
                             .resultadosBusqueda,
-                    onChanged:
-                        (_) {},
+                    onChanged: _mapaController.buscar,
                     onSeleccionar:
                         _seleccionarResultado,
                     onLimpiar:
@@ -818,18 +772,16 @@ class _MapaScreen2State
               // PANEL DE RUTA
               // ==================================================
 
-              if (_rutaController
-                      .modoCrearRuta &&
-                  (_rutaController
-                          .calculando ||
-                      _rutaController
-                              .mensaje !=
-                          null ||
-                      _rutaController
-                              .rutaResultado !=
-                          null))
-                _panelRuta(),
-
+              if (_rutaController.modoCrearRuta &&
+                (_rutaController.calculando ||
+                  _rutaController.mensaje != null ||
+                  _rutaController.rutaResultado != null))
+                Positioned(
+                left: 12,
+                right: 12,
+                bottom: 145,
+                child: _panelRuta(),
+              ),
               // ==================================================
               // BARRA INFERIOR
               // ==================================================
