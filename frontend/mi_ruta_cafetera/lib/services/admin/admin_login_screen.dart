@@ -97,11 +97,11 @@ class _AdminLoginScreenState
         ),
       );
     } finally {
-      if (!mounted) return;
-
-      setState(() {
-        _cargando = false;
-      });
+      if (mounted) {
+        setState(() {
+          _cargando = false;
+        });
+      }
     }
   }
 

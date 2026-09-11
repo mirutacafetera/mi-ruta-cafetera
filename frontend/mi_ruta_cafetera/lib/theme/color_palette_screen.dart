@@ -348,5 +348,5 @@ class _SmallColorCard
 // =====================================================
 
 String _hexColor(Color color) {
-  return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+  return '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 }

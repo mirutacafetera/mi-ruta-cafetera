@@ -56,7 +56,7 @@ class SitioInformacion extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 14),
             child: DropdownButtonFormField<String>(
-              value: categoriaSeleccionada,
+              initialValue: categoriaSeleccionada,
               isExpanded: true,
               decoration: InputDecoration(
                 labelText: 'Categoría',

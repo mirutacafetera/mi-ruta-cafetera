@@ -87,7 +87,7 @@ class MapaBuscador extends StatelessWidget {
                 shrinkWrap: true,
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 itemCount: resultados.length,
-                separatorBuilder: (_, __) => Divider(
+                separatorBuilder: (_, _) => Divider(
                   height: 1,
                   color: Colors.grey.shade200,
                 ),

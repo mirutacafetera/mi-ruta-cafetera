@@ -529,7 +529,7 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
                       ? 'Actualiza la información del sitio'
                       : 'Registra un nuevo lugar turístico',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(.75),
+                    color: Colors.white.withValues(alpha: 0.75),
                     fontSize: 12,
                   ),
                 ),

@@ -1,5 +1,11 @@
 const express = require('express');
 
+const {
+  loginWithGoogle
+} = require(
+  '../../controllers/usuario/google.controller'
+);
+
 const router = express.Router();
 
 const {
@@ -36,6 +42,11 @@ router.post(
 router.post(
   '/login',
   iniciarSesionUsuario
+);
+
+router.post(
+  '/login-google', 
+  loginWithGoogle
 );
 
 // Recuperar contraseña

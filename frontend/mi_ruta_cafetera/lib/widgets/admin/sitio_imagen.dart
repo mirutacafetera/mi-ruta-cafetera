@@ -119,7 +119,7 @@ class SitioImagen extends StatelessWidget {
             width: 62,
             height: 62,
             decoration: BoxDecoration(
-              color: verdePrincipal.withOpacity(0.10),
+              color: verdePrincipal.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
