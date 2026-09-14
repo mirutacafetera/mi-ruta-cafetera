@@ -1,31 +1,102 @@
 const bcrypt = require('bcryptjs');
-
 const jwt = require('jsonwebtoken');
-
 const crypto = require('crypto');
 
-const AuthAdmin = require(
-  '../../models/admin/authsitio'
-);
+const AuthSitio = require('../../models/admin/authsitio');
 
-const {
-  enviarCodigoRecuperacion
-} = require('../../utils/mailer');
+// ======================================================
+// CREAR CUENTA DEL SITIO
+// ======================================================
 
-// =====================================================
-// INICIAR SESIÓN ADMINISTRADOR
-// =====================================================
+const crearCuentaSitio = async (req, res) => {
+  try {
+    const {
+      nombre,
+      apellido,
+      correo,
+      password,
+      telefono
+    } = req.body;
 
-const iniciarSesionAdmin = async (req, res) => {
+    // Validar campos obligatorios
+    if (
+      !nombre ||
+      !apellido ||
+      !correo ||
+      !password
+    ) {
+      return res.status(400).json({
+        mensaje:
+          'Nombre, apellido, correo y contraseña son obligatorios'
+      });
+    }
+
+    // Verificar si ya existe
+    const sitioExistente = await AuthSitio.findOne({
+      correo: correo.toLowerCase().trim()
+    });
+
+    if (sitioExistente) {
+      return res.status(400).json({
+        mensaje:
+          'Ya existe una cuenta de sitio con este correo'
+      });
+    }
+
+    // Encriptar contraseña
+    const passwordEncriptada =
+      await bcrypt.hash(password, 10);
+
+    // Crear cuenta
+    const nuevoSitio = new AuthSitio({
+      nombre,
+      apellido,
+      correo: correo.toLowerCase().trim(),
+      password: passwordEncriptada,
+      telefono
+    });
+
+    await nuevoSitio.save();
+
+    return res.status(201).json({
+      mensaje:
+        'Cuenta del sitio creada correctamente',
+
+      sitio: {
+        id: nuevoSitio._id,
+        nombre: nuevoSitio.nombre,
+        apellido: nuevoSitio.apellido,
+        correo: nuevoSitio.correo,
+        telefono: nuevoSitio.telefono,
+        rol: nuevoSitio.rol,
+        activo: nuevoSitio.activo
+      }
+    });
+
+  } catch (error) {
+
+    console.error(
+      'Error al crear cuenta del sitio:',
+      error
+    );
+
+    return res.status(500).json({
+      mensaje:
+        'Error al crear la cuenta del sitio'
+    });
+  }
+};
+
+// ======================================================
+// INICIAR SESIÓN DEL SITIO
+// ======================================================
+
+const iniciarSesionSitio = async (req, res) => {
   try {
     const {
       correo,
       password
     } = req.body;
-
-    // -------------------------------------------------
-    // VALIDAR CAMPOS
-    // -------------------------------------------------
 
     if (!correo || !password) {
       return res.status(400).json({
@@ -34,50 +105,30 @@ const iniciarSesionAdmin = async (req, res) => {
       });
     }
 
-    // -------------------------------------------------
-    // NORMALIZAR CORREO
-    // -------------------------------------------------
+    const sitio = await AuthSitio
+      .findOne({
+        correo: correo.toLowerCase().trim()
+      })
+      .select('+password');
 
-    const correoNormalizado =
-      correo.toLowerCase().trim();
-
-    // -------------------------------------------------
-    // BUSCAR ADMINISTRADOR
-    // -------------------------------------------------
-
-    const administrador =
-      await AuthAdmin
-        .findOne({
-          correo: correoNormalizado
-        })
-        .select('+password');
-
-    if (!administrador) {
+    if (!sitio) {
       return res.status(401).json({
         mensaje:
           'Correo o contraseña incorrectos'
       });
     }
 
-    // -------------------------------------------------
-    // VERIFICAR ESTADO
-    // -------------------------------------------------
-
-    if (!administrador.activo) {
+    if (!sitio.activo) {
       return res.status(403).json({
         mensaje:
-          'La cuenta del administrador está inactiva'
+          'La cuenta del sitio está inactiva'
       });
     }
-
-    // -------------------------------------------------
-    // COMPARAR CONTRASEÑA
-    // -------------------------------------------------
 
     const passwordCorrecta =
       await bcrypt.compare(
         password,
-        administrador.password
+        sitio.password
       );
 
     if (!passwordCorrecta) {
@@ -87,27 +138,18 @@ const iniciarSesionAdmin = async (req, res) => {
       });
     }
 
-    // -------------------------------------------------
-    // CREAR JWT
-    // -------------------------------------------------
-
-    const token =
-      jwt.sign(
-        {
-          id: administrador._id.toString(),
-          correo: administrador.correo,
-          rol: 'admin'
-        },
-        process.env.JWT_SECRET,
-        {
-          expiresIn:
-            process.env.JWT_EXPIRES_IN || '1d'
-        }
-      );
-
-    // -------------------------------------------------
-    // RESPUESTA
-    // -------------------------------------------------
+    const token = jwt.sign(
+      {
+        id: sitio._id.toString(),
+        correo: sitio.correo,
+        rol: 'sitio'
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn:
+          process.env.JWT_EXPIRES_IN || '1d'
+      }
+    );
 
     return res.status(200).json({
       mensaje:
@@ -115,78 +157,71 @@ const iniciarSesionAdmin = async (req, res) => {
 
       token,
 
-      administrador: {
-        id: administrador._id,
-        nombre: administrador.nombre,
-        apellido: administrador.apellido,
-        correo: administrador.correo,
-        telefono: administrador.telefono,
-        rol: administrador.rol,
-        activo: administrador.activo
+      sitio: {
+        id: sitio._id,
+        nombre: sitio.nombre,
+        apellido: sitio.apellido,
+        correo: sitio.correo,
+        telefono: sitio.telefono,
+        rol: sitio.rol,
+        activo: sitio.activo
       }
     });
 
   } catch (error) {
+
     console.error(
-      'Error al iniciar sesión como administrador:',
+      'Error al iniciar sesión del sitio:',
       error
     );
 
     return res.status(500).json({
       mensaje:
-        'Error al iniciar sesión como administrador',
-      error: error.message
+        'Error al iniciar sesión'
     });
   }
 };
 
-// =====================================================
-// OBTENER ADMINISTRADOR
-// =====================================================
+// ======================================================
+// OBTENER CUENTA DEL SITIO
+// ======================================================
 
-const obtenerAdministrador = async (req, res) => {
+const obtenerSitio = async (req, res) => {
   try {
-    const administrador =
-      await AuthAdmin
-        .findById(req.params.id)
-        .select('-password');
+    const { id } = req.params;
 
-    if (!administrador) {
+    const sitio = await AuthSitio.findById(id);
+
+    if (!sitio) {
       return res.status(404).json({
         mensaje:
-          'Administrador no encontrado'
+          'Cuenta del sitio no encontrada'
       });
     }
 
-    return res.status(200).json(
-      administrador
-    );
+    return res.status(200).json(sitio);
 
   } catch (error) {
+
     console.error(
-      'Error al obtener administrador:',
+      'Error al obtener sitio:',
       error
     );
 
     return res.status(500).json({
       mensaje:
-        'Error al obtener administrador',
-      error: error.message
+        'Error al obtener la cuenta del sitio'
     });
   }
 };
 
-// =====================================================
-// RECUPERAR CONTRASEÑA
-// =====================================================
+// ======================================================
+// SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+// ======================================================
 
-const recuperarPasswordAdmin = async (req, res) => {
+const recuperarPasswordSitio = async (req, res) => {
   try {
     const { correo } = req.body;
-
-    // -------------------------------------------------
-    // VALIDAR CORREO
-    // -------------------------------------------------
 
     if (!correo) {
       return res.status(400).json({
@@ -195,347 +230,213 @@ const recuperarPasswordAdmin = async (req, res) => {
       });
     }
 
-    // -------------------------------------------------
-    // NORMALIZAR CORREO
-    // -------------------------------------------------
+    const sitio = await AuthSitio.findOne({
+      correo: correo.toLowerCase().trim()
+    });
 
-    const correoNormalizado =
-      correo.toLowerCase().trim();
-
-    // -------------------------------------------------
-    // BUSCAR ADMINISTRADOR
-    // -------------------------------------------------
-
-    const administrador =
-      await AuthAdmin.findOne({
-        correo: correoNormalizado
-      });
-
-    if (!administrador) {
+    if (!sitio) {
       return res.status(404).json({
         mensaje:
-          'No existe un administrador con ese correo'
+          'No existe una cuenta con este correo'
       });
     }
 
-    // -------------------------------------------------
-    // GENERAR CÓDIGO
-    // -------------------------------------------------
+    const codigo =
+      crypto.randomInt(100000, 1000000).toString();
 
-    const codigoRecuperacion =
-      crypto.randomInt(
-        100000,
-        1000000
-      ).toString();
+    sitio.codigoRecuperacion = codigo;
 
-    const codigoRecuperacionExpiracion =
-      new Date(
-        Date.now() +
-        10 * 60 * 1000
-      );
+    sitio.codigoRecuperacionExpiracion =
+      new Date(Date.now() + 10 * 60 * 1000);
 
-    // -------------------------------------------------
-    // GUARDAR CÓDIGO
-    // -------------------------------------------------
+    await sitio.save();
 
-    administrador.codigoRecuperacion =
-      codigoRecuperacion;
-
-    administrador.codigoRecuperacionExpiracion =
-      codigoRecuperacionExpiracion;
-
-    administrador.tokenRecuperacion = null;
-
-    administrador.tokenRecuperacionExpiracion =
-      null;
-
-    await administrador.save();
-
-    // -------------------------------------------------
-    // ENVIAR CÓDIGO
-    // -------------------------------------------------
-
-    await enviarCodigoRecuperacion(
-      administrador.correo,
-      administrador.nombre,
-      codigoRecuperacion
-    );
-
-    // -------------------------------------------------
-    // RESPUESTA
-    // -------------------------------------------------
+    // Por ahora devolvemos el código para poder probar.
+    // Después podemos conectarlo con tu sistema de correo.
 
     return res.status(200).json({
       mensaje:
-        'Hemos enviado un código de recuperación a tu correo'
+        'Código de recuperación generado',
+
+      codigo
     });
 
   } catch (error) {
+
     console.error(
-      'Error al recuperar contraseña del administrador:',
+      'Error en recuperación:',
       error
     );
 
     return res.status(500).json({
       mensaje:
-        'Error al solicitar recuperación de contraseña',
-      error: error.message
+        'Error al solicitar recuperación'
     });
   }
 };
 
-// =====================================================
+// ======================================================
 // VERIFICAR CÓDIGO DE RECUPERACIÓN
-// =====================================================
+// ======================================================
 
-const verificarCodigoRecuperacionAdmin =
-  async (req, res) => {
-    try {
-      const {
-        correo,
-        codigo
-      } = req.body;
+const verificarCodigoRecuperacionSitio = async (
+  req,
+  res
+) => {
+  try {
+    const {
+      correo,
+      codigo
+    } = req.body;
 
-      // ------------------------------------------------
-      // VALIDAR DATOS
-      // ------------------------------------------------
+    const sitio = await AuthSitio.findOne({
+      correo: correo.toLowerCase().trim()
+    });
 
-      if (!correo || !codigo) {
-        return res.status(400).json({
-          mensaje:
-            'Correo y código son obligatorios'
-        });
-      }
-
-      // ------------------------------------------------
-      // NORMALIZAR CORREO
-      // ------------------------------------------------
-
-      const correoNormalizado =
-        correo.toLowerCase().trim();
-
-      // ------------------------------------------------
-      // BUSCAR ADMINISTRADOR
-      // ------------------------------------------------
-
-      const administrador =
-        await AuthAdmin.findOne({
-          correo: correoNormalizado
-        });
-
-      if (!administrador) {
-        return res.status(404).json({
-          mensaje:
-            'Administrador no encontrado'
-        });
-      }
-
-      // ------------------------------------------------
-      // VERIFICAR CÓDIGO
-      // ------------------------------------------------
-
-      if (
-        administrador.codigoRecuperacion !==
-        codigo
-      ) {
-        return res.status(400).json({
-          mensaje:
-            'El código de recuperación es incorrecto'
-        });
-      }
-
-      // ------------------------------------------------
-      // VERIFICAR EXPIRACIÓN
-      // ------------------------------------------------
-
-      if (
-        !administrador.codigoRecuperacionExpiracion ||
-        administrador.codigoRecuperacionExpiracion <
-          new Date()
-      ) {
-        return res.status(400).json({
-          mensaje:
-            'El código de recuperación ha expirado'
-        });
-      }
-
-      // ------------------------------------------------
-      // GENERAR TOKEN
-      // ------------------------------------------------
-
-      const tokenRecuperacion =
-        crypto
-          .randomBytes(32)
-          .toString('hex');
-
-      const tokenRecuperacionExpiracion =
-        new Date(
-          Date.now() +
-          10 * 60 * 1000
-        );
-
-      // ------------------------------------------------
-      // GUARDAR TOKEN
-      // ------------------------------------------------
-
-      administrador.tokenRecuperacion =
-        tokenRecuperacion;
-
-      administrador.tokenRecuperacionExpiracion =
-        tokenRecuperacionExpiracion;
-
-      administrador.codigoRecuperacion = null;
-
-      administrador.codigoRecuperacionExpiracion =
-        null;
-
-      await administrador.save();
-
-      // ------------------------------------------------
-      // RESPUESTA
-      // ------------------------------------------------
-
-      return res.status(200).json({
+    if (!sitio) {
+      return res.status(404).json({
         mensaje:
-          'Código verificado correctamente',
-
-        tokenRecuperacion
-      });
-
-    } catch (error) {
-      console.error(
-        'Error al verificar código de recuperación:',
-        error
-      );
-
-      return res.status(500).json({
-        mensaje:
-          'Error al verificar el código',
-        error: error.message
+          'Cuenta del sitio no encontrada'
       });
     }
-  };
 
-// =====================================================
+    if (
+      sitio.codigoRecuperacion !== codigo
+    ) {
+      return res.status(400).json({
+        mensaje:
+          'Código de recuperación incorrecto'
+      });
+    }
+
+    if (
+      !sitio.codigoRecuperacionExpiracion ||
+      sitio.codigoRecuperacionExpiracion <
+        new Date()
+    ) {
+      return res.status(400).json({
+        mensaje:
+          'El código de recuperación ha expirado'
+      });
+    }
+
+    return res.status(200).json({
+      mensaje:
+        'Código de recuperación válido'
+    });
+
+  } catch (error) {
+
+    console.error(
+      'Error verificando código:',
+      error
+    );
+
+    return res.status(500).json({
+      mensaje:
+        'Error al verificar el código'
+    });
+  }
+};
+
+// ======================================================
 // RESTABLECER CONTRASEÑA
-// =====================================================
+// ======================================================
 
-const restablecerPasswordAdmin =
-  async (req, res) => {
-    try {
-      const {
-        tokenRecuperacion,
-        nuevaPassword
-      } = req.body;
+const restablecerPasswordSitio = async (
+  req,
+  res
+) => {
+  try {
+    const {
+      correo,
+      codigo,
+      nuevaPassword
+    } = req.body;
 
-      // ------------------------------------------------
-      // VALIDAR DATOS
-      // ------------------------------------------------
-
-      if (
-        !tokenRecuperacion ||
-        !nuevaPassword
-      ) {
-        return res.status(400).json({
-          mensaje:
-            'Token y nueva contraseña son obligatorios'
-        });
-      }
-
-      // ------------------------------------------------
-      // VALIDAR CONTRASEÑA
-      // ------------------------------------------------
-
-      if (nuevaPassword.length < 6) {
-        return res.status(400).json({
-          mensaje:
-            'La contraseña debe tener al menos 6 caracteres'
-        });
-      }
-
-      // ------------------------------------------------
-      // BUSCAR ADMINISTRADOR
-      // ------------------------------------------------
-
-      const administrador =
-        await AuthAdmin.findOne({
-          tokenRecuperacion
-        });
-
-      if (!administrador) {
-        return res.status(400).json({
-          mensaje:
-            'El token de recuperación no es válido'
-        });
-      }
-
-      // ------------------------------------------------
-      // VERIFICAR EXPIRACIÓN
-      // ------------------------------------------------
-
-      if (
-        !administrador.tokenRecuperacionExpiracion ||
-        administrador.tokenRecuperacionExpiracion <
-          new Date()
-      ) {
-        return res.status(400).json({
-          mensaje:
-            'El token de recuperación ha expirado'
-        });
-      }
-
-      // ------------------------------------------------
-      // ENCRIPTAR NUEVA CONTRASEÑA
-      // ------------------------------------------------
-
-      administrador.password =
-        await bcrypt.hash(
-          nuevaPassword,
-          10
-        );
-
-      // ------------------------------------------------
-      // LIMPIAR TOKEN
-      // ------------------------------------------------
-
-      administrador.tokenRecuperacion = null;
-
-      administrador.tokenRecuperacionExpiracion =
-        null;
-
-      await administrador.save();
-
-      // ------------------------------------------------
-      // RESPUESTA
-      // ------------------------------------------------
-
-      return res.status(200).json({
+    if (
+      !correo ||
+      !codigo ||
+      !nuevaPassword
+    ) {
+      return res.status(400).json({
         mensaje:
-          'Contraseña restablecida correctamente'
-      });
-
-    } catch (error) {
-      console.error(
-        'Error al restablecer contraseña:',
-        error
-      );
-
-      return res.status(500).json({
-        mensaje:
-          'Error al restablecer la contraseña',
-        error: error.message
+          'Correo, código y nueva contraseña son obligatorios'
       });
     }
-  };
 
-// =====================================================
-// EXPORTAR
-// =====================================================
+    const sitio = await AuthSitio
+      .findOne({
+        correo: correo.toLowerCase().trim()
+      })
+      .select('+password');
+
+    if (!sitio) {
+      return res.status(404).json({
+        mensaje:
+          'Cuenta del sitio no encontrada'
+      });
+    }
+
+    if (
+      sitio.codigoRecuperacion !== codigo
+    ) {
+      return res.status(400).json({
+        mensaje:
+          'Código de recuperación incorrecto'
+      });
+    }
+
+    if (
+      !sitio.codigoRecuperacionExpiracion ||
+      sitio.codigoRecuperacionExpiracion <
+        new Date()
+    ) {
+      return res.status(400).json({
+        mensaje:
+          'El código de recuperación ha expirado'
+      });
+    }
+
+    sitio.password =
+      await bcrypt.hash(
+        nuevaPassword,
+        10
+      );
+
+    sitio.codigoRecuperacion = null;
+    sitio.codigoRecuperacionExpiracion = null;
+
+    await sitio.save();
+
+    return res.status(200).json({
+      mensaje:
+        'Contraseña restablecida correctamente'
+    });
+
+  } catch (error) {
+
+    console.error(
+      'Error restableciendo contraseña:',
+      error
+    );
+
+    return res.status(500).json({
+      mensaje:
+        'Error al restablecer la contraseña'
+    });
+  }
+};
+
+// ======================================================
+// EXPORTAR FUNCIONES
+// ======================================================
 
 module.exports = {
-  iniciarSesionAdmin,
-  obtenerAdministrador,
-  recuperarPasswordAdmin,
-  verificarCodigoRecuperacionAdmin,
-  restablecerPasswordAdmin
+  crearCuentaSitio,
+  iniciarSesionSitio,
+  obtenerSitio,
+  recuperarPasswordSitio,
+  verificarCodigoRecuperacionSitio,
+  restablecerPasswordSitio
 };

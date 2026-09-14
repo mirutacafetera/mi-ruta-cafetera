@@ -1,30 +1,23 @@
 const mongoose = require('mongoose');
 
-const reporteSchema = new mongoose.Schema(
+const ayudaSchema = new mongoose.Schema(
   {
-    tipoRemitente: {
-      type: String,
-      enum: ['usuario', 'sitio'],
-      required: true
-    },
-
-    remitenteId: {
+    usuarioId: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: 'Usuario',
       required: true
     },
 
     asunto: {
       type: String,
       required: true,
-      trim: true,
-      minlength: 3
+      trim: true
     },
 
     mensaje: {
       type: String,
       required: true,
-      trim: true,
-      minlength: 5
+      trim: true
     },
 
     estado: {
@@ -44,4 +37,4 @@ const reporteSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Reporte', reporteSchema);
+module.exports = mongoose.model('Ayuda', ayudaSchema);

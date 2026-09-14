@@ -1,49 +1,70 @@
 const express = require('express');
 
+const router = express.Router();
+
 const {
-  iniciarSesionAdmin,
-  obtenerAdministrador,
-  recuperarPasswordAdmin,
-  verificarCodigoRecuperacionAdmin,
-  restablecerPasswordAdmin
+  crearCuentaSitio,
+  iniciarSesionSitio,
+  obtenerSitio,
+  recuperarPasswordSitio,
+  verificarCodigoRecuperacionSitio,
+  restablecerPasswordSitio
 } = require(
   '../../controllers/admin/authsitio.controller'
 );
 
-const router = express.Router();
-
 // ======================================================
-// AUTENTICACIÓN DEL ADMINISTRADOR
+// CREAR CUENTA DEL SITIO
 // ======================================================
 
-// Iniciar sesión
+router.post(
+  '/registrar',
+  crearCuentaSitio
+);
+
+// ======================================================
+// INICIAR SESIÓN
+// ======================================================
+
 router.post(
   '/login',
-  iniciarSesionAdmin
+  iniciarSesionSitio
 );
 
-// Recuperar contraseña
-router.post(
-  '/recuperar-password',
-  recuperarPasswordAdmin
-);
+// ======================================================
+// OBTENER CUENTA
+// ======================================================
 
-// Verificar código de recuperación
-router.post(
-  '/verificar-codigo-recuperacion',
-  verificarCodigoRecuperacionAdmin
-);
-
-// Restablecer contraseña
-router.post(
-  '/restablecer-password',
-  restablecerPasswordAdmin
-);
-
-// Obtener administrador
 router.get(
   '/:id',
-  obtenerAdministrador
+  obtenerSitio
+);
+
+// ======================================================
+// RECUPERAR CONTRASEÑA
+// ======================================================
+
+router.post(
+  '/recuperar-password',
+  recuperarPasswordSitio
+);
+
+// ======================================================
+// VERIFICAR CÓDIGO
+// ======================================================
+
+router.post(
+  '/verificar-codigo-recuperacion',
+  verificarCodigoRecuperacionSitio
+);
+
+// ======================================================
+// RESTABLECER CONTRASEÑA
+// ======================================================
+
+router.post(
+  '/restablecer-password',
+  restablecerPasswordSitio
 );
 
 module.exports = router;
