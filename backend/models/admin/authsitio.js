@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const authAdminSchema = new mongoose.Schema(
+const authSitioSchema = new mongoose.Schema(
   {
     nombre: {
       type: String,
@@ -36,8 +36,8 @@ const authAdminSchema = new mongoose.Schema(
 
     rol: {
       type: String,
-      default: 'admin',
-      enum: ['admin']
+      default: 'sitio',
+      enum: ['sitio']
     },
 
     activo: {
@@ -67,15 +67,12 @@ const authAdminSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    collection: 'authadmins'
+    collection: 'authsitios'
   }
 );
 
-const AuthAdmin =
-  mongoose.models.AuthAdmin ||
-  mongoose.model(
-    'AuthAdmin',
-    authAdminSchema
-  );
+const AuthSitio =
+  mongoose.models.AuthSitio ||
+  mongoose.model('AuthSitio', authSitioSchema);
 
-module.exports = AuthAdmin;
+module.exports = AuthSitio;
