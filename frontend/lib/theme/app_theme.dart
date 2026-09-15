@@ -1,121 +1,111 @@
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
+import 'app_dimensions.dart';
 
 class AppTheme {
   AppTheme._();
-
-  // =====================================================
-  // TEMA PRINCIPAL
-  // =====================================================
 
   static ThemeData get light {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.light,
-
-      // -------------------------------------------------
-      // COLORES DE MARCA
-      // -------------------------------------------------
-
       primary: AppColors.primary,
       secondary: AppColors.secondary,
       tertiary: AppColors.tertiary,
-
-      // -------------------------------------------------
-      // SUPERFICIES
-      // -------------------------------------------------
-
       surface: AppColors.surface,
-
-      // -------------------------------------------------
-      // ERROR
-      // -------------------------------------------------
-
       error: AppColors.error,
     );
 
     return ThemeData(
       useMaterial3: true,
 
+      // =====================================================
+      // COLOR SCHEME
+      // =====================================================
+
       colorScheme: colorScheme,
 
       scaffoldBackgroundColor:
           AppColors.background,
 
-      // =================================================
+      // =====================================================
       // APP BAR
-      // =================================================
+      // =====================================================
 
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
-        elevation: 0,
+        elevation: AppDimensions.elevationNone,
         centerTitle: false,
       ),
 
-      // =================================================
-      // CARDS
-      // =================================================
+      // =====================================================
+      // CARD
+      // =====================================================
 
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: 2,
+        elevation: AppDimensions.elevationCard,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
-            Radius.circular(16),
+            Radius.circular(
+              AppDimensions.radiusLg,
+            ),
           ),
         ),
       ),
 
-      // =================================================
-      // BOTONES PRINCIPALES
-      // =================================================
+      // =====================================================
+      // ELEVATED BUTTON
+      // =====================================================
 
       elevatedButtonTheme:
           ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              AppColors.primary,
-          foregroundColor:
-              AppColors.white,
-          elevation: 1,
-          minimumSize:
-              const Size(0, 48),
-          shape:
-              RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(12),
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.white,
+          elevation:
+              AppDimensions.elevationNone,
+          minimumSize: const Size(
+            0,
+            AppDimensions.buttonHeight,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
           ),
         ),
       ),
 
-      // =================================================
-      // BOTONES SECUNDARIOS
-      // =================================================
+      // =====================================================
+      // OUTLINED BUTTON
+      // =====================================================
 
       outlinedButtonTheme:
           OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor:
-              AppColors.primary,
+          foregroundColor: AppColors.primary,
           side: const BorderSide(
             color: AppColors.primary,
           ),
-          minimumSize:
-              const Size(0, 48),
-          shape:
-              RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(12),
+          minimumSize: const Size(
+            0,
+            AppDimensions.buttonHeight,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
           ),
         ),
       ),
 
-      // =================================================
-      // INPUTS
-      // =================================================
+      // =====================================================
+      // INPUT DECORATION
+      // =====================================================
 
       inputDecorationTheme:
           InputDecorationTheme(
@@ -123,36 +113,37 @@ class AppTheme {
         fillColor: AppColors.surface,
 
         border: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusMd,
+          ),
           borderSide: const BorderSide(
             color: AppColors.border,
           ),
         ),
 
-        enabledBorder:
-            OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(12),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusMd,
+          ),
           borderSide: const BorderSide(
             color: AppColors.border,
           ),
         ),
 
-        focusedBorder:
-            OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(12),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusMd,
+          ),
           borderSide: const BorderSide(
             color: AppColors.primary,
             width: 2,
           ),
         ),
 
-        errorBorder:
-            OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(12),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusMd,
+          ),
           borderSide: const BorderSide(
             color: AppColors.error,
           ),
@@ -160,8 +151,9 @@ class AppTheme {
 
         focusedErrorBorder:
             OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusMd,
+          ),
           borderSide: const BorderSide(
             color: AppColors.error,
             width: 2,
@@ -176,9 +168,9 @@ class AppTheme {
             AppColors.primary,
       ),
 
-      // =================================================
-      // DIVIDERS
-      // =================================================
+      // =====================================================
+      // DIVIDER
+      // =====================================================
 
       dividerTheme:
           const DividerThemeData(
@@ -186,37 +178,44 @@ class AppTheme {
         thickness: 1,
       ),
 
-      // =================================================
-      // TEXTOS
-      // =================================================
+      // =====================================================
+      // TEXT THEME
+      // =====================================================
 
       textTheme: const TextTheme(
         headlineLarge: TextStyle(
           color: AppColors.textPrimary,
           fontWeight: FontWeight.bold,
         ),
+
         headlineMedium: TextStyle(
           color: AppColors.textPrimary,
           fontWeight: FontWeight.bold,
         ),
+
         headlineSmall: TextStyle(
           color: AppColors.textPrimary,
           fontWeight: FontWeight.bold,
         ),
+
         titleLarge: TextStyle(
           color: AppColors.textPrimary,
           fontWeight: FontWeight.bold,
         ),
+
         titleMedium: TextStyle(
           color: AppColors.textPrimary,
           fontWeight: FontWeight.w600,
         ),
+
         bodyLarge: TextStyle(
           color: AppColors.textPrimary,
         ),
+
         bodyMedium: TextStyle(
           color: AppColors.textSecondary,
         ),
+
         bodySmall: TextStyle(
           color: AppColors.textLight,
         ),

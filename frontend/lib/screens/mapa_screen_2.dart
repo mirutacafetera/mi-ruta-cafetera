@@ -4,8 +4,14 @@ import 'package:latlong2/latlong.dart';
 
 import '../controllers/mapa_controller.dart';
 import '../controllers/mapa_ruta_controller.dart';
+import '../controllers/mapa_ubicacion_controller.dart';
+
 import '../models/ruta_predefinida_model.dart';
 import '../models/sitio_turistico_model.dart';
+
+import '../theme/app_colors.dart';
+import '../theme/app_dimensions.dart';
+
 import '../widgets/mapa/mapa_buscador.dart';
 import '../widgets/mapa/mapa_capas.dart';
 import '../widgets/mapa/mapa_categorias.dart';
@@ -21,27 +27,20 @@ class MapaScreen2 extends StatefulWidget {
   });
 
   @override
-  State<MapaScreen2> createState() =>
-      _MapaScreen2State();
+  State<MapaScreen2> createState() => _MapaScreen2State();
 }
 
-class _MapaScreen2State
-    extends State<MapaScreen2> {
+class _MapaScreen2State extends State<MapaScreen2> {
   // ============================================================
   // CONTROLADORES
   // ============================================================
 
-  late final MapaController
-      _mapaController;
+  late final MapaController _mapaController;
+  late final MapaRutaController _rutaController;
+  late final MapaUbicacionController _ubicacionController;
 
-  late final MapaRutaController
-      _rutaController;
-
-  final MapController _mapController =
-      MapController();
-
-  final TextEditingController
-      _busquedaController =
+  final MapController _mapController = MapController();
+  final TextEditingController _busquedaController =
       TextEditingController();
 
   // ============================================================
@@ -52,39 +51,28 @@ class _MapaScreen2State
   void initState() {
     super.initState();
 
-    _mapaController =
-        MapaController();
+    _mapaController = MapaController();
+    _rutaController = MapaRutaController();
+    _ubicacionController = MapaUbicacionController();
 
-    _rutaController =
-        MapaRutaController();
-
-    _mapaController.addListener(
-      _actualizarPantalla,
-    );
-
-    _rutaController.addListener(
-      _actualizarPantalla,
-    );
+    _mapaController.addListener(_actualizarPantalla);
+    _rutaController.addListener(_actualizarPantalla);
+    _ubicacionController.addListener(_actualizarPantalla);
 
     _mapaController.cargarDatos();
   }
 
   @override
   void dispose() {
-    _mapaController.removeListener(
-      _actualizarPantalla,
-    );
-
-    _rutaController.removeListener(
-      _actualizarPantalla,
-    );
+    _mapaController.removeListener(_actualizarPantalla);
+    _rutaController.removeListener(_actualizarPantalla);
+    _ubicacionController.removeListener(_actualizarPantalla);
 
     _busquedaController.dispose();
-
     _mapController.dispose();
 
+    _ubicacionController.dispose();
     _mapaController.dispose();
-
     _rutaController.dispose();
 
     super.dispose();
@@ -97,12 +85,41 @@ class _MapaScreen2State
   }
 
   // ============================================================
+  // UBICACIÓN
+  // ============================================================
+
+  Future<void> _obtenerUbicacionUsuario() async {
+    final ubicacion =
+        await _ubicacionController.obtenerUbicacion();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (ubicacion == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _ubicacionController.error ??
+                'No fue posible obtener la ubicación actual.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    _mapController.move(
+      ubicacion,
+      AppDimensions.mapaDetalleZoom,
+    );
+  }
+
+  // ============================================================
   // BÚSQUEDA
   // ============================================================
 
   void _limpiarBusqueda() {
     _busquedaController.clear();
-
     _mapaController.limpiarBusqueda();
   }
 
@@ -113,20 +130,15 @@ class _MapaScreen2State
 
     _mapController.move(
       sitio.ubicacion,
-      16,
+      AppDimensions.mapaDetalleZoom,
     );
 
     if (_rutaController.modoCrearRuta) {
-      _seleccionarSitio(
-        sitio,
-      );
-
+      _seleccionarSitio(sitio);
       return;
     }
 
-    _mostrarDetalles(
-      sitio,
-    );
+    _mostrarDetalles(sitio);
   }
 
   // ============================================================
@@ -138,9 +150,7 @@ class _MapaScreen2State
   ) {
     _rutaController.limpiarRutaGuardada();
 
-    _mapaController.seleccionarCategoria(
-      id,
-    );
+    _mapaController.seleccionarCategoria(id);
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
@@ -157,7 +167,6 @@ class _MapaScreen2State
 
   void _iniciarRuta() {
     _rutaController.iniciar();
-
     _mapaController.mostrarTodos();
   }
 
@@ -165,15 +174,11 @@ class _MapaScreen2State
     SitioTuristicoModel sitio,
   ) {
     final agregado =
-        _rutaController.alternarSitio(
-      sitio,
-    );
+        _rutaController.alternarSitio(sitio);
 
     if (!agregado &&
-        !_rutaController.estado
-            .estaSeleccionado(sitio)) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+        !_rutaController.estado.estaSeleccionado(sitio)) {
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
             'Puedes seleccionar máximo 4 sitios.',
@@ -201,12 +206,6 @@ class _MapaScreen2State
       return;
     }
 
-    // ==========================================================
-    // IMPORTANTE:
-    // después de calcular la ruta solo mostramos los sitios
-    // que forman parte de ella.
-    // ==========================================================
-
     setState(() {});
 
     WidgetsBinding.instance.addPostFrameCallback(
@@ -214,10 +213,11 @@ class _MapaScreen2State
         if (mounted) {
           _ajustarMapa(
             sitios:
-                _rutaController
-                    .rutaGuardadaSitios,
-            padding: 100,
-            maxZoom: 15,
+                _rutaController.rutaGuardadaSitios,
+            padding:
+                AppDimensions.mapaRutaPadding,
+            maxZoom:
+                AppDimensions.mapaRutaMaxZoom,
           );
         }
       },
@@ -236,10 +236,11 @@ class _MapaScreen2State
         if (mounted) {
           _ajustarMapa(
             sitios:
-                _rutaController
-                    .rutaGuardadaSitios,
-            padding: 100,
-            maxZoom: 15,
+                _rutaController.rutaGuardadaSitios,
+            padding:
+                AppDimensions.mapaRutaPadding,
+            maxZoom:
+                AppDimensions.mapaRutaMaxZoom,
           );
         }
       },
@@ -253,8 +254,7 @@ class _MapaScreen2State
   void _mostrarRutasPredefinidas() {
     showModalBottomSheet(
       context: context,
-      backgroundColor:
-          Colors.transparent,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
         return MapaRutasPredefinidas(
@@ -268,11 +268,9 @@ class _MapaScreen2State
   void _seleccionarRutaPredefinida(
     RutaPredefinidaModel ruta,
   ) {
-    _rutaController
-        .seleccionarRutaPredefinida(
+    _rutaController.seleccionarRutaPredefinida(
       ruta: ruta,
-      sitios:
-          _mapaController.todosLosSitios,
+      sitios: _mapaController.todosLosSitios,
     );
 
     WidgetsBinding.instance.addPostFrameCallback(
@@ -293,8 +291,7 @@ class _MapaScreen2State
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor:
-          Colors.transparent,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
         return MapaDetalleSitio(
@@ -304,20 +301,17 @@ class _MapaScreen2State
 
             _mapController.move(
               sitio.ubicacion,
-              16,
+              AppDimensions.mapaDetalleZoom,
             );
           },
           onAgregarRuta: () {
             Navigator.pop(context);
 
-            if (!_rutaController
-                .modoCrearRuta) {
+            if (!_rutaController.modoCrearRuta) {
               _iniciarRuta();
             }
 
-            _seleccionarSitio(
-              sitio,
-            );
+            _seleccionarSitio(sitio);
           },
         );
       },
@@ -339,16 +333,13 @@ class _MapaScreen2State
     SitioTuristicoModel sitio,
   ) {
     final numeroSeleccion =
-        _rutaController.estado
-            .numeroDeSitio(sitio);
+        _rutaController.estado.numeroDeSitio(sitio);
 
     if (numeroSeleccion > 0) {
       return numeroSeleccion;
     }
 
-    return _rutaController.numeroDeSitio(
-      sitio,
-    );
+    return _rutaController.numeroDeSitio(sitio);
   }
 
   // ============================================================
@@ -357,20 +348,17 @@ class _MapaScreen2State
 
   void _ajustarMapa({
     List<SitioTuristicoModel>? sitios,
-    double padding = 70,
-    double maxZoom = 14,
+    double padding = AppDimensions.mapaPadding,
+    double maxZoom = AppDimensions.mapaMaxZoom,
   }) {
     final lista =
-        sitios ??
-        _mapaController.sitiosFiltrados;
+        sitios ?? _mapaController.sitiosFiltrados;
 
-    final validos =
-        lista
-            .where(
-              (sitio) =>
-                  sitio.tieneCoordenadas,
-            )
-            .toList();
+    final validos = lista
+        .where(
+          (sitio) => sitio.tieneCoordenadas,
+        )
+        .toList();
 
     if (validos.isEmpty) {
       return;
@@ -379,45 +367,32 @@ class _MapaScreen2State
     if (validos.length == 1) {
       _mapController.move(
         validos.first.ubicacion,
-        14,
+        maxZoom,
       );
-
       return;
     }
 
-    double minLat =
-        validos.first.latitud;
+    double minLat = validos.first.latitud;
+    double maxLat = validos.first.latitud;
+    double minLng = validos.first.longitud;
+    double maxLng = validos.first.longitud;
 
-    double maxLat =
-        validos.first.latitud;
+    for (final sitio in validos.skip(1)) {
+      if (sitio.latitud < minLat) {
+        minLat = sitio.latitud;
+      }
 
-    double minLng =
-        validos.first.longitud;
+      if (sitio.latitud > maxLat) {
+        maxLat = sitio.latitud;
+      }
 
-    double maxLng =
-        validos.first.longitud;
+      if (sitio.longitud < minLng) {
+        minLng = sitio.longitud;
+      }
 
-    for (final sitio
-        in validos.skip(1)) {
-      minLat =
-          sitio.latitud < minLat
-              ? sitio.latitud
-              : minLat;
-
-      maxLat =
-          sitio.latitud > maxLat
-              ? sitio.latitud
-              : maxLat;
-
-      minLng =
-          sitio.longitud < minLng
-              ? sitio.longitud
-              : minLng;
-
-      maxLng =
-          sitio.longitud > maxLng
-              ? sitio.longitud
-              : maxLng;
+      if (sitio.longitud > maxLng) {
+        maxLng = sitio.longitud;
+      }
     }
 
     _mapController.fitCamera(
@@ -432,28 +407,16 @@ class _MapaScreen2State
             maxLng,
           ),
         ),
-        padding:
-            EdgeInsets.all(padding),
+        padding: EdgeInsets.all(padding),
         maxZoom: maxZoom,
       ),
     );
   }
 
-  void _centrarMapa() {
-    _mapController.move(
-      const LatLng(
-        2.195,
-        -75.627,
-      ),
-      10.5,
-    );
-  }
 
   void _mostrarTodosLosSitios() {
     _rutaController.limpiarRutaGuardada();
-
     _mapaController.mostrarTodos();
-
     _ajustarMapa();
   }
 
@@ -467,26 +430,30 @@ class _MapaScreen2State
     }
 
     return Positioned(
-      right: 14,
+      right: AppDimensions.spacingLg,
       bottom: 90,
       child: SafeArea(
         top: false,
         child: Material(
-          elevation: 5,
-          color: Colors.white,
-          borderRadius:
-              BorderRadius.circular(18),
+          elevation:
+              AppDimensions.elevationHigh,
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusXl,
+          ),
           child: InkWell(
-            onTap:
-                _rutaController
-                    .alternarVisibilidadRuta,
-            borderRadius:
-                BorderRadius.circular(18),
+            onTap: _rutaController
+                .alternarVisibilidadRuta,
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusXl,
+            ),
             child: Padding(
               padding:
                   const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 11,
+                horizontal:
+                    AppDimensions.spacingLg,
+                vertical:
+                    AppDimensions.spacingMd,
               ),
               child: Row(
                 mainAxisSize:
@@ -497,18 +464,21 @@ class _MapaScreen2State
                             .mostrarRutaGuardada
                         ? Icons.route
                         : Icons.route_outlined,
-                    color: Colors.brown,
+                    color:
+                        AppColors.secondary,
                   ),
                   const SizedBox(
-                    width: 7,
+                    width:
+                        AppDimensions.spacingSm,
                   ),
                   Text(
                     _rutaController
                             .mostrarRutaGuardada
                         ? 'Ocultar ruta'
                         : 'Ver ruta',
-                    style:
-                        const TextStyle(
+                    style: const TextStyle(
+                      color:
+                          AppColors.textPrimary,
                       fontWeight:
                           FontWeight.w600,
                     ),
@@ -526,408 +496,390 @@ class _MapaScreen2State
   // PANEL DE RUTA
   // ============================================================
 
-Widget _panelRuta() {
-  return MapaRutaPanel(
-    titulo: _rutaController.nombreRuta,
-    sitios: _rutaController.sitiosSeleccionados,
-    distancia: _rutaController.rutaResultado == null
-        ? ''
-        : '${_rutaController.rutaResultado!.distanciaKm.toStringAsFixed(2)} km',
-    duracion: _rutaController.rutaResultado == null
-        ? ''
-        : '${_rutaController.rutaResultado!.duracionMinutos.toStringAsFixed(0)} min',
-    mensaje: _rutaController.mensaje ?? '',
-    calculando: _rutaController.calculando,
-    colorRuta: Colors.orange,
-    onCerrar: _cancelarRuta,
-    onGenerarRuta: _calcularRuta,
-    mostrarBotonGenerar:
-        _rutaController.sitiosSeleccionados.length >= 2,
-  );
-}
+  Widget _panelRuta() {
+    return MapaRutaPanel(
+      titulo: _rutaController.nombreRuta,
+      sitios:
+          _rutaController.sitiosSeleccionados,
+      distancia:
+          _rutaController.rutaResultado == null
+              ? ''
+              : '${_rutaController.rutaResultado!.distanciaKm.toStringAsFixed(2)} km',
+      duracion:
+          _rutaController.rutaResultado == null
+              ? ''
+              : '${_rutaController.rutaResultado!.duracionMinutos.toStringAsFixed(0)} min',
+      mensaje:
+          _rutaController.mensaje ?? '',
+      calculando:
+          _rutaController.calculando,
+      colorRuta:
+          AppColors.tertiary,
+      onCerrar:
+          _cancelarRuta,
+      onGenerarRuta:
+          _calcularRuta,
+      mostrarBotonGenerar:
+          _rutaController
+                  .sitiosSeleccionados
+                  .length >=
+              2,
+    );
+  }
 
   // ============================================================
   // BARRA INFERIOR
   // ============================================================
 
-Widget _barraInferior() {
-  if (_rutaController.modoCrearRuta) {
-    return MapaSelectorRuta(
-      activo: true,
-      sitiosSeleccionados:
-          _rutaController.sitiosSeleccionados,
-      onIniciar: _iniciarRuta,
-      onCancelar: _cancelarRuta,
-      onCalcular: _calcularRuta,
-    );
-  }
+  Widget _barraInferior() {
+    if (_rutaController.modoCrearRuta) {
+      return MapaSelectorRuta(
+        activo: true,
+        sitiosSeleccionados:
+            _rutaController
+                .sitiosSeleccionados,
+        onIniciar: _iniciarRuta,
+        onCancelar: _cancelarRuta,
+        onCalcular: _calcularRuta,
+      );
+    }
 
-  return Row(
-    children: [
-      Expanded(
-        child: MapaSelectorRuta(
-          activo: false,
-          sitiosSeleccionados: const [],
-          onIniciar: _iniciarRuta,
-          onCancelar: _cancelarRuta,
-          onCalcular: _calcularRuta,
+    return Row(
+      children: [
+        Expanded(
+          child: MapaSelectorRuta(
+            activo: false,
+            sitiosSeleccionados:
+                const [],
+            onIniciar: _iniciarRuta,
+            onCancelar: _cancelarRuta,
+            onCalcular: _calcularRuta,
+          ),
         ),
-      ),
-      const SizedBox(width: 8),
-      SizedBox(
-        width: 115,
-        height: 52,
-        child: Material(
-          color: Colors.white,
-          borderRadius:
-              BorderRadius.circular(26),
-          elevation: 4,
-          child: InkWell(
-            onTap: _mostrarRutasPredefinidas,
+        const SizedBox(
+          width:
+              AppDimensions.spacingSm,
+        ),
+        SizedBox(
+          width: 115,
+          height:
+              AppDimensions.bottomBarHeight,
+          child: Material(
+            color: AppColors.white,
             borderRadius:
-                BorderRadius.circular(26),
-            child: const Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.route,
-                  color: Colors.brown,
-                  size: 21,
-                ),
-                SizedBox(width: 6),
-                Text(
-                  'Rutas',
-                  style: TextStyle(
-                    color: Colors.brown,
-                    fontWeight: FontWeight.w700,
+                BorderRadius.circular(
+              AppDimensions.radiusPill,
+            ),
+            elevation:
+                AppDimensions
+                    .elevationFloating,
+            child: InkWell(
+              onTap:
+                  _mostrarRutasPredefinidas,
+              borderRadius:
+                  BorderRadius.circular(
+                AppDimensions.radiusPill,
+              ),
+              child: const Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.route,
+                    color:
+                        AppColors.secondary,
+                    size:
+                        AppDimensions.iconMd,
                   ),
-                ),
-              ],
+                  SizedBox(
+                    width:
+                        AppDimensions.spacingSm,
+                  ),
+                  Text(
+                    'Rutas',
+                    style: TextStyle(
+                      color:
+                          AppColors.secondary,
+                      fontWeight:
+                          FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
+
   // ============================================================
   // BUILD
   // ============================================================
-
-  @override
-  Widget build(
-    BuildContext context,
-  ) {
+    @override
+    Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Mi Ruta Cafetera',
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed:
-                _mapaController
-                    .cargarDatos,
-            tooltip: 'Actualizar',
-            icon: const Icon(
-              Icons.refresh,
-            ),
-          ),
-        ],
+    appBar: AppBar(
+      title: const Text(
+        'Mi Ruta Cafetera',
       ),
-      body: LayoutBuilder(
-        builder: (
-          context,
-          constraints,
-        ) {
-          final ancho =
-              constraints.maxWidth;
+      centerTitle: true,
+      actions: [
+        IconButton(
+          onPressed: _mapaController.cargarDatos,
+          tooltip: 'Actualizar',
+          icon: const Icon(
+            Icons.refresh,
+          ),
+        ),
+      ],
+    ),
+    body: LayoutBuilder(
+      builder: (context, constraints) {
+        final bool pantallaPequena =
+            constraints.maxWidth < 600;
 
-          final pantallaPequena =
-              ancho < 600;
+        final double controlesTop =
+            pantallaPequena ? 150.0 : 175.0;
 
-          final controlesTop =
-              pantallaPequena
-                  ? 150.0
-                  : 175.0;
+        return Stack(
+          children: [
+            // ==================================================
+            // MAPA
+            // ==================================================
 
-          return Stack(
-            children: [
-              // ==================================================
-              // MAPA
-              // ==================================================
+            MapaCapas(
+              mapController: _mapController,
+              sitios: _rutaController.rutaGuardada
+                  ? _rutaController.rutaGuardadaSitios
+                  : _mapaController.sitiosFiltrados,
+              ruta: _rutaController.rutaResultado,
+              mostrarRuta:
+                  _rutaController.mostrarRutaGuardada,
+              ubicacionUsuario:
+                  _ubicacionController.ubicacionActual,
+              estaSeleccionado: _estaSeleccionado,
+              numeroDeSitio: _numeroDeSitio,
+              onTapSitio: _seleccionarSitio,
+            ),
 
-              MapaCapas(
-                mapController:
-                    _mapController,
-                sitios:
-                    _rutaController
-                            .rutaGuardada
-                        ? _rutaController
-                            .rutaGuardadaSitios
-                        : _mapaController
-                            .sitiosFiltrados,
-                ruta:
-                    _rutaController
-                        .rutaResultado,
-                mostrarRuta:
-                    _rutaController
-                        .mostrarRutaGuardada,
-                estaSeleccionado:
-                    _estaSeleccionado,
-                numeroDeSitio:
-                    _numeroDeSitio,
-                onTapSitio:
-                    (sitio) {
-                  if (_rutaController
-                      .modoCrearRuta) {
-                    _seleccionarSitio(
-                      sitio,
-                    );
-                  } else {
-                    _mostrarDetalles(
-                      sitio,
-                    );
-                  }
-                },
-              ),
+            // ==================================================
+            // BUSCADOR
+            // ==================================================
 
-              // ==================================================
-              // BUSCADOR
-              // ==================================================
-
-              Positioned(
-                top: 12,
-                left: 12,
-                right: 12,
-                child: SafeArea(
-                  bottom: false,
-                  child: MapaBuscador(
-                    controller:
-                        _busquedaController,
-                    resultados:
-                        _mapaController
-                            .resultadosBusqueda,
-                    onChanged: _mapaController.buscar,
-                    onSeleccionar:
-                        _seleccionarResultado,
-                    onLimpiar:
-                        _limpiarBusqueda,
-                  ),
+            Positioned(
+              top: AppDimensions.spacingMd,
+              left: AppDimensions.spacingMd,
+              right: AppDimensions.spacingMd,
+              child: SafeArea(
+                bottom: false,
+                child: MapaBuscador(
+                  controller: _busquedaController,
+                  resultados:
+                      _mapaController.resultadosBusqueda,
+                  onChanged: _mapaController.buscar,
+                  onSeleccionar: _seleccionarResultado,
+                  onLimpiar: _limpiarBusqueda,
                 ),
               ),
+            ),
 
-              // ==================================================
-              // CATEGORÍAS
-              // ==================================================
+            // ==================================================
+            // CATEGORÍAS
+            // ==================================================
 
-              Positioned(
-                top: 76,
-                left: 12,
-                right: 12,
-                child: SafeArea(
-                  bottom: false,
-                  child: MapaCategorias(
-                    categorias:
-                        _mapaController
-                            .categorias,
-                    categoriaSeleccionada:
-                        _mapaController
-                            .categoriaSeleccionada,
-                    onCategoriaSeleccionada:
-                        _seleccionarCategoria,
-                  ),
+            Positioned(
+              top: 76,
+              left: AppDimensions.spacingMd,
+              right: AppDimensions.spacingMd,
+              child: SafeArea(
+                bottom: false,
+                child: MapaCategorias(
+                  categorias: _mapaController.categorias,
+                  categoriaSeleccionada:
+                      _mapaController.categoriaSeleccionada,
+                  onCategoriaSeleccionada:
+                      _seleccionarCategoria,
                 ),
               ),
+            ),
 
-              // ==================================================
-              // CONTROLES
-              // ==================================================
+            // ==================================================
+            // CONTROLES
+            // ==================================================
 
-              Positioned(
-                right: 12,
-                top: controlesTop,
-                child: SafeArea(
-                  bottom: false,
-                  child: MapaControles(
-                    onCentrar:
-                        _centrarMapa,
-                    onMostrarTodos:
-                        _mostrarTodosLosSitios,
-                  ),
+            Positioned(
+              right: AppDimensions.spacingMd,
+              top: controlesTop,
+              child: SafeArea(
+                bottom: false,
+                child: MapaControles(
+                  onCentrar: _obtenerUbicacionUsuario,
+                  onMostrarTodos:
+                      _mostrarTodosLosSitios,
                 ),
               ),
+            ),
 
-              // ==================================================
-              // RUTA GUARDADA
-              // ==================================================
+            // ==================================================
+            // RUTA GUARDADA
+            // ==================================================
 
-              if (!_rutaController
-                  .modoCrearRuta)
-                _botonRutaGuardada(),
+            if (!_rutaController.modoCrearRuta)
+              _botonRutaGuardada(),
 
-              // ==================================================
-              // PANEL DE RUTA
-              // ==================================================
+            // ==================================================
+            // PANEL DE RUTA
+            // ==================================================
 
-              if (_rutaController.modoCrearRuta &&
+            if (_rutaController.modoCrearRuta &&
                 (_rutaController.calculando ||
-                  _rutaController.mensaje != null ||
-                  _rutaController.rutaResultado != null))
-                Positioned(
-                left: 12,
-                right: 12,
+                    _rutaController.mensaje != null ||
+                    _rutaController.rutaResultado != null))
+              Positioned(
+                left: AppDimensions.spacingMd,
+                right: AppDimensions.spacingMd,
                 bottom: 145,
                 child: _panelRuta(),
               ),
-              // ==================================================
-              // BARRA INFERIOR
-              // ==================================================
 
+            // ==================================================
+            // BARRA INFERIOR
+            // ==================================================
+
+            Positioned(
+              left: AppDimensions.spacingMd,
+              right: AppDimensions.spacingMd,
+              bottom: _rutaController.modoCrearRuta
+                  ? 145
+                  : AppDimensions.spacingXl,
+              child: SafeArea(
+                top: false,
+                child: _barraInferior(),
+              ),
+            ),
+
+            // ==================================================
+            // CARGANDO
+            // ==================================================
+
+            if (_mapaController.cargando)
               Positioned(
-                left: 12,
-                right: 12,
-                bottom:
-                    _rutaController
-                            .modoCrearRuta
-                        ? 145
-                        : 20,
+                left: AppDimensions.spacingXl,
+                right: AppDimensions.spacingXl,
+                bottom: 25,
                 child: SafeArea(
                   top: false,
-                  child:
-                      _barraInferior(),
+                  child: Card(
+                    elevation:
+                        AppDimensions.elevationHigh,
+                    child: const Padding(
+                      padding: EdgeInsets.all(
+                        AppDimensions.spacingLg,
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width:
+                                AppDimensions.iconLg,
+                            height:
+                                AppDimensions.iconLg,
+                            child:
+                                CircularProgressIndicator(),
+                          ),
+                          SizedBox(
+                            width:
+                                AppDimensions.spacingLg,
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Cargando sitios turísticos...',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
 
-              // ==================================================
-              // CARGANDO
-              // ==================================================
+            // ==================================================
+            // ERROR
+            // ==================================================
 
-              if (_mapaController
-                  .cargando)
-                Positioned(
-                  left: 20,
-                  right: 20,
-                  bottom: 25,
-                  child: SafeArea(
-                    top: false,
-                    child: Card(
-                      elevation: 5,
-                      child: const Padding(
-                        padding:
-                            EdgeInsets.all(
-                          16,
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child:
-                                  CircularProgressIndicator(),
-                            ),
-                            SizedBox(
-                              width: 14,
-                            ),
-                            Expanded(
-                              child: Text(
-                                'Cargando sitios turísticos...',
-                              ),
-                            ),
-                          ],
-                        ),
+            if (_mapaController.error != null)
+              Positioned(
+                left: AppDimensions.spacingXl,
+                right: AppDimensions.spacingXl,
+                bottom: 25,
+                child: SafeArea(
+                  top: false,
+                  child: Card(
+                    elevation:
+                        AppDimensions.elevationHigh,
+                    child: Padding(
+                      padding: const EdgeInsets.all(
+                        AppDimensions.spacingLg,
                       ),
-                    ),
-                  ),
-                ),
-
-              // ==================================================
-              // ERROR
-              // ==================================================
-
-              if (_mapaController
-                      .error !=
-                  null)
-                Positioned(
-                  left: 20,
-                  right: 20,
-                  bottom: 25,
-                  child: SafeArea(
-                    top: false,
-                    child: Card(
-                      elevation: 5,
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.all(
-                          16,
-                        ),
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment
-                                  .start,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(
-                                  Icons
-                                      .error_outline,
-                                  color:
-                                      Colors.red,
-                                ),
-                                SizedBox(
-                                  width: 8,
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    'No se pudieron cargar los datos',
-                                    style:
-                                        TextStyle(
-                                      fontWeight:
-                                          FontWeight.bold,
-                                    ),
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: AppColors.error,
+                              ),
+                              SizedBox(
+                                width:
+                                    AppDimensions.spacingSm,
+                              ),
+                              Expanded(
+                                child: Text(
+                                  'No se pudieron cargar los datos',
+                                  style: TextStyle(
+                                    fontWeight:
+                                        FontWeight.bold,
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 8,
-                            ),
-                            Text(
-                              _mapaController
-                                  .error!,
-                              maxLines: 4,
-                              overflow:
-                                  TextOverflow
-                                      .ellipsis,
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            ElevatedButton.icon(
-                              onPressed:
-                                  _mapaController
-                                      .cargarDatos,
-                              icon:
-                                  const Icon(
-                                Icons.refresh,
                               ),
-                              label:
-                                  const Text(
-                                'Reintentar',
-                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height:
+                                AppDimensions.spacingSm,
+                          ),
+                          Text(
+                            _mapaController.error!,
+                            maxLines: 4,
+                            overflow:
+                                TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(
+                            height:
+                                AppDimensions.spacingMd,
+                          ),
+                          ElevatedButton.icon(
+                            onPressed:
+                                _mapaController.cargarDatos,
+                            icon: const Icon(
+                              Icons.refresh,
                             ),
-                          ],
-                        ),
+                            label: const Text(
+                              'Reintentar',
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-            ],
-          );
-        },
-      ),
-    );
-  }
+              ),
+          ],
+        );
+      },
+    ),
+  );
+}
 }

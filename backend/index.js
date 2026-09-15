@@ -162,6 +162,23 @@ app.use(
   sitioRoutes
 );
 
+// ======================================================
+// ALIAS DE SITIOS TURÍSTICOS
+// ======================================================
+//
+// Se conserva /api/sitios para no afectar
+// funcionalidades existentes.
+//
+// Se agrega /api/sitiosturisticos para mantener
+// compatibilidad con Flutter y las rutas existentes
+// relacionadas con sitios turísticos.
+//
+
+app.use(
+  '/api/sitiosturisticos',
+  sitioRoutes
+);
+
 app.use(
   '/api/resenas',
   resenaRoutes
@@ -322,7 +339,7 @@ app.get(
   (req, res) => {
     res.status(200).json({
       mensaje:
-        'API Mi Ruta Mágica del Café funcionando correctamente',
+        'API Mi Ruta Cafetera funcionando correctamente',
       estado: 'OK'
     });
   }

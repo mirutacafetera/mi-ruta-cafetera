@@ -4,16 +4,17 @@ import 'package:latlong2/latlong.dart';
 
 import '../../models/sitio_turistico_model.dart';
 import '../../services/routing_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import 'mapa_marcador.dart';
 
 class MapaCapas extends StatelessWidget {
   final MapController mapController;
-
   final List<SitioTuristicoModel> sitios;
-
   final RutaResultado? ruta;
-
   final bool mostrarRuta;
+
+  final LatLng? ubicacionUsuario;
 
   final bool Function(
     SitioTuristicoModel sitio,
@@ -25,7 +26,7 @@ class MapaCapas extends StatelessWidget {
 
   final void Function(
     SitioTuristicoModel sitio,
-    ) onTapSitio;
+  ) onTapSitio;
 
   const MapaCapas({
     super.key,
@@ -33,6 +34,7 @@ class MapaCapas extends StatelessWidget {
     required this.sitios,
     required this.ruta,
     required this.mostrarRuta,
+    required this.ubicacionUsuario,
     required this.estaSeleccionado,
     required this.numeroDeSitio,
     required this.onTapSitio,
@@ -42,6 +44,11 @@ class MapaCapas extends StatelessWidget {
   Widget build(BuildContext context) {
     return FlutterMap(
       mapController: mapController,
+
+      // =====================================================
+      // CONFIGURACIÓN DEL MAPA
+      // =====================================================
+
       options: const MapOptions(
         initialCenter: LatLng(
           2.195,
@@ -50,15 +57,15 @@ class MapaCapas extends StatelessWidget {
         initialZoom: 10.5,
         minZoom: 5,
         maxZoom: 18,
-        interactionOptions:
-            InteractionOptions(
+        interactionOptions: InteractionOptions(
           flags: InteractiveFlag.all,
         ),
       ),
+
       children: [
-        // ========================================================
+        // ===================================================
         // MAPA BASE
-        // ========================================================
+        // ===================================================
 
         TileLayer(
           urlTemplate:
@@ -67,55 +74,48 @@ class MapaCapas extends StatelessWidget {
               'com.mirutacafetera.app',
         ),
 
-        // ========================================================
+        // ===================================================
         // RECORRIDO
-        // ========================================================
+        // ===================================================
 
-        if (ruta != null &&
-            mostrarRuta)
+        if (ruta != null && mostrarRuta)
           PolylineLayer(
             polylines: [
               Polyline(
                 points: ruta!.puntos,
-                strokeWidth: 5,
-                color: Colors.orange,
+                strokeWidth:
+                    AppDimensions.mapaStrokeWidth,
+                color: AppColors.tertiary,
               ),
             ],
           ),
 
-        // ========================================================
-        // POI
-        // ========================================================
+        // ===================================================
+        // SITIOS TURÍSTICOS
+        // ===================================================
 
         MarkerLayer(
           markers: sitios
               .where(
-                (sitio) =>
-                    sitio.tieneCoordenadas,
+                (sitio) => sitio.tieneCoordenadas,
               )
               .map(
                 (sitio) {
                   final seleccionado =
-                      estaSeleccionado(
-                    sitio,
-                  );
+                      estaSeleccionado(sitio);
 
                   return Marker(
                     point: sitio.ubicacion,
-                    width: 52,
-                    height: 64,
+                    width:
+                        AppDimensions.mapaMarkerWidth,
+                    height:
+                        AppDimensions.mapaMarkerHeight,
                     child: MapaMarcador(
                       sitio: sitio,
-                      seleccionado:
-                          seleccionado,
-                      numero:
-                          numeroDeSitio(
-                        sitio,
-                      ),
+                      seleccionado: seleccionado,
+                      numero: numeroDeSitio(sitio),
                       onTap: () {
-                        onTapSitio(
-                          sitio,
-                        );
+                        onTapSitio(sitio);
                       },
                     ),
                   );
@@ -123,6 +123,41 @@ class MapaCapas extends StatelessWidget {
               )
               .toList(),
         ),
+
+        // ===================================================
+        // UBICACIÓN DEL USUARIO
+        // ===================================================
+
+        if (ubicacionUsuario != null)
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: ubicacionUsuario!,
+                width: AppDimensions.gpsMarkerSize,
+                height: AppDimensions.gpsMarkerSize,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.info
+                        .withValues(alpha: 0.20),
+                  ),
+                  child: Center(
+                    child: Container(
+                      width:
+                          AppDimensions.gpsDotSize,
+                      height:
+                          AppDimensions.gpsDotSize,
+                      decoration:
+                          const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.info,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }

@@ -20,17 +20,13 @@ class MapaController extends ChangeNotifier {
   // ============================================================
 
   List<SitioTuristicoModel> _todosLosSitios = [];
-
   List<SitioTuristicoModel> _sitiosFiltrados = [];
-
   List<CategoriaModel> _categorias = [];
-
   List<SitioTuristicoModel> _resultadosBusqueda = [];
 
   String? _categoriaSeleccionada;
 
   bool _cargando = true;
-
   String? _error;
 
   // ============================================================
@@ -79,30 +75,89 @@ class MapaController extends ChangeNotifier {
           resultados[1] as List<CategoriaModel>;
 
       // ========================================================
-      // DEBUG TEMPORAL
+      // DIAGNÓSTICO DE DATOS RECIBIDOS
       // ========================================================
 
-      debugPrint('========================================');
+      final sitiosConCoordenadas = sitios.where(
+        (sitio) => sitio.tieneCoordenadas,
+      ).toList();
+
+      final sitiosSinCoordenadas = sitios.where(
+        (sitio) => !sitio.tieneCoordenadas,
+      ).toList();
+
+      debugPrint('');
+      debugPrint('==============================================');
+      debugPrint('           DIAGNÓSTICO DEL MAPA');
+      debugPrint('==============================================');
+
       debugPrint(
-        'MAPA - SITIOS RECIBIDOS: ${sitios.length}',
+        '📡 SITIOS RECIBIDOS DE LA API: ${sitios.length}',
       );
+
       debugPrint(
-        'MAPA - CATEGORIAS RECIBIDAS: ${categorias.length}',
+        '📍 SITIOS CON COORDENADAS VÁLIDAS: '
+        '${sitiosConCoordenadas.length}',
       );
-      debugPrint('========================================');
+
+      debugPrint(
+        '⚠️ SITIOS SIN COORDENADAS VÁLIDAS: '
+        '${sitiosSinCoordenadas.length}',
+      );
+
+      debugPrint(
+        '📂 CATEGORÍAS RECIBIDAS: ${categorias.length}',
+      );
+
+      debugPrint('----------------------------------------------');
+
+      // ========================================================
+      // SITIOS SIN COORDENADAS
+      // ========================================================
+
+      if (sitiosSinCoordenadas.isNotEmpty) {
+        debugPrint('SITIOS QUE NO PUEDEN MOSTRARSE EN EL MAPA:');
+
+        for (final sitio in sitiosSinCoordenadas) {
+          debugPrint(
+            '❌ ${sitio.nombre} | '
+            'lat=${sitio.latitud} | '
+            'lng=${sitio.longitud}',
+          );
+        }
+      }
+
+      debugPrint('----------------------------------------------');
+
+      // ========================================================
+      // TODOS LOS SITIOS RECIBIDOS
+      // ========================================================
 
       for (final sitio in sitios) {
         debugPrint(
-          '${sitio.nombre} | '
+          '📍 ${sitio.nombre} | '
           '${sitio.latitud}, ${sitio.longitud} | '
-          '${sitio.categoriaNombre} | '
+          'categoría=${sitio.categoriaNombre} | '
           'activo=${sitio.activo}',
         );
       }
 
-      debugPrint('========================================');
-      debugPrint('MAPA - FIN DE DATOS RECIBIDOS');
-      debugPrint('========================================');
+      debugPrint('----------------------------------------------');
+
+      debugPrint(
+        '📌 SITIOS QUE SE GUARDARÁN EN EL CONTROLLER: '
+        '${sitios.length}',
+      );
+
+      debugPrint(
+        '🗺️ SITIOS DISPONIBLES PARA MARCADORES: '
+        '${sitiosConCoordenadas.length}',
+      );
+
+      debugPrint('==============================================');
+      debugPrint('       FIN DEL DIAGNÓSTICO DEL MAPA');
+      debugPrint('==============================================');
+      debugPrint('');
 
       // ========================================================
       // GUARDAR DATOS
@@ -129,21 +184,13 @@ class MapaController extends ChangeNotifier {
 
       _error = e.toString();
 
-      debugPrint(
-        '========================================',
-      );
-
-      debugPrint(
-        'MAPA - ERROR AL CARGAR DATOS:',
-      );
-
-      debugPrint(
-        e.toString(),
-      );
-
-      debugPrint(
-        '========================================',
-      );
+      debugPrint('');
+      debugPrint('==============================================');
+      debugPrint('          MAPA - ERROR AL CARGAR DATOS');
+      debugPrint('==============================================');
+      debugPrint(e.toString());
+      debugPrint('==============================================');
+      debugPrint('');
 
       notifyListeners();
     }
@@ -153,9 +200,7 @@ class MapaController extends ChangeNotifier {
   // SELECCIONAR CATEGORÍA
   // ============================================================
 
-  void seleccionarCategoria(
-    String? categoriaId,
-  ) {
+  void seleccionarCategoria(String? categoriaId) {
     _categoriaSeleccionada = categoriaId;
 
     aplicarFiltroCategoria();
@@ -218,7 +263,16 @@ class MapaController extends ChangeNotifier {
         return coincideId || coincideNombre;
       },
     ).toList();
+
+    debugPrint(
+      '🔎 FILTRO CATEGORÍA: '
+      '${_sitiosFiltrados.length} sitios',
+    );
   }
+
+  // ============================================================
+  // BUSCAR CATEGORÍA
+  // ============================================================
 
   CategoriaModel? _buscarCategoriaPorId(
     String id,
@@ -246,6 +300,11 @@ class MapaController extends ChangeNotifier {
     _sitiosFiltrados =
         List<SitioTuristicoModel>.from(
       _todosLosSitios,
+    );
+
+    debugPrint(
+      '🗺️ MOSTRAR TODOS: '
+      '${_sitiosFiltrados.length} sitios',
     );
 
     notifyListeners();
@@ -297,8 +356,17 @@ class MapaController extends ChangeNotifier {
       },
     ).take(8).toList();
 
+    debugPrint(
+      '🔍 RESULTADOS DE BÚSQUEDA: '
+      '${_resultadosBusqueda.length}',
+    );
+
     notifyListeners();
   }
+
+  // ============================================================
+  // LIMPIAR BÚSQUEDA
+  // ============================================================
 
   void limpiarBusqueda() {
     _resultadosBusqueda = [];
