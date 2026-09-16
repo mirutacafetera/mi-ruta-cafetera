@@ -74,6 +74,10 @@ const chatRoutes = require(
   './routes/usuario/chat.routes'
 );
 
+const ayudaRoutes = require(
+  './routes/usuario/ayuda.routes'
+);
+
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
