@@ -113,6 +113,10 @@ const categoriaSitioRoutes = require(
   './routes/admin/categoria.routes'
 );
 
+const adminAyudaRoutes = require(
+  './routes/admin/ayuda.routes'
+);
+
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
@@ -253,6 +257,11 @@ app.use(
 app.use(
   '/api/admin/estadisticas',
   adminEstadisticasRoutes
+);
+
+app.use(
+  '/api/admin/ayuda',
+  adminAyudaRoutes
 );
 
 // ======================================================

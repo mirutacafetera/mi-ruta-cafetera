@@ -1,41 +1,20 @@
 const CuentaSitio = require('../../models/sitio/auth');
-
 const bcrypt = require('bcryptjs');
-
 const jwt = require('jsonwebtoken');
-
 const crypto = require('crypto');
+const { enviarCodigoRecuperacion } = require('../../utils/mailer');
 
-const {
-  enviarCodigoRecuperacion
-} = require('../../utils/mailer');
-
-
-// ======================================================
-// INICIAR SESIÓN DEL SITIO
-// ======================================================
+// INICIAR SESIÓN
 
 const iniciarSesion = async (req, res) => {
   try {
-    const {
-      correo,
-      password
-    } = req.body;
-
-    // --------------------------------------------------
-    // VALIDAR DATOS
-    // --------------------------------------------------
+    const { correo, password } = req.body;
 
     if (!correo || !password) {
       return res.status(400).json({
-        mensaje:
-          'Correo y contraseña son obligatorios'
+        mensaje: 'Correo y contraseña son obligatorios'
       });
     }
-
-    // --------------------------------------------------
-    // BUSCAR CUENTA
-    // --------------------------------------------------
 
     const cuenta = await CuentaSitio.findOne({
       correo: correo.toLowerCase().trim()
@@ -43,67 +22,41 @@ const iniciarSesion = async (req, res) => {
 
     if (!cuenta) {
       return res.status(401).json({
-        mensaje:
-          'Correo o contraseña incorrectos'
+        mensaje: 'Correo o contraseña incorrectos'
       });
     }
-
-    // --------------------------------------------------
-    // COMPROBAR ESTADO
-    // --------------------------------------------------
 
     if (!cuenta.activo) {
       return res.status(403).json({
-        mensaje:
-          'La cuenta del sitio está inactiva'
+        mensaje: 'La cuenta del sitio está inactiva'
       });
     }
 
-    // --------------------------------------------------
-    // COMPARAR CONTRASEÑA
-    // --------------------------------------------------
-
-    const passwordCorrecta =
-      await bcrypt.compare(
-        password,
-        cuenta.password
-      );
+    const passwordCorrecta = await bcrypt.compare(password, cuenta.password);
 
     if (!passwordCorrecta) {
       return res.status(401).json({
-        mensaje:
-          'Correo o contraseña incorrectos'
+        mensaje: 'Correo o contraseña incorrectos'
       });
     }
-
-    // --------------------------------------------------
-    // CREAR TOKEN JWT
-    // --------------------------------------------------
 
     const token = jwt.sign(
       {
         id: cuenta._id,
+        sitioId: cuenta.sitioId,
         correo: cuenta.correo,
         rol: 'sitio'
       },
       process.env.JWT_SECRET,
-      {
-        expiresIn: '7d'
-      }
+      { expiresIn: '7d' }
     );
 
-    // --------------------------------------------------
-    // RESPUESTA
-    // --------------------------------------------------
-
     return res.status(200).json({
-      mensaje:
-        'Inicio de sesión del sitio exitoso',
-
+      mensaje: 'Inicio de sesión del sitio exitoso',
       token,
-
       cuenta: {
         id: cuenta._id,
+        sitioId: cuenta.sitioId,
         nombre: cuenta.nombre,
         apellido: cuenta.apellido,
         correo: cuenta.correo,
@@ -114,394 +67,217 @@ const iniciarSesion = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(
-      'Error al iniciar sesión como sitio:',
-      error
-    );
+    console.error('Error al iniciar sesión como sitio:', error);
 
     return res.status(500).json({
-      mensaje:
-        'Error al iniciar sesión como sitio',
-      error: error.message
+      mensaje: 'Error al iniciar sesión como sitio'
     });
   }
 };
 
 
-// ======================================================
 // RECUPERAR CONTRASEÑA
-// ======================================================
 
 const recuperarPassword = async (req, res) => {
   try {
-    const {
-      correo
-    } = req.body;
-
-    // --------------------------------------------------
-    // VALIDAR CORREO
-    // --------------------------------------------------
+    const { correo } = req.body;
 
     if (!correo) {
       return res.status(400).json({
-        mensaje:
-          'El correo es obligatorio'
+        mensaje: 'El correo es obligatorio'
       });
     }
 
-    const correoNormalizado =
-      correo.toLowerCase().trim();
-
-    // --------------------------------------------------
-    // BUSCAR CUENTA
-    // --------------------------------------------------
-
-    const cuenta =
-      await CuentaSitio.findOne({
-        correo: correoNormalizado
-      });
+    const cuenta = await CuentaSitio.findOne({
+      correo: correo.toLowerCase().trim()
+    });
 
     if (!cuenta) {
       return res.status(404).json({
-        mensaje:
-          'No existe una cuenta con ese correo'
+        mensaje: 'No existe una cuenta con este correo'
       });
     }
-
-    // --------------------------------------------------
-    // COMPROBAR ESTADO
-    // --------------------------------------------------
 
     if (!cuenta.activo) {
       return res.status(403).json({
-        mensaje:
-          'La cuenta del sitio está inactiva'
+        mensaje: 'La cuenta del sitio está inactiva'
       });
     }
 
-    // --------------------------------------------------
-    // GENERAR CÓDIGO
-    // --------------------------------------------------
+    if (!cuenta.sitioId) {
+      return res.status(403).json({
+        mensaje: 'La cuenta no tiene un sitio turístico asociado'
+      });
+    }
 
-    const codigoRecuperacion =
-      crypto.randomInt(
-        100000,
-        1000000
-      ).toString();
+    const codigo = crypto.randomInt(100000, 1000000).toString();
 
-    // --------------------------------------------------
-    // GUARDAR CÓDIGO
-    // --------------------------------------------------
-
-    cuenta.codigoRecuperacion =
-      codigoRecuperacion;
-
-    cuenta.codigoRecuperacionExpiracion =
-      new Date(
-        Date.now() + 10 * 60 * 1000
-      );
-
+    cuenta.codigoRecuperacion = codigo;
+    cuenta.codigoRecuperacionExpiracion = new Date(Date.now() + 10 * 60 * 1000);
     cuenta.tokenRecuperacion = null;
-
     cuenta.tokenRecuperacionExpiracion = null;
 
     await cuenta.save();
 
-    // --------------------------------------------------
-    // ENVIAR CÓDIGO
-    // --------------------------------------------------
-
     try {
-      await enviarCodigoRecuperacion(
-        cuenta.correo,
-        cuenta.nombre,
-        codigoRecuperacion
-      );
+      await enviarCodigoRecuperacion(cuenta.correo, cuenta.nombre, codigo);
     } catch (errorCorreo) {
-      console.error(
-        'Error enviando código de recuperación:',
-        errorCorreo
-      );
+      cuenta.codigoRecuperacion = null;
+      cuenta.codigoRecuperacionExpiracion = null;
+      await cuenta.save();
+
+      console.error('Error enviando correo:', errorCorreo.message);
 
       return res.status(500).json({
-        mensaje:
-          'No fue posible enviar el código de recuperación'
+        mensaje: 'No fue posible enviar el código al correo'
       });
     }
 
-    // --------------------------------------------------
-    // RESPUESTA
-    // --------------------------------------------------
-
     return res.status(200).json({
-      mensaje:
-        'Código de recuperación enviado al correo'
+      mensaje: 'Código de recuperación enviado al correo'
     });
 
   } catch (error) {
-    console.error(
-      'Error al recuperar contraseña:',
-      error
-    );
+    console.error('Error al solicitar recuperación:', error);
 
     return res.status(500).json({
-      mensaje:
-        'Error al recuperar contraseña',
-      error: error.message
+      mensaje: 'Error al solicitar recuperación'
     });
   }
 };
 
 
-// ======================================================
-// VERIFICAR CÓDIGO DE RECUPERACIÓN
-// ======================================================
+// VERIFICAR CÓDIGO Y GENERAR TOKEN
 
-const verificarCodigoRecuperacion = async (
-  req,
-  res
-) => {
+const verificarCodigoRecuperacion = async (req, res) => {
   try {
-    const {
-      correo,
-      codigo
-    } = req.body;
-
-    // --------------------------------------------------
-    // VALIDAR DATOS
-    // --------------------------------------------------
+    const { correo, codigo } = req.body;
 
     if (!correo || !codigo) {
       return res.status(400).json({
-        mensaje:
-          'Correo y código son obligatorios'
+        mensaje: 'Correo y código son obligatorios'
       });
     }
 
-    // --------------------------------------------------
-    // BUSCAR CUENTA
-    // --------------------------------------------------
-
-    const cuenta =
-      await CuentaSitio.findOne({
-        correo: correo.toLowerCase().trim()
-      });
+    const cuenta = await CuentaSitio.findOne({
+      correo: correo.toLowerCase().trim()
+    });
 
     if (!cuenta) {
       return res.status(404).json({
-        mensaje:
-          'No existe una cuenta con ese correo'
+        mensaje: 'Cuenta del sitio no encontrada'
       });
     }
 
-    // --------------------------------------------------
-    // COMPROBAR ESTADO
-    // --------------------------------------------------
-
-    if (!cuenta.activo) {
-      return res.status(403).json({
-        mensaje:
-          'La cuenta del sitio está inactiva'
-      });
-    }
-
-    // --------------------------------------------------
-    // COMPROBAR CÓDIGO
-    // --------------------------------------------------
-
-    if (
-      cuenta.codigoRecuperacion !==
-      codigo.toString()
-    ) {
+    if (cuenta.codigoRecuperacion !== codigo) {
       return res.status(400).json({
-        mensaje:
-          'El código de recuperación es incorrecto'
+        mensaje: 'Código de recuperación incorrecto'
       });
     }
-
-    // --------------------------------------------------
-    // COMPROBAR EXPIRACIÓN
-    // --------------------------------------------------
 
     if (
       !cuenta.codigoRecuperacionExpiracion ||
-      cuenta.codigoRecuperacionExpiracion <
-        new Date()
+      cuenta.codigoRecuperacionExpiracion < new Date()
     ) {
       return res.status(400).json({
-        mensaje:
-          'El código de recuperación ha expirado'
+        mensaje: 'El código de recuperación ha expirado'
       });
     }
 
-    // --------------------------------------------------
-    // GENERAR TOKEN TEMPORAL
-    // --------------------------------------------------
+    const tokenRecuperacion = crypto.randomBytes(32).toString('hex');
 
-    const tokenRecuperacion =
-      crypto.randomBytes(32).toString('hex');
-
-    cuenta.tokenRecuperacion =
-      tokenRecuperacion;
-
-    cuenta.tokenRecuperacionExpiracion =
-      new Date(
-        Date.now() + 10 * 60 * 1000
-      );
-
-    // --------------------------------------------------
-    // LIMPIAR CÓDIGO
-    // --------------------------------------------------
-
+    cuenta.tokenRecuperacion = tokenRecuperacion;
+    cuenta.tokenRecuperacionExpiracion = new Date(Date.now() + 10 * 60 * 1000);
     cuenta.codigoRecuperacion = null;
-
     cuenta.codigoRecuperacionExpiracion = null;
 
     await cuenta.save();
 
-    // --------------------------------------------------
-    // RESPUESTA
-    // --------------------------------------------------
-
     return res.status(200).json({
-      mensaje:
-        'Código de recuperación verificado correctamente',
-
+      mensaje: 'Código de recuperación válido',
       tokenRecuperacion
     });
 
   } catch (error) {
-    console.error(
-      'Error al verificar código de recuperación:',
-      error
-    );
+    console.error('Error verificando código:', error);
 
     return res.status(500).json({
-      mensaje:
-        'Error al verificar código de recuperación',
-      error: error.message
+      mensaje: 'Error al verificar el código'
     });
   }
 };
 
 
-// ======================================================
 // RESTABLECER CONTRASEÑA
-// ======================================================
 
-const restablecerPassword = async (
-  req,
-  res
-) => {
+const restablecerPassword = async (req, res) => {
   try {
     const {
       tokenRecuperacion,
-      nuevaPassword
+      nuevaPassword,
+      confirmarPassword
     } = req.body;
 
-    // --------------------------------------------------
-    // VALIDAR DATOS
-    // --------------------------------------------------
-
-    if (
-      !tokenRecuperacion ||
-      !nuevaPassword
-    ) {
+    if (!tokenRecuperacion || !nuevaPassword || !confirmarPassword) {
       return res.status(400).json({
-        mensaje:
-          'Token de recuperación y nueva contraseña son obligatorios'
+        mensaje: 'Token, nueva contraseña y confirmación son obligatorios'
       });
     }
-
-    // --------------------------------------------------
-    // VALIDAR CONTRASEÑA
-    // --------------------------------------------------
 
     if (nuevaPassword.length < 6) {
       return res.status(400).json({
-        mensaje:
-          'La nueva contraseña debe tener mínimo 6 caracteres'
+        mensaje: 'La nueva contraseña debe tener mínimo 6 caracteres'
       });
     }
 
-    // --------------------------------------------------
-    // BUSCAR CUENTA
-    // --------------------------------------------------
+    if (nuevaPassword !== confirmarPassword) {
+      return res.status(400).json({
+        mensaje: 'Las contraseñas no coinciden'
+      });
+    }
 
-    const cuenta =
-      await CuentaSitio.findOne({
-        tokenRecuperacion
-      }).select('+password');
+    const cuenta = await CuentaSitio.findOne({
+      tokenRecuperacion
+    }).select('+password');
 
     if (!cuenta) {
       return res.status(400).json({
-        mensaje:
-          'El token de recuperación no es válido'
+        mensaje: 'El token de recuperación no es válido'
       });
     }
-
-    // --------------------------------------------------
-    // COMPROBAR EXPIRACIÓN
-    // --------------------------------------------------
 
     if (
       !cuenta.tokenRecuperacionExpiracion ||
-      cuenta.tokenRecuperacionExpiracion <
-        new Date()
+      cuenta.tokenRecuperacionExpiracion < new Date()
     ) {
       return res.status(400).json({
-        mensaje:
-          'El token de recuperación ha expirado'
+        mensaje: 'El token de recuperación ha expirado'
       });
     }
 
-    // --------------------------------------------------
-    // CAMBIAR CONTRASEÑA
-    // --------------------------------------------------
-
-    cuenta.password =
-      await bcrypt.hash(
-        nuevaPassword,
-        10
-      );
-
-    // --------------------------------------------------
-    // LIMPIAR TOKEN
-    // --------------------------------------------------
-
+    cuenta.password = await bcrypt.hash(nuevaPassword, 10);
     cuenta.tokenRecuperacion = null;
-
     cuenta.tokenRecuperacionExpiracion = null;
+    cuenta.codigoRecuperacion = null;
+    cuenta.codigoRecuperacionExpiracion = null;
 
     await cuenta.save();
 
-    // --------------------------------------------------
-    // RESPUESTA
-    // --------------------------------------------------
-
     return res.status(200).json({
-      mensaje:
-        'Contraseña restablecida correctamente'
+      mensaje: 'Contraseña restablecida correctamente'
     });
 
   } catch (error) {
-    console.error(
-      'Error al restablecer contraseña:',
-      error
-    );
+    console.error('Error al restablecer contraseña:', error);
 
     return res.status(500).json({
-      mensaje:
-        'Error al restablecer contraseña',
-      error: error.message
+      mensaje: 'Error al restablecer contraseña'
     });
   }
 };
 
 
-// ======================================================
 // EXPORTAR
-// ======================================================
 
 module.exports = {
   iniciarSesion,

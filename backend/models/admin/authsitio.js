@@ -2,6 +2,22 @@ const mongoose = require('mongoose');
 
 const authSitioSchema = new mongoose.Schema(
   {
+    // ==================================================
+    // SITIO TURÍSTICO ASOCIADO
+    // ==================================================
+
+    sitioId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SitioTuristico',
+      required: true,
+      unique: true
+    },
+
+
+    // ==================================================
+    // DATOS DEL RESPONSABLE
+    // ==================================================
+
     nombre: {
       type: String,
       required: true,
@@ -13,6 +29,11 @@ const authSitioSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
+
+
+    // ==================================================
+    // DATOS DE ACCESO
+    // ==================================================
 
     correo: {
       type: String,
@@ -28,11 +49,21 @@ const authSitioSchema = new mongoose.Schema(
       select: false
     },
 
+
+    // ==================================================
+    // INFORMACIÓN DE CONTACTO
+    // ==================================================
+
     telefono: {
       type: String,
       default: '',
       trim: true
     },
+
+
+    // ==================================================
+    // ROL
+    // ==================================================
 
     rol: {
       type: String,
@@ -40,10 +71,20 @@ const authSitioSchema = new mongoose.Schema(
       enum: ['sitio']
     },
 
+
+    // ==================================================
+    // ESTADO DE LA CUENTA
+    // ==================================================
+
     activo: {
       type: Boolean,
       default: true
     },
+
+
+    // ==================================================
+    // RECUPERACIÓN DE CONTRASEÑA
+    // ==================================================
 
     codigoRecuperacion: {
       type: String,
@@ -71,8 +112,17 @@ const authSitioSchema = new mongoose.Schema(
   }
 );
 
+
+// ======================================================
+// MODELO
+// ======================================================
+
 const AuthSitio =
   mongoose.models.AuthSitio ||
-  mongoose.model('AuthSitio', authSitioSchema);
+  mongoose.model(
+    'AuthSitio',
+    authSitioSchema
+  );
+
 
 module.exports = AuthSitio;

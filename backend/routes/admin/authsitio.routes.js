@@ -8,28 +8,30 @@ const {
   obtenerSitio,
   recuperarPasswordSitio,
   verificarCodigoRecuperacionSitio,
-  restablecerPasswordSitio
-} = require(
-  '../../controllers/admin/authsitio.controller'
-);
+  restablecerPasswordSitio,
+  eliminarCuentaSitio
+} = require('../../controllers/admin/authsitio.controller');
+
 
 // ======================================================
-// CREAR CUENTA DEL SITIO
+// CREAR SITIO + CUENTA DEL RESPONSABLE
 // ======================================================
 
 router.post(
-  '/registrar',
+  '/',
   crearCuentaSitio
 );
 
+
 // ======================================================
-// INICIAR SESIÓN
+// INICIAR SESIÓN DEL SITIO
 // ======================================================
 
 router.post(
   '/login',
   iniciarSesionSitio
 );
+
 
 // ======================================================
 // OBTENER CUENTA
@@ -40,6 +42,7 @@ router.get(
   obtenerSitio
 );
 
+
 // ======================================================
 // RECUPERAR CONTRASEÑA
 // ======================================================
@@ -48,6 +51,7 @@ router.post(
   '/recuperar-password',
   recuperarPasswordSitio
 );
+
 
 // ======================================================
 // VERIFICAR CÓDIGO
@@ -58,6 +62,7 @@ router.post(
   verificarCodigoRecuperacionSitio
 );
 
+
 // ======================================================
 // RESTABLECER CONTRASEÑA
 // ======================================================
@@ -65,6 +70,15 @@ router.post(
 router.post(
   '/restablecer-password',
   restablecerPasswordSitio
+);
+
+// ======================================================
+// ELIMINAR CUENTA
+// ======================================================
+
+router.delete(
+  '/:id',
+  eliminarCuentaSitio
 );
 
 module.exports = router;
