@@ -15,13 +15,14 @@ const categoriaSchema = new mongoose.Schema(
       trim: true
     },
 
-    activo: {
+    estado: {
       type: Boolean,
       default: true
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    collection: 'categoriasitios'
   }
 );
 

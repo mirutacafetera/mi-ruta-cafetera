@@ -3,10 +3,9 @@ const Categoria = require('../../models/usuario/categoria');
 // OBTENER TODAS LAS CATEGORÍAS
 const obtenerCategorias = async (req, res) => {
   try {
-    const categorias = await Categoria.find({ activo: true });
+    const categorias = await Categoria.find({ estado: true });
 
     res.json(categorias);
-
   } catch (error) {
     res.status(500).json({
       mensaje: 'Error al obtener categorías',
@@ -18,4 +17,3 @@ const obtenerCategorias = async (req, res) => {
 module.exports = {
   obtenerCategorias
 };
-
