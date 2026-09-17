@@ -37,54 +37,6 @@ const obtenerUsuario = async (req, res) => {
   }
 };
 
-
-const actualizarUsuario = async (req, res) => {
-  try {
-    const {
-      nombre,
-      apellido,
-      telefono,
-      ciudad,
-      fotoPerfil,
-      rol
-    } = req.body;
-
-    const usuario = await Usuario.findByIdAndUpdate(
-      req.params.id,
-      {
-        nombre,
-        apellido,
-        telefono,
-        ciudad,
-        fotoPerfil,
-        rol
-      },
-      {
-        new: true,
-        runValidators: true
-      }
-    ).select('-password');
-
-    if (!usuario) {
-      return res.status(404).json({
-        mensaje: 'Usuario no encontrado'
-      });
-    }
-
-    res.json({
-      mensaje: 'Usuario actualizado correctamente',
-      usuario
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al actualizar usuario',
-      error: error.message
-    });
-  }
-};
-
-
 const desactivarUsuario = async (req, res) => {
   try {
     const usuario = await Usuario.findByIdAndUpdate(
@@ -111,6 +63,37 @@ const desactivarUsuario = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       mensaje: 'Error al desactivar usuario',
+      error: error.message
+    });
+  }
+};
+
+const activarUsuario = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByIdAndUpdate(
+      req.params.id,
+      {
+        activo: true
+      },
+      {
+        new: true
+      }
+    ).select('-password');
+
+    if (!usuario) {
+      return res.status(404).json({
+        mensaje: 'Usuario no encontrado'
+      });
+    }
+
+    res.json({
+      mensaje: 'Usuario activado correctamente',
+      usuario
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      mensaje: 'Error al activar usuario',
       error: error.message
     });
   }
@@ -145,7 +128,7 @@ const eliminarUsuario = async (req, res) => {
 module.exports = {
   obtenerUsuarios,
   obtenerUsuario,
-  actualizarUsuario,
   desactivarUsuario,
+  activarUsuario,
   eliminarUsuario
 };

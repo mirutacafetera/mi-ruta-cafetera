@@ -32,14 +32,18 @@ const contenidoSchema = new mongoose.Schema(
       trim: true
     },
 
+    // Aquí se guarda el enlace real de la imagen,
+    // video o audio
     url: {
       type: String,
-      default: ''
+      default: '',
+      trim: true
     },
 
     idioma: {
       type: String,
-      default: 'es'
+      default: 'es',
+      trim: true
     },
 
     activo: {
@@ -48,8 +52,13 @@ const contenidoSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    collection: 'contenidos'
   }
 );
 
-module.exports = mongoose.model('Contenido', contenidoSchema);
+const Contenido =
+  mongoose.models.Contenido ||
+  mongoose.model('Contenido', contenidoSchema);
+
+module.exports = Contenido;
