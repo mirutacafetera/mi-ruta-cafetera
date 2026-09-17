@@ -3,6 +3,12 @@ const express = require('express');
 const router = express.Router();
 
 const {
+  loginWithGoogle
+} = require(
+  '../../controllers/usuario/google.controller'
+);
+
+const {
   registrarUsuario,
   verificarCorreo,
   iniciarSesionUsuario,
@@ -17,7 +23,7 @@ const {
 );
 
 // ======================================================
-// AUTENTICACIÓN DE USUARIOS
+// AUTENTICACIÃ“N DE USUARIOS
 // ======================================================
 
 // Registrar usuario
@@ -32,25 +38,32 @@ router.post(
   verificarCorreo
 );
 
-// Iniciar sesión
+// Iniciar sesiÃ³n
 router.post(
   '/login',
   iniciarSesionUsuario
 );
 
-// Recuperar contraseña
+// Iniciar sesión con Google
+router.post(
+  '/login-google',
+  loginWithGoogle
+);
+
+
+// Recuperar contraseÃ±a
 router.post(
   '/recuperar-password',
   recuperarPassword
 );
 
-// Verificar código de recuperación
+// Verificar cÃ³digo de recuperaciÃ³n
 router.post(
   '/verificar-codigo-recuperacion',
   verificarCodigoRecuperacion
 );
 
-// Restablecer contraseña
+// Restablecer contraseÃ±a
 router.post(
   '/restablecer-password',
   restablecerPassword
