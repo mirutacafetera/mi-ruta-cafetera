@@ -4,9 +4,23 @@ const mongoose = require('mongoose');
 
 const cors = require('cors');
 
+const dns = require('dns');
+
 require('dotenv').config();
 
+
+// ======================================================
+// CONFIGURACIÓN DNS PARA MONGODB ATLAS
+// ======================================================
+
+dns.setServers([
+  '8.8.8.8',
+  '1.1.1.1'
+]);
+
+
 const app = express();
+
 
 // ======================================================
 // CONFIGURACIÓN GENERAL
@@ -21,6 +35,7 @@ app.use(
     extended: true
   })
 );
+
 
 // ======================================================
 // IMPORTACIÓN DE RUTAS
@@ -77,6 +92,8 @@ const chatRoutes = require(
 const ayudaRoutes = require(
   './routes/usuario/ayuda.routes'
 );
+
+
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
@@ -113,32 +130,8 @@ const categoriaSitioRoutes = require(
   './routes/admin/categoria.routes'
 );
 
-// ------------------------------------------------------
-// RUTAS DE CUENTAS Y SITIOS
-// ------------------------------------------------------
-
-const multimediaRoutes = require(
-  './routes/sitios/multimedia.routes'
-);
-
-const actividadesRoutes = require(
-  './routes/sitios/actividades.routes'
-);
-
-const resenasSitioRoutes = require(
-  './routes/sitios/resenas.routes'
-);
-
-const reservasSitioRoutes = require(
-  './routes/sitios/reservas.routes'
-);
-
-const contenidoSitioRoutes = require(
-  './routes/sitios/contenido.routes'
-);
-
-const authSitioRoutes = require(
-  './routes/sitios/auth.routes'
+const adminAyudaRoutes = require(
+  './routes/admin/ayuda.routes'
 );
 
 
@@ -206,6 +199,7 @@ app.use(
   ayudaRoutes
 );
 
+
 // ======================================================
 // RUTAS DE ADMINISTRACIÓN
 // ======================================================
@@ -219,6 +213,7 @@ app.use(
   administradorRoutes
 );
 
+
 // ------------------------------------------------------
 // USUARIOS
 // ------------------------------------------------------
@@ -227,6 +222,7 @@ app.use(
   '/api/admin/usuarios',
   adminUsuariosRoutes
 );
+
 
 // ------------------------------------------------------
 // RESEÑAS
@@ -237,6 +233,7 @@ app.use(
   adminResenasRoutes
 );
 
+
 // ------------------------------------------------------
 // CONTENIDO
 // ------------------------------------------------------
@@ -246,6 +243,7 @@ app.use(
   adminContenidoRoutes
 );
 
+
 // ------------------------------------------------------
 // ESTADÍSTICAS
 // ------------------------------------------------------
@@ -254,6 +252,17 @@ app.use(
   '/api/admin/estadisticas',
   adminEstadisticasRoutes
 );
+
+
+// ------------------------------------------------------
+// AYUDA
+// ------------------------------------------------------
+
+app.use(
+  '/api/admin/ayuda',
+  adminAyudaRoutes
+);
+
 
 // ======================================================
 // RUTAS DE CUENTAS Y SITIOS
@@ -273,6 +282,7 @@ app.use(
   '/api/categorias-sitios',
   categoriaSitioRoutes
 );
+
 
 // ======================================================
 // SUBRUTAS DE SITIOS TURÍSTICOS
@@ -309,8 +319,6 @@ app.use(
 );
 
 
-
-
 // ======================================================
 // RUTA PRINCIPAL
 // ======================================================
@@ -321,10 +329,12 @@ app.get(
     res.status(200).json({
       mensaje:
         'API Mi Ruta Mágica del Café funcionando correctamente',
+
       estado: 'OK'
     });
   }
 );
+
 
 // ======================================================
 // RUTA DE PRUEBA DE CONEXIÓN
@@ -335,6 +345,7 @@ app.get(
   (req, res) => {
     res.status(200).json({
       servidor: 'OK',
+
       mongodb:
         mongoose.connection.readyState === 1
           ? 'CONECTADO'
@@ -342,6 +353,7 @@ app.get(
     });
   }
 );
+
 
 // ======================================================
 // 404 - RUTA NO ENCONTRADA
@@ -351,10 +363,12 @@ app.use(
   (req, res) => {
     res.status(404).json({
       mensaje: 'Ruta no encontrada',
+
       ruta: req.originalUrl
     });
   }
 );
+
 
 // ======================================================
 // MANEJO GLOBAL DE ERRORES
@@ -362,6 +376,7 @@ app.use(
 
 app.use(
   (err, req, res, next) => {
+
     console.error(
       '❌ Error no capturado:',
       err.stack
@@ -370,13 +385,16 @@ app.use(
     res.status(500).json({
       mensaje:
         'Error interno del servidor',
+
       error: err.message
     });
+
   }
 );
 
+
 // ======================================================
-// MONGODB
+// CONFIGURACIÓN DEL SERVIDOR
 // ======================================================
 
 const PORT =
@@ -386,13 +404,16 @@ const MONGO_URI =
   process.env.MONGO_URI ||
   'mongodb://127.0.0.1:27017/mirutacafetera';
 
+
 // ======================================================
 // CONEXIÓN A MONGODB
 // ======================================================
 
 mongoose
   .connect(MONGO_URI)
+
   .then(() => {
+
     console.log(
       '=========================================='
     );
@@ -411,13 +432,16 @@ mongoose
       '=========================================='
     );
 
+
     // --------------------------------------------------
     // INICIAR SERVIDOR
     // --------------------------------------------------
 
     app.listen(
       PORT,
+
       () => {
+
         console.log(
           `🚀 Servidor funcionando en http://localhost:${PORT}`
         );
@@ -449,11 +473,15 @@ mongoose
         console.log(
           '=========================================='
         );
+
       }
     );
+
   })
+
   .catch(
     (error) => {
+
       console.error(
         '=========================================='
       );
@@ -471,5 +499,6 @@ mongoose
       );
 
       process.exit(1);
+
     }
   );

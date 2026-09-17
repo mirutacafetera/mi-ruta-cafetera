@@ -10,7 +10,7 @@ const visitaSchema = new mongoose.Schema(
 
     sitio: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Sitio',
+      ref: 'SitioTuristico',
       required: true
     },
 
