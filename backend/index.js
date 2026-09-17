@@ -1,9 +1,6 @@
 const express = require('express');
-
 const mongoose = require('mongoose');
-
 const cors = require('cors');
-
 require('dotenv').config();
 
 const app = express();
@@ -107,6 +104,10 @@ const adminEstadisticasRoutes = require(
   './routes/admin/estadisticas.routes'
 );
 
+const adminAyudaRoutes = require(
+  './routes/admin/ayuda.routes'
+);
+
 const adminAuthSitioRoutes = require(
   './routes/admin/authsitio.routes'
 );
@@ -169,14 +170,13 @@ app.use(
 // ======================================================
 // ALIAS DE SITIOS TURÍSTICOS
 // ======================================================
-//
+
 // Se conserva /api/sitios para no afectar
 // funcionalidades existentes.
-//
+
 // Se agrega /api/sitiosturisticos para mantener
 // compatibilidad con Flutter y las rutas existentes
 // relacionadas con sitios turísticos.
-//
 
 app.use(
   '/api/sitiosturisticos',
@@ -221,6 +221,11 @@ app.use(
 app.use(
   '/api/chat',
   chatRoutes
+);
+
+app.use(
+  '/api/ayuda',
+  ayudaRoutes
 );
 
 // ======================================================
@@ -279,6 +284,15 @@ app.use(
 app.use(
   '/api/admin/estadisticas',
   adminEstadisticasRoutes
+);
+
+// ------------------------------------------------------
+// AYUDA ADMINISTRATIVA
+// ------------------------------------------------------
+
+app.use(
+  '/api/admin/ayuda',
+  adminAyudaRoutes
 );
 
 // ======================================================
@@ -496,3 +510,4 @@ mongoose
       process.exit(1);
     }
   );
+```
