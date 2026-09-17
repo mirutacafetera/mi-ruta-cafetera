@@ -1,13 +1,24 @@
 const Reserva = require('../../models/sitio/reserva');
 
+
+// OBTENER TODAS LAS RESERVAS DEL SITIO
 const obtenerReservas = async (req, res) => {
   try {
     const reservas = await Reserva.find({
       sitio: req.params.id
     })
-      .populate('usuario', 'nombre apellido email telefono')
-      .populate('actividad')
-      .populate('sitio')
+      .populate(
+        'usuario',
+        'nombre apellido telefono'
+      )
+      .populate(
+        'actividad',
+        'nombre descripcion precio horario duracion'
+      )
+      .populate(
+        'sitio',
+        'nombre descripcion direccion ciudad departamento imagen'
+      )
       .sort({ fecha: 1 });
 
     res.json(reservas);
@@ -21,15 +32,25 @@ const obtenerReservas = async (req, res) => {
 };
 
 
+// OBTENER UNA RESERVA ESPECÍFICA
 const obtenerReserva = async (req, res) => {
   try {
     const reserva = await Reserva.findOne({
       _id: req.params.reservaId,
       sitio: req.params.id
     })
-      .populate('usuario', 'nombre apellido email telefono')
-      .populate('actividad')
-      .populate('sitio');
+      .populate(
+        'usuario',
+        'nombre apellido telefono'
+      )
+      .populate(
+        'actividad',
+        'nombre descripcion precio horario duracion'
+      )
+      .populate(
+        'sitio',
+        'nombre descripcion direccion ciudad departamento imagen'
+      );
 
     if (!reserva) {
       return res.status(404).json({
@@ -48,6 +69,7 @@ const obtenerReserva = async (req, res) => {
 };
 
 
+// ACTUALIZAR ESTADO DE LA RESERVA
 const actualizarEstadoReserva = async (req, res) => {
   try {
     const { estado } = req.body;
@@ -64,7 +86,19 @@ const actualizarEstadoReserva = async (req, res) => {
         new: true,
         runValidators: true
       }
-    );
+    )
+      .populate(
+        'usuario',
+        'nombre apellido telefono'
+      )
+      .populate(
+        'actividad',
+        'nombre descripcion precio horario duracion'
+      )
+      .populate(
+        'sitio',
+        'nombre descripcion direccion ciudad departamento imagen'
+      );
 
     if (!reserva) {
       return res.status(404).json({

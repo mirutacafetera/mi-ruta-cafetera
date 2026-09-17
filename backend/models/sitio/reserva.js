@@ -59,4 +59,7 @@ const reservaSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Reserva', reservaSchema);
+module.exports = mongoose.model(
+  'Reserva',
+  reservaSchema
+);
