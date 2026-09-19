@@ -5,8 +5,8 @@ const router = express.Router();
 const {
   obtenerUsuarios,
   obtenerUsuario,
-  actualizarUsuario,
   desactivarUsuario,
+  activarUsuario,
   eliminarUsuario
 } = require('../../controllers/admin/usuarios.controller');
 
@@ -14,9 +14,9 @@ router.get('/', obtenerUsuarios);
 
 router.get('/:id', obtenerUsuario);
 
-router.put('/:id', actualizarUsuario);
-
 router.put('/:id/desactivar', desactivarUsuario);
+
+router.put('/:id/activar', activarUsuario);
 
 router.delete('/:id', eliminarUsuario);
 

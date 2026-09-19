@@ -4,7 +4,7 @@ const obtenerResenas = async (req, res) => {
   try {
     const resenas = await Resena.find()
       .populate('usuario', '-password')
-      .populate('sitio')
+      .populate('sitio', 'nombre ciudad departamento')
       .sort({ createdAt: -1 });
 
     res.json(resenas);
@@ -22,7 +22,7 @@ const obtenerResena = async (req, res) => {
   try {
     const resena = await Resena.findById(req.params.id)
       .populate('usuario', '-password')
-      .populate('sitio');
+      .populate('sitio', 'nombre ciudad departamento');
 
     if (!resena) {
       return res.status(404).json({
@@ -39,48 +39,6 @@ const obtenerResena = async (req, res) => {
     });
   }
 };
-
-
-const actualizarResena = async (req, res) => {
-  try {
-    const {
-      calificacion,
-      comentario,
-      activo
-    } = req.body;
-
-    const resena = await Resena.findByIdAndUpdate(
-      req.params.id,
-      {
-        calificacion,
-        comentario,
-        activo
-      },
-      {
-        new: true,
-        runValidators: true
-      }
-    );
-
-    if (!resena) {
-      return res.status(404).json({
-        mensaje: 'Reseña no encontrada'
-      });
-    }
-
-    res.json({
-      mensaje: 'Reseña actualizada correctamente',
-      resena
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al actualizar reseña',
-      error: error.message
-    });
-  }
-};
-
 
 const desactivarResena = async (req, res) => {
   try {
@@ -108,6 +66,37 @@ const desactivarResena = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       mensaje: 'Error al desactivar reseña',
+      error: error.message
+    });
+  }
+};
+
+const activarResena = async (req, res) => {
+  try {
+    const resena = await Resena.findByIdAndUpdate(
+      req.params.id,
+      {
+        activo: true
+      },
+      {
+        new: true
+      }
+    );
+
+    if (!resena) {
+      return res.status(404).json({
+        mensaje: 'Reseña no encontrada'
+      });
+    }
+
+    res.json({
+      mensaje: 'Reseña activada correctamente',
+      resena
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      mensaje: 'Error al activar reseña',
       error: error.message
     });
   }
@@ -142,7 +131,7 @@ const eliminarResena = async (req, res) => {
 module.exports = {
   obtenerResenas,
   obtenerResena,
-  actualizarResena,
   desactivarResena,
+  activarResena,
   eliminarResena
 };

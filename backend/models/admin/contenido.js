@@ -2,44 +2,62 @@ const mongoose = require('mongoose');
 
 const contenidoSchema = new mongoose.Schema(
   {
+    // Sitio turístico al que pertenece el contenido
+    sitio: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SitioTuristico',
+      required: true
+    },
+
+    // Tipo de contenido
+    tipo: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    // Título del contenido
     titulo: {
       type: String,
       required: true,
       trim: true
     },
 
+    // Descripción del contenido
     descripcion: {
       type: String,
       default: '',
       trim: true
     },
 
-    tipo: {
+    // URL o enlace relacionado con el contenido
+    url: {
       type: String,
-      enum: [
-        'inicio',
-        'banner',
-        'informacion',
-        'promocion',
-        'recomendacion',
-        'general'
-      ],
-      default: 'general'
+      default: '',
+      trim: true
     },
 
-    imagen: {
+    // Idioma del contenido
+    idioma: {
       type: String,
-      default: ''
+      default: 'es',
+      trim: true
     },
 
+    // Estado del contenido
     activo: {
       type: Boolean,
       default: true
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    collection: 'contenidos'
   }
 );
 
-module.exports = mongoose.model('ContenidoAdmin', contenidoSchema);
+const Contenido =
+  mongoose.models.Contenido ||
+  mongoose.model('Contenido', contenidoSchema);
+
+module.exports = Contenido;

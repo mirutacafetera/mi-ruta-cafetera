@@ -5,7 +5,6 @@ const router = express.Router();
 const {
   obtenerContenidos,
   obtenerContenido,
-  crearContenido,
   actualizarContenido,
   desactivarContenido,
   activarContenido,
@@ -15,8 +14,6 @@ const {
 router.get('/', obtenerContenidos);
 
 router.get('/:id', obtenerContenido);
-
-router.post('/', crearContenido);
 
 router.put('/:id', actualizarContenido);
 
