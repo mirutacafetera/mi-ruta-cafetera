@@ -1,5 +1,9 @@
 const Reserva = require('../../models/sitio/reserva');
 
+const {
+  crearNotificacion
+} = require('../../services/notificacion.service');
+
 
 // =====================================================
 // OBTENER RESERVAS DEL USUARIO AUTENTICADO
@@ -35,11 +39,6 @@ const obtenerReservas = async (req, res) => {
   }
 };
 
-
-// =====================================================
-// CREAR RESERVA
-// =====================================================
-
 const crearReserva = async (req, res) => {
   try {
 
@@ -63,6 +62,13 @@ const crearReserva = async (req, res) => {
     });
 
     await reserva.save();
+
+    await crearNotificacion(
+      req.usuario.id,
+      'Reserva creada',
+      'Tu reserva fue registrada correctamente y está pendiente de confirmación.',
+      'reserva'
+    );
 
     res.status(201).json({
       mensaje: 'Reserva creada correctamente',

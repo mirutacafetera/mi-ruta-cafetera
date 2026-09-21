@@ -6,6 +6,12 @@ const {
   '../../controllers/usuario/google.controller'
 );
 
+const {
+  verificarToken
+} = require(
+  '../../middlewares/authmiddleware'
+);
+
 const router = express.Router();
 
 const {
@@ -15,7 +21,7 @@ const {
   recuperarPassword,
   verificarCodigoRecuperacion,
   restablecerPassword,
-  obtenerUsuario,
+  obtenerMiPerfil,
   actualizarUsuario,
   eliminarUsuario
 } = require(
@@ -71,21 +77,24 @@ router.post(
 // USUARIO
 // ======================================================
 
-// Obtener usuario
+// Obtener mi perfil
 router.get(
-  '/:id',
-  obtenerUsuario
+  '/perfil',
+  verificarToken,
+  obtenerMiPerfil
 );
 
 // Actualizar usuario
 router.put(
   '/:id',
+  verificarToken,
   actualizarUsuario
 );
 
 // Eliminar cuenta
 router.delete(
   '/:id',
+  verificarToken,
   eliminarUsuario
 );
 
