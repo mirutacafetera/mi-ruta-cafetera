@@ -6,6 +6,8 @@ const cors = require('cors');
 
 require('dotenv').config();
 
+const conectarBD = require('./db/bd');
+
 const app = express();
 
 // ======================================================
@@ -77,6 +79,7 @@ const chatRoutes = require(
 const ayudaRoutes = require(
   './routes/usuario/ayuda.routes'
 );
+
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
@@ -144,7 +147,6 @@ const contenidoSitioRoutes = require(
 const authSitioRoutes = require(
   './routes/sitios/auth.routes'
 );
-
 
 // ======================================================
 // RUTAS DE USUARIOS
@@ -259,6 +261,10 @@ app.use(
   adminEstadisticasRoutes
 );
 
+// ------------------------------------------------------
+// AYUDA
+// ------------------------------------------------------
+
 app.use(
   '/api/admin/ayuda',
   adminAyudaRoutes
@@ -316,9 +322,6 @@ app.use(
   '/api/sitios/auth',
   authSitioRoutes
 );
-
-
-
 
 // ======================================================
 // RUTA PRINCIPAL
@@ -385,48 +388,33 @@ app.use(
 );
 
 // ======================================================
-// MONGODB
+// CONFIGURACIÓN DEL SERVIDOR
 // ======================================================
 
 const PORT =
   process.env.PORT || 3000;
 
-const MONGO_URI =
-  process.env.MONGO_URI ||
-  'mongodb://127.0.0.1:27017/mirutacafetera';
-
 // ======================================================
-// CONEXIÓN A MONGODB
+// INICIAR SERVIDOR
 // ======================================================
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log(
-      '=========================================='
-    );
-
-    console.log(
-      '✅ MongoDB conectado correctamente'
-    );
-
-    console.log(
-      `📦 Base de datos: ${
-        mongoose.connection.name
-      }`
-    );
-
-    console.log(
-      '=========================================='
-    );
+const iniciarServidor = async () => {
+  try {
 
     // --------------------------------------------------
-    // INICIAR SERVIDOR
+    // CONECTAR CON MONGODB
+    // --------------------------------------------------
+
+    await conectarBD();
+
+    // --------------------------------------------------
+    // INICIAR EXPRESS
     // --------------------------------------------------
 
     app.listen(
       PORT,
       () => {
+
         console.log(
           `🚀 Servidor funcionando en http://localhost:${PORT}`
         );
@@ -458,27 +446,23 @@ mongoose
         console.log(
           '=========================================='
         );
+
       }
     );
-  })
-  .catch(
-    (error) => {
-      console.error(
-        '=========================================='
-      );
 
-      console.error(
-        '❌ ERROR AL CONECTAR CON MONGODB'
-      );
+  } catch (error) {
 
-      console.error(
-        error.message
-      );
+    console.error(
+      '❌ Error al iniciar el servidor:',
+      error.message
+    );
 
-      console.error(
-        '=========================================='
-      );
+    process.exit(1);
+  }
+};
 
-      process.exit(1);
-    }
-  );
+// ======================================================
+// EJECUTAR SERVIDOR
+// ======================================================
+
+iniciarServidor();

@@ -749,36 +749,33 @@ const restablecerPassword =
     }
   };
 
-// =====================================================
-// OBTENER USUARIO
+  // =====================================================
+// OBTENER MI PERFIL
 // =====================================================
 
-const obtenerUsuario = async (req, res) => {
+const obtenerMiPerfil = async (req, res) => {
   try {
-    const usuario =
-      await Usuario
-        .findById(req.params.id)
-        .select('-password');
+    const usuario = await Usuario
+      .findById(req.usuario.id)
+      .select('-password');
 
     if (!usuario) {
       return res.status(404).json({
-        mensaje:
-          'Usuario no encontrado'
+        mensaje: 'Usuario no encontrado'
       });
     }
 
-    return res.status(200).json(
+    return res.status(200).json({
       usuario
-    );
+    });
   } catch (error) {
     console.error(
-      'Error al obtener usuario:',
+      'Error al obtener mi perfil:',
       error
     );
 
     return res.status(500).json({
-      mensaje:
-        'Error al obtener el usuario',
+      mensaje: 'Error al obtener el perfil',
       error: error.message
     });
   }
@@ -938,7 +935,7 @@ module.exports = {
   recuperarPassword,
   verificarCodigoRecuperacion,
   restablecerPassword,
-  obtenerUsuario,
+  obtenerMiPerfil,
   actualizarUsuario,
   eliminarUsuario
 };
