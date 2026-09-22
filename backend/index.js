@@ -1,9 +1,10 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
 
-const conectarBD = require('./db/bd');
+const mongoose = require('mongoose');
+
+const cors = require('cors');
+
+require('dotenv').config();
 
 const app = express();
 
@@ -76,15 +77,9 @@ const chatRoutes = require(
 const ayudaRoutes = require(
   './routes/usuario/ayuda.routes'
 );
-
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
-
-// AUTENTICACIÓN DEL ADMINISTRADOR
-const adminAuthRoutes = require(
-  './routes/admin/authsitio.routes'
-);
 
 const administradorRoutes = require(
   './routes/admin/administrador.routes'
@@ -106,10 +101,6 @@ const adminEstadisticasRoutes = require(
   './routes/admin/estadisticas.routes'
 );
 
-const adminAyudaRoutes = require(
-  './routes/admin/ayuda.routes'
-);
-
 const adminAuthSitioRoutes = require(
   './routes/admin/authsitio.routes'
 );
@@ -120,6 +111,10 @@ const adminSitioRoutes = require(
 
 const categoriaSitioRoutes = require(
   './routes/admin/categoria.routes'
+);
+
+const adminAyudaRoutes = require(
+  './routes/admin/ayuda.routes'
 );
 
 // ------------------------------------------------------
@@ -150,6 +145,7 @@ const authSitioRoutes = require(
   './routes/sitios/auth.routes'
 );
 
+
 // ======================================================
 // RUTAS DE USUARIOS
 // ======================================================
@@ -166,22 +162,6 @@ app.use(
 
 app.use(
   '/api/sitios',
-  sitioRoutes
-);
-
-// ======================================================
-// ALIAS DE SITIOS TURÍSTICOS
-// ======================================================
-
-// Se conserva /api/sitios para no afectar
-// funcionalidades existentes.
-
-// Se agrega /api/sitiosturisticos para mantener
-// compatibilidad con Flutter y las rutas existentes
-// relacionadas con sitios turísticos.
-
-app.use(
-  '/api/sitiosturisticos',
   sitioRoutes
 );
 
@@ -235,15 +215,6 @@ app.use(
 // ======================================================
 
 // ------------------------------------------------------
-// AUTENTICACIÓN DEL ADMINISTRADOR
-// ------------------------------------------------------
-
-app.use(
-  '/api/admin/auth',
-  adminAuthRoutes
-);
-
-// ------------------------------------------------------
 // ADMINISTRADORES
 // ------------------------------------------------------
 
@@ -287,10 +258,6 @@ app.use(
   '/api/admin/estadisticas',
   adminEstadisticasRoutes
 );
-
-// ------------------------------------------------------
-// AYUDA ADMINISTRATIVA
-// ------------------------------------------------------
 
 app.use(
   '/api/admin/ayuda',
@@ -350,6 +317,9 @@ app.use(
   authSitioRoutes
 );
 
+
+
+
 // ======================================================
 // RUTA PRINCIPAL
 // ======================================================
@@ -359,7 +329,7 @@ app.get(
   (req, res) => {
     res.status(200).json({
       mensaje:
-        'API Mi Ruta Cafetera funcionando correctamente',
+        'API Mi Ruta Mágica del Café funcionando correctamente',
       estado: 'OK'
     });
   }
@@ -415,25 +385,43 @@ app.use(
 );
 
 // ======================================================
-// CONFIGURACIÓN DEL SERVIDOR
+// MONGODB
 // ======================================================
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+  process.env.PORT || 3000;
+
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  'mongodb://127.0.0.1:27017/mirutacafetera';
 
 // ======================================================
-// INICIAR SERVIDOR
+// CONEXIÓN A MONGODB
 // ======================================================
 
-const iniciarServidor = async () => {
-  try {
-    // --------------------------------------------------
-    // CONECTAR CON MONGODB
-    // --------------------------------------------------
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log(
+      '=========================================='
+    );
 
-    await conectarBD();
+    console.log(
+      '✅ MongoDB conectado correctamente'
+    );
+
+    console.log(
+      `📦 Base de datos: ${
+        mongoose.connection.name
+      }`
+    );
+
+    console.log(
+      '=========================================='
+    );
 
     // --------------------------------------------------
-    // INICIAR EXPRESS
+    // INICIAR SERVIDOR
     // --------------------------------------------------
 
     app.listen(
@@ -456,7 +444,7 @@ const iniciarServidor = async () => {
         );
 
         console.log(
-          '🔐 API autenticación admin: /api/admin/auth'
+          '🔐 API autenticación admin: /api/admin/administradores'
         );
 
         console.log(
@@ -472,29 +460,25 @@ const iniciarServidor = async () => {
         );
       }
     );
-  } catch (error) {
-    console.error(
-      '=========================================='
-    );
+  })
+  .catch(
+    (error) => {
+      console.error(
+        '=========================================='
+      );
 
-    console.error(
-      '❌ ERROR AL CONECTAR O INICIAR EL SERVIDOR'
-    );
+      console.error(
+        '❌ ERROR AL CONECTAR CON MONGODB'
+      );
 
-    console.error(
-      error.message
-    );
+      console.error(
+        error.message
+      );
 
-    console.error(
-      '=========================================='
-    );
+      console.error(
+        '=========================================='
+      );
 
-    process.exit(1);
-  }
-};
-
-// ======================================================
-// EJECUTAR SERVIDOR
-// ======================================================
-
-iniciarServidor();
+      process.exit(1);
+    }
+  );
