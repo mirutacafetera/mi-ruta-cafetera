@@ -9,13 +9,19 @@ const {
 );
 
 const {
+  verificarToken
+} = require(
+  '../../middlewares/authmiddleware'
+);
+
+const {
   registrarUsuario,
   verificarCorreo,
   iniciarSesionUsuario,
   recuperarPassword,
   verificarCodigoRecuperacion,
   restablecerPassword,
-  obtenerUsuario,
+  obtenerMiPerfil,
   actualizarUsuario,
   eliminarUsuario
 } = require(
@@ -23,7 +29,7 @@ const {
 );
 
 // ======================================================
-// AUTENTICACIÃ“N DE USUARIOS
+// AUTENTICACIÓN DE USUARIOS
 // ======================================================
 
 // Registrar usuario
@@ -38,7 +44,7 @@ router.post(
   verificarCorreo
 );
 
-// Iniciar sesiÃ³n
+// Iniciar sesión
 router.post(
   '/login',
   iniciarSesionUsuario
@@ -50,20 +56,19 @@ router.post(
   loginWithGoogle
 );
 
-
-// Recuperar contraseÃ±a
+// Recuperar contraseña
 router.post(
   '/recuperar-password',
   recuperarPassword
 );
 
-// Verificar cÃ³digo de recuperaciÃ³n
+// Verificar código de recuperación
 router.post(
   '/verificar-codigo-recuperacion',
   verificarCodigoRecuperacion
 );
 
-// Restablecer contraseÃ±a
+// Restablecer contraseña
 router.post(
   '/restablecer-password',
   restablecerPassword
@@ -73,21 +78,24 @@ router.post(
 // USUARIO
 // ======================================================
 
-// Obtener usuario
+// Obtener mi perfil
 router.get(
-  '/:id',
-  obtenerUsuario
+  '/perfil',
+  verificarToken,
+  obtenerMiPerfil
 );
 
 // Actualizar usuario
 router.put(
   '/:id',
+  verificarToken,
   actualizarUsuario
 );
 
 // Eliminar cuenta
 router.delete(
   '/:id',
+  verificarToken,
   eliminarUsuario
 );
 
