@@ -1,44 +1,73 @@
-const SitioTuristico = require('../../models/sitio/contenido');
+const Contenido = require('../../models/sitio/contenido');
+
+
+// ======================================================
+// OBTENER MULTIMEDIA DE UN SITIO
+// ======================================================
 
 const obtenerMultimedia = async (req, res) => {
   try {
-    const sitio = await SitioTuristico.findById(req.params.id);
 
-    if (!sitio) {
-      return res.status(404).json({
-        mensaje: 'Sitio turístico no encontrado'
-      });
-    }
+    const multimedia = await Contenido.find(
+      {
+        sitio: req.params.id,
 
-    res.json({
-      fotos: sitio.fotos || [],
-      videos: sitio.videos || [],
-      audioguia: sitio.audioguia || ''
-    });
+        tipo: {
+          $in: ['imagen', 'video', 'audio']
+        },
+
+        activo: true
+      },
+      {
+        _id: 1,
+        tipo: 1,
+        titulo: 1,
+        descripcion: 1,
+        url: 1,
+        idioma: 1,
+        activo: 1
+      }
+    );
+
+    res.status(200).json(multimedia);
 
   } catch (error) {
+
     res.status(500).json({
       mensaje: 'Error al obtener multimedia',
       error: error.message
     });
+
   }
 };
 
 
+// ======================================================
+// ACTUALIZAR MULTIMEDIA
+// ======================================================
+
 const actualizarMultimedia = async (req, res) => {
   try {
+
     const {
-      fotos,
-      videos,
-      audioguia
+      tipo,
+      titulo,
+      descripcion,
+      url,
+      idioma,
+      activo
     } = req.body;
 
-    const sitio = await SitioTuristico.findByIdAndUpdate(
+
+    const multimedia = await Contenido.findByIdAndUpdate(
       req.params.id,
       {
-        fotos,
-        videos,
-        audioguia
+        tipo,
+        titulo,
+        descripcion,
+        url,
+        idioma,
+        activo
       },
       {
         new: true,
@@ -46,22 +75,29 @@ const actualizarMultimedia = async (req, res) => {
       }
     );
 
-    if (!sitio) {
+
+    if (!multimedia) {
+
       return res.status(404).json({
-        mensaje: 'Sitio turístico no encontrado'
+        mensaje: 'Multimedia no encontrada'
       });
+
     }
 
-    res.json({
+
+    res.status(200).json({
       mensaje: 'Multimedia actualizada correctamente',
-      sitio
+      multimedia
     });
 
+
   } catch (error) {
+
     res.status(500).json({
       mensaje: 'Error al actualizar multimedia',
       error: error.message
     });
+
   }
 };
 

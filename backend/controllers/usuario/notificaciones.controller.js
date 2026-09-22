@@ -18,28 +18,6 @@ const obtenerNotificaciones = async (req, res) => {
   }
 };
 
-
-// CREAR NOTIFICACIÓN
-const crearNotificacion = async (req, res) => {
-  try {
-    const notificacion = new Notificacion(req.body);
-
-    await notificacion.save();
-
-    res.status(201).json({
-      mensaje: 'Notificación creada correctamente',
-      notificacion
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al crear notificación',
-      error: error.message
-    });
-  }
-};
-
-
 // MARCAR COMO LEÍDA
 const marcarLeida = async (req, res) => {
   try {
@@ -75,6 +53,5 @@ const marcarLeida = async (req, res) => {
 
 module.exports = {
   obtenerNotificaciones,
-  crearNotificacion,
   marcarLeida
 };

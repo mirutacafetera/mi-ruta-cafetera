@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
+const conectarBD = require('./db/bd');
+
 const app = express();
 
 // ======================================================
@@ -413,43 +415,25 @@ app.use(
 );
 
 // ======================================================
-// MONGODB
+// CONFIGURACIÓN DEL SERVIDOR
 // ======================================================
 
-const PORT =
-  process.env.PORT || 3000;
-
-const MONGO_URI =
-  process.env.MONGO_URI ||
-  'mongodb://127.0.0.1:27017/mirutacafetera';
+const PORT = process.env.PORT || 3000;
 
 // ======================================================
-// CONEXIÓN A MONGODB
+// INICIAR SERVIDOR
 // ======================================================
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log(
-      '=========================================='
-    );
+const iniciarServidor = async () => {
+  try {
+    // --------------------------------------------------
+    // CONECTAR CON MONGODB
+    // --------------------------------------------------
 
-    console.log(
-      '✅ MongoDB conectado correctamente'
-    );
-
-    console.log(
-      `📦 Base de datos: ${
-        mongoose.connection.name
-      }`
-    );
-
-    console.log(
-      '=========================================='
-    );
+    await conectarBD();
 
     // --------------------------------------------------
-    // INICIAR SERVIDOR
+    // INICIAR EXPRESS
     // --------------------------------------------------
 
     app.listen(
@@ -488,26 +472,29 @@ mongoose
         );
       }
     );
-  })
-  .catch(
-    (error) => {
-      console.error(
-        '=========================================='
-      );
+  } catch (error) {
+    console.error(
+      '=========================================='
+    );
 
-      console.error(
-        '❌ ERROR AL CONECTAR CON MONGODB'
-      );
+    console.error(
+      '❌ ERROR AL CONECTAR O INICIAR EL SERVIDOR'
+    );
 
-      console.error(
-        error.message
-      );
+    console.error(
+      error.message
+    );
 
-      console.error(
-        '=========================================='
-      );
+    console.error(
+      '=========================================='
+    );
 
-      process.exit(1);
-    }
-  );
-```
+    process.exit(1);
+  }
+};
+
+// ======================================================
+// EJECUTAR SERVIDOR
+// ======================================================
+
+iniciarServidor();

@@ -9,12 +9,53 @@ const {
   cancelarReserva
 } = require('../../controllers/usuario/reservas.controller');
 
-router.get('/:usuarioId', obtenerReservas);
+const {
+  verificarToken
+} = require('../../middlewares/authmiddleware');
 
-router.post('/', crearReserva);
 
-router.put('/:id', actualizarReserva);
+// =====================================================
+// OBTENER RESERVAS
+// =====================================================
 
-router.put('/:id/cancelar', cancelarReserva);
+router.get(
+  '/',
+  verificarToken,
+  obtenerReservas
+);
+
+
+// =====================================================
+// CREAR RESERVA
+// =====================================================
+
+router.post(
+  '/',
+  verificarToken,
+  crearReserva
+);
+
+
+// =====================================================
+// ACTUALIZAR RESERVA
+// =====================================================
+
+router.put(
+  '/:id',
+  verificarToken,
+  actualizarReserva
+);
+
+
+// =====================================================
+// CANCELAR RESERVA
+// =====================================================
+
+router.put(
+  '/:id/cancelar',
+  verificarToken,
+  cancelarReserva
+);
+
 
 module.exports = router;

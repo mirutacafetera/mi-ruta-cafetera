@@ -36,25 +36,6 @@ const obtenerContenido = async (req, res) => {
   }
 };
 
-const crearContenido = async (req, res) => {
-  try {
-    const contenido = new ContenidoAdmin(req.body);
-
-    await contenido.save();
-
-    res.status(201).json({
-      mensaje: 'Contenido creado correctamente',
-      contenido
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al crear contenido',
-      error: error.message
-    });
-  }
-};
-
 const actualizarContenido = async (req, res) => {
   try {
     const contenido = await ContenidoAdmin.findByIdAndUpdate(
@@ -174,7 +155,6 @@ const eliminarContenido = async (req, res) => {
 module.exports = {
   obtenerContenidos,
   obtenerContenido,
-  crearContenido,
   actualizarContenido,
   desactivarContenido,
   activarContenido,

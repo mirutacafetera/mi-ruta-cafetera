@@ -1,6 +1,9 @@
 const Resena = require('../../models/sitio/resena');
 
+// ======================================================
 // OBTENER RESEÑAS DE UN SITIO
+// ======================================================
+
 const obtenerResenasPorSitio = async (req, res) => {
   try {
     const resenas = await Resena.find({
@@ -20,18 +23,20 @@ const obtenerResenasPorSitio = async (req, res) => {
 };
 
 
+// ======================================================
 // CREAR RESEÑA
+// ======================================================
+
 const crearResena = async (req, res) => {
   try {
     const {
-      usuario,
       sitio,
       comentario,
       calificacion
     } = req.body;
 
     const resena = new Resena({
-      usuario,
+      usuario: req.usuario.id,
       sitio,
       comentario,
       calificacion
@@ -53,11 +58,17 @@ const crearResena = async (req, res) => {
 };
 
 
+// ======================================================
 // ACTUALIZAR RESEÑA
+// ======================================================
+
 const actualizarResena = async (req, res) => {
   try {
-    const resena = await Resena.findByIdAndUpdate(
-      req.params.id,
+    const resena = await Resena.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        usuario: req.usuario.id
+      },
       req.body,
       {
         new: true,
@@ -67,7 +78,7 @@ const actualizarResena = async (req, res) => {
 
     if (!resena) {
       return res.status(404).json({
-        mensaje: 'Reseña no encontrada'
+        mensaje: 'Reseña no encontrada o no tienes permiso para modificarla'
       });
     }
 
@@ -85,16 +96,20 @@ const actualizarResena = async (req, res) => {
 };
 
 
+// ======================================================
 // ELIMINAR RESEÑA
+// ======================================================
+
 const eliminarResena = async (req, res) => {
   try {
-    const resena = await Resena.findByIdAndDelete(
-      req.params.id
-    );
+    const resena = await Resena.findOneAndDelete({
+      _id: req.params.id,
+      usuario: req.usuario.id
+    });
 
     if (!resena) {
       return res.status(404).json({
-        mensaje: 'Reseña no encontrada'
+        mensaje: 'Reseña no encontrada o no tienes permiso para eliminarla'
       });
     }
 
@@ -109,6 +124,11 @@ const eliminarResena = async (req, res) => {
     });
   }
 };
+
+
+// ======================================================
+// EXPORTAR FUNCIONES
+// ======================================================
 
 module.exports = {
   obtenerResenasPorSitio,
