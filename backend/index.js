@@ -1,250 +1,329 @@
 const express = require('express');
+
 const mongoose = require('mongoose');
+
 const cors = require('cors');
+
 require('dotenv').config();
-const conectarBD = require('./db/bd');
+
 const app = express();
 
 // ======================================================
 // CONFIGURACIÓN GENERAL
 // ======================================================
+
 app.use(cors());
+
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-// =====================================================
+
+app.use(
+  express.urlencoded({
+    extended: true
+  })
+);
+
+// ======================================================
 // IMPORTACIÓN DE RUTAS
-// =====================================================
+// ======================================================
+
 // ------------------------------------------------------
 // RUTAS DE USUARIOS
 // ------------------------------------------------------
+
 const usuarioRoutes = require(
   './routes/usuario/usuario.routes'
 );
+
 const categoriaRoutes = require(
   './routes/usuario/categoria.routes'
 );
+
 const sitioRoutes = require(
   './routes/usuario/sitio.routes'
 );
+
 const resenaRoutes = require(
   './routes/usuario/resena.routes'
 );
+
 const favoritoRoutes = require(
   './routes/usuario/favorito.routes'
 );
+
 const mapaOfflineRoutes = require(
   './routes/usuario/mapasoffline.routes'
 );
+
 const notificacionRoutes = require(
   './routes/usuario/notificacion.routes'
 );
+
 const reservaRoutes = require(
   './routes/usuario/reserva.routes'
 );
+
 const rutaRoutes = require(
   './routes/usuario/ruta.routes'
 );
+
 const visitaRoutes = require(
   './routes/usuario/visita.routes'
 );
+
 const chatRoutes = require(
   './routes/usuario/chat.routes'
 );
+
 const ayudaRoutes = require(
   './routes/usuario/ayuda.routes'
 );
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
+
 const administradorRoutes = require(
   './routes/admin/administrador.routes'
 );
+
 const adminUsuariosRoutes = require(
   './routes/admin/usuarios.routes'
 );
+
 const adminResenasRoutes = require(
   './routes/admin/resenas.routes'
 );
+
 const adminContenidoRoutes = require(
   './routes/admin/contenido.routes'
 );
+
 const adminEstadisticasRoutes = require(
   './routes/admin/estadisticas.routes'
 );
+
 const adminAuthSitioRoutes = require(
   './routes/admin/authsitio.routes'
 );
+
 const adminSitioRoutes = require(
   './routes/admin/sitio.routes'
 );
+
 const categoriaSitioRoutes = require(
   './routes/admin/categoria.routes'
 );
+
 const adminAyudaRoutes = require(
   './routes/admin/ayuda.routes'
 );
+
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
+
 const multimediaRoutes = require(
   './routes/sitios/multimedia.routes'
 );
+
 const actividadesRoutes = require(
   './routes/sitios/actividades.routes'
 );
+
 const resenasSitioRoutes = require(
   './routes/sitios/resenas.routes'
 );
+
 const reservasSitioRoutes = require(
   './routes/sitios/reservas.routes'
 );
+
 const contenidoSitioRoutes = require(
   './routes/sitios/contenido.routes'
 );
+
 const authSitioRoutes = require(
   './routes/sitios/auth.routes'
 );
+
+
 // ======================================================
 // RUTAS DE USUARIOS
 // ======================================================
+
 app.use(
   '/api/usuarios',
   usuarioRoutes
 );
+
 app.use(
   '/api/categorias',
   categoriaRoutes
 );
+
 app.use(
   '/api/sitios',
   sitioRoutes
 );
+
 app.use(
   '/api/resenas',
   resenaRoutes
 );
+
 app.use(
   '/api/favoritos',
   favoritoRoutes
 );
+
 app.use(
   '/api/mapas-offline',
   mapaOfflineRoutes
 );
+
 app.use(
   '/api/notificaciones',
   notificacionRoutes
 );
+
 app.use(
   '/api/reservas',
   reservaRoutes
 );
+
 app.use(
   '/api/rutas',
   rutaRoutes
 );
+
 app.use(
   '/api/visitas',
   visitaRoutes
 );
+
 app.use(
   '/api/chat',
   chatRoutes
 );
+
 app.use(
   '/api/ayuda',
   ayudaRoutes
 );
+
 // ======================================================
 // RUTAS DE ADMINISTRACIÓN
 // ======================================================
+
 // ------------------------------------------------------
 // ADMINISTRADORES
 // ------------------------------------------------------
+
 app.use(
   '/api/admin/administradores',
   administradorRoutes
 );
-// -----------------------------------------------------
+
+// ------------------------------------------------------
 // USUARIOS
 // ------------------------------------------------------
+
 app.use(
   '/api/admin/usuarios',
   adminUsuariosRoutes
 );
+
 // ------------------------------------------------------
 // RESEÑAS
 // ------------------------------------------------------
+
 app.use(
   '/api/admin/resenas',
   adminResenasRoutes
 );
+
 // ------------------------------------------------------
 // CONTENIDO
 // ------------------------------------------------------
+
 app.use(
   '/api/admin/contenido',
   adminContenidoRoutes
 );
+
 // ------------------------------------------------------
 // ESTADÍSTICAS
 // ------------------------------------------------------
+
 app.use(
   '/api/admin/estadisticas',
   adminEstadisticasRoutes
 );
-// ------------------------------------------------------
-// AYUDA
-// ------------------------------------------------------
+
 app.use(
   '/api/admin/ayuda',
   adminAyudaRoutes
 );
+
 // ======================================================
 // RUTAS DE CUENTAS Y SITIOS
 // ======================================================
+
 app.use(
   '/api/admin/authsitio',
   adminAuthSitioRoutes
 );
+
 app.use(
   '/api/admin/sitios',
   adminSitioRoutes
 );
+
 app.use(
   '/api/categorias-sitios',
   categoriaSitioRoutes
 );
+
 // ======================================================
 // SUBRUTAS DE SITIOS TURÍSTICOS
 // ======================================================
+
 app.use(
   '/api/sitiosturisticos/multimedia',
   multimediaRoutes
 );
+
 app.use(
   '/api/sitiosturisticos/actividades',
   actividadesRoutes
 );
+
 app.use(
   '/api/sitiosturisticos/resenas',
   resenasSitioRoutes
 );
+
 app.use(
   '/api/sitiosturisticos/reservas',
   reservasSitioRoutes
 );
+
 app.use(
   '/api/sitiosturisticos/contenido',
   contenidoSitioRoutes
 );
+
 app.use(
   '/api/sitios/auth',
   authSitioRoutes
 );
+
+
+
+
 // ======================================================
 // RUTA PRINCIPAL
 // ======================================================
+
 app.get(
   '/',
   (req, res) => {
@@ -255,9 +334,11 @@ app.get(
     });
   }
 );
+
 // ======================================================
 // RUTA DE PRUEBA DE CONEXIÓN
 // ======================================================
+
 app.get(
   '/api/health',
   (req, res) => {
@@ -270,9 +351,11 @@ app.get(
     });
   }
 );
+
 // ======================================================
 // 404 - RUTA NO ENCONTRADA
 // ======================================================
+
 app.use(
   (req, res) => {
     res.status(404).json({
@@ -281,9 +364,11 @@ app.use(
     });
   }
 );
+
 // ======================================================
 // MANEJO GLOBAL DE ERRORES
 // ======================================================
+
 app.use(
   (err, req, res, next) => {
     console.error(
@@ -298,61 +383,102 @@ app.use(
     });
   }
 );
+
 // ======================================================
-// CONFIGURACIÓN DEL SERVIDOR
+// MONGODB
 // ======================================================
+
 const PORT =
   process.env.PORT || 3000;
+
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  'mongodb://127.0.0.1:27017/mirutacafetera';
+
 // ======================================================
-// INICIAR SERVIDOR
+// CONEXIÓN A MONGODB
 // ======================================================
-const iniciarServidor = async () => {
-  try {
+
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log(
+      '=========================================='
+    );
+
+    console.log(
+      '✅ MongoDB conectado correctamente'
+    );
+
+    console.log(
+      `📦 Base de datos: ${
+        mongoose.connection.name
+      }`
+    );
+
+    console.log(
+      '=========================================='
+    );
+
     // --------------------------------------------------
-    // CONECTAR CON MONGODB
+    // INICIAR SERVIDOR
     // --------------------------------------------------
-    await conectarBD();
-    // --------------------------------------------------
-    // INICIAR EXPRESS
-    // --------------------------------------------------
+
     app.listen(
       PORT,
       () => {
         console.log(
           `🚀 Servidor funcionando en http://localhost:${PORT}`
         );
+
         console.log(
           '📍 API de sitios: /api/sitiosturisticos'
         );
+
         console.log(
           '📂 API de categorías: /api/categorias-sitios'
         );
+
         console.log(
           '👨‍💼 API admin sitios: /api/admin/sitios'
         );
+
         console.log(
           '🔐 API autenticación admin: /api/admin/administradores'
         );
+
         console.log(
           '🔐 API cuentas sitios: /api/admin/authsitio'
         );
+
         console.log(
           '❤️ Health check: /api/health'
         );
+
         console.log(
           '=========================================='
         );
       }
     );
-  } catch (error) {
-    console.error(
-      '❌ Error al iniciar el servidor:',
-      error.message
-    );
-    process.exit(1);
-  }
-};
-// ======================================================
-// EJECUTAR SERVIDOR
-// ======================================================
-iniciarServidor();
+  })
+  .catch(
+    (error) => {
+      console.error(
+        '=========================================='
+      );
+
+      console.error(
+        '❌ ERROR AL CONECTAR CON MONGODB'
+      );
+
+      console.error(
+        error.message
+      );
+
+      console.error(
+        '=========================================='
+      );
+
+      process.exit(1);
+    }
+  );

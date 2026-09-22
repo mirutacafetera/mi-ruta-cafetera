@@ -1,84 +1,49 @@
 const express = require('express');
 
+const {
+  iniciarSesionAdmin,
+  obtenerAdministrador,
+  recuperarPasswordAdmin,
+  verificarCodigoRecuperacionAdmin,
+  restablecerPasswordAdmin
+} = require(
+  '../../controllers/admin/authsitio.controller'
+);
+
 const router = express.Router();
 
-const {
-  crearCuentaSitio,
-  iniciarSesionSitio,
-  obtenerSitio,
-  recuperarPasswordSitio,
-  verificarCodigoRecuperacionSitio,
-  restablecerPasswordSitio,
-  eliminarCuentaSitio
-} = require('../../controllers/admin/authsitio.controller');
-
-
 // ======================================================
-// CREAR SITIO + CUENTA DEL RESPONSABLE
+// AUTENTICACIÓN DEL ADMINISTRADOR
 // ======================================================
 
-router.post(
-  '/',
-  crearCuentaSitio
-);
-
-
-// ======================================================
-// INICIAR SESIÓN DEL SITIO
-// ======================================================
-
+// Iniciar sesión
 router.post(
   '/login',
-  iniciarSesionSitio
+  iniciarSesionAdmin
 );
 
-
-// ======================================================
-// OBTENER CUENTA
-// ======================================================
-
-router.get(
-  '/:id',
-  obtenerSitio
-);
-
-
-// ======================================================
-// RECUPERAR CONTRASEÑA
-// ======================================================
-
+// Recuperar contraseña
 router.post(
   '/recuperar-password',
-  recuperarPasswordSitio
+  recuperarPasswordAdmin
 );
 
-
-// ======================================================
-// VERIFICAR CÓDIGO
-// ======================================================
-
+// Verificar código de recuperación
 router.post(
   '/verificar-codigo-recuperacion',
-  verificarCodigoRecuperacionSitio
+  verificarCodigoRecuperacionAdmin
 );
 
-
-// ======================================================
-// RESTABLECER CONTRASEÑA
-// ======================================================
-
+// Restablecer contraseña
 router.post(
   '/restablecer-password',
-  restablecerPasswordSitio
+  restablecerPasswordAdmin
 );
 
-// ======================================================
-// ELIMINAR CUENTA
-// ======================================================
-
-router.delete(
+// Obtener administrador
+router.get(
   '/:id',
-  eliminarCuentaSitio
+  obtenerAdministrador
 );
 
 module.exports = router;

@@ -1,23 +1,7 @@
 const mongoose = require('mongoose');
 
-const authSitioSchema = new mongoose.Schema(
+const authAdminSchema = new mongoose.Schema(
   {
-    // ==================================================
-    // SITIO TURÍSTICO ASOCIADO
-    // ==================================================
-
-    sitioId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'SitioTuristico',
-      required: true,
-      unique: true
-    },
-
-
-    // ==================================================
-    // DATOS DEL RESPONSABLE
-    // ==================================================
-
     nombre: {
       type: String,
       required: true,
@@ -29,11 +13,6 @@ const authSitioSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
-
-
-    // ==================================================
-    // DATOS DE ACCESO
-    // ==================================================
 
     correo: {
       type: String,
@@ -49,42 +28,22 @@ const authSitioSchema = new mongoose.Schema(
       select: false
     },
 
-
-    // ==================================================
-    // INFORMACIÓN DE CONTACTO
-    // ==================================================
-
     telefono: {
       type: String,
       default: '',
       trim: true
     },
 
-
-    // ==================================================
-    // ROL
-    // ==================================================
-
     rol: {
       type: String,
-      default: 'sitio',
-      enum: ['sitio']
+      default: 'admin',
+      enum: ['admin']
     },
-
-
-    // ==================================================
-    // ESTADO DE LA CUENTA
-    // ==================================================
 
     activo: {
       type: Boolean,
       default: true
     },
-
-
-    // ==================================================
-    // RECUPERACIÓN DE CONTRASEÑA
-    // ==================================================
 
     codigoRecuperacion: {
       type: String,
@@ -108,21 +67,15 @@ const authSitioSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    collection: 'authsitios'
+    collection: 'authadmins'
   }
 );
 
-
-// ======================================================
-// MODELO
-// ======================================================
-
-const AuthSitio =
-  mongoose.models.AuthSitio ||
+const AuthAdmin =
+  mongoose.models.AuthAdmin ||
   mongoose.model(
-    'AuthSitio',
-    authSitioSchema
+    'AuthAdmin',
+    authAdminSchema
   );
 
-
-module.exports = AuthSitio;
+module.exports = AuthAdmin;

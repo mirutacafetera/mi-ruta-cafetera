@@ -5,7 +5,7 @@ const rutaSchema = new mongoose.Schema(
     usuario: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Usuario',
-      required: true
+      default: null
     },
 
     nombre: {
@@ -20,13 +20,12 @@ const rutaSchema = new mongoose.Schema(
       trim: true
     },
 
-    sitios: [
+      sitios: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Sitio'
+        ref: 'SitioTuristico'
       }
     ],
-
     tipo: {
       type: String,
       enum: ['personalizada', 'predefinida'],
@@ -36,10 +35,32 @@ const rutaSchema = new mongoose.Schema(
     activa: {
       type: Boolean,
       default: true
+    },
+
+    expiraEn: {
+      type: Date,
+      default: null
     }
   },
   {
     timestamps: true
+  }
+);
+
+// ============================================================
+// TTL
+// ============================================================
+// MongoDB eliminará automáticamente los documentos cuando
+// llegue la fecha almacenada en expiraEn.
+//
+// Las rutas predefinidas tienen expiraEn = null,
+// por lo tanto nunca son eliminadas por este índice.
+// ============================================================
+
+rutaSchema.index(
+  { expiraEn: 1 },
+  {
+    expireAfterSeconds: 0
   }
 );
 
