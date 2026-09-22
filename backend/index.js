@@ -1,9 +1,6 @@
 const express = require('express');
-
 const mongoose = require('mongoose');
-
 const cors = require('cors');
-
 require('dotenv').config();
 
 const conectarBD = require('./db/bd');
@@ -84,6 +81,11 @@ const ayudaRoutes = require(
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
 
+// AUTENTICACIÓN DEL ADMINISTRADOR
+const adminAuthRoutes = require(
+  './routes/admin/authsitio.routes'
+);
+
 const administradorRoutes = require(
   './routes/admin/administrador.routes'
 );
@@ -104,6 +106,10 @@ const adminEstadisticasRoutes = require(
   './routes/admin/estadisticas.routes'
 );
 
+const adminAyudaRoutes = require(
+  './routes/admin/ayuda.routes'
+);
+
 const adminAuthSitioRoutes = require(
   './routes/admin/authsitio.routes'
 );
@@ -114,10 +120,6 @@ const adminSitioRoutes = require(
 
 const categoriaSitioRoutes = require(
   './routes/admin/categoria.routes'
-);
-
-const adminAyudaRoutes = require(
-  './routes/admin/ayuda.routes'
 );
 
 // ------------------------------------------------------
@@ -164,6 +166,22 @@ app.use(
 
 app.use(
   '/api/sitios',
+  sitioRoutes
+);
+
+// ======================================================
+// ALIAS DE SITIOS TURÍSTICOS
+// ======================================================
+
+// Se conserva /api/sitios para no afectar
+// funcionalidades existentes.
+
+// Se agrega /api/sitiosturisticos para mantener
+// compatibilidad con Flutter y las rutas existentes
+// relacionadas con sitios turísticos.
+
+app.use(
+  '/api/sitiosturisticos',
   sitioRoutes
 );
 
@@ -217,6 +235,15 @@ app.use(
 // ======================================================
 
 // ------------------------------------------------------
+// AUTENTICACIÓN DEL ADMINISTRADOR
+// ------------------------------------------------------
+
+app.use(
+  '/api/admin/auth',
+  adminAuthRoutes
+);
+
+// ------------------------------------------------------
 // ADMINISTRADORES
 // ------------------------------------------------------
 
@@ -262,7 +289,7 @@ app.use(
 );
 
 // ------------------------------------------------------
-// AYUDA
+// AYUDA ADMINISTRATIVA
 // ------------------------------------------------------
 
 app.use(
@@ -332,7 +359,7 @@ app.get(
   (req, res) => {
     res.status(200).json({
       mensaje:
-        'API Mi Ruta Mágica del Café funcionando correctamente',
+        'API Mi Ruta Cafetera funcionando correctamente',
       estado: 'OK'
     });
   }
@@ -391,8 +418,7 @@ app.use(
 // CONFIGURACIÓN DEL SERVIDOR
 // ======================================================
 
-const PORT =
-  process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 // ======================================================
 // INICIAR SERVIDOR
@@ -400,7 +426,6 @@ const PORT =
 
 const iniciarServidor = async () => {
   try {
-
     // --------------------------------------------------
     // CONECTAR CON MONGODB
     // --------------------------------------------------
@@ -414,7 +439,6 @@ const iniciarServidor = async () => {
     app.listen(
       PORT,
       () => {
-
         console.log(
           `🚀 Servidor funcionando en http://localhost:${PORT}`
         );
@@ -432,7 +456,7 @@ const iniciarServidor = async () => {
         );
 
         console.log(
-          '🔐 API autenticación admin: /api/admin/administradores'
+          '🔐 API autenticación admin: /api/admin/auth'
         );
 
         console.log(
@@ -446,15 +470,23 @@ const iniciarServidor = async () => {
         console.log(
           '=========================================='
         );
-
       }
     );
-
   } catch (error) {
+    console.error(
+      '=========================================='
+    );
 
     console.error(
-      '❌ Error al iniciar el servidor:',
+      '❌ ERROR AL CONECTAR O INICIAR EL SERVIDOR'
+    );
+
+    console.error(
       error.message
+    );
+
+    console.error(
+      '=========================================='
     );
 
     process.exit(1);

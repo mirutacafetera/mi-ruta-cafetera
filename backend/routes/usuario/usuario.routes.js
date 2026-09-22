@@ -1,5 +1,7 @@
 const express = require('express');
 
+const router = express.Router();
+
 const {
   loginWithGoogle
 } = require(
@@ -11,8 +13,6 @@ const {
 } = require(
   '../../middlewares/authmiddleware'
 );
-
-const router = express.Router();
 
 const {
   registrarUsuario,
@@ -50,8 +50,9 @@ router.post(
   iniciarSesionUsuario
 );
 
+// Iniciar sesión con Google
 router.post(
-  '/login-google', 
+  '/login-google',
   loginWithGoogle
 );
 

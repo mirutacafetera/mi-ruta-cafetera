@@ -62,18 +62,17 @@ const calcularRuta = async (req, res) => {
     // MÁXIMO RAZONABLE
     // ========================================================
     //
-    // Una ruta turística normal no debería tener cientos
-    // de puntos.
     //
-    // Permitimos hasta 20 sitios.
+    //
+    // Permitimos hasta 10 sitios.
     // ========================================================
 
-    if (puntos.length > 20) {
+    if (puntos.length > 10) {
 
       return res.status(400).json({
         ok: false,
         mensaje:
-          'La ruta no puede contener más de 20 puntos.'
+          'La ruta no puede contener más de 10 puntos.'
       });
 
     }

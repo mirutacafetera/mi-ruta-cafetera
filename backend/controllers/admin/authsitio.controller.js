@@ -1,513 +1,541 @@
-const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+
 const jwt = require('jsonwebtoken');
+
 const crypto = require('crypto');
 
-const AuthSitio = require('../../models/admin/authsitio');
-const SitioTuristico = require('../../models/admin/sitio');
-const { enviarCodigoRecuperacion } = require('../../utils/mailer');
+const AuthAdmin = require(
+  '../../models/admin/authsitio'
+);
 
+const {
+  enviarCodigoRecuperacion
+} = require('../../utils/mailer');
 
-// CREAR CUENTA DEL RESPONSABLE DEL SITIO
+// =====================================================
+// INICIAR SESIÓN ADMINISTRADOR
+// =====================================================
 
-const crearCuentaSitio = async (req, res) => {
+const iniciarSesionAdmin = async (req, res) => {
   try {
-    const { sitioId, nombre, apellido, correo, password, telefono } = req.body;
+    const {
+      correo,
+      password
+    } = req.body;
 
-    if (!sitioId || !nombre || !apellido || !correo || !password) {
-      return res.status(400).json({
-        mensaje: 'Sitio, nombre, apellido, correo y contraseña son obligatorios'
-      });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(sitioId)) {
-      return res.status(400).json({
-        mensaje: 'El sitioId no tiene un formato válido'
-      });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
-        mensaje: 'La contraseña debe tener mínimo 6 caracteres'
-      });
-    }
-
-    const correoNormalizado = correo.toLowerCase().trim();
-    const sitio = await SitioTuristico.findById(sitioId);
-
-    if (!sitio) {
-      return res.status(404).json({
-        mensaje: 'El sitio turístico no existe'
-      });
-    }
-
-    if (!sitio.activo) {
-      return res.status(400).json({
-        mensaje: 'El sitio turístico está inactivo'
-      });
-    }
-
-    const cuentaSitioExistente = await AuthSitio.findOne({
-      sitioId: sitio._id
-    });
-
-    if (cuentaSitioExistente) {
-      return res.status(400).json({
-        mensaje: 'Este sitio turístico ya tiene una cuenta asociada'
-      });
-    }
-
-    const cuentaExistente = await AuthSitio.findOne({
-      correo: correoNormalizado
-    });
-
-    if (cuentaExistente) {
-      return res.status(400).json({
-        mensaje: 'Ya existe una cuenta de sitio con este correo'
-      });
-    }
-
-    const passwordEncriptada = await bcrypt.hash(password, 10);
-
-    const nuevaCuenta = new AuthSitio({
-      sitioId: sitio._id,
-      nombre,
-      apellido,
-      correo: correoNormalizado,
-      password: passwordEncriptada,
-      telefono: telefono || '',
-      rol: 'sitio',
-      activo: true
-    });
-
-    await nuevaCuenta.save();
-
-    return res.status(201).json({
-      mensaje: 'Cuenta del sitio creada correctamente',
-      cuenta: {
-        id: nuevaCuenta._id,
-        sitioId: nuevaCuenta.sitioId,
-        nombre: nuevaCuenta.nombre,
-        apellido: nuevaCuenta.apellido,
-        correo: nuevaCuenta.correo,
-        telefono: nuevaCuenta.telefono,
-        rol: nuevaCuenta.rol,
-        activo: nuevaCuenta.activo
-      }
-    });
-
-  } catch (error) {
-    console.error('Error al crear cuenta del sitio:', error);
-
-    if (error.code === 11000) {
-      if (error.keyPattern?.sitioId) {
-        return res.status(400).json({
-          mensaje: 'Este sitio turístico ya tiene una cuenta asociada'
-        });
-      }
-
-      if (error.keyPattern?.correo) {
-        return res.status(400).json({
-          mensaje: 'Ya existe una cuenta de sitio con este correo'
-        });
-      }
-    }
-
-    return res.status(500).json({
-      mensaje: 'Error al crear la cuenta del sitio'
-    });
-  }
-};
-
-
-// INICIAR SESIÓN
-
-const iniciarSesionSitio = async (req, res) => {
-  try {
-    const { correo, password } = req.body;
+    // -------------------------------------------------
+    // VALIDAR CAMPOS
+    // -------------------------------------------------
 
     if (!correo || !password) {
       return res.status(400).json({
-        mensaje: 'Correo y contraseña son obligatorios'
+        mensaje:
+          'Correo y contraseña son obligatorios'
       });
     }
 
-    const correoNormalizado = correo.toLowerCase().trim();
+    // -------------------------------------------------
+    // NORMALIZAR CORREO
+    // -------------------------------------------------
 
-    const cuenta = await AuthSitio.findOne({
-      correo: correoNormalizado
-    })
-      .select('+password')
-      .populate('sitioId');
+    const correoNormalizado =
+      correo.toLowerCase().trim();
 
-    if (!cuenta) {
+    // -------------------------------------------------
+    // BUSCAR ADMINISTRADOR
+    // -------------------------------------------------
+
+    const administrador =
+      await AuthAdmin
+        .findOne({
+          correo: correoNormalizado
+        })
+        .select('+password');
+
+    if (!administrador) {
       return res.status(401).json({
-        mensaje: 'Correo o contraseña incorrectos'
+        mensaje:
+          'Correo o contraseña incorrectos'
       });
     }
 
-    if (!cuenta.activo) {
+    // -------------------------------------------------
+    // VERIFICAR ESTADO
+    // -------------------------------------------------
+
+    if (!administrador.activo) {
       return res.status(403).json({
-        mensaje: 'La cuenta del sitio está inactiva'
+        mensaje:
+          'La cuenta del administrador está inactiva'
       });
     }
 
-    if (!cuenta.sitioId) {
-      return res.status(403).json({
-        mensaje: 'La cuenta no tiene un sitio turístico asociado'
-      });
-    }
+    // -------------------------------------------------
+    // COMPARAR CONTRASEÑA
+    // -------------------------------------------------
 
-    if (!cuenta.sitioId.activo) {
-      return res.status(403).json({
-        mensaje: 'El sitio turístico está inactivo'
-      });
-    }
-
-    const passwordCorrecta = await bcrypt.compare(
-      password,
-      cuenta.password
-    );
+    const passwordCorrecta =
+      await bcrypt.compare(
+        password,
+        administrador.password
+      );
 
     if (!passwordCorrecta) {
       return res.status(401).json({
-        mensaje: 'Correo o contraseña incorrectos'
+        mensaje:
+          'Correo o contraseña incorrectos'
       });
     }
 
-    const token = jwt.sign(
-      {
-        id: cuenta._id.toString(),
-        sitioId: cuenta.sitioId._id.toString(),
-        correo: cuenta.correo,
-        rol: 'sitio'
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: process.env.JWT_EXPIRES_IN || '1d'
-      }
-    );
+    // -------------------------------------------------
+    // CREAR JWT
+    // -------------------------------------------------
+
+    const token =
+      jwt.sign(
+        {
+          id: administrador._id.toString(),
+          correo: administrador.correo,
+          rol: 'admin'
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn:
+            process.env.JWT_EXPIRES_IN || '1d'
+        }
+      );
+
+    // -------------------------------------------------
+    // RESPUESTA
+    // -------------------------------------------------
 
     return res.status(200).json({
-      mensaje: 'Inicio de sesión exitoso',
+      mensaje:
+        'Inicio de sesión exitoso',
+
       token,
-      cuenta: {
-        id: cuenta._id,
-        sitioId: cuenta.sitioId._id,
-        nombre: cuenta.nombre,
-        apellido: cuenta.apellido,
-        correo: cuenta.correo,
-        telefono: cuenta.telefono,
-        rol: cuenta.rol,
-        activo: cuenta.activo
-      },
-      sitio: {
-        id: cuenta.sitioId._id,
-        nombre: cuenta.sitioId.nombre,
-        descripcion: cuenta.sitioId.descripcion,
-        direccion: cuenta.sitioId.direccion,
-        ciudad: cuenta.sitioId.ciudad,
-        departamento: cuenta.sitioId.departamento,
-        latitud: cuenta.sitioId.latitud,
-        longitud: cuenta.sitioId.longitud,
-        categoria: cuenta.sitioId.categoria,
-        activo: cuenta.sitioId.activo
+
+      administrador: {
+        id: administrador._id,
+        nombre: administrador.nombre,
+        apellido: administrador.apellido,
+        correo: administrador.correo,
+        telefono: administrador.telefono,
+        rol: administrador.rol,
+        activo: administrador.activo
       }
     });
 
   } catch (error) {
-    console.error('Error al iniciar sesión:', error);
+    console.error(
+      'Error al iniciar sesión como administrador:',
+      error
+    );
 
     return res.status(500).json({
-      mensaje: 'Error al iniciar sesión'
+      mensaje:
+        'Error al iniciar sesión como administrador',
+      error: error.message
     });
   }
 };
 
+// =====================================================
+// OBTENER ADMINISTRADOR
+// =====================================================
 
-// OBTENER CUENTA
-
-const obtenerSitio = async (req, res) => {
+const obtenerAdministrador = async (req, res) => {
   try {
-    const cuenta = await AuthSitio.findById(req.params.id)
-      .populate('sitioId');
+    const administrador =
+      await AuthAdmin
+        .findById(req.params.id)
+        .select('-password');
 
-    if (!cuenta) {
+    if (!administrador) {
       return res.status(404).json({
-        mensaje: 'Cuenta del sitio no encontrada'
+        mensaje:
+          'Administrador no encontrado'
       });
     }
 
-    return res.status(200).json(cuenta);
+    return res.status(200).json(
+      administrador
+    );
 
   } catch (error) {
-    console.error('Error al obtener cuenta del sitio:', error);
+    console.error(
+      'Error al obtener administrador:',
+      error
+    );
 
     return res.status(500).json({
-      mensaje: 'Error al obtener la cuenta del sitio'
+      mensaje:
+        'Error al obtener administrador',
+      error: error.message
     });
   }
 };
 
-
+// =====================================================
 // RECUPERAR CONTRASEÑA
+// =====================================================
 
-const recuperarPasswordSitio = async (req, res) => {
+const recuperarPasswordAdmin = async (req, res) => {
   try {
     const { correo } = req.body;
 
+    // -------------------------------------------------
+    // VALIDAR CORREO
+    // -------------------------------------------------
+
     if (!correo) {
       return res.status(400).json({
-        mensaje: 'El correo es obligatorio'
+        mensaje:
+          'El correo es obligatorio'
       });
     }
 
-    const correoNormalizado = correo.toLowerCase().trim();
+    // -------------------------------------------------
+    // NORMALIZAR CORREO
+    // -------------------------------------------------
 
-    const cuenta = await AuthSitio.findOne({
-      correo: correoNormalizado
+    const correoNormalizado =
+      correo.toLowerCase().trim();
+
+    // -------------------------------------------------
+    // BUSCAR ADMINISTRADOR
+    // -------------------------------------------------
+
+    const administrador =
+      await AuthAdmin.findOne({
+        correo: correoNormalizado
+      });
+
+    if (!administrador) {
+      return res.status(404).json({
+        mensaje:
+          'No existe un administrador con ese correo'
+      });
+    }
+
+    // -------------------------------------------------
+    // GENERAR CÓDIGO
+    // -------------------------------------------------
+
+    const codigoRecuperacion =
+      crypto.randomInt(
+        100000,
+        1000000
+      ).toString();
+
+    const codigoRecuperacionExpiracion =
+      new Date(
+        Date.now() +
+        10 * 60 * 1000
+      );
+
+    // -------------------------------------------------
+    // GUARDAR CÓDIGO
+    // -------------------------------------------------
+
+    administrador.codigoRecuperacion =
+      codigoRecuperacion;
+
+    administrador.codigoRecuperacionExpiracion =
+      codigoRecuperacionExpiracion;
+
+    administrador.tokenRecuperacion = null;
+
+    administrador.tokenRecuperacionExpiracion =
+      null;
+
+    await administrador.save();
+
+    // -------------------------------------------------
+    // ENVIAR CÓDIGO
+    // -------------------------------------------------
+
+    await enviarCodigoRecuperacion(
+      administrador.correo,
+      administrador.nombre,
+      codigoRecuperacion
+    );
+
+    // -------------------------------------------------
+    // RESPUESTA
+    // -------------------------------------------------
+
+    return res.status(200).json({
+      mensaje:
+        'Hemos enviado un código de recuperación a tu correo'
     });
 
-    if (!cuenta) {
-      return res.status(404).json({
-        mensaje: 'No existe una cuenta con este correo'
-      });
-    }
+  } catch (error) {
+    console.error(
+      'Error al recuperar contraseña del administrador:',
+      error
+    );
 
-    if (!cuenta.activo) {
-      return res.status(403).json({
-        mensaje: 'La cuenta del sitio está inactiva'
-      });
-    }
+    return res.status(500).json({
+      mensaje:
+        'Error al solicitar recuperación de contraseña',
+      error: error.message
+    });
+  }
+};
 
-    if (!cuenta.sitioId) {
-      return res.status(403).json({
-        mensaje: 'La cuenta no tiene un sitio turístico asociado'
-      });
-    }
+// =====================================================
+// VERIFICAR CÓDIGO DE RECUPERACIÓN
+// =====================================================
 
-    const codigo = crypto.randomInt(100000, 1000000).toString();
-
-    cuenta.codigoRecuperacion = codigo;
-    cuenta.codigoRecuperacionExpiracion =
-      new Date(Date.now() + 10 * 60 * 1000);
-
-    cuenta.tokenRecuperacion = null;
-    cuenta.tokenRecuperacionExpiracion = null;
-
-    await cuenta.save();
-
+const verificarCodigoRecuperacionAdmin =
+  async (req, res) => {
     try {
-      await enviarCodigoRecuperacion(
-        cuenta.correo,
-        cuenta.nombre,
+      const {
+        correo,
         codigo
-      );
-    } catch (errorCorreo) {
-      cuenta.codigoRecuperacion = null;
-      cuenta.codigoRecuperacionExpiracion = null;
+      } = req.body;
 
-      await cuenta.save();
+      // ------------------------------------------------
+      // VALIDAR DATOS
+      // ------------------------------------------------
 
+      if (!correo || !codigo) {
+        return res.status(400).json({
+          mensaje:
+            'Correo y código son obligatorios'
+        });
+      }
+
+      // ------------------------------------------------
+      // NORMALIZAR CORREO
+      // ------------------------------------------------
+
+      const correoNormalizado =
+        correo.toLowerCase().trim();
+
+      // ------------------------------------------------
+      // BUSCAR ADMINISTRADOR
+      // ------------------------------------------------
+
+      const administrador =
+        await AuthAdmin.findOne({
+          correo: correoNormalizado
+        });
+
+      if (!administrador) {
+        return res.status(404).json({
+          mensaje:
+            'Administrador no encontrado'
+        });
+      }
+
+      // ------------------------------------------------
+      // VERIFICAR CÓDIGO
+      // ------------------------------------------------
+
+      if (
+        administrador.codigoRecuperacion !==
+        codigo
+      ) {
+        return res.status(400).json({
+          mensaje:
+            'El código de recuperación es incorrecto'
+        });
+      }
+
+      // ------------------------------------------------
+      // VERIFICAR EXPIRACIÓN
+      // ------------------------------------------------
+
+      if (
+        !administrador.codigoRecuperacionExpiracion ||
+        administrador.codigoRecuperacionExpiracion <
+          new Date()
+      ) {
+        return res.status(400).json({
+          mensaje:
+            'El código de recuperación ha expirado'
+        });
+      }
+
+      // ------------------------------------------------
+      // GENERAR TOKEN
+      // ------------------------------------------------
+
+      const tokenRecuperacion =
+        crypto
+          .randomBytes(32)
+          .toString('hex');
+
+      const tokenRecuperacionExpiracion =
+        new Date(
+          Date.now() +
+          10 * 60 * 1000
+        );
+
+      // ------------------------------------------------
+      // GUARDAR TOKEN
+      // ------------------------------------------------
+
+      administrador.tokenRecuperacion =
+        tokenRecuperacion;
+
+      administrador.tokenRecuperacionExpiracion =
+        tokenRecuperacionExpiracion;
+
+      administrador.codigoRecuperacion = null;
+
+      administrador.codigoRecuperacionExpiracion =
+        null;
+
+      await administrador.save();
+
+      // ------------------------------------------------
+      // RESPUESTA
+      // ------------------------------------------------
+
+      return res.status(200).json({
+        mensaje:
+          'Código verificado correctamente',
+
+        tokenRecuperacion
+      });
+
+    } catch (error) {
       console.error(
-        'Error enviando correo de recuperación:',
-        errorCorreo.message
+        'Error al verificar código de recuperación:',
+        error
       );
 
       return res.status(500).json({
-        mensaje: 'No fue posible enviar el código al correo'
+        mensaje:
+          'Error al verificar el código',
+        error: error.message
       });
     }
+  };
 
-    return res.status(200).json({
-      mensaje: 'Código de recuperación enviado al correo'
-    });
-
-  } catch (error) {
-    console.error('Error al solicitar recuperación:', error);
-
-    return res.status(500).json({
-      mensaje: 'Error al solicitar recuperación'
-    });
-  }
-};
-
-
-// VERIFICAR CÓDIGO Y GENERAR TOKEN
-
-const verificarCodigoRecuperacionSitio = async (req, res) => {
-  try {
-    const { correo, codigo } = req.body;
-
-    if (!correo || !codigo) {
-      return res.status(400).json({
-        mensaje: 'Correo y código son obligatorios'
-      });
-    }
-
-    const cuenta = await AuthSitio.findOne({
-      correo: correo.toLowerCase().trim()
-    });
-
-    if (!cuenta) {
-      return res.status(404).json({
-        mensaje: 'Cuenta del sitio no encontrada'
-      });
-    }
-
-    if (cuenta.codigoRecuperacion !== codigo) {
-      return res.status(400).json({
-        mensaje: 'Código de recuperación incorrecto'
-      });
-    }
-
-    if (
-      !cuenta.codigoRecuperacionExpiracion ||
-      cuenta.codigoRecuperacionExpiracion < new Date()
-    ) {
-      return res.status(400).json({
-        mensaje: 'El código de recuperación ha expirado'
-      });
-    }
-
-    const tokenRecuperacion = crypto.randomBytes(32).toString('hex');
-
-    cuenta.tokenRecuperacion = tokenRecuperacion;
-    cuenta.tokenRecuperacionExpiracion =
-      new Date(Date.now() + 10 * 60 * 1000);
-
-    cuenta.codigoRecuperacion = null;
-    cuenta.codigoRecuperacionExpiracion = null;
-
-    await cuenta.save();
-
-    return res.status(200).json({
-      mensaje: 'Código de recuperación válido',
-      tokenRecuperacion
-    });
-
-  } catch (error) {
-    console.error('Error verificando código:', error);
-
-    return res.status(500).json({
-      mensaje: 'Error al verificar el código'
-    });
-  }
-};
-
-
+// =====================================================
 // RESTABLECER CONTRASEÑA
+// =====================================================
 
-const restablecerPasswordSitio = async (req, res) => {
-  try {
-    const {
-      tokenRecuperacion,
-      nuevaPassword,
-      confirmarPassword
-    } = req.body;
+const restablecerPasswordAdmin =
+  async (req, res) => {
+    try {
+      const {
+        tokenRecuperacion,
+        nuevaPassword
+      } = req.body;
 
-    if (!tokenRecuperacion || !nuevaPassword || !confirmarPassword) {
-      return res.status(400).json({
-        mensaje: 'Token, nueva contraseña y confirmación son obligatorios'
+      // ------------------------------------------------
+      // VALIDAR DATOS
+      // ------------------------------------------------
+
+      if (
+        !tokenRecuperacion ||
+        !nuevaPassword
+      ) {
+        return res.status(400).json({
+          mensaje:
+            'Token y nueva contraseña son obligatorios'
+        });
+      }
+
+      // ------------------------------------------------
+      // VALIDAR CONTRASEÑA
+      // ------------------------------------------------
+
+      if (nuevaPassword.length < 6) {
+        return res.status(400).json({
+          mensaje:
+            'La contraseña debe tener al menos 6 caracteres'
+        });
+      }
+
+      // ------------------------------------------------
+      // BUSCAR ADMINISTRADOR
+      // ------------------------------------------------
+
+      const administrador =
+        await AuthAdmin.findOne({
+          tokenRecuperacion
+        });
+
+      if (!administrador) {
+        return res.status(400).json({
+          mensaje:
+            'El token de recuperación no es válido'
+        });
+      }
+
+      // ------------------------------------------------
+      // VERIFICAR EXPIRACIÓN
+      // ------------------------------------------------
+
+      if (
+        !administrador.tokenRecuperacionExpiracion ||
+        administrador.tokenRecuperacionExpiracion <
+          new Date()
+      ) {
+        return res.status(400).json({
+          mensaje:
+            'El token de recuperación ha expirado'
+        });
+      }
+
+      // ------------------------------------------------
+      // ENCRIPTAR NUEVA CONTRASEÑA
+      // ------------------------------------------------
+
+      administrador.password =
+        await bcrypt.hash(
+          nuevaPassword,
+          10
+        );
+
+      // ------------------------------------------------
+      // LIMPIAR TOKEN
+      // ------------------------------------------------
+
+      administrador.tokenRecuperacion = null;
+
+      administrador.tokenRecuperacionExpiracion =
+        null;
+
+      await administrador.save();
+
+      // ------------------------------------------------
+      // RESPUESTA
+      // ------------------------------------------------
+
+      return res.status(200).json({
+        mensaje:
+          'Contraseña restablecida correctamente'
+      });
+
+    } catch (error) {
+      console.error(
+        'Error al restablecer contraseña:',
+        error
+      );
+
+      return res.status(500).json({
+        mensaje:
+          'Error al restablecer la contraseña',
+        error: error.message
       });
     }
+  };
 
-    if (nuevaPassword.length < 6) {
-      return res.status(400).json({
-        mensaje: 'La nueva contraseña debe tener mínimo 6 caracteres'
-      });
-    }
-
-    if (nuevaPassword !== confirmarPassword) {
-      return res.status(400).json({
-        mensaje: 'Las contraseñas no coinciden'
-      });
-    }
-
-    const cuenta = await AuthSitio.findOne({
-      tokenRecuperacion
-    }).select('+password');
-
-    if (!cuenta) {
-      return res.status(400).json({
-        mensaje: 'El token de recuperación no es válido'
-      });
-    }
-
-    if (
-      !cuenta.tokenRecuperacionExpiracion ||
-      cuenta.tokenRecuperacionExpiracion < new Date()
-    ) {
-      return res.status(400).json({
-        mensaje: 'El token de recuperación ha expirado'
-      });
-    }
-
-    cuenta.password = await bcrypt.hash(nuevaPassword, 10);
-
-    cuenta.tokenRecuperacion = null;
-    cuenta.tokenRecuperacionExpiracion = null;
-    cuenta.codigoRecuperacion = null;
-    cuenta.codigoRecuperacionExpiracion = null;
-
-    await cuenta.save();
-
-    return res.status(200).json({
-      mensaje: 'Contraseña restablecida correctamente'
-    });
-
-  } catch (error) {
-    console.error('Error restableciendo contraseña:', error);
-
-    return res.status(500).json({
-      mensaje: 'Error al restablecer la contraseña'
-    });
-  }
-};
-
-
-// ELIMINAR CUENTA
-
-const eliminarCuentaSitio = async (req, res) => {
-  try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({
-        mensaje: 'El ID de la cuenta no es válido'
-      });
-    }
-
-    const cuenta = await AuthSitio.findById(req.params.id);
-
-    if (!cuenta) {
-      return res.status(404).json({
-        mensaje: 'Cuenta del sitio no encontrada'
-      });
-    }
-
-    await AuthSitio.findByIdAndDelete(req.params.id);
-
-    return res.status(200).json({
-      mensaje: 'Cuenta del sitio eliminada correctamente'
-    });
-
-  } catch (error) {
-    console.error('Error al eliminar cuenta:', error);
-
-    return res.status(500).json({
-      mensaje: 'Error al eliminar la cuenta del sitio'
-    });
-  }
-};
-
-
+// =====================================================
 // EXPORTAR
+// =====================================================
 
 module.exports = {
-  crearCuentaSitio,
-  iniciarSesionSitio,
-  obtenerSitio,
-  recuperarPasswordSitio,
-  verificarCodigoRecuperacionSitio,
-  restablecerPasswordSitio,
-  eliminarCuentaSitio
+  iniciarSesionAdmin,
+  obtenerAdministrador,
+  recuperarPasswordAdmin,
+  verificarCodigoRecuperacionAdmin,
+  restablecerPasswordAdmin
 };

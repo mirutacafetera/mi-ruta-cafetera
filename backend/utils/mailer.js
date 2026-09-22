@@ -7,39 +7,17 @@ const {
 // CONFIGURACIÓN DE BREVO
 // =====================================================
 
-const brevo =
-  new BrevoClient({
-    apiKey:
-      process.env.BREVO_API_KEY
-  });
+const brevo = new BrevoClient({
+  apiKey: process.env.BREVO_API_KEY
+});
 
 
-console.log(
-  '=========================================='
-);
-
-console.log(
-  'CONFIGURACIÓN BREVO'
-);
-
-console.log(
-  'API KEY cargada:',
-  !!process.env.BREVO_API_KEY
-);
-
-console.log(
-  'BREVO_NOMBRE:',
-  process.env.BREVO_NOMBRE
-);
-
-console.log(
-  'BREVO_EMAIL:',
-  process.env.BREVO_EMAIL
-);
-
-console.log(
-  '=========================================='
-);
+console.log('==========================================');
+console.log('CONFIGURACIÓN BREVO');
+console.log('API KEY cargada:', !!process.env.BREVO_API_KEY);
+console.log('BREVO_NOMBRE:', process.env.BREVO_NOMBRE);
+console.log('BREVO_EMAIL:', process.env.BREVO_EMAIL);
+console.log('==========================================');
 
 
 // =====================================================
