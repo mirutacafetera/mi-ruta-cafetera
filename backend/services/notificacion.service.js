@@ -21,7 +21,7 @@ const crearNotificacion = async (
       activo: true
     });
 
-    await notificacion.save();    
+    await notificacion.save();
 
     return notificacion;
 

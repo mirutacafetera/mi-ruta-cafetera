@@ -6,9 +6,15 @@ import '../config/api_config.dart';
 import '../models/ruta_model.dart';
 
 class RutaService {
+  // ============================================================
+  // OBTENER TODAS LAS RUTAS
+  // ============================================================
+
   Future<List<RutaModel>> obtenerRutas() async {
     final response = await http.get(
-      Uri.parse(ApiConfig.rutasUrl),
+      Uri.parse(
+        ApiConfig.rutasUrl,
+      ),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -22,8 +28,9 @@ class RutaService {
       );
     }
 
-    final decoded =
-        jsonDecode(response.body);
+    final decoded = jsonDecode(
+      response.body,
+    );
 
     dynamic data = decoded;
 
@@ -43,6 +50,10 @@ class RutaService {
         .map(RutaModel.fromJson)
         .toList();
   }
+
+  // ============================================================
+  // OBTENER UNA RUTA POR ID
+  // ============================================================
 
   Future<RutaModel> obtenerRuta(
     String rutaId,
@@ -64,13 +75,16 @@ class RutaService {
       );
     }
 
-    final decoded =
-        jsonDecode(response.body);
+    final decoded = jsonDecode(
+      response.body,
+    );
 
     final data = decoded is Map<String, dynamic>
-        ? (decoded['ruta'] ??
+        ? (
+            decoded['ruta'] ??
             decoded['data'] ??
-            decoded)
+            decoded
+          )
         : decoded;
 
     if (data is! Map<String, dynamic>) {
@@ -79,8 +93,14 @@ class RutaService {
       );
     }
 
-    return RutaModel.fromJson(data);
+    return RutaModel.fromJson(
+      data,
+    );
   }
+
+  // ============================================================
+  // ELIMINAR UNA RUTA
+  // ============================================================
 
   Future<void> eliminarRuta(
     String rutaId,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
 import 'sitio_form_field.dart';
 import 'sitio_section_card.dart';
 import 'sitio_section_title.dart';
@@ -17,11 +19,6 @@ class SitioInformacionTuristica extends StatelessWidget {
     required this.activo,
     required this.onActivoChanged,
   });
-
-  static const Color verdePrincipal = Color(0xFF31572C);
-  static const Color verdeOscuro = Color(0xFF1B4332);
-  static const Color grisTexto = Color(0xFF6B6B6B);
-  static const Color grisBorde = Color(0xFFE1E1E1);
 
   @override
   Widget build(BuildContext context) {
@@ -44,32 +41,33 @@ class SitioInformacionTuristica extends StatelessWidget {
             controller: precioController,
             label: 'Precio desde',
             icon: Icons.payments_rounded,
-            keyboardType:
-                const TextInputType.numberWithOptions(
+            keyboardType: const TextInputType.numberWithOptions(
               decimal: true,
             ),
           ),
 
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 8,
+              horizontal: AppDimensions.spacingMd + 2,
+              vertical: AppDimensions.spacingSm,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F7F2),
-              borderRadius: BorderRadius.circular(14),
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
               border: Border.all(
-                color: grisBorde,
+                color: AppColors.border,
               ),
             ),
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              activeThumbColor: verdePrincipal,
+              activeThumbColor: AppColors.primary,
               title: const Text(
                 'Sitio activo',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: verdeOscuro,
+                  color: AppColors.secondary,
                 ),
               ),
               subtitle: Text(
@@ -78,7 +76,7 @@ class SitioInformacionTuristica extends StatelessWidget {
                     : 'Oculto para los visitantes',
                 style: const TextStyle(
                   fontSize: 11,
-                  color: grisTexto,
+                  color: AppColors.textSecondary,
                 ),
               ),
               value: activo,

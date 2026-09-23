@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../models/sitio_turistico_model.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 class MapaSelectorRuta extends StatelessWidget {
   final bool activo;
@@ -32,7 +34,7 @@ class MapaSelectorRuta extends StatelessWidget {
         ),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(
-            vertical: 15,
+            vertical: AppDimensions.spacingMd + 3,
           ),
         ),
       );
@@ -41,13 +43,15 @@ class MapaSelectorRuta extends StatelessWidget {
     final cantidad = sitiosSeleccionados.length;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusXl,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.20),
+            color: AppColors.black.withValues(alpha: 0.20),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -62,29 +66,34 @@ class MapaSelectorRuta extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.route,
-                  color: Colors.brown,
+                  color: AppColors.primary,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(
+                  width: AppDimensions.spacingSm,
+                ),
                 const Expanded(
                   child: Text(
                     'Crear mi ruta',
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
                 Text(
                   '$cantidad/4',
                   style: const TextStyle(
-                    color: Colors.brown,
+                    color: AppColors.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(
+              height: AppDimensions.spacingSm,
+            ),
 
             Text(
               cantidad == 0
@@ -92,13 +101,15 @@ class MapaSelectorRuta extends StatelessWidget {
                   : cantidad == 1
                       ? 'Selecciona al menos un sitio más.'
                       : '$cantidad sitios seleccionados.',
-              style: TextStyle(
-                color: Colors.grey.shade700,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
               ),
             ),
 
             if (sitiosSeleccionados.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              const SizedBox(
+                height: AppDimensions.spacingMd - 2,
+              ),
 
               SizedBox(
                 height: 42,
@@ -106,22 +117,24 @@ class MapaSelectorRuta extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   itemCount: sitiosSeleccionados.length,
                   separatorBuilder: (_, index) =>
-                      const SizedBox(width: 6),
+                      const SizedBox(
+                    width: AppDimensions.spacingXs + 2,
+                  ),
                   itemBuilder: (context, index) {
-                    final sitio =
-                        sitiosSeleccionados[index];
+                    final sitio = sitiosSeleccionados[index];
 
                     return Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 7,
+                        horizontal: AppDimensions.spacingMd - 2,
+                        vertical: AppDimensions.spacingXs + 3,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.brown.shade50,
-                        borderRadius:
-                            BorderRadius.circular(20),
+                        color: AppColors.cream,
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusPill,
+                        ),
                         border: Border.all(
-                          color: Colors.brown.shade200,
+                          color: AppColors.border,
                         ),
                       ),
                       child: Row(
@@ -129,31 +142,33 @@ class MapaSelectorRuta extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 11,
-                            backgroundColor: Colors.brown,
+                            backgroundColor: AppColors.primary,
                             child: Text(
                               '${index + 1}',
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.white,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 6),
+
+                          const SizedBox(
+                            width: AppDimensions.spacingXs + 2,
+                          ),
+
                           ConstrainedBox(
-                            constraints:
-                                const BoxConstraints(
+                            constraints: const BoxConstraints(
                               maxWidth: 130,
                             ),
                             child: Text(
                               sitio.nombre,
                               maxLines: 1,
-                              overflow:
-                                  TextOverflow.ellipsis,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
+                                color: AppColors.textPrimary,
                                 fontSize: 12,
-                                fontWeight:
-                                    FontWeight.w600,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -165,7 +180,9 @@ class MapaSelectorRuta extends StatelessWidget {
               ),
             ],
 
-            const SizedBox(height: 12),
+            const SizedBox(
+              height: AppDimensions.spacingMd,
+            ),
 
             Row(
               children: [
@@ -175,14 +192,17 @@ class MapaSelectorRuta extends StatelessWidget {
                     child: const Text('Cancelar'),
                   ),
                 ),
-                const SizedBox(width: 8),
+
+                const SizedBox(
+                  width: AppDimensions.spacingSm,
+                ),
+
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(
-                    onPressed:
-                        cantidad >= 2
-                            ? onCalcular
-                            : null,
+                    onPressed: cantidad >= 2
+                        ? onCalcular
+                        : null,
                     icon: const Icon(Icons.route),
                     label: const Text(
                       'Calcular ruta',

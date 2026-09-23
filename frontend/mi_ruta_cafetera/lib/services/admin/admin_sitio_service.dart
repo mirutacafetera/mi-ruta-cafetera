@@ -4,6 +4,10 @@ import 'admin_sitio_consultas.dart';
 import 'admin_sitio_crud.dart';
 
 class AdminSitioService {
+  // ============================================================
+  // URL BASE
+  // ============================================================
+
   static String get baseUrl {
     if (kIsWeb) {
       return 'http://localhost:3000/api';
@@ -12,9 +16,9 @@ class AdminSitioService {
     return 'http://10.0.2.2:3000/api';
   }
 
-  // =========================
+  // ============================================================
   // CONSULTAS
-  // =========================
+  // ============================================================
 
   static Future<List<dynamic>> obtenerSitios() {
     return AdminSitioConsultas.obtenerSitios(baseUrl);
@@ -24,16 +28,18 @@ class AdminSitioService {
     return AdminSitioConsultas.obtenerCategorias(baseUrl);
   }
 
-  static Future<Map<String, dynamic>> obtenerSitio(String id) {
+  static Future<Map<String, dynamic>> obtenerSitio(
+    String id,
+  ) {
     return AdminSitioConsultas.obtenerSitio(
       baseUrl,
       id,
     );
   }
 
-  // =========================
+  // ============================================================
   // CRUD
-  // =========================
+  // ============================================================
 
   static Future<Map<String, dynamic>> crearSitio({
     required String nombreCuenta,
@@ -133,7 +139,9 @@ class AdminSitioService {
     );
   }
 
-  static Future<void> eliminarSitio(String id) {
+  static Future<void> eliminarSitio(
+    String id,
+  ) {
     return AdminSitioCrud.eliminarSitio(
       baseUrl,
       id,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../services/admin/admin_sitio_service.dart';
-
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
 import '../../../widgets/admin/sitio_card.dart';
 import '../../../widgets/admin/sitio_empty_state.dart';
 import '../../../widgets/admin/sitio_form_sheet.dart';
@@ -20,9 +21,9 @@ class AdminSitioListScreen extends StatefulWidget {
 
 class _AdminSitioListScreenState
     extends State<AdminSitioListScreen> {
-  // =========================
+  // ============================================================
   // DATOS
-  // =========================
+  // ============================================================
 
   List<Map<String, dynamic>> _sitios = [];
   List<Map<String, dynamic>> _categorias = [];
@@ -30,15 +31,15 @@ class _AdminSitioListScreenState
   bool _cargando = true;
   String _busqueda = '';
 
+  // ============================================================
+  // CARGAR DATOS
+  // ============================================================
+
   @override
   void initState() {
     super.initState();
     _cargarDatos();
   }
-
-  // =========================
-  // CARGAR DATOS
-  // =========================
 
   Future<void> _cargarDatos() async {
     if (mounted) {
@@ -98,9 +99,9 @@ class _AdminSitioListScreenState
     }
   }
 
-  // =========================
+  // ============================================================
   // FILTRAR
-  // =========================
+  // ============================================================
 
   List<Map<String, dynamic>> get _sitiosFiltrados {
     if (_busqueda.trim().isEmpty) {
@@ -138,9 +139,9 @@ class _AdminSitioListScreenState
     }).toList();
   }
 
-  // =========================
+  // ============================================================
   // CREAR
-  // =========================
+  // ============================================================
 
   Future<void> _crearSitio() async {
     final resultado =
@@ -161,9 +162,9 @@ class _AdminSitioListScreenState
     }
   }
 
-  // =========================
+  // ============================================================
   // EDITAR
-  // =========================
+  // ============================================================
 
   Future<void> _editarSitio(
     Map<String, dynamic> sitio,
@@ -187,9 +188,9 @@ class _AdminSitioListScreenState
     }
   }
 
-  // =========================
+  // ============================================================
   // ELIMINAR
-  // =========================
+  // ============================================================
 
   Future<void> _eliminarSitio(
     Map<String, dynamic> sitio,
@@ -233,7 +234,8 @@ class _AdminSitioListScreenState
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
+                foregroundColor: AppColors.white,
               ),
               onPressed: () {
                 Navigator.pop(
@@ -280,14 +282,15 @@ class _AdminSitioListScreenState
     }
   }
 
-  // =========================
+  // ============================================================
   // ID
-  // =========================
+  // ============================================================
 
   String? _obtenerId(
     Map<String, dynamic> sitio,
   ) {
-    final id = sitio['_id'] ?? sitio['id'];
+    final id =
+        sitio['_id'] ?? sitio['id'];
 
     if (id == null) {
       return null;
@@ -300,14 +303,15 @@ class _AdminSitioListScreenState
     return id.toString();
   }
 
-  // =========================
+  // ============================================================
   // CATEGORÍA
-  // =========================
+  // ============================================================
 
   String _obtenerCategoria(
     Map<String, dynamic> sitio,
   ) {
-    final categoria = sitio['categoria'];
+    final categoria =
+        sitio['categoria'];
 
     if (categoria == null) {
       return 'Sin categoría';
@@ -345,20 +349,24 @@ class _AdminSitioListScreenState
     return categoria.toString();
   }
 
-  // =========================
+  // ============================================================
   // ESTADO
-  // =========================
+  // ============================================================
 
   bool _estaActivo(
     Map<String, dynamic> sitio,
   ) {
-    final activo = sitio['activo'];
+    // La base de datos actualmente puede
+    // utilizar "activo" o "estado".
+    final activo =
+        sitio['activo'];
 
     if (activo is bool) {
       return activo;
     }
 
-    final estado = sitio['estado'];
+    final estado =
+        sitio['estado'];
 
     if (estado is bool) {
       return estado;
@@ -367,25 +375,28 @@ class _AdminSitioListScreenState
     return true;
   }
 
-  // =========================
+  // ============================================================
   // IMAGEN
-  // =========================
+  // ============================================================
 
   String? _obtenerImagen(
     Map<String, dynamic> sitio,
   ) {
-    final imagen = sitio['imagen'];
+    final imagen =
+        sitio['imagen'];
 
     if (imagen != null &&
         imagen.toString().trim().isNotEmpty) {
       return imagen.toString();
     }
 
-    final imagenes = sitio['imagenes'];
+    final imagenes =
+        sitio['imagenes'];
 
     if (imagenes is List &&
         imagenes.isNotEmpty) {
-      final primera = imagenes.first;
+      final primera =
+          imagenes.first;
 
       if (primera != null &&
           primera.toString().trim().isNotEmpty) {
@@ -396,9 +407,9 @@ class _AdminSitioListScreenState
     return null;
   }
 
-  // =========================
+  // ============================================================
   // MENSAJE
-  // =========================
+  // ============================================================
 
   void _mostrarMensaje(
     String mensaje, {
@@ -417,15 +428,25 @@ class _AdminSitioListScreenState
         content: Text(mensaje),
         backgroundColor:
             error
-                ? Colors.red
-                : Colors.green,
+                ? AppColors.error
+                : AppColors.success,
+        behavior:
+            SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(
+          AppDimensions.spacingMd,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusMd,
+          ),
+        ),
       ),
     );
   }
 
-  // =========================
+  // ============================================================
   // BUILD
-  // =========================
+  // ============================================================
 
   @override
   Widget build(
@@ -466,12 +487,13 @@ class _AdminSitioListScreenState
     );
   }
 
-  // =========================
+  // ============================================================
   // CONTENIDO
-  // =========================
+  // ============================================================
 
   Widget _contenido() {
-    final sitios = _sitiosFiltrados;
+    final sitios =
+        _sitiosFiltrados;
 
     if (sitios.isEmpty) {
       return SitioEmptyState(
@@ -484,26 +506,27 @@ class _AdminSitioListScreenState
       onRefresh: _cargarDatos,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(
-          16,
-          4,
-          16,
-          24,
+          AppDimensions.spacingLg,
+          AppDimensions.spacingXs,
+          AppDimensions.spacingLg,
+          AppDimensions.spacingXl,
         ),
         itemCount: sitios.length,
-        itemBuilder: (context, index) {
-          final sitio = sitios[index];
+        itemBuilder: (
+          context,
+          index,
+        ) {
+          final sitio =
+              sitios[index];
 
           return SitioCard(
             sitio: sitio,
-            categoria: _obtenerCategoria(
-              sitio,
-            ),
-            activo: _estaActivo(
-              sitio,
-            ),
-            imagen: _obtenerImagen(
-              sitio,
-            ),
+            categoria:
+                _obtenerCategoria(sitio),
+            activo:
+                _estaActivo(sitio),
+            imagen:
+                _obtenerImagen(sitio),
             onEditar: () {
               _editarSitio(sitio);
             },

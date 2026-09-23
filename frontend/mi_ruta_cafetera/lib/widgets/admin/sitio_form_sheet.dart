@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../services/admin/admin_sitio_service.dart';
-
-import 'sitio_datos_acceso.dart';
-import 'sitio_informacion.dart';
-import 'sitio_ubicacion.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
 import 'sitio_contacto.dart';
-import 'sitio_informacion_turistica.dart';
+import 'sitio_datos_acceso.dart';
 import 'sitio_imagen.dart';
+import 'sitio_informacion.dart';
+import 'sitio_informacion_turistica.dart';
+import 'sitio_ubicacion.dart';
 
 class SitioFormSheet extends StatefulWidget {
   final Map<String, dynamic>? sitio;
@@ -29,10 +30,6 @@ class SitioFormSheet extends StatefulWidget {
 }
 
 class _SitioFormSheetState extends State<SitioFormSheet> {
-  static const verdePrincipal = Color(0xFF31572C);
-  static const verdeOscuro = Color(0xFF1B4332);
-  static const crema = Color(0xFFF8F5EF);
-
   final _formKey = GlobalKey<FormState>();
 
   final _nombreCuentaController = TextEditingController();
@@ -48,18 +45,22 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
   final _departamentoController = TextEditingController();
   final _latitudController = TextEditingController();
   final _longitudController = TextEditingController();
+
   final _telefonoController = TextEditingController();
   final _correosController = TextEditingController();
   final _sitioWebController = TextEditingController();
+
   final _horarioController = TextEditingController();
   final _precioDesdeController = TextEditingController();
   final _etiquetasController = TextEditingController();
 
   final _picker = ImagePicker();
+
   Uint8List? _imagenBytes;
   final List<String> _imagenesExistentes = [];
 
   String? _categoriaSeleccionada;
+
   bool _activo = true;
   bool _guardando = false;
 
@@ -76,52 +77,74 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
     }
   }
 
+  // ==========================================================
+  // CARGAR DATOS
+  // ==========================================================
+
   void _cargarDatos(Map<String, dynamic> sitio) {
     final cuenta = sitio['cuenta'];
 
     if (cuenta is Map) {
       _nombreCuentaController.text =
           cuenta['nombre']?.toString() ?? '';
+
       _apellidoCuentaController.text =
           cuenta['apellido']?.toString() ?? '';
+
       _correoController.text =
           cuenta['correo']?.toString() ?? '';
+
       _telefonoCuentaController.text =
           cuenta['telefono']?.toString() ?? '';
     } else {
       _nombreCuentaController.text =
           sitio['nombreCuenta']?.toString() ?? '';
+
       _apellidoCuentaController.text =
           sitio['apellidoCuenta']?.toString() ?? '';
+
       _correoController.text =
           sitio['correo']?.toString() ?? '';
+
       _telefonoCuentaController.text =
           sitio['telefonoCuenta']?.toString() ?? '';
     }
 
     _passwordController.clear();
 
-    _nombreController.text = sitio['nombre']?.toString() ?? '';
+    _nombreController.text =
+        sitio['nombre']?.toString() ?? '';
+
     _descripcionController.text =
         sitio['descripcion']?.toString() ?? '';
+
     _direccionController.text =
         sitio['direccion']?.toString() ?? '';
+
     _ciudadController.text =
         sitio['ciudad']?.toString() ?? 'Garzón';
+
     _departamentoController.text =
         sitio['departamento']?.toString() ?? 'Huila';
+
     _latitudController.text =
         sitio['latitud']?.toString() ?? '';
+
     _longitudController.text =
         sitio['longitud']?.toString() ?? '';
+
     _telefonoController.text =
         sitio['telefono']?.toString() ?? '';
+
     _correosController.text =
         sitio['correos']?.toString() ?? '';
+
     _sitioWebController.text =
         sitio['sitioWeb']?.toString() ?? '';
+
     _horarioController.text =
         sitio['horario']?.toString() ?? '';
+
     _precioDesdeController.text =
         sitio['precioDesde']?.toString() ?? '0';
 
@@ -140,7 +163,8 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
           categoria['_id']?.toString() ??
           categoria['id']?.toString();
     } else {
-      _categoriaSeleccionada = categoria?.toString();
+      _categoriaSeleccionada =
+          categoria?.toString();
     }
 
     final imagenes = sitio['imagenes'];
@@ -150,7 +174,9 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
 
       for (final imagen in imagenes) {
         if (imagen.toString().isNotEmpty) {
-          _imagenesExistentes.add(imagen.toString());
+          _imagenesExistentes.add(
+            imagen.toString(),
+          );
         }
       }
     }
@@ -163,6 +189,10 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
       _imagenesExistentes.insert(0, imagen);
     }
   }
+
+  // ==========================================================
+  // SELECCIONAR IMAGEN
+  // ==========================================================
 
   Future<void> _seleccionarImagen() async {
     try {
@@ -177,13 +207,21 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
 
       if (!mounted) return;
 
-      setState(() => _imagenBytes = bytes);
+      setState(() {
+        _imagenBytes = bytes;
+      });
     } catch (_) {
       if (mounted) {
-        _mostrarMensaje('No se pudo seleccionar la imagen.');
+        _mostrarMensaje(
+          'No se pudo seleccionar la imagen.',
+        );
       }
     }
   }
+
+  // ==========================================================
+  // ETIQUETAS
+  // ==========================================================
 
   List<String> _obtenerEtiquetas() {
     return _etiquetasController.text
@@ -193,21 +231,31 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
         .toList();
   }
 
+  // ==========================================================
+  // GUARDAR
+  // ==========================================================
+
   Future<void> _guardar() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_categoriaSeleccionada == null ||
         _categoriaSeleccionada!.isEmpty) {
-      _mostrarMensaje('Selecciona una categoría.');
+      _mostrarMensaje(
+        'Selecciona una categoría.',
+      );
       return;
     }
 
     final latitud = double.tryParse(
-      _latitudController.text.trim().replaceAll(',', '.'),
+      _latitudController.text
+          .trim()
+          .replaceAll(',', '.'),
     );
 
     final longitud = double.tryParse(
-      _longitudController.text.trim().replaceAll(',', '.'),
+      _longitudController.text
+          .trim()
+          .replaceAll(',', '.'),
     );
 
     if (latitud == null || longitud == null) {
@@ -235,35 +283,48 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
       return;
     }
 
-    setState(() => _guardando = true);
+    setState(() {
+      _guardando = true;
+    });
 
     try {
-      final imagenes = List<String>.from(_imagenesExistentes);
+      final imagenes =
+          List<String>.from(_imagenesExistentes);
+
       final imagenPrincipal =
           imagenes.isNotEmpty ? imagenes.first : '';
 
       final datos = {
         'nombre': _nombreController.text.trim(),
-        'descripcion': _descripcionController.text.trim(),
+        'descripcion':
+            _descripcionController.text.trim(),
         'categoria': _categoriaSeleccionada!,
         'etiquetas': _obtenerEtiquetas(),
-        'direccion': _direccionController.text.trim(),
-        'ciudad': _ciudadController.text.trim(),
-        'departamento': _departamentoController.text.trim(),
+        'direccion':
+            _direccionController.text.trim(),
+        'ciudad':
+            _ciudadController.text.trim(),
+        'departamento':
+            _departamentoController.text.trim(),
         'latitud': latitud,
         'longitud': longitud,
         'activo': _activo,
-        'telefono': _telefonoController.text.trim(),
-        'correos': _correosController.text.trim(),
-        'sitioWeb': _sitioWebController.text.trim(),
+        'telefono':
+            _telefonoController.text.trim(),
+        'correos':
+            _correosController.text.trim(),
+        'sitioWeb':
+            _sitioWebController.text.trim(),
         'imagen': imagenPrincipal,
         'imagenes': imagenes,
-        'horario': _horarioController.text.trim(),
+        'horario':
+            _horarioController.text.trim(),
         'precioDesde': precio,
       };
 
       if (widget.esEdicion) {
-        final id = widget.sitio?['_id']?.toString() ??
+        final id =
+            widget.sitio?['_id']?.toString() ??
             widget.sitio?['id']?.toString() ??
             '';
 
@@ -276,46 +337,76 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
         await AdminSitioService.actualizarSitio(
           id: id,
           nombre: datos['nombre'] as String,
-          descripcion: datos['descripcion'] as String,
-          categoria: datos['categoria'] as String,
-          etiquetas: datos['etiquetas'] as List<String>,
-          direccion: datos['direccion'] as String,
-          ciudad: datos['ciudad'] as String,
-          departamento: datos['departamento'] as String,
+          descripcion:
+              datos['descripcion'] as String,
+          categoria:
+              datos['categoria'] as String,
+          etiquetas:
+              datos['etiquetas'] as List<String>,
+          direccion:
+              datos['direccion'] as String,
+          ciudad:
+              datos['ciudad'] as String,
+          departamento:
+              datos['departamento'] as String,
           latitud: latitud,
           longitud: longitud,
           activo: _activo,
-          telefono: datos['telefono'] as String,
-          correos: datos['correos'] as String,
-          sitioWeb: datos['sitioWeb'] as String,
-          imagen: imagenPrincipal,
-          imagenes: imagenes,
-          horario: datos['horario'] as String,
+          telefono:
+              datos['telefono'] as String,
+          correos:
+              datos['correos'] as String,
+          sitioWeb:
+              datos['sitioWeb'] as String,
+          imagen:
+              imagenPrincipal,
+          imagenes:
+              imagenes,
+          horario:
+              datos['horario'] as String,
           precioDesde: precio,
         );
       } else {
         await AdminSitioService.crearSitio(
-          nombreCuenta: _nombreCuentaController.text.trim(),
-          apellidoCuenta: _apellidoCuentaController.text.trim(),
-          correo: _correoController.text.trim(),
-          password: _passwordController.text.trim(),
-          telefonoCuenta: _telefonoCuentaController.text.trim(),
-          nombre: datos['nombre'] as String,
-          descripcion: datos['descripcion'] as String,
-          categoria: datos['categoria'] as String,
-          etiquetas: datos['etiquetas'] as List<String>,
-          direccion: datos['direccion'] as String,
-          ciudad: datos['ciudad'] as String,
-          departamento: datos['departamento'] as String,
+          nombreCuenta:
+              _nombreCuentaController.text.trim(),
+          apellidoCuenta:
+              _apellidoCuentaController.text.trim(),
+          correo:
+              _correoController.text.trim(),
+          password:
+              _passwordController.text.trim(),
+          telefonoCuenta:
+              _telefonoCuentaController.text.trim(),
+          nombre:
+              datos['nombre'] as String,
+          descripcion:
+              datos['descripcion'] as String,
+          categoria:
+              datos['categoria'] as String,
+          etiquetas:
+              datos['etiquetas'] as List<String>,
+          direccion:
+              datos['direccion'] as String,
+          ciudad:
+              datos['ciudad'] as String,
+          departamento:
+              datos['departamento'] as String,
           latitud: latitud,
           longitud: longitud,
           activo: _activo,
-          telefono: datos['telefono'] as String,
-          correos: datos['correos'] as String,
-          sitioWeb: datos['sitioWeb'] as String,
-          imagen: imagenPrincipal,
-          imagenes: imagenes,
-          horario: datos['horario'] as String,
+          telefono:
+              datos['telefono'] as String,
+          correos:
+              datos['correos'] as String,
+          sitioWeb:
+              datos['sitioWeb'] as String,
+          imagen:
+              imagenPrincipal,
+          imagenes:
+              imagenes,
+          horario:
+              datos['horario'] as String,
           precioDesde: precio,
         );
       }
@@ -332,28 +423,45 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
     } catch (e) {
       if (mounted) {
         _mostrarMensaje(
-          e.toString().replaceFirst('Exception: ', ''),
+          e.toString().replaceFirst(
+                'Exception: ',
+                '',
+              ),
         );
       }
     } finally {
       if (mounted) {
-        setState(() => _guardando = false);
+        setState(() {
+          _guardando = false;
+        });
       }
     }
   }
+
+  // ==========================================================
+  // MENSAJE
+  // ==========================================================
 
   void _mostrarMensaje(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
+        margin: const EdgeInsets.all(
+          AppDimensions.spacingLg,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusMd,
+          ),
         ),
       ),
     );
   }
+
+  // ==========================================================
+  // BUILD
+  // ==========================================================
 
   @override
   Widget build(BuildContext context) {
@@ -361,99 +469,161 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
 
     return SafeArea(
       child: Container(
-        height: MediaQuery.of(context).size.height * .94,
+        height:
+            MediaQuery.of(context).size.height * .94,
         decoration: const BoxDecoration(
-          color: crema,
+          color: AppColors.background,
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(28),
+            top: Radius.circular(
+              AppDimensions.radiusXxl,
+            ),
           ),
         ),
         child: Column(
           children: [
             _encabezado(esEdicion),
+
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(
+                  AppDimensions.spacingLg,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     children: [
+                      // ========================================
+                      // DATOS DE ACCESO
+                      // ========================================
+
                       SitioDatosAcceso(
                         esEdicion: esEdicion,
-                        nombreController: _nombreCuentaController,
-                        apellidoController: _apellidoCuentaController,
-                        correoController: _correoController,
-                        passwordController: _passwordController,
+                        nombreController:
+                            _nombreCuentaController,
+                        apellidoController:
+                            _apellidoCuentaController,
+                        correoController:
+                            _correoController,
+                        passwordController:
+                            _passwordController,
                         telefonoController:
                             _telefonoCuentaController,
                       ),
 
+                      // ========================================
+                      // INFORMACIÓN
+                      // ========================================
+
                       SitioInformacion(
-                        nombreController: _nombreController,
+                        nombreController:
+                            _nombreController,
                         descripcionController:
                             _descripcionController,
                         etiquetasController:
                             _etiquetasController,
-                        categorias: widget.categorias,
+                        categorias:
+                            widget.categorias,
                         categoriaSeleccionada:
                             _categoriaSeleccionada,
-                        onCategoriaChanged: (value) {
+                        onCategoriaChanged:
+                            (value) {
                           setState(() {
-                            _categoriaSeleccionada = value;
+                            _categoriaSeleccionada =
+                                value;
                           });
                         },
                       ),
 
+                      // ========================================
+                      // UBICACIÓN
+                      // ========================================
+
                       SitioUbicacion(
-                        direccionController: _direccionController,
-                        ciudadController: _ciudadController,
+                        direccionController:
+                            _direccionController,
+                        ciudadController:
+                            _ciudadController,
                         departamentoController:
                             _departamentoController,
-                        latitudController: _latitudController,
-                        longitudController: _longitudController,
+                        latitudController:
+                            _latitudController,
+                        longitudController:
+                            _longitudController,
                       ),
+
+                      // ========================================
+                      // CONTACTO
+                      // ========================================
 
                       SitioContacto(
-                        telefonoController: _telefonoController,
-                        correosController: _correosController,
-                        sitioWebController: _sitioWebController,
+                        telefonoController:
+                            _telefonoController,
+                        correosController:
+                            _correosController,
+                        sitioWebController:
+                            _sitioWebController,
                       ),
 
+                      // ========================================
+                      // INFORMACIÓN TURÍSTICA
+                      // ========================================
+
                       SitioInformacionTuristica(
-                        horarioController: _horarioController,
-                        precioController: _precioDesdeController,
+                        horarioController:
+                            _horarioController,
+                        precioController:
+                            _precioDesdeController,
                         activo: _activo,
-                        onActivoChanged: (value) {
-                          setState(() => _activo = value);
+                        onActivoChanged:
+                            (value) {
+                          setState(() {
+                            _activo = value;
+                          });
                         },
                       ),
 
+                      // ========================================
+                      // IMÁGENES
+                      // ========================================
+
                       SitioImagen(
                         imagenBytes: _imagenBytes,
-                        imagenesExistentes: _imagenesExistentes,
+                        imagenesExistentes:
+                            _imagenesExistentes,
                         onSeleccionarImagen:
                             _seleccionarImagen,
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(
+                        height: AppDimensions.spacingXl,
+                      ),
+
+                      // ========================================
+                      // GUARDAR
+                      // ========================================
 
                       SizedBox(
                         width: double.infinity,
-                        height: 55,
+                        height:
+                            AppDimensions.buttonHeightLarge,
                         child: ElevatedButton.icon(
-                          onPressed:
-                              _guardando ? null : _guardar,
+                          onPressed: _guardando
+                              ? null
+                              : _guardar,
                           icon: _guardando
                               ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
+                                  width: AppDimensions.iconMd,
+                                  height: AppDimensions.iconMd,
                                   child:
                                       CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.white,
+                                    color:
+                                        AppColors.white,
                                   ),
                                 )
-                              : const Icon(Icons.save_rounded),
+                              : const Icon(
+                                  Icons.save_rounded,
+                                ),
                           label: Text(
                             _guardando
                                 ? 'Guardando...'
@@ -463,27 +633,41 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
                           ),
                           style:
                               ElevatedButton.styleFrom(
-                            backgroundColor: verdePrincipal,
-                            foregroundColor: Colors.white,
+                            backgroundColor:
+                                AppColors.primary,
+                            foregroundColor:
+                                AppColors.white,
                             shape:
                                 RoundedRectangleBorder(
                               borderRadius:
-                                  BorderRadius.circular(17),
+                                  BorderRadius.circular(
+                                AppDimensions.radiusMd,
+                              ),
                             ),
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(
+                        height: AppDimensions.spacingSm,
+                      ),
+
+                      // ========================================
+                      // CANCELAR
+                      // ========================================
 
                       SizedBox(
                         width: double.infinity,
-                        height: 48,
+                        height:
+                            AppDimensions.buttonHeight,
                         child: OutlinedButton(
                           onPressed: _guardando
                               ? null
-                              : () => Navigator.pop(context),
-                          child: const Text('Cancelar'),
+                              : () =>
+                                  Navigator.pop(context),
+                          child: const Text(
+                            'Cancelar',
+                          ),
                         ),
                       ),
                     ],
@@ -497,58 +681,80 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
     );
   }
 
+  // ==========================================================
+  // ENCABEZADO
+  // ==========================================================
+
   Widget _encabezado(bool esEdicion) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
-      color: verdeOscuro,
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.spacingXl,
+        AppDimensions.spacingLg + AppDimensions.spacingXs / 2,
+        AppDimensions.spacingSm + AppDimensions.spacingXs / 2,
+        AppDimensions.spacingLg + AppDimensions.spacingXs / 2,
+      ),
+      color: AppColors.primary,
       child: Row(
         children: [
           const Icon(
             Icons.location_on_rounded,
-            color: Colors.white,
+            color: AppColors.white,
             size: 30,
           ),
-          const SizedBox(width: 12),
+
+          const SizedBox(
+            width: AppDimensions.spacingMd,
+          ),
+
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
               children: [
                 Text(
                   esEdicion
                       ? 'Editar sitio turístico'
                       : 'Nuevo sitio turístico',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 Text(
                   esEdicion
                       ? 'Actualiza la información del sitio'
                       : 'Registra un nuevo lugar turístico',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
+                    color: AppColors.white.withValues(
+                      alpha: 0.75,
+                    ),
                     fontSize: 12,
                   ),
                 ),
               ],
             ),
           ),
+
           IconButton(
             onPressed: _guardando
                 ? null
                 : () => Navigator.pop(context),
             icon: const Icon(
               Icons.close_rounded,
-              color: Colors.white,
+              color: AppColors.white,
             ),
           ),
         ],
       ),
     );
   }
+
+  // ==========================================================
+  // DISPOSE
+  // ==========================================================
 
   @override
   void dispose() {
@@ -557,6 +763,7 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
     _correoController.dispose();
     _passwordController.dispose();
     _telefonoCuentaController.dispose();
+
     _nombreController.dispose();
     _descripcionController.dispose();
     _direccionController.dispose();
@@ -564,12 +771,15 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
     _departamentoController.dispose();
     _latitudController.dispose();
     _longitudController.dispose();
+
     _telefonoController.dispose();
     _correosController.dispose();
     _sitioWebController.dispose();
+
     _horarioController.dispose();
     _precioDesdeController.dispose();
     _etiquetasController.dispose();
+
     super.dispose();
   }
 }

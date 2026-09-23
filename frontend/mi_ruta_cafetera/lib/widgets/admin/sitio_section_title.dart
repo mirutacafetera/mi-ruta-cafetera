@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+
 class SitioSectionTitle extends StatelessWidget {
   final IconData icono;
   final String titulo;
@@ -12,14 +15,12 @@ class SitioSectionTitle extends StatelessWidget {
     required this.subtitulo,
   });
 
-  static const Color verdePrincipal = Color(0xFF31572C);
-  static const Color verdeOscuro = Color(0xFF1B4332);
-  static const Color grisTexto = Color(0xFF6B6B6B);
-
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(
+        bottom: AppDimensions.spacingLg,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -27,16 +28,22 @@ class SitioSectionTitle extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: verdePrincipal.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(13),
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd + 1,
+              ),
             ),
             child: Icon(
               icono,
-              color: verdePrincipal,
+              color: AppColors.primary,
               size: 22,
             ),
           ),
-          const SizedBox(width: 12),
+
+          const SizedBox(
+            width: AppDimensions.spacingMd,
+          ),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,15 +53,19 @@ class SitioSectionTitle extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
-                    color: verdeOscuro,
+                    color: AppColors.secondary,
                   ),
                 ),
-                const SizedBox(height: 3),
+
+                const SizedBox(
+                  height: AppDimensions.spacingXs - 1,
+                ),
+
                 Text(
                   subtitulo,
                   style: const TextStyle(
                     fontSize: 12,
-                    color: grisTexto,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],

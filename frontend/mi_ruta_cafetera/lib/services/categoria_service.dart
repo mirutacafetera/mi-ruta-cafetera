@@ -13,10 +13,14 @@ class CategoriaService {
   Future<List<CategoriaModel>> obtenerCategorias() async {
     final response = await http
         .get(
-          Uri.parse(ApiConfig.categoriasSitiosUrl),
+          Uri.parse(
+            ApiConfig.categoriasSitiosUrl,
+          ),
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(
+            seconds: 10,
+          ),
         );
 
     if (response.statusCode != 200) {
@@ -36,12 +40,12 @@ class CategoriaService {
       data = decoded;
     } else if (decoded is Map<String, dynamic>) {
       final dynamic categorias =
-              decoded['categorias'] ??
-              decoded['categoriasSitios'] ??
-              decoded['data'] ??
-              decoded['value'] ??
-              decoded['results'] ??
-            [];
+          decoded['categorias'] ??
+          decoded['categoriasSitios'] ??
+          decoded['data'] ??
+          decoded['value'] ??
+          decoded['results'] ??
+          [];
 
       data = categorias is List ? categorias : [];
     } else {
@@ -56,7 +60,8 @@ class CategoriaService {
           ),
         )
         .where(
-          (categoria) => categoria.activo || categoria.estado,
+          (categoria) =>
+              categoria.activo || categoria.estado,
         )
         .toList();
   }
@@ -75,7 +80,9 @@ class CategoriaService {
           ),
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(
+            seconds: 10,
+          ),
         );
 
     if (response.statusCode != 200) {

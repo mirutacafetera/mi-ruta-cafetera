@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AdminSitioCrud {
-  // =========================
+  // ============================================================
   // CREAR
-  // =========================
+  // ============================================================
 
   static Future<Map<String, dynamic>> crearSitio({
     required String baseUrl,
@@ -90,7 +90,10 @@ class AdminSitioCrud {
       );
     }
 
-    // Crear cuenta del sitio
+    // ==========================================================
+    // CREAR CUENTA DEL SITIO
+    // ==========================================================
+
     final responseCuenta = await http.post(
       Uri.parse('$baseUrl/admin/authsitio/cuenta'),
       headers: {
@@ -126,9 +129,9 @@ class AdminSitioCrud {
     };
   }
 
-  // =========================
+  // ============================================================
   // ACTUALIZAR
-  // =========================
+  // ============================================================
 
   static Future<void> actualizarSitio({
     required String baseUrl,
@@ -189,9 +192,9 @@ class AdminSitioCrud {
     }
   }
 
-  // =========================
+  // ============================================================
   // ELIMINAR
-  // =========================
+  // ============================================================
 
   static Future<void> eliminarSitio(
     String baseUrl,

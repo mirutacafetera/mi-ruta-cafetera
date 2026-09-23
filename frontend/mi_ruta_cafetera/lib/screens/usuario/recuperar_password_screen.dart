@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../services/usuario/auth_usuario_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
-class RecuperarPasswordScreen
-    extends StatefulWidget {
+class RecuperarPasswordScreen extends StatefulWidget {
   const RecuperarPasswordScreen({
     super.key,
   });
@@ -28,8 +29,7 @@ class _RecuperarPasswordScreenState
   final TextEditingController passwordController =
       TextEditingController();
 
-  final TextEditingController
-      confirmarPasswordController =
+  final TextEditingController confirmarPasswordController =
       TextEditingController();
 
   // ============================================================
@@ -37,13 +37,9 @@ class _RecuperarPasswordScreenState
   // ============================================================
 
   int pasoActual = 1;
-
   bool cargando = false;
-
   bool ocultarPassword = true;
-
   bool ocultarConfirmacion = true;
-
   String tokenRecuperacion = '';
 
   // ============================================================
@@ -51,14 +47,12 @@ class _RecuperarPasswordScreenState
   // ============================================================
 
   Future<void> _enviarCodigo() async {
-    final correo =
-        correoController.text.trim();
+    final correo = correoController.text.trim();
 
     if (correo.isEmpty) {
       _mostrarMensaje(
         'Ingresa tu correo electrónico',
       );
-
       return;
     }
 
@@ -99,17 +93,13 @@ class _RecuperarPasswordScreenState
   // ============================================================
 
   Future<void> _verificarCodigo() async {
-    final correo =
-        correoController.text.trim();
-
-    final codigo =
-        codigoController.text.trim();
+    final correo = correoController.text.trim();
+    final codigo = codigoController.text.trim();
 
     if (codigo.isEmpty) {
       _mostrarMensaje(
         'Ingresa el código recibido',
       );
-
       return;
     }
 
@@ -117,7 +107,6 @@ class _RecuperarPasswordScreenState
       _mostrarMensaje(
         'El código debe tener 6 dígitos',
       );
-
       return;
     }
 
@@ -126,8 +115,7 @@ class _RecuperarPasswordScreenState
     });
 
     final resultado =
-        await AuthUsuarioService
-            .verificarCodigoRecuperacion(
+        await AuthUsuarioService.verificarCodigoRecuperacion(
       correo: correo,
       codigo: codigo,
     );
@@ -142,8 +130,7 @@ class _RecuperarPasswordScreenState
 
     if (resultado['exito'] == true) {
       tokenRecuperacion =
-          resultado['tokenRecuperacion'] ??
-              '';
+          resultado['tokenRecuperacion'] ?? '';
 
       _mostrarMensaje(
         resultado['mensaje'],
@@ -164,18 +151,13 @@ class _RecuperarPasswordScreenState
   // ============================================================
 
   Future<void> _cambiarPassword() async {
-    final password =
-        passwordController.text;
+    final password = passwordController.text;
+    final confirmar = confirmarPasswordController.text;
 
-    final confirmar =
-        confirmarPasswordController.text;
-
-    if (password.isEmpty ||
-        confirmar.isEmpty) {
+    if (password.isEmpty || confirmar.isEmpty) {
       _mostrarMensaje(
         'Completa todos los campos',
       );
-
       return;
     }
 
@@ -183,7 +165,6 @@ class _RecuperarPasswordScreenState
       _mostrarMensaje(
         'Las contraseñas no coinciden',
       );
-
       return;
     }
 
@@ -191,7 +172,6 @@ class _RecuperarPasswordScreenState
       _mostrarMensaje(
         'La contraseña debe tener mínimo 6 caracteres',
       );
-
       return;
     }
 
@@ -199,7 +179,6 @@ class _RecuperarPasswordScreenState
       _mostrarMensaje(
         'El proceso de recuperación no es válido',
       );
-
       return;
     }
 
@@ -208,12 +187,9 @@ class _RecuperarPasswordScreenState
     });
 
     final resultado =
-        await AuthUsuarioService
-            .restablecerPassword(
-      tokenRecuperacion:
-          tokenRecuperacion,
-      nuevaPassword:
-          password,
+        await AuthUsuarioService.restablecerPassword(
+      tokenRecuperacion: tokenRecuperacion,
+      nuevaPassword: password,
     );
 
     if (!mounted) {
@@ -242,8 +218,7 @@ class _RecuperarPasswordScreenState
   // ============================================================
 
   void _mostrarMensaje(String mensaje) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
       ),
@@ -280,11 +255,11 @@ class _RecuperarPasswordScreenState
         const Icon(
           Icons.mark_email_read_outlined,
           size: 70,
-          color: Colors.brown,
+          color: AppColors.secondary,
         ),
 
         const SizedBox(
-          height: 20,
+          height: AppDimensions.spacingLg + 4,
         ),
 
         const Text(
@@ -293,11 +268,12 @@ class _RecuperarPasswordScreenState
           style: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
           ),
         ),
 
         const SizedBox(
-          height: 10,
+          height: AppDimensions.spacingSm + 2,
         ),
 
         const Text(
@@ -306,35 +282,29 @@ class _RecuperarPasswordScreenState
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 15,
+            color: AppColors.textSecondary,
           ),
         ),
 
         const SizedBox(
-          height: 30,
+          height: AppDimensions.spacingXl + 10,
         ),
 
         TextField(
-          controller:
-              correoController,
-          keyboardType:
-              TextInputType.emailAddress,
-          decoration:
-              const InputDecoration(
-            labelText:
-                'Correo electrónico',
-            hintText:
-                'Ingresa tu correo',
-            prefixIcon:
-                Icon(
+          controller: correoController,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            labelText: 'Correo electrónico',
+            hintText: 'Ingresa tu correo',
+            prefixIcon: Icon(
               Icons.email_outlined,
             ),
-            border:
-                OutlineInputBorder(),
+            border: OutlineInputBorder(),
           ),
         ),
 
         const SizedBox(
-          height: 25,
+          height: AppDimensions.spacingXl + 1,
         ),
 
         _boton(
@@ -355,11 +325,11 @@ class _RecuperarPasswordScreenState
         const Icon(
           Icons.mark_email_read_outlined,
           size: 70,
-          color: Colors.brown,
+          color: AppColors.secondary,
         ),
 
         const SizedBox(
-          height: 20,
+          height: AppDimensions.spacingLg + 4,
         ),
 
         const Text(
@@ -368,11 +338,12 @@ class _RecuperarPasswordScreenState
           style: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
           ),
         ),
 
         const SizedBox(
-          height: 10,
+          height: AppDimensions.spacingSm + 2,
         ),
 
         Text(
@@ -381,45 +352,40 @@ class _RecuperarPasswordScreenState
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 15,
+            color: AppColors.textSecondary,
           ),
         ),
 
         const SizedBox(
-          height: 30,
+          height: AppDimensions.spacingXl + 10,
         ),
 
         TextField(
-          controller:
-              codigoController,
-          keyboardType:
-              TextInputType.number,
+          controller: codigoController,
+          keyboardType: TextInputType.number,
           maxLength: 6,
           textAlign: TextAlign.center,
-          decoration:
-              const InputDecoration(
+          decoration: const InputDecoration(
             labelText: 'Código',
             hintText: '000000',
-            prefixIcon:
-                Icon(
+            prefixIcon: Icon(
               Icons.pin_outlined,
             ),
-            border:
-                OutlineInputBorder(),
+            border: OutlineInputBorder(),
           ),
         ),
 
         const SizedBox(
-          height: 15,
+          height: AppDimensions.spacingMd + 3,
         ),
 
         _boton(
           texto: 'Verificar código',
-          onPressed:
-              _verificarCodigo,
+          onPressed: _verificarCodigo,
         ),
 
         const SizedBox(
-          height: 10,
+          height: AppDimensions.spacingSm + 2,
         ),
 
         TextButton(
@@ -444,11 +410,11 @@ class _RecuperarPasswordScreenState
         const Icon(
           Icons.lock_reset_outlined,
           size: 70,
-          color: Colors.brown,
+          color: AppColors.secondary,
         ),
 
         const SizedBox(
-          height: 20,
+          height: AppDimensions.spacingLg + 4,
         ),
 
         const Text(
@@ -457,11 +423,12 @@ class _RecuperarPasswordScreenState
           style: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
           ),
         ),
 
         const SizedBox(
-          height: 10,
+          height: AppDimensions.spacingSm + 2,
         ),
 
         const Text(
@@ -470,28 +437,23 @@ class _RecuperarPasswordScreenState
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 15,
+            color: AppColors.textSecondary,
           ),
         ),
 
         const SizedBox(
-          height: 30,
+          height: AppDimensions.spacingXl + 10,
         ),
 
         TextField(
-          controller:
-              passwordController,
-          obscureText:
-              ocultarPassword,
-          decoration:
-              InputDecoration(
-            labelText:
-                'Nueva contraseña',
-            prefixIcon:
-                const Icon(
+          controller: passwordController,
+          obscureText: ocultarPassword,
+          decoration: InputDecoration(
+            labelText: 'Nueva contraseña',
+            prefixIcon: const Icon(
               Icons.lock_outline,
             ),
-            suffixIcon:
-                IconButton(
+            suffixIcon: IconButton(
               icon: Icon(
                 ocultarPassword
                     ? Icons.visibility_off
@@ -504,30 +466,23 @@ class _RecuperarPasswordScreenState
                 });
               },
             ),
-            border:
-                const OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
         ),
 
         const SizedBox(
-          height: 18,
+          height: AppDimensions.spacingLg + 2,
         ),
 
         TextField(
-          controller:
-              confirmarPasswordController,
-          obscureText:
-              ocultarConfirmacion,
-          decoration:
-              InputDecoration(
-            labelText:
-                'Confirmar contraseña',
-            prefixIcon:
-                const Icon(
+          controller: confirmarPasswordController,
+          obscureText: ocultarConfirmacion,
+          decoration: InputDecoration(
+            labelText: 'Confirmar contraseña',
+            prefixIcon: const Icon(
               Icons.lock_outline,
             ),
-            suffixIcon:
-                IconButton(
+            suffixIcon: IconButton(
               icon: Icon(
                 ocultarConfirmacion
                     ? Icons.visibility_off
@@ -540,20 +495,17 @@ class _RecuperarPasswordScreenState
                 });
               },
             ),
-            border:
-                const OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
         ),
 
         const SizedBox(
-          height: 25,
+          height: AppDimensions.spacingXl + 1,
         ),
 
         _boton(
-          texto:
-              'Cambiar contraseña',
-          onPressed:
-              _cambiarPassword,
+          texto: 'Cambiar contraseña',
+          onPressed: _cambiarPassword,
         ),
       ],
     );
@@ -569,25 +521,20 @@ class _RecuperarPasswordScreenState
   }) {
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: AppDimensions.buttonHeightLarge,
       child: ElevatedButton(
-        onPressed:
-            cargando
-                ? null
-                : onPressed,
+        onPressed: cargando ? null : onPressed,
         child: cargando
             ? const SizedBox(
                 width: 24,
                 height: 24,
-                child:
-                    CircularProgressIndicator(
+                child: CircularProgressIndicator(
                   strokeWidth: 2,
                 ),
               )
             : Text(
                 texto,
-                style:
-                    const TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                 ),
               ),
@@ -600,23 +547,20 @@ class _RecuperarPasswordScreenState
   // ============================================================
 
   Widget _indicadorPaso(int paso) {
-    final activo =
-        pasoActual >= paso;
+    final activo = pasoActual >= paso;
 
     return CircleAvatar(
       radius: 18,
-      backgroundColor:
-          activo
-              ? Colors.brown
-              : Colors.grey.shade300,
+      backgroundColor: activo
+          ? AppColors.secondary
+          : AppColors.divider,
       child: Text(
         '$paso',
         style: TextStyle(
           color: activo
-              ? Colors.white
-              : Colors.black54,
-          fontWeight:
-              FontWeight.bold,
+              ? AppColors.white
+              : AppColors.textSecondary,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -630,7 +574,7 @@ class _RecuperarPasswordScreenState
     return Expanded(
       child: Container(
         height: 2,
-        color: Colors.grey.shade300,
+        color: AppColors.divider,
       ),
     );
   }
@@ -645,7 +589,6 @@ class _RecuperarPasswordScreenState
     codigoController.dispose();
     passwordController.dispose();
     confirmarPasswordController.dispose();
-
     super.dispose();
   }
 
@@ -664,11 +607,11 @@ class _RecuperarPasswordScreenState
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(
+              AppDimensions.spacingXxl,
+            ),
             child: ConstrainedBox(
-              constraints:
-                  const BoxConstraints(
+              constraints: const BoxConstraints(
                 maxWidth: 420,
               ),
               child: Column(
@@ -680,19 +623,15 @@ class _RecuperarPasswordScreenState
                   Row(
                     children: [
                       _indicadorPaso(1),
-
                       _lineaPaso(),
-
                       _indicadorPaso(2),
-
                       _lineaPaso(),
-
                       _indicadorPaso(3),
                     ],
                   ),
 
                   const SizedBox(
-                    height: 35,
+                    height: AppDimensions.spacingXl + 15,
                   ),
 
                   _contenidoPaso(),

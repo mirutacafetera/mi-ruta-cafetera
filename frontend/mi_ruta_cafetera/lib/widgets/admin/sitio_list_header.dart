@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+
 class SitioListHeader extends StatelessWidget {
   final int cantidadSitios;
   final bool cargando;
@@ -18,10 +21,10 @@ class SitioListHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        8,
+        AppDimensions.spacingLg,
+        AppDimensions.spacingLg,
+        AppDimensions.spacingLg,
+        AppDimensions.spacingSm,
       ),
       child: Row(
         children: [
@@ -31,18 +34,20 @@ class SitioListHeader extends StatelessWidget {
               children: [
                 Text(
                   'Sitios turísticos',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-                const SizedBox(height: 4),
+
+                const SizedBox(
+                  height: AppDimensions.spacingXs,
+                ),
+
                 Text(
                   '$cantidadSitios sitios registrados',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -54,19 +59,18 @@ class SitioListHeader extends StatelessWidget {
             onPressed: cargando ? null : onActualizar,
             icon: const Icon(
               Icons.refresh,
+              color: AppColors.primary,
             ),
           ),
 
-          const SizedBox(width: 4),
+          const SizedBox(
+            width: AppDimensions.spacingXs,
+          ),
 
           FilledButton.icon(
             onPressed: onNuevoSitio,
-            icon: const Icon(
-              Icons.add,
-            ),
-            label: const Text(
-              'Nuevo sitio',
-            ),
+            icon: const Icon(Icons.add),
+            label: const Text('Nuevo sitio'),
           ),
         ],
       ),

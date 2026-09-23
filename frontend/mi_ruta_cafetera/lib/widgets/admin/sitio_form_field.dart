@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+
 class SitioFormField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -20,80 +23,136 @@ class SitioFormField extends StatelessWidget {
     this.obscureText = false,
   });
 
-  static const Color verdePrincipal = Color(0xFF31572C);
-  static const Color cafe = Color(0xFF795548);
-  static const Color grisTexto = Color(0xFF6B6B6B);
-  static const Color grisBorde = Color(0xFFE1E1E1);
-
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(
+        bottom: AppDimensions.spacingMd + 2,
+      ),
       child: TextFormField(
         controller: controller,
         maxLines: obscureText ? 1 : maxLines,
         keyboardType: keyboardType,
         obscureText: obscureText,
+
+        // ====================================================
+        // TEXTO
+        // ====================================================
+
         style: const TextStyle(
           fontSize: 14,
-          color: Color(0xFF333333),
+          color: AppColors.textPrimary,
         ),
+
+        // ====================================================
+        // DECORACIÓN
+        // ====================================================
+
         decoration: InputDecoration(
           labelText: label,
+
           labelStyle: const TextStyle(
-            color: grisTexto,
+            color: AppColors.textSecondary,
             fontSize: 14,
           ),
+
           floatingLabelStyle: const TextStyle(
-            color: verdePrincipal,
+            color: AppColors.primary,
             fontWeight: FontWeight.w600,
           ),
+
           filled: true,
-          fillColor: Colors.white,
+          fillColor: AppColors.surface,
+
+          // --------------------------------------------------
+          // ICONO
+          // --------------------------------------------------
+
           prefixIcon: icon != null
               ? Icon(
                   icon,
-                  color: cafe,
-                  size: 21,
+                  color: AppColors.secondary,
+                  size: AppDimensions.iconMd,
                 )
               : null,
+
+          // --------------------------------------------------
+          // ESPACIADO INTERNO
+          // --------------------------------------------------
+
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
+            horizontal: AppDimensions.spacingLg,
+            vertical: AppDimensions.spacingLg,
           ),
+
+          // --------------------------------------------------
+          // BORDE NORMAL
+          // --------------------------------------------------
+
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
             borderSide: const BorderSide(
-              color: grisBorde,
+              color: AppColors.border,
             ),
           ),
+
+          // --------------------------------------------------
+          // BORDE HABILITADO
+          // --------------------------------------------------
+
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
             borderSide: const BorderSide(
-              color: grisBorde,
+              color: AppColors.border,
             ),
           ),
+
+          // --------------------------------------------------
+          // BORDE ENFOCADO
+          // --------------------------------------------------
+
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
             borderSide: const BorderSide(
-              color: verdePrincipal,
+              color: AppColors.primary,
               width: 2,
             ),
           ),
+
+          // --------------------------------------------------
+          // ERROR
+          // --------------------------------------------------
+
           errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
             borderSide: const BorderSide(
-              color: Colors.redAccent,
+              color: AppColors.error,
             ),
           ),
+
           focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
             borderSide: const BorderSide(
-              color: Colors.redAccent,
+              color: AppColors.error,
               width: 2,
             ),
           ),
         ),
+
+        // ====================================================
+        // VALIDACIÓN
+        // ====================================================
+
         validator: obligatorio
             ? (value) {
                 if (value == null || value.trim().isEmpty) {

@@ -17,7 +17,9 @@ class ChatService {
   // ENVIAR MENSAJE A GROQ
   // ============================================================
 
-  static Future<String> enviarMensaje(String mensaje) async {
+  static Future<String> enviarMensaje(
+    String mensaje,
+  ) async {
     try {
       final response = await http
           .post(
@@ -31,7 +33,9 @@ class ChatService {
             }),
           )
           .timeout(
-            const Duration(seconds: 30),
+            const Duration(
+              seconds: 30,
+            ),
           );
 
       // ==========================================================
@@ -58,7 +62,8 @@ class ChatService {
         }
 
         throw Exception(
-          'La respuesta del servidor no tiene el formato esperado.',
+          'La respuesta del servidor no tiene '
+          'el formato esperado.',
         );
       }
 

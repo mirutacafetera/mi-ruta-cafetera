@@ -86,8 +86,7 @@ class AuthUsuarioService {
   // VERIFICAR CORREO
   // ============================================================
 
-  static Future<Map<String, dynamic>>
-      verificarCorreo({
+  static Future<Map<String, dynamic>> verificarCorreo({
     required String correo,
     required String codigo,
   }) async {
@@ -373,10 +372,8 @@ class AuthUsuarioService {
               'Content-Type': 'application/json',
             },
             body: jsonEncode({
-              'tokenRecuperacion':
-                  tokenRecuperacion,
-              'nuevaPassword':
-                  nuevaPassword,
+              'tokenRecuperacion': tokenRecuperacion,
+              'nuevaPassword': nuevaPassword,
             }),
           )
           .timeout(

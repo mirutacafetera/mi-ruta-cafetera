@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_drawer.dart';
 import '../../widgets/admin/admin_inicio.dart';
 import '../../widgets/admin/admin_perfil.dart';
 import '../../widgets/admin/admin_proximamente.dart';
-
 import '../mapa_screen_2.dart';
 import 'admin_sitio_list_screen.dart';
 
@@ -25,9 +26,9 @@ class AdminScreen extends StatefulWidget {
 class _AdminScreenState extends State<AdminScreen> {
   String _opcionSeleccionada = 'inicio';
 
-  // =====================================================
+  // ============================================================
   // CAMBIAR OPCIÓN
-  // =====================================================
+  // ============================================================
 
   void _cambiarOpcion(String opcion) {
     setState(() {
@@ -35,9 +36,9 @@ class _AdminScreenState extends State<AdminScreen> {
     });
   }
 
-  // =====================================================
+  // ============================================================
   // ABRIR MAPA
-  // =====================================================
+  // ============================================================
 
   void _abrirMapa() {
     Navigator.push(
@@ -48,9 +49,9 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  // =====================================================
+  // ============================================================
   // BUILD
-  // =====================================================
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +60,9 @@ class _AdminScreenState extends State<AdminScreen> {
         title: Text(
           _tituloPantalla(),
         ),
-        backgroundColor: const Color(0xFF1B5E20),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.white,
+        elevation: AppDimensions.elevationNone,
       ),
       drawer: AdminDrawer(
         nombre: widget.nombre,
@@ -71,9 +73,9 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  // =====================================================
+  // ============================================================
   // TÍTULO
-  // =====================================================
+  // ============================================================
 
   String _tituloPantalla() {
     switch (_opcionSeleccionada) {
@@ -103,9 +105,9 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
-  // =====================================================
+  // ============================================================
   // CONTENIDO
-  // =====================================================
+  // ============================================================
 
   Widget _crearContenido() {
     switch (_opcionSeleccionada) {
@@ -170,9 +172,9 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
-  // =====================================================
+  // ============================================================
   // SITIOS TURÍSTICOS
-  // =====================================================
+  // ============================================================
 
   Widget _sitios() {
     return const AdminSitioListScreen();

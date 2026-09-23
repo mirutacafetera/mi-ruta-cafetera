@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../services/usuario/auth_usuario_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import 'recuperar_password_screen.dart';
 import 'registro_usuario_screen.dart';
 import 'home_usuario_screen.dart';
@@ -11,12 +13,10 @@ class LoginUsuarioScreen extends StatefulWidget {
   });
 
   @override
-  State<LoginUsuarioScreen> createState() =>
-      _LoginUsuarioScreenState();
+  State<LoginUsuarioScreen> createState() => _LoginUsuarioScreenState();
 }
 
-class _LoginUsuarioScreenState
-    extends State<LoginUsuarioScreen> {
+class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
   // ============================================================
   // CONTROLADORES
   // ============================================================
@@ -32,7 +32,6 @@ class _LoginUsuarioScreenState
   // ============================================================
 
   bool cargando = false;
-
   bool ocultarPassword = true;
 
   // ============================================================
@@ -40,17 +39,13 @@ class _LoginUsuarioScreenState
   // ============================================================
 
   Future<void> _iniciarSesion() async {
-    final correo =
-        correoController.text.trim();
-
-    final password =
-        passwordController.text;
+    final correo = correoController.text.trim();
+    final password = passwordController.text;
 
     if (correo.isEmpty) {
       _mostrarMensaje(
         'Ingresa tu correo electrónico',
       );
-
       return;
     }
 
@@ -58,7 +53,6 @@ class _LoginUsuarioScreenState
       _mostrarMensaje(
         'Ingresa tu contraseña',
       );
-
       return;
     }
 
@@ -66,8 +60,7 @@ class _LoginUsuarioScreenState
       cargando = true;
     });
 
-    final resultado =
-        await AuthUsuarioService.iniciarSesion(
+    final resultado = await AuthUsuarioService.iniciarSesion(
       correo: correo,
       password: password,
     );
@@ -81,17 +74,13 @@ class _LoginUsuarioScreenState
     });
 
     if (resultado['exito'] == true) {
-      final usuario =
-          resultado['usuario'];
-
-      final token =
-          resultado['token'];
+      final usuario = resultado['usuario'];
+      final token = resultado['token'];
 
       if (usuario == null || token == null) {
         _mostrarMensaje(
           'El servidor no devolvió los datos de usuario',
         );
-
         return;
       }
 
@@ -102,8 +91,7 @@ class _LoginUsuarioScreenState
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              HomeUsuarioScreen(
+          builder: (context) => HomeUsuarioScreen(
             usuario: usuario,
             token: token,
           ),
@@ -121,11 +109,8 @@ class _LoginUsuarioScreenState
   // MOSTRAR MENSAJE
   // ============================================================
 
-  void _mostrarMensaje(
-    String mensaje,
-  ) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
+  void _mostrarMensaje(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
       ),
@@ -140,7 +125,6 @@ class _LoginUsuarioScreenState
   void dispose() {
     correoController.dispose();
     passwordController.dispose();
-
     super.dispose();
   }
 
@@ -154,16 +138,15 @@ class _LoginUsuarioScreenState
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(
+              AppDimensions.spacingXxl,
+            ),
             child: ConstrainedBox(
-              constraints:
-                  const BoxConstraints(
+              constraints: const BoxConstraints(
                 maxWidth: 420,
               ),
               child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // ==================================================
                   // ICONO
@@ -172,11 +155,11 @@ class _LoginUsuarioScreenState
                   const Icon(
                     Icons.local_cafe,
                     size: 80,
-                    color: Colors.brown,
+                    color: AppColors.secondary,
                   ),
 
                   const SizedBox(
-                    height: 20,
+                    height: AppDimensions.spacingLg + 4,
                   ),
 
                   // ==================================================
@@ -185,31 +168,30 @@ class _LoginUsuarioScreenState
 
                   const Text(
                     'Mi Ruta Mágica del Café',
-                    textAlign:
-                        TextAlign.center,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
 
                   const SizedBox(
-                    height: 8,
+                    height: AppDimensions.spacingSm,
                   ),
 
                   const Text(
                     'Descubre Huila, sus paisajes '
                     'y la magia del café',
-                    textAlign:
-                        TextAlign.center,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
+                      color: AppColors.textSecondary,
                     ),
                   ),
 
                   const SizedBox(
-                    height: 35,
+                    height: AppDimensions.spacingXl + 15,
                   ),
 
                   // ==================================================
@@ -217,27 +199,20 @@ class _LoginUsuarioScreenState
                   // ==================================================
 
                   TextField(
-                    controller:
-                        correoController,
-                    keyboardType:
-                        TextInputType.emailAddress,
-                    decoration:
-                        const InputDecoration(
-                      labelText:
-                          'Correo electrónico',
-                      hintText:
-                          'Ingresa tu correo',
-                      prefixIcon:
-                          Icon(
+                    controller: correoController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'Correo electrónico',
+                      hintText: 'Ingresa tu correo',
+                      prefixIcon: Icon(
                         Icons.email_outlined,
                       ),
-                      border:
-                          OutlineInputBorder(),
+                      border: OutlineInputBorder(),
                     ),
                   ),
 
                   const SizedBox(
-                    height: 18,
+                    height: AppDimensions.spacingLg + 2,
                   ),
 
                   // ==================================================
@@ -245,26 +220,18 @@ class _LoginUsuarioScreenState
                   // ==================================================
 
                   TextField(
-                    controller:
-                        passwordController,
-                    obscureText:
-                        ocultarPassword,
-                    decoration:
-                        InputDecoration(
-                      labelText:
-                          'Contraseña',
-                      hintText:
-                          'Ingresa tu contraseña',
-                      prefixIcon:
-                          const Icon(
+                    controller: passwordController,
+                    obscureText: ocultarPassword,
+                    decoration: InputDecoration(
+                      labelText: 'Contraseña',
+                      hintText: 'Ingresa tu contraseña',
+                      prefixIcon: const Icon(
                         Icons.lock_outline,
                       ),
-                      suffixIcon:
-                          IconButton(
+                      suffixIcon: IconButton(
                         icon: Icon(
                           ocultarPassword
-                              ? Icons
-                                  .visibility_off
+                              ? Icons.visibility_off
                               : Icons.visibility,
                         ),
                         onPressed: () {
@@ -274,13 +241,12 @@ class _LoginUsuarioScreenState
                           });
                         },
                       ),
-                      border:
-                          const OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
 
                   const SizedBox(
-                    height: 25,
+                    height: AppDimensions.spacingXl + 5,
                   ),
 
                   // ==================================================
@@ -288,29 +254,22 @@ class _LoginUsuarioScreenState
                   // ==================================================
 
                   SizedBox(
-                    width:
-                        double.infinity,
-                    height: 52,
-                    child:
-                        ElevatedButton(
+                    width: double.infinity,
+                    height: AppDimensions.buttonHeightLarge,
+                    child: ElevatedButton(
                       onPressed:
-                          cargando
-                              ? null
-                              : _iniciarSesion,
+                          cargando ? null : _iniciarSesion,
                       child: cargando
                           ? const SizedBox(
                               width: 24,
                               height: 24,
-                              child:
-                                  CircularProgressIndicator(
-                                strokeWidth:
-                                    2,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
                               ),
                             )
                           : const Text(
                               'Iniciar sesión',
-                              style:
-                                  TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                               ),
                             ),
@@ -318,7 +277,7 @@ class _LoginUsuarioScreenState
                   ),
 
                   const SizedBox(
-                    height: 12,
+                    height: AppDimensions.spacingMd,
                   ),
 
                   // ==================================================
@@ -326,35 +285,30 @@ class _LoginUsuarioScreenState
                   // ==================================================
 
                   TextButton(
-                    onPressed:
-                        cargando
-                            ? null
-                            : () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (
-                                      context,
-                                    ) =>
-                                        const RecuperarPasswordScreen(),
-                                  ),
-                                );
-                              },
-                    child:
-                        const Text(
+                    onPressed: cargando
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const RecuperarPasswordScreen(),
+                              ),
+                            );
+                          },
+                    child: const Text(
                       '¿Olvidaste tu contraseña?',
                     ),
                   ),
 
                   const SizedBox(
-                    height: 5,
+                    height: AppDimensions.spacingXs + 1,
                   ),
 
                   const Divider(),
 
                   const SizedBox(
-                    height: 10,
+                    height: AppDimensions.spacingSm + 2,
                   ),
 
                   // ==================================================
@@ -363,42 +317,34 @@ class _LoginUsuarioScreenState
 
                   const Text(
                     '¿Aún no tienes una cuenta?',
-                    style:
-                        TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
+                      color: AppColors.textSecondary,
                     ),
                   ),
 
                   const SizedBox(
-                    height: 5,
+                    height: AppDimensions.spacingXs + 1,
                   ),
 
                   SizedBox(
-                    width:
-                        double.infinity,
-                    height: 48,
-                    child:
-                        OutlinedButton(
-                      onPressed:
-                          cargando
-                              ? null
-                              : () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (
-                                        context,
-                                      ) =>
-                                          const RegistroUsuarioScreen(),
-                                    ),
-                                  );
-                                },
-                      child:
-                          const Text(
+                    width: double.infinity,
+                    height: AppDimensions.buttonHeight,
+                    child: OutlinedButton(
+                      onPressed: cargando
+                          ? null
+                          : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const RegistroUsuarioScreen(),
+                                ),
+                              );
+                            },
+                      child: const Text(
                         'Crear una cuenta',
-                        style:
-                            TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                         ),
                       ),

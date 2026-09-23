@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../services/usuario/auth_usuario_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import 'verificar_correo_screen.dart';
 
 class RegistroUsuarioScreen extends StatefulWidget {
@@ -33,7 +35,6 @@ class _RegistroUsuarioScreenState
     correoController.dispose();
     passwordController.dispose();
     confirmarPasswordController.dispose();
-
     super.dispose();
   }
 
@@ -112,8 +113,7 @@ class _RegistroUsuarioScreenState
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              VerificarCorreoScreen(
+          builder: (context) => VerificarCorreoScreen(
             correo: correo,
           ),
         ),
@@ -141,12 +141,16 @@ class _RegistroUsuarioScreenState
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(
+            AppDimensions.spacingXxl,
+          ),
           child: Column(
             crossAxisAlignment:
                 CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(
+                height: AppDimensions.spacingLg + 4,
+              ),
 
               // ==================================================
               // TÍTULO
@@ -155,10 +159,12 @@ class _RegistroUsuarioScreenState
               const Icon(
                 Icons.person_add_alt_1,
                 size: 70,
-                color: Colors.brown,
+                color: AppColors.secondary,
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(
+                height: AppDimensions.spacingLg + 4,
+              ),
 
               const Text(
                 'Crea tu cuenta',
@@ -166,10 +172,13 @@ class _RegistroUsuarioScreenState
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(
+                height: AppDimensions.spacingSm,
+              ),
 
               const Text(
                 'Regístrate para comenzar a descubrir '
@@ -177,11 +186,13 @@ class _RegistroUsuarioScreenState
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
-                  color: Colors.grey,
+                  color: AppColors.textSecondary,
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(
+                height: AppDimensions.spacingXl + 10,
+              ),
 
               // ==================================================
               // NOMBRE
@@ -193,13 +204,16 @@ class _RegistroUsuarioScreenState
                     TextInputAction.next,
                 decoration: const InputDecoration(
                   labelText: 'Nombre',
-                  prefixIcon:
-                      Icon(Icons.person_outline),
+                  prefixIcon: Icon(
+                    Icons.person_outline,
+                  ),
                   border: OutlineInputBorder(),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(
+                height: AppDimensions.spacingMd + 4,
+              ),
 
               // ==================================================
               // APELLIDO
@@ -211,13 +225,16 @@ class _RegistroUsuarioScreenState
                     TextInputAction.next,
                 decoration: const InputDecoration(
                   labelText: 'Apellido',
-                  prefixIcon:
-                      Icon(Icons.person_outline),
+                  prefixIcon: Icon(
+                    Icons.person_outline,
+                  ),
                   border: OutlineInputBorder(),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(
+                height: AppDimensions.spacingMd + 4,
+              ),
 
               // ==================================================
               // CORREO
@@ -231,13 +248,16 @@ class _RegistroUsuarioScreenState
                     TextInputAction.next,
                 decoration: const InputDecoration(
                   labelText: 'Correo electrónico',
-                  prefixIcon:
-                      Icon(Icons.email_outlined),
+                  prefixIcon: Icon(
+                    Icons.email_outlined,
+                  ),
                   border: OutlineInputBorder(),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(
+                height: AppDimensions.spacingMd + 4,
+              ),
 
               // ==================================================
               // CONTRASEÑA
@@ -250,8 +270,9 @@ class _RegistroUsuarioScreenState
                     TextInputAction.next,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
-                  prefixIcon:
-                      const Icon(Icons.lock_outline),
+                  prefixIcon: const Icon(
+                    Icons.lock_outline,
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       ocultarPassword
@@ -265,12 +286,13 @@ class _RegistroUsuarioScreenState
                       });
                     },
                   ),
-                  border:
-                      const OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(
+                height: AppDimensions.spacingMd + 4,
+              ),
 
               // ==================================================
               // CONFIRMAR CONTRASEÑA
@@ -291,8 +313,9 @@ class _RegistroUsuarioScreenState
                 decoration: InputDecoration(
                   labelText:
                       'Confirmar contraseña',
-                  prefixIcon:
-                      const Icon(Icons.lock_outline),
+                  prefixIcon: const Icon(
+                    Icons.lock_outline,
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       ocultarConfirmarPassword
@@ -306,19 +329,20 @@ class _RegistroUsuarioScreenState
                       });
                     },
                   ),
-                  border:
-                      const OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(
+                height: AppDimensions.spacingXl + 4,
+              ),
 
               // ==================================================
               // BOTÓN REGISTRAR
               // ==================================================
 
               SizedBox(
-                height: 52,
+                height: AppDimensions.buttonHeightLarge,
                 child: ElevatedButton(
                   onPressed: cargando
                       ? null
@@ -343,7 +367,9 @@ class _RegistroUsuarioScreenState
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(
+                height: AppDimensions.spacingLg + 4,
+              ),
 
               // ==================================================
               // VOLVER AL LOGIN

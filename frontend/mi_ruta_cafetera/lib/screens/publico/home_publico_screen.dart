@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import '../usuario/login_usuario_screen.dart';
 
 class HomePublicoScreen extends StatefulWidget {
@@ -8,12 +10,10 @@ class HomePublicoScreen extends StatefulWidget {
   });
 
   @override
-  State<HomePublicoScreen> createState() =>
-      _HomePublicoScreenState();
+  State<HomePublicoScreen> createState() => _HomePublicoScreenState();
 }
 
-class _HomePublicoScreenState
-    extends State<HomePublicoScreen> {
+class _HomePublicoScreenState extends State<HomePublicoScreen> {
   final List<Map<String, dynamic>> categorias = [
     {
       'nombre': 'Café',
@@ -37,15 +37,22 @@ class _HomePublicoScreenState
     },
   ];
 
+  // ============================================================
+  // IR AL LOGIN
+  // ============================================================
+
   void _irLoginUsuario() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            const LoginUsuarioScreen(),
+        builder: (context) => const LoginUsuarioScreen(),
       ),
     );
   }
+
+  // ============================================================
+  // REQUIERE CUENTA
+  // ============================================================
 
   void _requiereCuenta() {
     showModalBottomSheet(
@@ -54,15 +61,17 @@ class _HomePublicoScreenState
       builder: (context) {
         return Container(
           padding: const EdgeInsets.fromLTRB(
-            24,
-            18,
-            24,
-            30,
+            AppDimensions.spacingXxl,
+            AppDimensions.spacingMd + 6,
+            AppDimensions.spacingXxl,
+            AppDimensions.spacingSection - 2,
           ),
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.vertical(
-              top: Radius.circular(30),
+              top: Radius.circular(
+                AppDimensions.radiusXxl + 6,
+              ),
             ),
           ),
           child: Column(
@@ -72,72 +81,73 @@ class _HomePublicoScreenState
                 width: 45,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusSm,
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(
+                height: AppDimensions.spacingXl,
+              ),
 
               Container(
                 width: 70,
                 height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.brown.shade50,
+                decoration: const BoxDecoration(
+                  color: AppColors.cream,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.favorite_rounded,
-                  color: Colors.brown.shade700,
+                  color: AppColors.secondary,
                   size: 35,
                 ),
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(
+                height: AppDimensions.spacingMd + 6,
+              ),
 
-              Text(
+              const Text(
                 'Guarda tus lugares favoritos',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.brown.shade800,
+                  color: AppColors.secondary,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(
+                height: AppDimensions.spacingSm + 2,
+              ),
 
-              Text(
+              const Text(
                 'Crea una cuenta gratuita para guardar '
                 'lugares, organizar tus rutas y disfrutar '
                 'de una experiencia personalizada.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: AppColors.textSecondary,
                   fontSize: 14,
                   height: 1.5,
                 ),
               ),
 
-              const SizedBox(height: 22),
+              const SizedBox(
+                height: AppDimensions.spacingLg + 6,
+              ),
 
               SizedBox(
                 width: double.infinity,
-                height: 54,
+                height: AppDimensions.buttonHeightLarge,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
                     _irLoginUsuario();
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Colors.brown.shade700,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(16),
-                    ),
-                  ),
                   child: const Text(
                     'Iniciar sesión',
                     style: TextStyle(
@@ -148,7 +158,9 @@ class _HomePublicoScreenState
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(
+                height: AppDimensions.spacingSm,
+              ),
 
               TextButton(
                 onPressed: () {
@@ -166,22 +178,26 @@ class _HomePublicoScreenState
     );
   }
 
+  // ============================================================
+  // CONSTRUCCIÓN
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F5F0),
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          // ============================================================
+          // ==========================================================
           // CABECERA
-          // ============================================================
+          // ==========================================================
 
           SliverAppBar(
             expandedHeight: 290,
             pinned: true,
-            backgroundColor: Colors.brown.shade800,
-            foregroundColor: Colors.white,
-            elevation: 0,
+            backgroundColor: AppColors.coffeeDark,
+            foregroundColor: AppColors.white,
+            elevation: AppDimensions.elevationNone,
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -192,8 +208,8 @@ class _HomePublicoScreenState
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Color(0xFF17352B),
-                          Color(0xFF4E342E),
+                          AppColors.coffeeDark,
+                          AppColors.secondary,
                         ],
                       ),
                     ),
@@ -205,18 +221,18 @@ class _HomePublicoScreenState
                     child: Icon(
                       Icons.local_cafe_rounded,
                       size: 170,
-                      color: Colors.white.withValues(alpha: 
-                        0.06,
+                      color: AppColors.white.withValues(
+                        alpha: 0.06,
                       ),
                     ),
                   ),
 
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
-                      24,
+                      AppDimensions.spacingXxl,
                       75,
-                      24,
-                      25,
+                      AppDimensions.spacingXxl,
+                      AppDimensions.spacingXl + 5,
                     ),
                     child: Column(
                       crossAxisAlignment:
@@ -227,32 +243,38 @@ class _HomePublicoScreenState
                         Text(
                           'Hola, explorador 👋',
                           style: TextStyle(
-                            color: Colors.white
-                                .withValues(alpha: 0.78),
+                            color: AppColors.white.withValues(
+                              alpha: 0.78,
+                            ),
                             fontSize: 15,
                           ),
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(
+                          height: AppDimensions.spacingSm,
+                        ),
 
                         const Text(
                           'Descubre la magia\ndel café.',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.white,
                             fontSize: 34,
                             height: 1.05,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        const SizedBox(
+                          height: AppDimensions.spacingSm + 2,
+                        ),
 
                         Text(
                           'Paisajes, sabores, cultura y '
                           'experiencias del Huila.',
                           style: TextStyle(
-                            color: Colors.white
-                                .withValues(alpha: 0.82),
+                            color: AppColors.white.withValues(
+                              alpha: 0.82,
+                            ),
                             fontSize: 14,
                           ),
                         ),
@@ -265,7 +287,7 @@ class _HomePublicoScreenState
             actions: [
               Padding(
                 padding: const EdgeInsets.only(
-                  right: 12,
+                  right: AppDimensions.spacingSm + 4,
                 ),
                 child: IconButton(
                   tooltip: 'Iniciar sesión',
@@ -278,17 +300,17 @@ class _HomePublicoScreenState
             ],
           ),
 
-          // ============================================================
+          // ==========================================================
           // CONTENIDO
-          // ============================================================
+          // ==========================================================
 
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
-                20,
-                22,
-                20,
-                35,
+                AppDimensions.spacingLg + 4,
+                AppDimensions.spacingLg + 6,
+                AppDimensions.spacingLg + 4,
+                AppDimensions.spacingSection + 3,
               ),
               child: Column(
                 crossAxisAlignment:
@@ -301,13 +323,14 @@ class _HomePublicoScreenState
                   Container(
                     height: 58,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                          BorderRadius.circular(18),
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusLg + 2,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 
-                            0.06,
+                          color: AppColors.black.withValues(
+                            alpha: 0.06,
                           ),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
@@ -316,45 +339,56 @@ class _HomePublicoScreenState
                     ),
                     child: Row(
                       children: [
-                        const SizedBox(width: 18),
-                        Icon(
-                          Icons.search_rounded,
-                          color: Colors.grey.shade500,
+                        const SizedBox(
+                          width: AppDimensions.spacingMd + 6,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
+
+                        const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.textLight,
+                        ),
+
+                        const SizedBox(
+                          width: AppDimensions.spacingMd,
+                        ),
+
+                        const Expanded(
                           child: Text(
                             '¿Qué te gustaría descubrir?',
                             style: TextStyle(
-                              color: Colors.grey.shade500,
+                              color: AppColors.textLight,
                               fontSize: 14,
                             ),
                           ),
                         ),
+
                         Container(
-                          margin:
-                              const EdgeInsets.all(7),
+                          margin: const EdgeInsets.all(7),
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: Colors.brown.shade700,
+                            color: AppColors.secondary,
                             borderRadius:
-                                BorderRadius.circular(14),
+                                BorderRadius.circular(
+                              AppDimensions.radiusMd + 2,
+                            ),
                           ),
                           child: const Icon(
                             Icons.tune_rounded,
-                            color: Colors.white,
-                            size: 21,
+                            color: AppColors.white,
+                            size: AppDimensions.iconMd,
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(
+                    height: AppDimensions.spacingSection - 4,
+                  ),
 
                   // ======================================================
-                  // CATEGORIAS
+                  // CATEGORÍAS
                   // ======================================================
 
                   const Text(
@@ -362,10 +396,13 @@ class _HomePublicoScreenState
                     style: TextStyle(
                       fontSize: 21,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
 
-                  const SizedBox(height: 15),
+                  const SizedBox(
+                    height: AppDimensions.spacingMd + 3,
+                  ),
 
                   SizedBox(
                     height: 112,
@@ -376,7 +413,9 @@ class _HomePublicoScreenState
                         context,
                         index,
                       ) {
-                        return const SizedBox(width: 12);
+                        return const SizedBox(
+                          width: AppDimensions.spacingMd,
+                        );
                       },
                       itemBuilder: (
                         context,
@@ -389,14 +428,15 @@ class _HomePublicoScreenState
                           nombre:
                               categoria['nombre'] as String,
                           icono:
-                              categoria['icono']
-                                  as IconData,
+                              categoria['icono'] as IconData,
                         );
                       },
                     ),
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(
+                    height: AppDimensions.spacingSection - 2,
+                  ),
 
                   // ======================================================
                   // DESTINOS DESTACADOS
@@ -411,8 +451,10 @@ class _HomePublicoScreenState
                         style: TextStyle(
                           fontSize: 21,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
                         ),
                       ),
+
                       TextButton(
                         onPressed: () {},
                         child: const Text(
@@ -422,7 +464,9 @@ class _HomePublicoScreenState
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(
+                    height: AppDimensions.spacingSm,
+                  ),
 
                   SizedBox(
                     height: 245,
@@ -439,7 +483,11 @@ class _HomePublicoScreenState
                           onFavorite:
                               _requiereCuenta,
                         ),
-                        const SizedBox(width: 15),
+
+                        const SizedBox(
+                          width: AppDimensions.spacingMd + 3,
+                        ),
+
                         _DestinoCard(
                           titulo:
                               'Naturaleza por descubrir',
@@ -450,7 +498,11 @@ class _HomePublicoScreenState
                           onFavorite:
                               _requiereCuenta,
                         ),
-                        const SizedBox(width: 15),
+
+                        const SizedBox(
+                          width: AppDimensions.spacingMd + 3,
+                        ),
+
                         _DestinoCard(
                           titulo:
                               'Sabores de nuestra tierra',
@@ -465,23 +517,29 @@ class _HomePublicoScreenState
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(
+                    height: AppDimensions.spacingSection,
+                  ),
 
                   // ======================================================
-                  // BANNER PARA INICIAR SESION
+                  // BANNER PARA INICIAR SESIÓN
                   // ======================================================
 
                   Container(
-                    padding: const EdgeInsets.all(22),
+                    padding: const EdgeInsets.all(
+                      AppDimensions.spacingXl + 2,
+                    ),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [
-                          Color(0xFF4E342E),
-                          Color(0xFF795548),
+                          AppColors.secondary,
+                          AppColors.coffeeLight,
                         ],
                       ),
                       borderRadius:
-                          BorderRadius.circular(24),
+                          BorderRadius.circular(
+                        AppDimensions.radiusXxl,
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -493,26 +551,37 @@ class _HomePublicoScreenState
                               const Text(
                                 'Vive la experiencia completa',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight:
+                                      FontWeight.bold,
                                 ),
                               ),
 
-                              const SizedBox(height: 8),
+                              const SizedBox(
+                                height:
+                                    AppDimensions.spacingSm,
+                              ),
 
                               Text(
                                 'Inicia sesión para guardar '
                                 'favoritos y crear tus rutas.',
                                 style: TextStyle(
-                                  color: Colors.white
-                                      .withValues(alpha: 0.78),
+                                  color:
+                                      AppColors.white
+                                          .withValues(
+                                    alpha: 0.78,
+                                  ),
                                   fontSize: 13,
                                   height: 1.4,
                                 ),
                               ),
 
-                              const SizedBox(height: 16),
+                              const SizedBox(
+                                height:
+                                    AppDimensions.spacingMd +
+                                        4,
+                              ),
 
                               OutlinedButton(
                                 onPressed:
@@ -520,9 +589,11 @@ class _HomePublicoScreenState
                                 style:
                                     OutlinedButton.styleFrom(
                                   foregroundColor:
-                                      Colors.white,
-                                  side: const BorderSide(
-                                    color: Colors.white,
+                                      AppColors.white,
+                                  side:
+                                      const BorderSide(
+                                    color:
+                                        AppColors.white,
                                   ),
                                 ),
                                 child: const Text(
@@ -533,19 +604,25 @@ class _HomePublicoScreenState
                           ),
                         ),
 
-                        const SizedBox(width: 12),
+                        const SizedBox(
+                          width: AppDimensions.spacingMd,
+                        ),
 
                         Icon(
                           Icons.local_cafe_rounded,
                           size: 75,
-                          color: Colors.white
-                              .withValues(alpha: 0.16),
+                          color:
+                              AppColors.white.withValues(
+                            alpha: 0.16,
+                          ),
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(
+                    height: AppDimensions.spacingSection,
+                  ),
 
                   // ======================================================
                   // RUTAS
@@ -560,8 +637,10 @@ class _HomePublicoScreenState
                         style: TextStyle(
                           fontSize: 21,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
                         ),
                       ),
+
                       TextButton(
                         onPressed: () {},
                         child: const Text(
@@ -571,7 +650,9 @@ class _HomePublicoScreenState
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(
+                    height: AppDimensions.spacingSm,
+                  ),
 
                   _RutaCard(
                     titulo:
@@ -582,7 +663,9 @@ class _HomePublicoScreenState
                         Icons.route_rounded,
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(
+                    height: AppDimensions.spacingMd,
+                  ),
 
                   _RutaCard(
                     titulo:
@@ -593,7 +676,10 @@ class _HomePublicoScreenState
                         Icons.restaurant_menu_rounded,
                   ),
 
-                  const SizedBox(height: 35),
+                  const SizedBox(
+                    height:
+                        AppDimensions.spacingSection + 3,
+                  ),
 
                   // ======================================================
                   // MENSAJE FINAL
@@ -602,20 +688,30 @@ class _HomePublicoScreenState
                   Center(
                     child: Column(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.eco_rounded,
-                          color: Colors.brown.shade400,
-                          size: 30,
+                          color:
+                              AppColors.coffeeLight,
+                          size:
+                              AppDimensions.iconLg + 6,
                         ),
-                        const SizedBox(height: 10),
-                        Text(
+
+                        const SizedBox(
+                          height:
+                              AppDimensions.spacingSm + 2,
+                        ),
+
+                        const Text(
                           'En cada taza hay una historia, '
                           'un paisaje y un corazón que late.',
-                          textAlign: TextAlign.center,
+                          textAlign:
+                              TextAlign.center,
                           style: TextStyle(
-                            color: Colors.brown.shade700,
+                            color:
+                                AppColors.secondary,
                             fontSize: 15,
-                            fontStyle: FontStyle.italic,
+                            fontStyle:
+                                FontStyle.italic,
                             height: 1.5,
                           ),
                         ),
@@ -633,7 +729,7 @@ class _HomePublicoScreenState
 }
 
 // ======================================================================
-// CATEGORIA
+// CATEGORÍA
 // ======================================================================
 
 class _CategoriaCard extends StatelessWidget {
@@ -648,19 +744,23 @@ class _CategoriaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(
+        AppDimensions.radiusXl + 2,
+      ),
       onTap: () {},
       child: Container(
         width: 100,
         padding: const EdgeInsets.symmetric(
-          vertical: 13,
-          horizontal: 8,
+          vertical: AppDimensions.spacingMd + 1,
+          horizontal: AppDimensions.spacingSm,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusXl + 2,
+          ),
           border: Border.all(
-            color: Colors.brown.shade100,
+            color: AppColors.border,
           ),
         ),
         child: Column(
@@ -670,25 +770,33 @@ class _CategoriaCard extends StatelessWidget {
             Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(
-                color: Colors.brown.shade50,
+              decoration: const BoxDecoration(
+                color: AppColors.cream,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icono,
-                color: Colors.brown.shade700,
+                color: AppColors.secondary,
                 size: 25,
               ),
             ),
-            const SizedBox(height: 8),
+
+            const SizedBox(
+              height: AppDimensions.spacingSm,
+            ),
+
             Text(
               nombre,
               textAlign: TextAlign.center,
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              overflow:
+                  TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight:
+                    FontWeight.w600,
+                color:
+                    AppColors.textPrimary,
               ),
             ),
           ],
@@ -750,16 +858,20 @@ class _DestinoCardState
         child: Container(
           width: 245,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius:
-                BorderRadius.circular(22),
+                BorderRadius.circular(
+              AppDimensions.radiusXxl - 2,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 
-                  0.07,
+                color:
+                    AppColors.black.withValues(
+                  alpha: 0.07,
                 ),
                 blurRadius: 14,
-                offset: const Offset(0, 5),
+                offset:
+                    const Offset(0, 5),
               ),
             ],
           ),
@@ -769,19 +881,24 @@ class _DestinoCardState
             children: [
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
+                  decoration:
+                      const BoxDecoration(
                     gradient:
-                        const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                        LinearGradient(
+                      begin:
+                          Alignment.topLeft,
+                      end:
+                          Alignment.bottomRight,
                       colors: [
-                        Color(0xFF315C45),
-                        Color(0xFF8D6E63),
+                        AppColors.primary,
+                        AppColors.coffeeLight,
                       ],
                     ),
                     borderRadius:
-                        const BorderRadius.vertical(
-                      top: Radius.circular(22),
+                        BorderRadius.vertical(
+                      top: Radius.circular(
+                        AppDimensions.radiusXxl - 2,
+                      ),
                     ),
                   ),
                   child: Stack(
@@ -790,26 +907,44 @@ class _DestinoCardState
                         child: Icon(
                           widget.icono,
                           size: 70,
-                          color: Colors.white
-                              .withValues(alpha: 0.25),
+                          color: AppColors
+                              .white
+                              .withValues(
+                            alpha: 0.25,
+                          ),
                         ),
                       ),
+
                       Positioned(
-                        top: 12,
-                        right: 12,
+                        top:
+                            AppDimensions
+                                    .spacingSm +
+                                4,
+                        right:
+                            AppDimensions
+                                    .spacingSm +
+                                4,
                         child: Material(
-                          color: Colors.white,
+                          color:
+                              AppColors.white,
                           shape:
                               const CircleBorder(),
-                          child: IconButton(
+                          child:
+                              IconButton(
                             onPressed:
-                                widget.onFavorite,
-                            icon: const Icon(
-                              Icons.favorite_border_rounded,
+                                widget
+                                    .onFavorite,
+                            icon:
+                                const Icon(
+                              Icons
+                                  .favorite_border_rounded,
                             ),
                             color:
-                                Colors.brown.shade700,
-                            iconSize: 20,
+                                AppColors.secondary,
+                            iconSize:
+                                AppDimensions
+                                        .iconSm +
+                                    3,
                           ),
                         ),
                       ),
@@ -819,7 +954,11 @@ class _DestinoCardState
               ),
 
               Padding(
-                padding: const EdgeInsets.all(14),
+                padding:
+                    const EdgeInsets.all(
+                  AppDimensions.spacingMd +
+                      2,
+                ),
                 child: Column(
                   crossAxisAlignment:
                       CrossAxisAlignment.start,
@@ -829,20 +968,35 @@ class _DestinoCardState
                       maxLines: 1,
                       overflow:
                           TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style:
+                          const TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.bold,
+                        fontWeight:
+                            FontWeight.bold,
+                        color:
+                            AppColors
+                                .textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 5),
+
+                    const SizedBox(
+                      height:
+                          AppDimensions
+                                  .spacingXs +
+                              1,
+                    ),
+
                     Text(
                       widget.descripcion,
                       maxLines: 2,
                       overflow:
                           TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style:
+                          const TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color:
+                            AppColors
+                                .textSecondary,
                       ),
                     ),
                   ],
@@ -874,12 +1028,16 @@ class _RutaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(
+        AppDimensions.spacingMd + 3,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(19),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusXl + 1,
+        ),
         border: Border.all(
-          color: Colors.brown.shade100,
+          color: AppColors.border,
         ),
       ),
       child: Row(
@@ -888,17 +1046,21 @@ class _RutaCard extends StatelessWidget {
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: Colors.brown.shade50,
+              color: AppColors.cream,
               borderRadius:
-                  BorderRadius.circular(16),
+                  BorderRadius.circular(
+                AppDimensions.radiusMd + 4,
+              ),
             ),
             child: Icon(
               icono,
-              color: Colors.brown.shade700,
+              color: AppColors.secondary,
             ),
           ),
 
-          const SizedBox(width: 14),
+          const SizedBox(
+            width: AppDimensions.spacingMd + 2,
+          ),
 
           Expanded(
             child: Column(
@@ -907,27 +1069,41 @@ class _RutaCard extends StatelessWidget {
               children: [
                 Text(
                   titulo,
-                  style: const TextStyle(
+                  style:
+                      const TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.bold,
+                    fontWeight:
+                        FontWeight.bold,
+                    color:
+                        AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 5),
+
+                const SizedBox(
+                  height:
+                      AppDimensions
+                              .spacingXs +
+                          1,
+                ),
+
                 Text(
                   subtitulo,
-                  style: TextStyle(
+                  style:
+                      const TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color:
+                        AppColors
+                            .textSecondary,
                   ),
                 ),
               ],
             ),
           ),
 
-          Icon(
+          const Icon(
             Icons.arrow_forward_ios_rounded,
-            size: 17,
-            color: Colors.brown.shade500,
+            size: AppDimensions.iconSm,
+            color: AppColors.coffeeLight,
           ),
         ],
       ),

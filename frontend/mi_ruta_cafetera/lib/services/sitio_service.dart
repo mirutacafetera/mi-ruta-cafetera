@@ -6,22 +6,32 @@ import '../config/api_config.dart';
 import '../models/sitio_turistico_model.dart';
 
 class SitioService {
+  // ============================================================
+  // OBTENER TODOS LOS SITIOS
+  // ============================================================
+
   Future<List<SitioTuristicoModel>> obtenerSitios() async {
     final response = await http
         .get(
-          Uri.parse(ApiConfig.sitiosUrl),
+          Uri.parse(
+            ApiConfig.sitiosUrl,
+          ),
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(
+            seconds: 10,
+          ),
         );
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Error al obtener sitios: ${response.statusCode}',
+        'Error al obtener sitios: '
+        '${response.statusCode}',
       );
     }
 
-    final dynamic decoded = jsonDecode(response.body);
+    final dynamic decoded =
+        jsonDecode(response.body);
 
     List<dynamic> data;
 
@@ -47,7 +57,9 @@ class SitioService {
             Map<String, dynamic>.from(item),
           ),
         )
-        .where((sitio) => sitio.activo)
+        .where(
+          (sitio) => sitio.activo,
+        )
         .where(
           (sitio) =>
               sitio.latitud != 0.0 &&
@@ -57,6 +69,10 @@ class SitioService {
 
     return sitios;
   }
+
+  // ============================================================
+  // OBTENER UN SITIO POR ID
+  // ============================================================
 
   Future<SitioTuristicoModel> obtenerSitioPorId(
     String id,
@@ -68,16 +84,20 @@ class SitioService {
           ),
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(
+            seconds: 10,
+          ),
         );
 
     if (response.statusCode != 200) {
       throw Exception(
-        'Error al obtener el sitio: ${response.statusCode}',
+        'Error al obtener el sitio: '
+        '${response.statusCode}',
       );
     }
 
-    final dynamic decoded = jsonDecode(response.body);
+    final dynamic decoded =
+        jsonDecode(response.body);
 
     if (decoded is! Map<String, dynamic>) {
       throw Exception(
@@ -85,6 +105,8 @@ class SitioService {
       );
     }
 
-    return SitioTuristicoModel.fromJson(decoded);
+    return SitioTuristicoModel.fromJson(
+      decoded,
+    );
   }
 }
