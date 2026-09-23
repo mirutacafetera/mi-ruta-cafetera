@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../theme/app_dimensions.dart';
 import 'sitio_form_field.dart';
 import 'sitio_section_card.dart';
 import 'sitio_section_title.dart';
@@ -48,7 +49,11 @@ class SitioUbicacion extends StatelessWidget {
                   obligatorio: true,
                 ),
               ),
-              const SizedBox(width: 10),
+
+              const SizedBox(
+                width: AppDimensions.spacingSm + 2,
+              ),
+
               Expanded(
                 child: SitioFormField(
                   controller: departamentoController,
@@ -68,22 +73,24 @@ class SitioUbicacion extends StatelessWidget {
                   controller: latitudController,
                   label: 'Latitud',
                   icon: Icons.explore_rounded,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
                   obligatorio: true,
                 ),
               ),
-              const SizedBox(width: 10),
+
+              const SizedBox(
+                width: AppDimensions.spacingSm + 2,
+              ),
+
               Expanded(
                 child: SitioFormField(
                   controller: longitudController,
                   label: 'Longitud',
                   icon: Icons.explore_outlined,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),

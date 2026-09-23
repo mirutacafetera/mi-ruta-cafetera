@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+
 class AdminProximamente extends StatelessWidget {
   final String nombre;
 
@@ -17,15 +20,18 @@ class AdminProximamente extends StatelessWidget {
           const Icon(
             Icons.construction,
             size: 60,
-            color: Colors.grey,
+            color: AppColors.textLight,
           ),
+
           const SizedBox(
-            height: 15,
+            height: AppDimensions.spacingMd + 3,
           ),
+
           Text(
             '$nombre\nPróximamente',
             textAlign: TextAlign.center,
             style: const TextStyle(
+              color: AppColors.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),

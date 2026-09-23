@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../../services/admin/admin_login_screen.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 class AdminAccesoScreen extends StatelessWidget {
-  const AdminAccesoScreen({super.key});
+  const AdminAccesoScreen({
+    super.key,
+  });
 
-  // =====================================================
+  // ============================================================
   // ABRIR LOGIN
-  // =====================================================
+  // ============================================================
 
   void _abrirLogin(BuildContext context) {
     Navigator.push(
@@ -18,183 +22,152 @@ class AdminAccesoScreen extends StatelessWidget {
     );
   }
 
-  // =====================================================
+  // ============================================================
   // VOLVER
-  // =====================================================
+  // ============================================================
 
   void _volver(BuildContext context) {
     Navigator.pop(context);
   }
 
+  // ============================================================
+  // BUILD
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.brown.shade700,
-              Colors.brown.shade400,
-              Colors.brown.shade100,
+              AppColors.coffeeDark,
+              AppColors.secondary,
+              AppColors.coffeeLight,
             ],
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(
+                AppDimensions.spacingXxl,
+              ),
               child: ConstrainedBox(
-                constraints:
-                    const BoxConstraints(
+                constraints: const BoxConstraints(
                   maxWidth: 450,
                 ),
                 child: Card(
-                  elevation: 8,
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(24),
+                  color: AppColors.surface,
+                  elevation: AppDimensions.elevationHigh,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusXxl,
+                    ),
                   ),
                   child: Padding(
-                    padding:
-                        const EdgeInsets.all(28),
+                    padding: const EdgeInsets.all(
+                      AppDimensions.spacingXxl + 4,
+                    ),
                     child: Column(
-                      mainAxisSize:
-                          MainAxisSize.min,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // =================================================
+                        // ==================================================
                         // ICONO
-                        // =================================================
+                        // ==================================================
 
                         Container(
                           width: 90,
                           height: 90,
-                          decoration:
-                              BoxDecoration(
-                            color:
-                                Colors.brown.shade100,
-                            shape:
-                                BoxShape.circle,
+                          decoration: const BoxDecoration(
+                            color: AppColors.cream,
+                            shape: BoxShape.circle,
                           ),
-                          child: Icon(
-                            Icons
-                                .admin_panel_settings,
+                          child: const Icon(
+                            Icons.admin_panel_settings,
                             size: 52,
-                            color:
-                                Colors.brown.shade800,
+                            color: AppColors.secondary,
                           ),
                         ),
 
                         const SizedBox(
-                          height: 22,
+                          height: AppDimensions.spacingLg + 6,
                         ),
 
-                        // =================================================
+                        // ==================================================
                         // TÍTULO
-                        // =================================================
+                        // ==================================================
 
-                        Text(
+                        const Text(
                           'Acceso de administrador',
-                          textAlign:
-                              TextAlign.center,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 26,
-                            fontWeight:
-                                FontWeight.bold,
-                            color:
-                                Colors.brown.shade900,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.secondary,
                           ),
                         ),
 
                         const SizedBox(
-                          height: 10,
+                          height: AppDimensions.spacingSm + 2,
                         ),
 
-                        Text(
-                          'Esta sección está destinada únicamente a administradores autorizados.',
-                          textAlign:
-                              TextAlign.center,
+                        const Text(
+                          'Esta sección está destinada únicamente '
+                          'a administradores autorizados.',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 15,
                             height: 1.4,
-                            color:
-                                Colors.grey.shade700,
+                            color: AppColors.textSecondary,
                           ),
                         ),
 
                         const SizedBox(
-                          height: 30,
+                          height: AppDimensions.spacingSection - 2,
                         ),
 
-                        // =================================================
+                        // ==================================================
                         // INICIAR SESIÓN
-                        // =================================================
+                        // ==================================================
 
                         SizedBox(
-                          width:
-                              double.infinity,
-                          height: 52,
-                          child:
-                              ElevatedButton.icon(
-                            onPressed: () =>
-                                _abrirLogin(
-                              context,
-                            ),
-                            icon:
-                                const Icon(
+                          width: double.infinity,
+                          height: AppDimensions.buttonHeightLarge,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _abrirLogin(context),
+                            icon: const Icon(
                               Icons.login,
                             ),
-                            label:
-                                const Text(
+                            label: const Text(
                               'Iniciar sesión',
-                              style:
-                                  TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
-                                fontWeight:
-                                    FontWeight.bold,
-                              ),
-                            ),
-                            style:
-                                ElevatedButton
-                                    .styleFrom(
-                              backgroundColor:
-                                  Colors.brown
-                                      .shade800,
-                              foregroundColor:
-                                  Colors.white,
-                              shape:
-                                  RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                  14,
-                                ),
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ),
 
                         const SizedBox(
-                          height: 14,
+                          height: AppDimensions.spacingMd + 2,
                         ),
 
-                        // =================================================
+                        // ==================================================
                         // VOLVER
-                        // =================================================
+                        // ==================================================
 
                         TextButton.icon(
-                          onPressed: () =>
-                              _volver(context),
-                          icon:
-                              const Icon(
+                          onPressed: () => _volver(context),
+                          icon: const Icon(
                             Icons.arrow_back,
                           ),
-                          label:
-                              const Text(
+                          label: const Text(
                             'Volver',
                           ),
                         ),

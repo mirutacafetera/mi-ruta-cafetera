@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+
 class AdminInicio extends StatelessWidget {
   final String nombre;
   final String email;
@@ -17,95 +20,126 @@ class AdminInicio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(
+        AppDimensions.spacingXl,
+      ),
       child: Column(
         children: [
-          const SizedBox(height: 25),
-
-          // Icono de administrador
-          Icon(
-            Icons.admin_panel_settings,
-            size: 70,
-            color: Colors.green.shade800,
+          const SizedBox(
+            height: AppDimensions.spacingXl + AppDimensions.spacingXs,
           ),
 
-          const SizedBox(height: 18),
+          // ==================================================
+          // ICONO DE ADMINISTRADOR
+          // ==================================================
 
-          // Bienvenida
+          const Icon(
+            Icons.admin_panel_settings,
+            size: 70,
+            color: AppColors.primary,
+          ),
+
+          const SizedBox(
+            height: AppDimensions.spacingLg + AppDimensions.spacingXs / 2,
+          ),
+
+          // ==================================================
+          // BIENVENIDA
+          // ==================================================
+
           Text(
             'Bienvenido, $nombre',
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(
+            height: AppDimensions.spacingSm + 2,
+          ),
 
           Text(
-            'Panel de administración\nMi Ruta Cafetera',
+            'Panel de administración\nMi Ruta Mágica del Café',
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 17,
-              color: Colors.grey.shade500,
+              color: AppColors.textLight,
               height: 1.4,
             ),
           ),
 
-          const SizedBox(height: 35),
+          const SizedBox(
+            height: AppDimensions.spacingSection,
+          ),
 
-          // Mapa turístico
+          // ==================================================
+          // MAPA TURÍSTICO
+          // ==================================================
+
           Card(
-            color: const Color(0xFF176B22),
-            elevation: 4,
+            color: AppColors.primary,
+            elevation: AppDimensions.elevationFloating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
             ),
             child: InkWell(
               onTap: onAbrirMapa,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(
+                  AppDimensions.spacingXl,
+                ),
                 child: Row(
                   children: [
                     Container(
                       width: 62,
                       height: 62,
                       decoration: const BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.white,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.map,
                         size: 32,
-                        color: Colors.green.shade800,
+                        color: AppColors.primary,
                       ),
                     ),
 
-                    const SizedBox(width: 18),
+                    const SizedBox(
+                      width: AppDimensions.spacingLg + AppDimensions.spacingXs / 2,
+                    ),
 
                     Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
                             'Mapa turístico',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
 
-                          const SizedBox(height: 5),
+                          const SizedBox(
+                            height: AppDimensions.spacingXs + 1,
+                          ),
 
                           Text(
                             'Visualiza los sitios turísticos, '
                             'categorías y rutas por carretera.',
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.75),
+                              color: AppColors.white.withValues(
+                                alpha: 0.75,
+                              ),
                               fontSize: 14,
                             ),
                           ),
@@ -115,7 +149,7 @@ class AdminInicio extends StatelessWidget {
 
                     const Icon(
                       Icons.chevron_right,
-                      color: Colors.white,
+                      color: AppColors.white,
                       size: 32,
                     ),
                   ],
@@ -124,58 +158,74 @@ class AdminInicio extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(
+            height: AppDimensions.spacingXl + AppDimensions.spacingSm,
+          ),
 
-          // Gestionar sitios
+          // ==================================================
+          // GESTIONAR SITIOS
+          // ==================================================
+
           Card(
-            elevation: 1,
+            color: AppColors.surface,
+            elevation: AppDimensions.elevationButton,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: BorderSide(
-                color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
+              side: const BorderSide(
+                color: AppColors.divider,
               ),
             ),
             child: InkWell(
               onTap: onGestionarSitios,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(
+                  AppDimensions.spacingLg,
+                ),
                 child: Row(
                   children: [
                     Container(
                       width: 48,
                       height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
+                      decoration: const BoxDecoration(
+                        color: AppColors.cream,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.location_on,
-                        color: Colors.green.shade800,
+                        color: AppColors.primary,
                       ),
                     ),
 
-                    const SizedBox(width: 16),
+                    const SizedBox(
+                      width: AppDimensions.spacingLg,
+                    ),
 
                     const Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Gestionar sitios turísticos',
                             style: TextStyle(
+                              color: AppColors.textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
 
-                          SizedBox(height: 5),
+                          SizedBox(
+                            height: AppDimensions.spacingXs + 1,
+                          ),
 
                           Text(
                             'Crear, editar y administrar sitios turísticos.',
                             style: TextStyle(
-                              color: Colors.grey,
+                              color: AppColors.textSecondary,
                               fontSize: 14,
                             ),
                           ),
@@ -183,9 +233,9 @@ class AdminInicio extends StatelessWidget {
                       ),
                     ),
 
-                    Icon(
+                    const Icon(
                       Icons.chevron_right,
-                      color: Colors.grey.shade700,
+                      color: AppColors.textSecondary,
                     ),
                   ],
                 ),
@@ -193,55 +243,69 @@ class AdminInicio extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(
+            height: AppDimensions.spacingXl + AppDimensions.spacingSm,
+          ),
 
-          // Información del administrador
+          // ==================================================
+          // INFORMACIÓN DEL ADMINISTRADOR
+          // ==================================================
+
           Card(
-            elevation: 1,
+            color: AppColors.surface,
+            elevation: AppDimensions.elevationButton,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: BorderSide(
-                color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
+              side: const BorderSide(
+                color: AppColors.divider,
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(
+                AppDimensions.spacingLg,
+              ),
               child: Row(
                 children: [
                   Container(
                     width: 48,
                     height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
+                    decoration: const BoxDecoration(
+                      color: AppColors.cream,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.person,
-                      color: Colors.green.shade800,
+                      color: AppColors.primary,
                     ),
                   ),
 
-                  const SizedBox(width: 16),
+                  const SizedBox(
+                    width: AppDimensions.spacingLg,
+                  ),
 
                   Expanded(
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           nombre,
                           style: const TextStyle(
+                            color: AppColors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
 
-                        const SizedBox(height: 5),
+                        const SizedBox(
+                          height: AppDimensions.spacingXs + 1,
+                        ),
 
                         Text(
                           email,
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
+                          style: const TextStyle(
+                            color: AppColors.textLight,
                             fontSize: 14,
                           ),
                         ),
@@ -253,7 +317,9 @@ class AdminInicio extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(
+            height: AppDimensions.spacingSection - AppDimensions.spacingXs / 2,
+          ),
         ],
       ),
     );

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../models/ruta_predefinida_model.dart';
+import '../theme/app_colors.dart';
 
 class RutasPredefinidas {
   RutasPredefinidas._();
 
   static const List<RutaPredefinidaModel> todas = [
-
     // =====================================================
     // CORREDOR GIGANTE → ZULUAGA → GARZÓN
     // =====================================================
@@ -17,7 +17,7 @@ class RutasPredefinidas {
       descripcion:
           'Corredor turístico regional que integra sitios de Gigante, Zuluaga y Garzón siguiendo la red vial disponible.',
       icono: Icons.alt_route,
-      color: Color(0xFF6F4E37),
+      color: AppColors.secondary,
       municipios: [
         'Gigante',
         'Zuluaga',
@@ -36,7 +36,7 @@ class RutasPredefinidas {
       descripcion:
           'Recorrido turístico entre Gigante y Garzón utilizando la trayectoria vial disponible.',
       icono: Icons.route,
-      color: Color(0xFF1565C0),
+      color: AppColors.info,
       municipios: [
         'Gigante',
         'Garzón',
@@ -54,7 +54,7 @@ class RutasPredefinidas {
       descripcion:
           'Experiencia que integra café, naturaleza, gastronomía, miradores y productos locales.',
       icono: Icons.coffee,
-      color: Color(0xFF6F4E37),
+      color: AppColors.secondary,
       categorias: [
         'Café',
         'Aventuras',
@@ -73,7 +73,7 @@ class RutasPredefinidas {
       descripcion:
           'Recorrido orientado a naturaleza, senderos, miradores y actividades de aventura.',
       icono: Icons.terrain,
-      color: Color(0xFF2E7D32),
+      color: AppColors.success,
       categorias: [
         'Aventuras',
       ],
@@ -89,7 +89,7 @@ class RutasPredefinidas {
       descripcion:
           'Recorrido enfocado en cultura, experiencias familiares y productos locales.',
       icono: Icons.family_restroom,
-      color: Color(0xFFF57F17),
+      color: AppColors.warning,
       categorias: [
         'Cultura e Historia',
         'Experiencias Familiares',

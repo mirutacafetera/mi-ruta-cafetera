@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
 import 'sitio_form_field.dart';
 import 'sitio_section_card.dart';
 import 'sitio_section_title.dart';
@@ -22,10 +24,6 @@ class SitioInformacion extends StatelessWidget {
     required this.categoriaSeleccionada,
     required this.onCategoriaChanged,
   });
-
-  static const Color verdePrincipal = Color(0xFF31572C);
-  static const Color cafe = Color(0xFF795548);
-  static const Color grisBorde = Color(0xFFE1E1E1);
 
   @override
   Widget build(BuildContext context) {
@@ -54,59 +52,71 @@ class SitioInformacion extends StatelessWidget {
           ),
 
           Padding(
-            padding: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.only(
+              bottom: AppDimensions.spacingMd + 2,
+            ),
             child: DropdownButtonFormField<String>(
               initialValue: categoriaSeleccionada,
               isExpanded: true,
               decoration: InputDecoration(
                 labelText: 'Categoría',
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: AppColors.surface,
                 prefixIcon: const Icon(
                   Icons.category_rounded,
-                  color: cafe,
+                  color: AppColors.secondary,
+                  size: AppDimensions.iconMd,
                 ),
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
+                  horizontal: AppDimensions.spacingLg,
+                  vertical: AppDimensions.spacingLg,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMd,
+                  ),
                   borderSide: const BorderSide(
-                    color: grisBorde,
+                    color: AppColors.border,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMd,
+                  ),
                   borderSide: const BorderSide(
-                    color: grisBorde,
+                    color: AppColors.border,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMd,
+                  ),
                   borderSide: const BorderSide(
-                    color: verdePrincipal,
+                    color: AppColors.primary,
                     width: 2,
                   ),
                 ),
               ),
-              items: categorias.map((categoria) {
-                final id = categoria['_id']?.toString();
-                final nombre =
-                    categoria['nombre']?.toString() ?? 'Sin nombre';
+              items: categorias
+                  .map((categoria) {
+                    final id = categoria['_id']?.toString();
+                    final nombre =
+                        categoria['nombre']?.toString() ?? 'Sin nombre';
 
-                if (id == null || id.isEmpty) {
-                  return null;
-                }
+                    if (id == null || id.isEmpty) {
+                      return null;
+                    }
 
-                return DropdownMenuItem<String>(
-                  value: id,
-                  child: Text(
-                    nombre,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                );
-              }).whereType<DropdownMenuItem<String>>().toList(),
+                    return DropdownMenuItem<String>(
+                      value: id,
+                      child: Text(
+                        nombre,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  })
+                  .whereType<DropdownMenuItem<String>>()
+                  .toList(),
               onChanged: onCategoriaChanged,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -127,28 +137,32 @@ class SitioInformacion extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 10,
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm + 2,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFFF3F6F0),
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusSm,
+              ),
             ),
             child: const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
                   Icons.info_outline_rounded,
-                  size: 17,
-                  color: verdePrincipal,
+                  size: AppDimensions.iconSm,
+                  color: AppColors.primary,
                 ),
-                SizedBox(width: 8),
+                SizedBox(
+                  width: AppDimensions.spacingSm,
+                ),
                 Expanded(
                   child: Text(
                     'Separa las etiquetas con comas. Ejemplo: café, naturaleza, aventura.',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF6B6B6B),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),

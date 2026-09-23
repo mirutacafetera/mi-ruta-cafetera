@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
 import 'sitio_section_card.dart';
 import 'sitio_section_title.dart';
 
@@ -17,11 +19,6 @@ class SitioImagen extends StatelessWidget {
     required this.onSeleccionarImagen,
   });
 
-  static const Color verdePrincipal = Color(0xFF31572C);
-  static const Color verdeOscuro = Color(0xFF1B4332);
-  static const Color grisTexto = Color(0xFF6B6B6B);
-  static const Color grisBorde = Color(0xFFE1E1E1);
-
   @override
   Widget build(BuildContext context) {
     return SitioSectionCard(
@@ -31,8 +28,7 @@ class SitioImagen extends StatelessWidget {
           const SitioSectionTitle(
             icono: Icons.photo_camera_outlined,
             titulo: 'Imagen principal',
-            subtitulo:
-                'Una buena imagen ayuda a mostrar el sitio',
+            subtitulo: 'Una buena imagen ayuda a mostrar el sitio',
           ),
 
           GestureDetector(
@@ -40,22 +36,26 @@ class SitioImagen extends StatelessWidget {
             child: _imagen(),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(
+            height: AppDimensions.spacingSm + 2,
+          ),
 
           const Row(
             children: [
               Icon(
                 Icons.photo_library_outlined,
-                size: 16,
-                color: grisTexto,
+                size: AppDimensions.iconSm,
+                color: AppColors.textSecondary,
               ),
-              SizedBox(width: 7),
+              SizedBox(
+                width: AppDimensions.spacingXs + 3,
+              ),
               Expanded(
                 child: Text(
                   'Toca la imagen para seleccionar una foto desde la galería.',
                   style: TextStyle(
                     fontSize: 11,
-                    color: grisTexto,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ),
@@ -69,7 +69,7 @@ class SitioImagen extends StatelessWidget {
   Widget _imagen() {
     if (imagenBytes != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
         child: Image.memory(
           imagenBytes!,
           width: double.infinity,
@@ -81,7 +81,7 @@ class SitioImagen extends StatelessWidget {
 
     if (imagenesExistentes.isNotEmpty) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
         child: Image.network(
           imagenesExistentes.first,
           width: double.infinity,
@@ -106,10 +106,10 @@ class SitioImagen extends StatelessWidget {
       width: double.infinity,
       height: 190,
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F3F0),
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
         border: Border.all(
-          color: grisBorde,
+          color: AppColors.border,
         ),
       ),
       child: Column(
@@ -119,29 +119,37 @@ class SitioImagen extends StatelessWidget {
             width: 62,
             height: 62,
             decoration: BoxDecoration(
-              color: verdePrincipal.withValues(alpha: 0.10),
+              color: AppColors.primary.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.add_a_photo_rounded,
-              color: verdePrincipal,
+              color: AppColors.primary,
               size: 30,
             ),
           ),
-          const SizedBox(height: 12),
+
+          const SizedBox(
+            height: AppDimensions.spacingMd,
+          ),
+
           const Text(
             'Agregar imagen',
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: verdeOscuro,
+              color: AppColors.secondary,
             ),
           ),
-          const SizedBox(height: 4),
+
+          const SizedBox(
+            height: AppDimensions.spacingXs,
+          ),
+
           const Text(
             'Toca aquí para seleccionar una foto',
             style: TextStyle(
               fontSize: 12,
-              color: grisTexto,
+              color: AppColors.textSecondary,
             ),
           ),
         ],

@@ -4,15 +4,14 @@ import 'package:latlong2/latlong.dart';
 
 import '../../models/sitio_turistico_model.dart';
 import '../../services/routing_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import 'mapa_marcador.dart';
 
 class MapaCapas extends StatelessWidget {
   final MapController mapController;
-
   final List<SitioTuristicoModel> sitios;
-
   final RutaResultado? ruta;
-
   final bool mostrarRuta;
 
   final bool Function(
@@ -25,7 +24,7 @@ class MapaCapas extends StatelessWidget {
 
   final void Function(
     SitioTuristicoModel sitio,
-    ) onTapSitio;
+  ) onTapSitio;
 
   const MapaCapas({
     super.key,
@@ -50,11 +49,11 @@ class MapaCapas extends StatelessWidget {
         initialZoom: 10.5,
         minZoom: 5,
         maxZoom: 18,
-        interactionOptions:
-            InteractionOptions(
+        interactionOptions: InteractionOptions(
           flags: InteractiveFlag.all,
         ),
       ),
+
       children: [
         // ========================================================
         // MAPA BASE
@@ -71,14 +70,13 @@ class MapaCapas extends StatelessWidget {
         // RECORRIDO
         // ========================================================
 
-        if (ruta != null &&
-            mostrarRuta)
+        if (ruta != null && mostrarRuta)
           PolylineLayer(
             polylines: [
               Polyline(
                 points: ruta!.puntos,
-                strokeWidth: 5,
-                color: Colors.orange,
+                strokeWidth: AppDimensions.mapaStrokeWidth,
+                color: AppColors.tertiary,
               ),
             ],
           ),
@@ -90,26 +88,22 @@ class MapaCapas extends StatelessWidget {
         MarkerLayer(
           markers: sitios
               .where(
-                (sitio) =>
-                    sitio.tieneCoordenadas,
+                (sitio) => sitio.tieneCoordenadas,
               )
               .map(
                 (sitio) {
-                  final seleccionado =
-                      estaSeleccionado(
+                  final seleccionado = estaSeleccionado(
                     sitio,
                   );
 
                   return Marker(
                     point: sitio.ubicacion,
-                    width: 52,
-                    height: 64,
+                    width: AppDimensions.mapaMarkerWidth,
+                    height: AppDimensions.mapaMarkerHeight,
                     child: MapaMarcador(
                       sitio: sitio,
-                      seleccionado:
-                          seleccionado,
-                      numero:
-                          numeroDeSitio(
+                      seleccionado: seleccionado,
+                      numero: numeroDeSitio(
                         sitio,
                       ),
                       onTap: () {

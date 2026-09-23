@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../services/usuario/auth_usuario_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 class VerificarCorreoScreen extends StatefulWidget {
   final String correo;
@@ -48,8 +50,7 @@ class _VerificarCorreoScreenState
   Future<void> _verificarCorreo() async {
     FocusScope.of(context).unfocus();
 
-    final codigo =
-        codigoController.text.trim();
+    final codigo = codigoController.text.trim();
 
     if (codigo.isEmpty) {
       mostrarMensaje(
@@ -122,12 +123,16 @@ class _VerificarCorreoScreenState
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(
+            AppDimensions.spacingXxl,
+          ),
           child: Column(
             crossAxisAlignment:
                 CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(
+                height: AppDimensions.spacingSection - 2,
+              ),
 
               // ==================================================
               // ICONO
@@ -136,10 +141,12 @@ class _VerificarCorreoScreenState
               const Icon(
                 Icons.mark_email_read_outlined,
                 size: 80,
-                color: Colors.brown,
+                color: AppColors.secondary,
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(
+                height: AppDimensions.spacingXl,
+              ),
 
               // ==================================================
               // TÍTULO
@@ -151,10 +158,13 @@ class _VerificarCorreoScreenState
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(
+                height: AppDimensions.spacingMd,
+              ),
 
               Text(
                 'Hemos enviado un código de 6 dígitos '
@@ -162,11 +172,13 @@ class _VerificarCorreoScreenState
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 15,
-                  color: Colors.grey,
+                  color: AppColors.textSecondary,
                 ),
               ),
 
-              const SizedBox(height: 35),
+              const SizedBox(
+                height: AppDimensions.spacingSection + 3,
+              ),
 
               // ==================================================
               // CÓDIGO
@@ -174,33 +186,35 @@ class _VerificarCorreoScreenState
 
               TextField(
                 controller: codigoController,
-                keyboardType:
-                    TextInputType.number,
+                keyboardType: TextInputType.number,
                 maxLength: 6,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 8,
+                  color: AppColors.textPrimary,
                 ),
                 decoration: const InputDecoration(
-                  labelText:
-                      'Código de verificación',
-                  prefixIcon:
-                      Icon(Icons.password),
+                  labelText: 'Código de verificación',
+                  prefixIcon: Icon(
+                    Icons.password,
+                  ),
                   border: OutlineInputBorder(),
                   counterText: '',
                 ),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(
+                height: AppDimensions.spacingXl + 4,
+              ),
 
               // ==================================================
               // BOTÓN
               // ==================================================
 
               SizedBox(
-                height: 52,
+                height: AppDimensions.buttonHeightLarge,
                 child: ElevatedButton(
                   onPressed: cargando
                       ? null
@@ -225,7 +239,9 @@ class _VerificarCorreoScreenState
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(
+                height: AppDimensions.spacingLg + 4,
+              ),
 
               // ==================================================
               // INFORMACIÓN
@@ -238,7 +254,7 @@ class _VerificarCorreoScreenState
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],

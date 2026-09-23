@@ -6,9 +6,11 @@ import 'package:google_sign_in/google_sign_in.dart';
 class GoogleAuthService {
   GoogleAuthService._();
 
-  static final GoogleAuthService instance = GoogleAuthService._();
+  static final GoogleAuthService instance =
+      GoogleAuthService._();
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final GoogleSignIn _googleSignIn =
+      GoogleSignIn.instance;
 
   static const String _webClientId =
       '765107425604-urm7avuobo7fdo27l3sjrmilulgtcsjf.apps.googleusercontent.com';
@@ -19,6 +21,10 @@ class GoogleAuthService {
 
   StreamSubscription<GoogleSignInAuthenticationEvent>?
       _authenticationSubscription;
+
+  // ============================================================
+  // INICIALIZAR GOOGLE SIGN-IN
+  // ============================================================
 
   /// Inicializa Google Sign-In.
   ///
@@ -48,28 +54,47 @@ class GoogleAuthService {
     _initialized = true;
   }
 
+  // ============================================================
+  // EVENTOS DE AUTENTICACIÓN
+  // ============================================================
+
   /// Maneja los cambios de autenticación.
   void _manejarEventoAutenticacion(
     GoogleSignInAuthenticationEvent evento,
   ) {
-    if (evento is GoogleSignInAuthenticationEventSignIn) {
+    if (evento
+        is GoogleSignInAuthenticationEventSignIn) {
       _usuarioActual = evento.user;
-    } else if (evento is GoogleSignInAuthenticationEventSignOut) {
+    } else if (evento
+        is GoogleSignInAuthenticationEventSignOut) {
       _usuarioActual = null;
     }
   }
 
+  // ============================================================
+  // ERRORES DE AUTENTICACIÓN
+  // ============================================================
+
   /// Maneja errores de autenticación.
-  void _manejarErrorAutenticacion(Object error) {
-    debugPrint('Error de Google Sign-In: $error');
+  void _manejarErrorAutenticacion(
+    Object error,
+  ) {
+    debugPrint(
+      'Error de Google Sign-In: $error',
+    );
   }
+
+  // ============================================================
+  // INICIAR SESIÓN
+  // ============================================================
 
   /// Inicia sesión con Google.
   Future<GoogleSignInAccount?> iniciarSesion() async {
     await initialize();
 
     try {
-      final usuario = await _googleSignIn.authenticate();
+      final usuario =
+          await _googleSignIn.authenticate();
 
       _usuarioActual = usuario;
 
@@ -79,13 +104,18 @@ class GoogleAuthService {
     }
   }
 
+  // ============================================================
+  // RECUPERAR SESIÓN
+  // ============================================================
+
   /// Intenta recuperar una sesión existente.
   Future<GoogleSignInAccount?> recuperarSesion() async {
     await initialize();
 
     try {
       final usuario =
-          await _googleSignIn.attemptLightweightAuthentication();
+          await _googleSignIn
+              .attemptLightweightAuthentication();
 
       if (usuario != null) {
         _usuarioActual = usuario;
@@ -97,10 +127,18 @@ class GoogleAuthService {
     }
   }
 
+  // ============================================================
+  // USUARIO ACTUAL
+  // ============================================================
+
   /// Usuario actualmente autenticado.
   GoogleSignInAccount? get usuarioActual {
     return _usuarioActual;
   }
+
+  // ============================================================
+  // ID TOKEN
+  // ============================================================
 
   /// Obtiene el ID Token del usuario autenticado.
   Future<String?> obtenerIdToken() async {
@@ -115,6 +153,10 @@ class GoogleAuthService {
     return autenticacion.idToken;
   }
 
+  // ============================================================
+  // CERRAR SESIÓN
+  // ============================================================
+
   /// Cierra la sesión de Google.
   Future<void> cerrarSesion() async {
     await initialize();
@@ -124,10 +166,18 @@ class GoogleAuthService {
     _usuarioActual = null;
   }
 
+  // ============================================================
+  // ESTADO DE AUTENTICACIÓN
+  // ============================================================
+
   /// Indica si hay un usuario autenticado.
   bool get estaAutenticado {
     return _usuarioActual != null;
   }
+
+  // ============================================================
+  // LIBERAR RECURSOS
+  // ============================================================
 
   /// Libera los recursos del servicio.
   Future<void> dispose() async {

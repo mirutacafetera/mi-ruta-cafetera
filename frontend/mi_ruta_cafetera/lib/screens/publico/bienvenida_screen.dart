@@ -6,6 +6,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../google/google_button.dart';
 import '../../services/google_auth_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import '../auth/seleccion_rol_screen.dart';
 import 'home_publico_screen.dart';
 
@@ -23,7 +25,6 @@ class _BienvenidaScreenState
     extends State<BienvenidaScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
@@ -236,6 +237,7 @@ class _BienvenidaScreenState
        *
        * Estas plataformas sí utilizan authenticate().
        */
+
       final usuario =
           await GoogleAuthService.instance.iniciarSesion();
 
@@ -247,6 +249,7 @@ class _BienvenidaScreenState
         setState(() {
           _iniciandoGoogle = false;
         });
+
         return;
       }
 
@@ -325,6 +328,10 @@ class _BienvenidaScreenState
       );
   }
 
+  // ================================================================
+  // CONSTRUCCIÓN
+  // ================================================================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -342,9 +349,9 @@ class _BienvenidaScreenState
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF17352B),
-                  Color(0xFF315C45),
-                  Color(0xFF8B6B48),
+                  AppColors.coffeeDark,
+                  AppColors.primary,
+                  AppColors.secondary,
                 ],
               ),
             ),
@@ -393,8 +400,8 @@ class _BienvenidaScreenState
                 child: Center(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 26,
-                      vertical: 30,
+                      horizontal: AppDimensions.spacingXxl + 2,
+                      vertical: AppDimensions.spacingSection - 2,
                     ),
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
@@ -429,19 +436,19 @@ class _BienvenidaScreenState
                               width: 112,
                               height: 112,
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(
+                                color: AppColors.white.withValues(
                                   alpha: 0.13,
                                 ),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white.withValues(
+                                  color: AppColors.white.withValues(
                                     alpha: 0.25,
                                   ),
                                   width: 1.5,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(
+                                    color: AppColors.black.withValues(
                                       alpha: 0.18,
                                     ),
                                     blurRadius: 30,
@@ -450,13 +457,15 @@ class _BienvenidaScreenState
                               ),
                               child: const Icon(
                                 Icons.local_cafe_rounded,
-                                color: Colors.white,
+                                color: AppColors.white,
                                 size: 62,
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 28),
+                          const SizedBox(
+                            height: AppDimensions.spacingXl + 8,
+                          ),
 
                           // ==================================================
                           // MARCA
@@ -466,7 +475,7 @@ class _BienvenidaScreenState
                             'Mi Ruta',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontSize: 38,
                               fontWeight: FontWeight.w300,
                               height: 1,
@@ -477,19 +486,21 @@ class _BienvenidaScreenState
                             'Mágica del Café',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontSize: 31,
                               fontWeight: FontWeight.w800,
                               height: 1.1,
                             ),
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(
+                            height: AppDimensions.spacingMd + 4,
+                          ),
 
                           Text(
                             'Descubre · Explora · Vive',
                             style: TextStyle(
-                              color: Colors.white.withValues(
+                              color: AppColors.white.withValues(
                                 alpha: 0.82,
                               ),
                               fontSize: 14,
@@ -498,7 +509,9 @@ class _BienvenidaScreenState
                             ),
                           ),
 
-                          const SizedBox(height: 32),
+                          const SizedBox(
+                            height: AppDimensions.spacingSection,
+                          ),
 
                           // ==================================================
                           // MENSAJE
@@ -506,17 +519,19 @@ class _BienvenidaScreenState
 
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                              vertical: 18,
+                              horizontal: AppDimensions.spacingXl + 2,
+                              vertical: AppDimensions.spacingMd + 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(
+                              color: AppColors.black.withValues(
                                 alpha: 0.12,
                               ),
                               borderRadius:
-                                  BorderRadius.circular(22),
+                                  BorderRadius.circular(
+                                AppDimensions.radiusXl + 4,
+                              ),
                               border: Border.all(
-                                color: Colors.white.withValues(
+                                color: AppColors.white.withValues(
                                   alpha: 0.10,
                                 ),
                               ),
@@ -527,19 +542,21 @@ class _BienvenidaScreenState
                                   'Bienvenido',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.white,
                                     fontSize: 25,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(
+                                  height: AppDimensions.spacingSm,
+                                ),
                                 Text(
                                   'A una tierra de café, paisajes, '
                                   'tradiciones y experiencias '
                                   'por descubrir.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white.withValues(
+                                    color: AppColors.white.withValues(
                                       alpha: 0.84,
                                     ),
                                     fontSize: 15,
@@ -550,17 +567,21 @@ class _BienvenidaScreenState
                             ),
                           ),
 
-                          const SizedBox(height: 32),
+                          const SizedBox(
+                            height: AppDimensions.spacingSection,
+                          ),
 
                           // ==================================================
-                          // BOTON PRINCIPAL
+                          // BOTÓN PRINCIPAL
                           // ==================================================
 
                           _BotonComenzar(
                             onPressed: _comenzarExplorar,
                           ),
 
-                          const SizedBox(height: 18),
+                          const SizedBox(
+                            height: AppDimensions.spacingMd + 6,
+                          ),
 
                           // ==================================================
                           // SEPARADOR
@@ -571,7 +592,7 @@ class _BienvenidaScreenState
                               Expanded(
                                 child: Container(
                                   height: 1,
-                                  color: Colors.white.withValues(
+                                  color: AppColors.white.withValues(
                                     alpha: 0.18,
                                   ),
                                 ),
@@ -579,12 +600,14 @@ class _BienvenidaScreenState
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(
-                                  horizontal: 14,
+                                  horizontal:
+                                      AppDimensions.spacingMd + 2,
                                 ),
                                 child: Text(
                                   'o continuar con',
                                   style: TextStyle(
-                                    color: Colors.white.withValues(
+                                    color:
+                                        AppColors.white.withValues(
                                       alpha: 0.65,
                                     ),
                                     fontSize: 12,
@@ -594,7 +617,7 @@ class _BienvenidaScreenState
                               Expanded(
                                 child: Container(
                                   height: 1,
-                                  color: Colors.white.withValues(
+                                  color: AppColors.white.withValues(
                                     alpha: 0.18,
                                   ),
                                 ),
@@ -602,18 +625,23 @@ class _BienvenidaScreenState
                             ],
                           ),
 
-                          const SizedBox(height: 18),
+                          const SizedBox(
+                            height: AppDimensions.spacingMd + 6,
+                          ),
 
                           // ==================================================
                           // GOOGLE
                           // ==================================================
 
                           _BotonGoogle(
-                            onPressed: _iniciarSesionConGoogle,
+                            onPressed:
+                                _iniciarSesionConGoogle,
                             cargando: _iniciandoGoogle,
                           ),
 
-                          const SizedBox(height: 18),
+                          const SizedBox(
+                            height: AppDimensions.spacingMd + 6,
+                          ),
 
                           // ==================================================
                           // ACCESO PRIVADO
@@ -623,15 +651,17 @@ class _BienvenidaScreenState
                             onPressed: _abrirAccesoPrivado,
                             icon: Icon(
                               Icons.lock_outline_rounded,
-                              color: Colors.white.withValues(
+                              color:
+                                  AppColors.white.withValues(
                                 alpha: 0.70,
                               ),
-                              size: 17,
+                              size: AppDimensions.iconSm,
                             ),
                             label: Text(
                               'Acceso privado',
                               style: TextStyle(
-                                color: Colors.white.withValues(
+                                color:
+                                    AppColors.white.withValues(
                                   alpha: 0.75,
                                 ),
                                 fontSize: 13,
@@ -639,7 +669,9 @@ class _BienvenidaScreenState
                             ),
                           ),
 
-                          const SizedBox(height: 25),
+                          const SizedBox(
+                            height: AppDimensions.spacingXl + 5,
+                          ),
 
                           // ==================================================
                           // FRASE
@@ -651,22 +683,27 @@ class _BienvenidaScreenState
                             children: [
                               Icon(
                                 Icons.eco_outlined,
-                                color: Colors.white.withValues(
+                                color:
+                                    AppColors.white.withValues(
                                   alpha: 0.55,
                                 ),
-                                size: 16,
+                                size: AppDimensions.iconSm - 1,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(
+                                width: AppDimensions.spacingSm,
+                              ),
                               Flexible(
                                 child: Text(
                                   'Más que un destino, una historia por vivir',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.white.withValues(
+                                    color:
+                                        AppColors.white.withValues(
                                       alpha: 0.65,
                                     ),
                                     fontSize: 12,
-                                    fontStyle: FontStyle.italic,
+                                    fontStyle:
+                                        FontStyle.italic,
                                   ),
                                 ),
                               ),
@@ -687,7 +724,7 @@ class _BienvenidaScreenState
 }
 
 // ======================================================================
-// BOTON COMENZAR
+// BOTÓN COMENZAR
 // ======================================================================
 
 class _BotonComenzar extends StatefulWidget {
@@ -702,7 +739,8 @@ class _BotonComenzar extends StatefulWidget {
       _BotonComenzarState();
 }
 
-class _BotonComenzarState extends State<_BotonComenzar> {
+class _BotonComenzarState
+    extends State<_BotonComenzar> {
   bool _presionado = false;
 
   @override
@@ -734,11 +772,13 @@ class _BotonComenzarState extends State<_BotonComenzar> {
           width: double.infinity,
           height: 62,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusXl,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(
+                color: AppColors.black.withValues(
                   alpha: 0.20,
                 ),
                 blurRadius: 20,
@@ -750,26 +790,28 @@ class _BotonComenzarState extends State<_BotonComenzar> {
             mainAxisAlignment:
                 MainAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 'Comenzar a explorar',
                 style: TextStyle(
-                  color: Colors.brown.shade800,
+                  color: AppColors.secondary,
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(
+                width: AppDimensions.spacingMd + 2,
+              ),
               Container(
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: Colors.brown.shade700,
+                  color: AppColors.secondary,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.arrow_forward_rounded,
-                  color: Colors.white,
-                  size: 21,
+                  color: AppColors.white,
+                  size: AppDimensions.iconMd,
                 ),
               ),
             ],
@@ -781,7 +823,7 @@ class _BotonComenzarState extends State<_BotonComenzar> {
 }
 
 // ======================================================================
-// BOTON GOOGLE
+// BOTÓN GOOGLE
 // ======================================================================
 
 class _BotonGoogle extends StatelessWidget {
@@ -804,11 +846,13 @@ class _BotonGoogle extends StatelessWidget {
         width: double.infinity,
         height: 56,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusLg + 2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
+              color: AppColors.black.withValues(
                 alpha: 0.18,
               ),
               blurRadius: 20,
@@ -829,27 +873,32 @@ class _BotonGoogle extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        elevation: 4,
-        shadowColor: Colors.black.withValues(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusLg + 2,
+        ),
+        elevation: AppDimensions.elevationFloating,
+        shadowColor: AppColors.black.withValues(
           alpha: 0.18,
         ),
         child: InkWell(
           onTap: cargando ? null : onPressed,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusLg + 2,
+          ),
           child: AnimatedOpacity(
             duration: const Duration(
               milliseconds: 200,
             ),
             opacity: cargando ? 0.65 : 1,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
               children: [
                 if (cargando)
                   const SizedBox(
-                    width: 21,
-                    height: 21,
+                    width: AppDimensions.iconMd,
+                    height: AppDimensions.iconMd,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
                     ),
@@ -860,8 +909,11 @@ class _BotonGoogle extends StatelessWidget {
                     height: 28,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
+                      color: AppColors.white,
+                      borderRadius:
+                          BorderRadius.circular(
+                        AppDimensions.radiusSm - 2,
+                      ),
                     ),
                     child: const Text(
                       'G',
@@ -872,7 +924,9 @@ class _BotonGoogle extends StatelessWidget {
                       ),
                     ),
                   ),
-                const SizedBox(width: 12),
+                const SizedBox(
+                  width: AppDimensions.spacingMd,
+                ),
                 Text(
                   cargando
                       ? 'Conectando con Google...'
@@ -891,8 +945,9 @@ class _BotonGoogle extends StatelessWidget {
     );
   }
 }
+
 // ======================================================================
-// CIRCULO DECORATIVO
+// CÍRCULO DECORATIVO
 // ======================================================================
 
 class _CirculoDecorativo extends StatelessWidget {
@@ -910,7 +965,7 @@ class _CirculoDecorativo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(
+        color: AppColors.white.withValues(
           alpha: opacity,
         ),
         shape: BoxShape.circle,

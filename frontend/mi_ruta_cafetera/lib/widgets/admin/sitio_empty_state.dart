@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+
 class SitioEmptyState extends StatelessWidget {
   final bool buscando;
   final VoidCallback onRegistrar;
@@ -14,17 +17,29 @@ class SitioEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(
+          AppDimensions.spacingSection,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            // ==================================================
+            // ICONO
+            // ==================================================
+
+            const Icon(
               Icons.location_off_outlined,
               size: 70,
-              color: Colors.grey.shade400,
+              color: AppColors.textLight,
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(
+              height: AppDimensions.spacingLg,
+            ),
+
+            // ==================================================
+            // TÍTULO
+            // ==================================================
 
             Text(
               buscando
@@ -32,26 +47,38 @@ class SitioEmptyState extends StatelessWidget {
                   : 'No hay sitios registrados',
               textAlign: TextAlign.center,
               style: const TextStyle(
+                color: AppColors.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(
+              height: AppDimensions.spacingSm,
+            ),
+
+            // ==================================================
+            // DESCRIPCIÓN
+            // ==================================================
 
             Text(
               buscando
                   ? 'Prueba con otro nombre, ciudad, dirección o categoría.'
                   : 'Puedes registrar el primer sitio turístico.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey.shade600,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
               ),
             ),
 
-            if (!buscando) ...[
-              const SizedBox(height: 20),
+            // ==================================================
+            // REGISTRAR SITIO
+            // ==================================================
 
+            if (!buscando) ...[
+              const SizedBox(
+                height: AppDimensions.spacingXl,
+              ),
               FilledButton.icon(
                 onPressed: onRegistrar,
                 icon: const Icon(

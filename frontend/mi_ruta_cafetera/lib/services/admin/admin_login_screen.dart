@@ -2,24 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../services/admin/admin_auth_service.dart';
 import '../../screens/admin/admin_screen.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
 
   @override
-  State<AdminLoginScreen> createState() =>
-      _AdminLoginScreenState();
+  State<AdminLoginScreen> createState() => _AdminLoginScreenState();
 }
 
-class _AdminLoginScreenState
-    extends State<AdminLoginScreen> {
+class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final _correoController =
-      TextEditingController();
-
-  final _passwordController =
-      TextEditingController();
+  final _correoController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   bool _cargando = false;
   bool _mostrarPassword = false;
@@ -31,9 +28,9 @@ class _AdminLoginScreenState
     super.dispose();
   }
 
-  // =====================================================
+  // ============================================================
   // INICIAR SESIÓN
-  // =====================================================
+  // ============================================================
 
   Future<void> _iniciarSesion() async {
     FocusScope.of(context).unfocus();
@@ -47,8 +44,7 @@ class _AdminLoginScreenState
     });
 
     try {
-      final resultado =
-          await AdminAuthService.iniciarSesion(
+      final resultado = await AdminAuthService.iniciarSesion(
         correo: _correoController.text,
         password: _passwordController.text,
       );
@@ -56,20 +52,18 @@ class _AdminLoginScreenState
       if (!mounted) return;
 
       final administrador =
-          resultado['administrador']
-              as Map<String, dynamic>;
+          resultado['administrador'] as Map<String, dynamic>;
 
       final nombre =
-          administrador['nombre']?.toString() ??
-              'Administrador';
+          administrador['nombre']?.toString() ?? 'Administrador';
 
       final correo =
           administrador['correo']?.toString() ??
               _correoController.text.trim();
 
-      // =================================================
+      // ==========================================================
       // ACCESO AL PANEL
-      // =================================================
+      // ==========================================================
 
       Navigator.pushReplacement(
         context,
@@ -86,14 +80,21 @@ class _AdminLoginScreenState
       String mensaje = e.toString();
 
       if (mensaje.startsWith('Exception: ')) {
-        mensaje =
-            mensaje.substring('Exception: '.length);
+        mensaje = mensaje.substring('Exception: '.length);
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(mensaje),
           behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(
+            AppDimensions.spacingMd,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
+          ),
         ),
       );
     } finally {
@@ -105,9 +106,9 @@ class _AdminLoginScreenState
     }
   }
 
-  // =====================================================
+  // ============================================================
   // VOLVER
-  // =====================================================
+  // ============================================================
 
   void _volver() {
     Navigator.pop(context);
@@ -116,148 +117,131 @@ class _AdminLoginScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.brown.shade800,
-              Colors.brown.shade500,
-              Colors.brown.shade200,
+              AppColors.coffeeDark,
+              AppColors.secondary,
+              AppColors.coffeeLight,
             ],
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(
+                AppDimensions.spacingXxl,
+              ),
               child: ConstrainedBox(
-                constraints:
-                    const BoxConstraints(
+                constraints: const BoxConstraints(
                   maxWidth: 450,
                 ),
                 child: Card(
-                  elevation: 10,
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(24),
+                  color: AppColors.surface,
+                  elevation: AppDimensions.elevationHigh,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusXxl,
+                    ),
                   ),
                   child: Padding(
-                    padding:
-                        const EdgeInsets.all(28),
+                    padding: const EdgeInsets.all(
+                      AppDimensions.spacingXxl + 4,
+                    ),
                     child: Form(
                       key: _formKey,
                       child: Column(
-                        mainAxisSize:
-                            MainAxisSize.min,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // =================================================
+                          // ==================================================
                           // ICONO
-                          // =================================================
+                          // ==================================================
 
                           Container(
                             width: 82,
                             height: 82,
-                            decoration:
-                                BoxDecoration(
-                              color:
-                                  Colors.brown.shade100,
+                            decoration: const BoxDecoration(
+                              color: AppColors.cream,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
-                              Icons
-                                  .admin_panel_settings,
+                            child: const Icon(
+                              Icons.admin_panel_settings,
                               size: 48,
-                              color:
-                                  Colors.brown.shade800,
+                              color: AppColors.secondary,
                             ),
                           ),
 
                           const SizedBox(
-                            height: 20,
+                            height: AppDimensions.spacingLg + 4,
                           ),
 
-                          // =================================================
+                          // ==================================================
                           // TÍTULO
-                          // =================================================
+                          // ==================================================
 
-                          Text(
+                          const Text(
                             'Acceso de administrador',
-                            textAlign:
-                                TextAlign.center,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 25,
-                              fontWeight:
-                                  FontWeight.bold,
-                              color:
-                                  Colors.brown.shade900,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.coffeeDark,
                             ),
                           ),
 
                           const SizedBox(
-                            height: 8,
+                            height: AppDimensions.spacingSm,
                           ),
 
-                          Text(
+                          const Text(
                             'Ingresa con una cuenta de administrador autorizada.',
-                            textAlign:
-                                TextAlign.center,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 14,
-                              color:
-                                  Colors.grey.shade700,
+                              color: AppColors.textSecondary,
                             ),
                           ),
 
                           const SizedBox(
-                            height: 28,
+                            height: AppDimensions.spacingXl + 8,
                           ),
 
-                          // =================================================
+                          // ==================================================
                           // CORREO
-                          // =================================================
+                          // ==================================================
 
                           TextFormField(
-                            controller:
-                                _correoController,
-                            keyboardType:
-                                TextInputType
-                                    .emailAddress,
-                            textInputAction:
-                                TextInputAction
-                                    .next,
+                            controller: _correoController,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
                             enabled: !_cargando,
-                            decoration:
-                                InputDecoration(
+                            decoration: InputDecoration(
                               labelText: 'Correo',
-                              hintText:
-                                  'admin@ejemplo.com',
-                              prefixIcon:
-                                  const Icon(
+                              hintText: 'admin@ejemplo.com',
+                              prefixIcon: const Icon(
                                 Icons.email_outlined,
                               ),
-                              border:
-                                  OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd,
+                                ),
                               ),
                             ),
                             validator: (value) {
                               final correo =
-                                  value?.trim() ??
-                                      '';
+                                  value?.trim() ?? '';
 
                               if (correo.isEmpty) {
                                 return 'Ingresa tu correo';
                               }
 
-                              if (!correo
-                                  .contains('@')) {
+                              if (!correo.contains('@')) {
                                 return 'Ingresa un correo válido';
                               }
 
@@ -266,62 +250,47 @@ class _AdminLoginScreenState
                           ),
 
                           const SizedBox(
-                            height: 18,
+                            height: AppDimensions.spacingLg + 2,
                           ),
 
-                          // =================================================
+                          // ==================================================
                           // CONTRASEÑA
-                          // =================================================
+                          // ==================================================
 
                           TextFormField(
-                            controller:
-                                _passwordController,
-                            obscureText:
-                                !_mostrarPassword,
+                            controller: _passwordController,
+                            obscureText: !_mostrarPassword,
                             enabled: !_cargando,
-                            textInputAction:
-                                TextInputAction
-                                    .done,
-                            onFieldSubmitted:
-                                (_) {
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) {
                               if (!_cargando) {
                                 _iniciarSesion();
                               }
                             },
-                            decoration:
-                                InputDecoration(
-                              labelText:
-                                  'Contraseña',
-                              prefixIcon:
-                                  const Icon(
+                            decoration: InputDecoration(
+                              labelText: 'Contraseña',
+                              prefixIcon: const Icon(
                                 Icons.lock_outline,
                               ),
-                              suffixIcon:
-                                  IconButton(
-                                onPressed:
-                                    _cargando
-                                        ? null
-                                        : () {
-                                            setState(
-                                              () {
-                                                _mostrarPassword =
-                                                    !_mostrarPassword;
-                                              },
-                                            );
-                                          },
+                              suffixIcon: IconButton(
+                                onPressed: _cargando
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          _mostrarPassword =
+                                              !_mostrarPassword;
+                                        });
+                                      },
                                 icon: Icon(
                                   _mostrarPassword
-                                      ? Icons
-                                          .visibility_off
-                                      : Icons
-                                          .visibility,
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
                                 ),
                               ),
-                              border:
-                                  OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd,
+                                ),
                               ),
                             ),
                             validator: (value) {
@@ -335,71 +304,43 @@ class _AdminLoginScreenState
                           ),
 
                           const SizedBox(
-                            height: 26,
+                            height: AppDimensions.spacingXl + 6,
                           ),
 
-                          // =================================================
+                          // ==================================================
                           // BOTÓN LOGIN
-                          // =================================================
+                          // ==================================================
 
                           SizedBox(
-                            width:
-                                double.infinity,
-                            height: 52,
-                            child:
-                                ElevatedButton(
-                              onPressed:
-                                  _cargando
-                                      ? null
-                                      : _iniciarSesion,
-                              style:
-                                  ElevatedButton
-                                      .styleFrom(
-                                backgroundColor:
-                                    Colors.brown
-                                        .shade800,
-                                foregroundColor:
-                                    Colors.white,
-                                shape:
-                                    RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius
-                                          .circular(14),
-                                ),
-                              ),
+                            width: double.infinity,
+                            height: AppDimensions.buttonHeightLarge,
+                            child: ElevatedButton(
+                              onPressed: _cargando
+                                  ? null
+                                  : _iniciarSesion,
                               child: _cargando
                                   ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child:
-                                          CircularProgressIndicator(
-                                        strokeWidth:
-                                            2.5,
-                                        color:
-                                            Colors.white,
+                                      width: AppDimensions.iconLg,
+                                      height: AppDimensions.iconLg,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: AppColors.white,
                                       ),
                                     )
                                   : const Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment
-                                              .center,
+                                          MainAxisAlignment.center,
                                       children: [
-                                        Icon(
-                                          Icons
-                                              .login,
-                                        ),
+                                        Icon(Icons.login),
                                         SizedBox(
-                                          width: 10,
+                                          width: AppDimensions.spacingSm + 2,
                                         ),
                                         Text(
                                           'Iniciar sesión',
-                                          style:
-                                              TextStyle(
-                                            fontSize:
-                                                16,
+                                          style: TextStyle(
+                                            fontSize: 16,
                                             fontWeight:
-                                                FontWeight
-                                                    .bold,
+                                                FontWeight.bold,
                                           ),
                                         ),
                                       ],
@@ -408,24 +349,21 @@ class _AdminLoginScreenState
                           ),
 
                           const SizedBox(
-                            height: 14,
+                            height: AppDimensions.spacingMd + 2,
                           ),
 
-                          // =================================================
+                          // ==================================================
                           // VOLVER
-                          // =================================================
+                          // ==================================================
 
                           TextButton.icon(
-                            onPressed:
-                                _cargando
-                                    ? null
-                                    : _volver,
-                            icon:
-                                const Icon(
+                            onPressed: _cargando
+                                ? null
+                                : _volver,
+                            icon: const Icon(
                               Icons.arrow_back,
                             ),
-                            label:
-                                const Text(
+                            label: const Text(
                               'Volver',
                             ),
                           ),

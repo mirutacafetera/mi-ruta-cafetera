@@ -30,20 +30,24 @@ class MiRutaCafeteraApp extends StatelessWidget {
       // ======================================================
       // TEMA GLOBAL DE LA APLICACIÓN
       // ======================================================
+
       theme: AppTheme.light,
 
       // ======================================================
       // PÁGINA INICIAL
       // ======================================================
+
       home: const BienvenidaScreen(),
 
       // ======================================================
       // RUTAS
       // ======================================================
+
       routes: {
         // ----------------------------------------------------
         // ADMINISTRADOR
         // ----------------------------------------------------
+
         '/admin': (context) {
           return const AdminScreen(
             nombre: 'Administrador',
@@ -54,6 +58,7 @@ class MiRutaCafeteraApp extends StatelessWidget {
         // ----------------------------------------------------
         // MAPA
         // ----------------------------------------------------
+
         '/mapa': (context) {
           return const MapaScreen2();
         },

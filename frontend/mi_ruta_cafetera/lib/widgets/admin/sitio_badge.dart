@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+
 class SitioBadge extends StatelessWidget {
   final String texto;
   final IconData icono;
@@ -25,20 +28,20 @@ class SitioBadge extends StatelessWidget {
 
     final backgroundColor = esEstado
         ? activo!
-            ? Colors.green.shade50
-            : Colors.red.shade50
-        : Colors.grey.shade100;
+            ? AppColors.success.withValues(alpha: 0.12)
+            : AppColors.error.withValues(alpha: 0.12)
+        : AppColors.divider;
 
     final textColor = esEstado
         ? activo!
-            ? Colors.green.shade700
-            : Colors.red.shade700
-        : Colors.grey.shade700;
+            ? AppColors.success
+            : AppColors.error
+        : AppColors.textSecondary;
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 5,
+        horizontal: AppDimensions.spacingSm,
+        vertical: AppDimensions.spacingXs + 1,
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -52,7 +55,11 @@ class SitioBadge extends StatelessWidget {
             size: 14,
             color: textColor,
           ),
-          const SizedBox(width: 4),
+
+          const SizedBox(
+            width: AppDimensions.spacingXs,
+          ),
+
           Text(
             texto,
             style: TextStyle(

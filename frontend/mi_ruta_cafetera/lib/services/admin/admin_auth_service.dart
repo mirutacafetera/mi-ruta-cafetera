@@ -7,17 +7,17 @@ import '../../config/api_config.dart';
 class AdminAuthService {
   AdminAuthService._();
 
-  // =====================================================
+  // ============================================================
   // URL DE LOGIN ADMINISTRADOR
-  // =====================================================
+  // ============================================================
 
   static String get loginUrl {
     return '${ApiConfig.baseUrl}/admin/administradores/login';
   }
 
-  // =====================================================
+  // ============================================================
   // INICIAR SESIÓN
-  // =====================================================
+  // ============================================================
 
   static Future<Map<String, dynamic>> iniciarSesion({
     required String correo,
@@ -37,12 +37,14 @@ class AdminAuthService {
             }),
           )
           .timeout(
-            const Duration(seconds: 15),
+            const Duration(
+              seconds: 15,
+            ),
           );
 
-      // =================================================
+      // ==========================================================
       // RESPUESTA EXITOSA
-      // =================================================
+      // ==========================================================
 
       if (response.statusCode >= 200 &&
           response.statusCode < 300) {
@@ -72,9 +74,9 @@ class AdminAuthService {
             );
           }
 
-          // ---------------------------------------------
+          // ======================================================
           // COMPROBAR ROL DEVUELTO POR EL BACKEND
-          // ---------------------------------------------
+          // ======================================================
 
           if (administrador['rol'] != 'admin') {
             throw Exception(
@@ -93,9 +95,9 @@ class AdminAuthService {
         );
       }
 
-      // =================================================
+      // ==========================================================
       // RESPUESTA DE ERROR
-      // =================================================
+      // ==========================================================
 
       String mensajeError =
           'No fue posible iniciar sesión.';
@@ -113,8 +115,8 @@ class AdminAuthService {
           }
         }
       } catch (_) {
-        // Si la respuesta no es JSON, usamos el mensaje
-        // general.
+        // Si la respuesta no es JSON,
+        // utilizamos el mensaje general.
       }
 
       throw Exception(mensajeError);

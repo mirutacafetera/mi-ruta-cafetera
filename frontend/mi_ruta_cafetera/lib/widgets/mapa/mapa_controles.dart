@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+
 class MapaControles extends StatelessWidget {
   final VoidCallback onCentrar;
   final VoidCallback onMostrarTodos;
@@ -20,7 +23,11 @@ class MapaControles extends StatelessWidget {
           tooltip: 'Centrar mapa',
           onPressed: onCentrar,
         ),
-        const SizedBox(height: 8),
+
+        const SizedBox(
+          height: AppDimensions.spacingSm,
+        ),
+
         _boton(
           icono: Icons.map_outlined,
           tooltip: 'Mostrar todos los sitios',
@@ -36,15 +43,17 @@ class MapaControles extends StatelessWidget {
     required VoidCallback onPressed,
   }) {
     return Material(
-      color: Colors.white,
-      elevation: 4,
-      borderRadius: BorderRadius.circular(12),
+      color: AppColors.white,
+      elevation: AppDimensions.elevationFloating,
+      borderRadius: BorderRadius.circular(
+        AppDimensions.radiusMd,
+      ),
       child: IconButton(
         onPressed: onPressed,
         tooltip: tooltip,
         icon: Icon(
           icono,
-          color: Colors.brown,
+          color: AppColors.primary,
         ),
       ),
     );

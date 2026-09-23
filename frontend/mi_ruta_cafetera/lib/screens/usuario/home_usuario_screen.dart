@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+
 class HomeUsuarioScreen extends StatelessWidget {
   final Map<String, dynamic> usuario;
   final String token;
@@ -12,8 +15,7 @@ class HomeUsuarioScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nombre =
-        usuario['nombre'] ?? 'Viajero';
+    final nombre = usuario['nombre'] ?? 'Viajero';
 
     return Scaffold(
       appBar: AppBar(
@@ -25,95 +27,105 @@ class HomeUsuarioScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(
+            AppDimensions.spacingLg + 4,
+          ),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // ==================================================
               // BIENVENIDA
               // ==================================================
-
               Container(
-                padding:
-                    const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(
+                  AppDimensions.spacingXxl,
+                ),
                 decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadius.circular(20),
-                  color: Colors.brown.shade50,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusXxl,
+                  ),
+                  color: AppColors.cream,
                 ),
                 child: Column(
                   children: [
                     const Icon(
                       Icons.coffee,
                       size: 65,
-                      color: Colors.brown,
+                      color: AppColors.secondary,
                     ),
 
-                    const SizedBox(height: 15),
+                    const SizedBox(
+                      height: AppDimensions.spacingLg - 1,
+                    ),
 
                     Text(
                       '¡Hola, $nombre! 👋',
-                      textAlign:
-                          TextAlign.center,
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 26,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(
+                      height: AppDimensions.spacingSm,
+                    ),
 
                     const Text(
                       'Bienvenido a Mi Ruta '
                       'Mágica del Café',
-                      textAlign:
-                          TextAlign.center,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(
+                height: AppDimensions.spacingXxl + 1,
+              ),
 
               // ==================================================
               // BUSCADOR
               // ==================================================
-
               TextField(
-                decoration:
-                    InputDecoration(
-                  hintText:
-                      '¿Qué quieres descubrir?',
-                  prefixIcon:
-                      const Icon(Icons.search),
-                  border:
-                      OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(15),
+                decoration: InputDecoration(
+                  hintText: '¿Qué quieres descubrir?',
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: AppColors.primary,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusMd,
+                    ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(
+                height: AppDimensions.spacingXxl + 1,
+              ),
 
               // ==================================================
               // OPCIONES PRINCIPALES
               // ==================================================
-
               const Text(
                 'Explora',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(
+                height: AppDimensions.spacingMd + 3,
+              ),
 
               Row(
                 children: [
@@ -123,54 +135,63 @@ class HomeUsuarioScreen extends StatelessWidget {
                       titulo: 'Mapa',
                     ),
                   ),
-                  const SizedBox(width: 12),
+
+                  const SizedBox(
+                    width: AppDimensions.spacingMd,
+                  ),
+
                   Expanded(
                     child: _opcionExplorar(
-                      icon:
-                          Icons.route_outlined,
+                      icon: Icons.route_outlined,
                       titulo: 'Rutas',
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(
+                height: AppDimensions.spacingMd,
+              ),
 
               Row(
                 children: [
                   Expanded(
                     child: _opcionExplorar(
-                      icon:
-                          Icons.place_outlined,
+                      icon: Icons.place_outlined,
                       titulo: 'Sitios',
                     ),
                   ),
-                  const SizedBox(width: 12),
+
+                  const SizedBox(
+                    width: AppDimensions.spacingMd,
+                  ),
+
                   Expanded(
                     child: _opcionExplorar(
-                      icon:
-                          Icons.favorite_border,
+                      icon: Icons.favorite_border,
                       titulo: 'Favoritos',
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(
+                height: AppDimensions.spacingSection - 2,
+              ),
 
               // ==================================================
               // MENSAJE
               // ==================================================
-
               Container(
-                padding:
-                    const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(
+                  AppDimensions.spacingLg + 4,
+                ),
                 decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusXl,
+                  ),
                   border: Border.all(
-                    color:
-                        Colors.brown.shade200,
+                    color: AppColors.border,
                   ),
                 ),
                 child: const Column(
@@ -178,44 +199,47 @@ class HomeUsuarioScreen extends StatelessWidget {
                     Icon(
                       Icons.explore_outlined,
                       size: 45,
-                      color: Colors.brown,
+                      color: AppColors.secondary,
                     ),
 
-                    SizedBox(height: 12),
+                    SizedBox(
+                      height: AppDimensions.spacingMd,
+                    ),
 
                     Text(
                       'Descubre el Huila',
-                      textAlign:
-                          TextAlign.center,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
                     ),
 
-                    SizedBox(height: 8),
+                    SizedBox(
+                      height: AppDimensions.spacingSm,
+                    ),
 
                     Text(
                       'Muy pronto podrás explorar '
                       'sitios turísticos, categorías '
                       'y rutas mágicas del café.',
-                      textAlign:
-                          TextAlign.center,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.grey,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(
+                height: AppDimensions.spacingSection - 2,
+              ),
 
               // ==================================================
               // CERRAR SESIÓN
               // ==================================================
-
               OutlinedButton.icon(
                 onPressed: () {
                   Navigator.pop(context);
@@ -237,35 +261,39 @@ class HomeUsuarioScreen extends StatelessWidget {
   // ============================================================
   // OPCIÓN EXPLORAR
   // ============================================================
-
   Widget _opcionExplorar({
     required IconData icon,
     required String titulo,
   }) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        vertical: 22,
-        horizontal: 12,
+      padding: const EdgeInsets.symmetric(
+        vertical: AppDimensions.spacingXl - 2,
+        horizontal: AppDimensions.spacingMd,
       ),
       decoration: BoxDecoration(
-        borderRadius:
-            BorderRadius.circular(18),
-        color: Colors.brown.shade50,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusXl,
+        ),
+        color: AppColors.cream,
       ),
       child: Column(
         children: [
           Icon(
             icon,
             size: 38,
-            color: Colors.brown,
+            color: AppColors.secondary,
           ),
-          const SizedBox(height: 8),
+
+          const SizedBox(
+            height: AppDimensions.spacingSm,
+          ),
+
           Text(
             titulo,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
           ),
         ],

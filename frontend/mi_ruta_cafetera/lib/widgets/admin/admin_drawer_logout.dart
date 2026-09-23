@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+
 class AdminDrawerLogout extends StatelessWidget {
   final Function(String) onOpcionSeleccionada;
 
@@ -13,12 +15,12 @@ class AdminDrawerLogout extends StatelessWidget {
     return ListTile(
       leading: const Icon(
         Icons.logout,
-        color: Colors.red,
+        color: AppColors.error,
       ),
       title: const Text(
         'Cerrar sesión',
         style: TextStyle(
-          color: Colors.red,
+          color: AppColors.error,
         ),
       ),
       onTap: () {

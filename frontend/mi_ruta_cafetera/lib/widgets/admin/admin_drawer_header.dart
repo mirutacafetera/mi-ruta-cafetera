@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+
 class AdminDrawerHeader extends StatelessWidget {
   final String nombre;
   final String email;
@@ -14,23 +16,29 @@ class AdminDrawerHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return UserAccountsDrawerHeader(
       decoration: const BoxDecoration(
-        color: Color(0xFF1B5E20),
+        color: AppColors.primary,
       ),
       currentAccountPicture: const CircleAvatar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         child: Icon(
           Icons.admin_panel_settings,
           size: 35,
-          color: Color(0xFF1B5E20),
+          color: AppColors.primary,
         ),
       ),
       accountName: Text(
         nombre,
         style: const TextStyle(
+          color: AppColors.white,
           fontWeight: FontWeight.bold,
         ),
       ),
-      accountEmail: Text(email),
+      accountEmail: Text(
+        email,
+        style: const TextStyle(
+          color: AppColors.white,
+        ),
+      ),
     );
   }
 }

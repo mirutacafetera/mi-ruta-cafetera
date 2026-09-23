@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../data/rutas_predefinidas.dart';
 import '../../models/ruta_predefinida_model.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
-class MapaRutasPredefinidas
-    extends StatelessWidget {
-  final ValueChanged<RutaPredefinidaModel>
-      onSeleccionar;
+class MapaRutasPredefinidas extends StatelessWidget {
+  final ValueChanged<RutaPredefinidaModel> onSeleccionar;
 
   const MapaRutasPredefinidas({
     super.key,
@@ -18,36 +18,54 @@ class MapaRutasPredefinidas
     return SafeArea(
       child: DraggableScrollableSheet(
         expand: false,
-        initialChildSize: 0.65,
-        minChildSize: 0.40,
-        maxChildSize: 0.90,
+        initialChildSize: AppDimensions.sheetInitialSize,
+        minChildSize: AppDimensions.sheetMinSize,
+        maxChildSize: AppDimensions.sheetMaxSize,
         builder: (
           context,
           scrollController,
         ) {
           return Material(
-            color: Colors.white,
-            borderRadius:
-                const BorderRadius.vertical(
-              top: Radius.circular(24),
+            color: AppColors.surface,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(
+                AppDimensions.radiusXxl,
+              ),
             ),
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
-                const SizedBox(height: 12),
+                // =====================================================
+                // INDICADOR DEL BOTTOM SHEET
+                // =====================================================
+
+                const SizedBox(
+                  height: AppDimensions.spacingMd,
+                ),
+
                 Container(
                   width: 45,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius:
-                        BorderRadius.circular(10),
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusSm,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 18),
+
+                const SizedBox(
+                  height: AppDimensions.spacingLg +
+                      AppDimensions.spacingXs / 2,
+                ),
+
+                // =====================================================
+                // TÍTULO
+                // =====================================================
+
                 const Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: 20,
+                    horizontal: AppDimensions.spacingXl,
                   ),
                   child: Align(
                     alignment: Alignment.centerLeft,
@@ -56,14 +74,23 @@ class MapaRutasPredefinidas
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
+
+                const SizedBox(
+                  height: AppDimensions.spacingXs + 2,
+                ),
+
+                // =====================================================
+                // DESCRIPCIÓN
+                // =====================================================
+
                 const Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: 20,
+                    horizontal: AppDimensions.spacingXl,
                   ),
                   child: Align(
                     alignment: Alignment.centerLeft,
@@ -71,82 +98,113 @@ class MapaRutasPredefinidas
                       'Elige una experiencia para '
                       'explorar sus sitios.',
                       style: TextStyle(
-                        color: Colors.grey,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+
+                const SizedBox(
+                  height: AppDimensions.spacingMd,
+                ),
+
+                // =====================================================
+                // LISTA DE RUTAS
+                // =====================================================
+
                 Expanded(
                   child: ListView.builder(
-                    controller:
-                        scrollController,
-                    padding:
-                        const EdgeInsets.fromLTRB(
-                      16,
-                      8,
-                      16,
-                      24,
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppDimensions.spacingLg,
+                      AppDimensions.spacingSm,
+                      AppDimensions.spacingLg,
+                      AppDimensions.spacingXxl,
                     ),
-                    itemCount:
-                    RutasPredefinidas.todas.length,
-                    itemBuilder:
-                        (context, index) {
+                    itemCount: RutasPredefinidas.todas.length,
+                    itemBuilder: (
+                      context,
+                      index,
+                    ) {
                       final ruta =
-                    RutasPredefinidas.todas[index];
+                          RutasPredefinidas.todas[index];
 
                       return Card(
-                        margin:
-                            const EdgeInsets.only(
-                          bottom: 12,
+                        margin: const EdgeInsets.only(
+                          bottom: AppDimensions.spacingMd,
                         ),
                         child: ListTile(
                           contentPadding:
                               const EdgeInsets.all(
-                            14,
+                            AppDimensions.spacingMd,
                           ),
+
+                          // =================================================
+                          // ICONO DE LA RUTA
+                          // =================================================
+
                           leading: CircleAvatar(
-                            radius: 25,
+                            radius: AppDimensions.spacingXl +
+                                AppDimensions.spacingXs +
+                                1,
                             backgroundColor:
-                                ruta.color
-                                    .withValues(
+                                ruta.color.withValues(
                               alpha: 0.15,
                             ),
                             child: Icon(
                               ruta.icono,
                               color: ruta.color,
+                              size: AppDimensions.iconMd,
                             ),
                           ),
+
+                          // =================================================
+                          // NOMBRE
+                          // =================================================
+
                           title: Text(
                             ruta.nombre,
-                            style:
-                                const TextStyle(
-                              fontWeight:
-                                  FontWeight.bold,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
                             ),
                           ),
+
+                          // =================================================
+                          // DESCRIPCIÓN
+                          // =================================================
+
                           subtitle: Padding(
-                            padding:
-                                const EdgeInsets.only(
-                              top: 5,
+                            padding: const EdgeInsets.only(
+                              top: AppDimensions.spacingXs,
                             ),
                             child: Text(
                               ruta.descripcion,
+                              style: const TextStyle(
+                                color:
+                                    AppColors.textSecondary,
+                              ),
                             ),
                           ),
-                          trailing:
-                              const Icon(
-                            Icons
-                                .arrow_forward_ios,
-                            size: 17,
+
+                          // =================================================
+                          // INDICADOR
+                          // =================================================
+
+                          trailing: const Icon(
+                            Icons.arrow_forward_ios,
+                            size: AppDimensions.iconSm,
+                            color: AppColors.textSecondary,
                           ),
+
+                          // =================================================
+                          // SELECCIÓN
+                          // =================================================
+
                           onTap: () {
-                            Navigator.pop(
-                              context,
-                            );
-                            onSeleccionar(
-                              ruta,
-                            );
+                            Navigator.pop(context);
+
+                            onSeleccionar(ruta);
                           },
                         ),
                       );

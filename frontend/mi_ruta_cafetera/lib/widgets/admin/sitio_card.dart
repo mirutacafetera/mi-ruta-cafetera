@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import 'sitio_badge.dart';
 import 'sitio_card_imagen.dart';
 
@@ -37,33 +39,50 @@ class SitioCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(
-        bottom: 12,
+        bottom: AppDimensions.spacingMd,
       ),
-      elevation: 2,
+      elevation: AppDimensions.elevationCard,
+      color: AppColors.surface,
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusMd,
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(
+          AppDimensions.spacingMd,
+        ),
         child: Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ==================================================
+            // IMAGEN
+            // ==================================================
+
             SitioCardImagen(
               imagen: imagen,
             ),
 
-            const SizedBox(width: 14),
+            const SizedBox(
+              width: AppDimensions.spacingMd + 2,
+            ),
 
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ============================================
+                  // NOMBRE Y MENÚ
+                  // ============================================
+
                   Row(
                     children: [
                       Expanded(
                         child: Text(
                           nombre,
                           style: const TextStyle(
+                            color: AppColors.textPrimary,
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
                           ),
@@ -80,33 +99,32 @@ class SitioCard extends StatelessWidget {
                             onEliminar();
                           }
                         },
-                        itemBuilder: (context) =>
-                            const [
+                        itemBuilder: (context) => const [
                           PopupMenuItem<String>(
                             value: 'editar',
                             child: Row(
                               children: [
                                 Icon(
                                   Icons.edit_outlined,
+                                  color: AppColors.primary,
                                 ),
                                 SizedBox(
-                                  width: 10,
+                                  width: AppDimensions.spacingSm + 2,
                                 ),
                                 Text('Editar'),
                               ],
                             ),
                           ),
-
                           PopupMenuItem<String>(
                             value: 'eliminar',
                             child: Row(
                               children: [
                                 Icon(
                                   Icons.delete_outline,
-                                  color: Colors.red,
+                                  color: AppColors.error,
                                 ),
                                 SizedBox(
-                                  width: 10,
+                                  width: AppDimensions.spacingSm + 2,
                                 ),
                                 Text('Eliminar'),
                               ],
@@ -117,23 +135,27 @@ class SitioCard extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 5),
+                  const SizedBox(
+                    height: AppDimensions.spacingXs + 1,
+                  ),
+
+                  // ============================================
+                  // BADGES
+                  // ============================================
 
                   Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
+                    spacing: AppDimensions.spacingXs + 2,
+                    runSpacing: AppDimensions.spacingXs + 2,
                     children: [
                       SitioBadge(
                         texto: categoria,
-                        icono:
-                            Icons.category_outlined,
+                        icono: Icons.category_outlined,
                       ),
 
                       if (ciudad.isNotEmpty)
                         SitioBadge(
                           texto: ciudad,
-                          icono:
-                              Icons.location_city_outlined,
+                          icono: Icons.location_city_outlined,
                         ),
 
                       SitioBadge.estado(
@@ -142,42 +164,51 @@ class SitioCard extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(
+                    height: AppDimensions.spacingSm,
+                  ),
+
+                  // ============================================
+                  // DESCRIPCIÓN
+                  // ============================================
 
                   Text(
                     descripcion,
                     maxLines: 2,
-                    overflow:
-                        TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
                     ),
                   ),
 
-                  if (direccion.isNotEmpty) ...[
-                    const SizedBox(height: 8),
+                  // ============================================
+                  // DIRECCIÓN
+                  // ============================================
 
+                  if (direccion.isNotEmpty) ...[
+                    const SizedBox(
+                      height: AppDimensions.spacingSm,
+                    ),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.location_on_outlined,
-                          size: 16,
-                          color:
-                              Colors.grey.shade600,
+                          size: AppDimensions.iconSm,
+                          color: AppColors.textSecondary,
                         ),
 
-                        const SizedBox(width: 5),
+                        const SizedBox(
+                          width: AppDimensions.spacingXs + 1,
+                        ),
 
                         Expanded(
                           child: Text(
                             direccion,
                             maxLines: 1,
-                            overflow:
-                                TextOverflow.ellipsis,
-                            style: TextStyle(
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
                               fontSize: 13,
-                              color:
-                                  Colors.grey.shade600,
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ),

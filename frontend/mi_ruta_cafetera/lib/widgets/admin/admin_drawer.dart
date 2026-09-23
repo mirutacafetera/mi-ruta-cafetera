@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import 'admin_drawer_header.dart';
 import 'admin_drawer_item.dart';
 import 'admin_drawer_logout.dart';
@@ -21,13 +23,19 @@ class AdminDrawer extends StatelessWidget {
     return Drawer(
       child: Column(
         children: [
-          // Información del administrador
+          // ==================================================
+          // INFORMACIÓN DEL ADMINISTRADOR
+          // ==================================================
+
           AdminDrawerHeader(
             nombre: nombre,
             email: email,
           ),
 
-          // Menú principal
+          // ==================================================
+          // MENÚ PRINCIPAL
+          // ==================================================
+
           AdminDrawerItem(
             icon: Icons.dashboard,
             titulo: 'Inicio',
@@ -77,9 +85,14 @@ class AdminDrawer extends StatelessWidget {
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          const Divider(),
+          Divider(
+            color: AppColors.divider,
+          ),
 
-          // Mi cuenta
+          // ==================================================
+          // MI CUENTA
+          // ==================================================
+
           AdminDrawerItem(
             icon: Icons.person,
             titulo: 'Mi cuenta',
@@ -89,12 +102,17 @@ class AdminDrawer extends StatelessWidget {
 
           const Spacer(),
 
-          // Cerrar sesión
+          // ==================================================
+          // CERRAR SESIÓN
+          // ==================================================
+
           AdminDrawerLogout(
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          const SizedBox(height: 15),
+          const SizedBox(
+            height: AppDimensions.spacingMd,
+          ),
         ],
       ),
     );

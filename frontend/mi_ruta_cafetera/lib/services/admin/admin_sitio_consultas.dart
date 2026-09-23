@@ -3,6 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AdminSitioConsultas {
+  // ============================================================
+  // OBTENER SITIOS TURÍSTICOS
+  // ============================================================
+
   static Future<List<dynamic>> obtenerSitios(
     String baseUrl,
   ) async {
@@ -28,6 +32,10 @@ class AdminSitioConsultas {
     );
   }
 
+  // ============================================================
+  // OBTENER CATEGORÍAS
+  // ============================================================
+
   static Future<List<dynamic>> obtenerCategorias(
     String baseUrl,
   ) async {
@@ -38,9 +46,27 @@ class AdminSitioConsultas {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
+      // ----------------------------------------------------------
+      // Respuesta directa:
+      // [
+      //   {...},
+      //   {...}
+      // ]
+      // ----------------------------------------------------------
+
       if (data is List) {
         return data;
       }
+
+      // ----------------------------------------------------------
+      // Respuesta envuelta:
+      // {
+      //   "categorias": [
+      //     {...},
+      //     {...}
+      //   ]
+      // }
+      // ----------------------------------------------------------
 
       if (data is Map<String, dynamic>) {
         final categorias = data['categorias'];
@@ -61,6 +87,10 @@ class AdminSitioConsultas {
       '${response.statusCode} - ${response.body}',
     );
   }
+
+  // ============================================================
+  // OBTENER UN SITIO TURÍSTICO
+  // ============================================================
 
   static Future<Map<String, dynamic>> obtenerSitio(
     String baseUrl,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../models/categoria_model.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 class MapaCategorias extends StatelessWidget {
   final List<CategoriaModel> categorias;
@@ -113,23 +115,27 @@ class MapaCategorias extends StatelessWidget {
     );
   }
 
+  // ============================================================
+  // VERSION COMPACTA
+  // ============================================================
+
   Widget _construirVersionCompacta(
     BuildContext context,
   ) {
     return Material(
       color: Colors.transparent,
       child: SizedBox(
-        height: 58,
+        height: AppDimensions.floatingButtonSize +
+            AppDimensions.spacingXs,
         child: ListView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(
-            horizontal: 2,
+            horizontal: AppDimensions.spacingXs / 2,
           ),
           children: [
             _construirIconoCategoria(
               icono: Icons.apps_outlined,
-              seleccionada:
-                  categoriaSeleccionada == null,
+              seleccionada: categoriaSeleccionada == null,
               tooltip: 'Todas',
               onTap: () {
                 onCategoriaSeleccionada(null);
@@ -140,13 +146,11 @@ class MapaCategorias extends StatelessWidget {
                 return _construirIconoCategoria(
                   icono: _obtenerIcono(categoria),
                   seleccionada:
-                      categoriaSeleccionada ==
-                          categoria.id,
+                      categoriaSeleccionada == categoria.id,
                   tooltip: categoria.nombre,
                   onTap: () {
                     final seleccionada =
-                        categoriaSeleccionada ==
-                            categoria.id;
+                        categoriaSeleccionada == categoria.id;
 
                     onCategoriaSeleccionada(
                       seleccionada
@@ -163,6 +167,10 @@ class MapaCategorias extends StatelessWidget {
     );
   }
 
+  // ============================================================
+  // VERSION RESPONSIVE
+  // ============================================================
+
   Widget _construirVersionResponsive(
     BuildContext context,
   ) {
@@ -170,12 +178,12 @@ class MapaCategorias extends StatelessWidget {
       color: Colors.transparent,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: 2,
-          vertical: 2,
+          horizontal: AppDimensions.spacingXs / 2,
+          vertical: AppDimensions.spacingXs / 2,
         ),
         child: Wrap(
-          spacing: 7,
-          runSpacing: 7,
+          spacing: AppDimensions.spacingSm - 1,
+          runSpacing: AppDimensions.spacingSm - 1,
           children: [
             _construirChipCategoria(
               icono: Icons.apps_outlined,
@@ -189,8 +197,7 @@ class MapaCategorias extends StatelessWidget {
             ...categorias.map(
               (categoria) {
                 final seleccionada =
-                    categoriaSeleccionada ==
-                        categoria.id;
+                    categoriaSeleccionada == categoria.id;
 
                 return _construirChipCategoria(
                   icono: _obtenerIcono(categoria),
@@ -212,6 +219,10 @@ class MapaCategorias extends StatelessWidget {
     );
   }
 
+  // ============================================================
+  // ICONO DE CATEGORÍA - MÓVIL
+  // ============================================================
+
   Widget _construirIconoCategoria({
     required IconData icono,
     required bool seleccionada,
@@ -220,7 +231,7 @@ class MapaCategorias extends StatelessWidget {
   }) {
     return Padding(
       padding: const EdgeInsets.only(
-        right: 8,
+        right: AppDimensions.spacingSm,
       ),
       child: Tooltip(
         message: tooltip,
@@ -229,27 +240,27 @@ class MapaCategorias extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(
-              28,
+              AppDimensions.radiusPill,
             ),
             child: AnimatedContainer(
               duration: const Duration(
                 milliseconds: 180,
               ),
-              width: 48,
-              height: 48,
+              width: AppDimensions.floatingButtonSize,
+              height: AppDimensions.floatingButtonSize,
               decoration: BoxDecoration(
                 color: seleccionada
-                    ? Colors.brown
-                    : Colors.white,
+                    ? AppColors.primary
+                    : AppColors.white,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: seleccionada
-                      ? Colors.brown
-                      : Colors.grey.shade300,
+                      ? AppColors.primary
+                      : AppColors.border,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(
+                    color: AppColors.black.withValues(
                       alpha: 0.12,
                     ),
                     blurRadius: 5,
@@ -260,9 +271,9 @@ class MapaCategorias extends StatelessWidget {
               child: Icon(
                 icono,
                 color: seleccionada
-                    ? Colors.white
-                    : Colors.brown,
-                size: 23,
+                    ? AppColors.white
+                    : AppColors.primary,
+                size: AppDimensions.iconLg,
               ),
             ),
           ),
@@ -270,6 +281,10 @@ class MapaCategorias extends StatelessWidget {
       ),
     );
   }
+
+  // ============================================================
+  // CHIP DE CATEGORÍA - RESPONSIVE
+  // ============================================================
 
   Widget _construirChipCategoria({
     required IconData icono,
@@ -282,31 +297,31 @@ class MapaCategorias extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(
-          22,
+          AppDimensions.radiusPill,
         ),
         child: AnimatedContainer(
           duration: const Duration(
             milliseconds: 180,
           ),
           padding: const EdgeInsets.symmetric(
-            horizontal: 13,
-            vertical: 9,
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
           ),
           decoration: BoxDecoration(
             color: seleccionada
-                ? Colors.brown
-                : Colors.white,
+                ? AppColors.primary
+                : AppColors.white,
             borderRadius: BorderRadius.circular(
-              22,
+              AppDimensions.radiusPill,
             ),
             border: Border.all(
               color: seleccionada
-                  ? Colors.brown
-                  : Colors.grey.shade300,
+                  ? AppColors.primary
+                  : AppColors.border,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(
+                color: AppColors.black.withValues(
                   alpha: 0.10,
                 ),
                 blurRadius: 5,
@@ -319,14 +334,16 @@ class MapaCategorias extends StatelessWidget {
             children: [
               Icon(
                 icono,
-                size: 19,
+                size: AppDimensions.iconSm,
                 color: seleccionada
-                    ? Colors.white
-                    : Colors.brown,
+                    ? AppColors.white
+                    : AppColors.primary,
               ),
+
               const SizedBox(
-                width: 7,
+                width: AppDimensions.spacingSm,
               ),
+
               Text(
                 nombre,
                 style: TextStyle(
@@ -335,8 +352,8 @@ class MapaCategorias extends StatelessWidget {
                       ? FontWeight.w700
                       : FontWeight.w500,
                   color: seleccionada
-                      ? Colors.white
-                      : Colors.grey.shade800,
+                      ? AppColors.white
+                      : AppColors.textPrimary,
                 ),
               ),
             ],

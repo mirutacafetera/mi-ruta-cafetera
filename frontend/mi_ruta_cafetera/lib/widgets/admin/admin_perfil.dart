@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+
 class AdminPerfil extends StatelessWidget {
   final String nombre;
   final String email;
@@ -13,123 +16,201 @@ class AdminPerfil extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(
+        AppDimensions.spacingXl,
+      ),
       child: Column(
         children: [
-          const SizedBox(height: 30),
+          const SizedBox(
+            height: AppDimensions.spacingXl + AppDimensions.spacingSm / 2,
+          ),
 
-          // Icono
-          CircleAvatar(
+          // ==================================================
+          // ICONO
+          // ==================================================
+
+          const CircleAvatar(
             radius: 50,
-            backgroundColor: Colors.green.shade50,
+            backgroundColor: AppColors.cream,
             child: Icon(
               Icons.admin_panel_settings,
               size: 60,
-              color: Colors.green.shade800,
+              color: AppColors.primary,
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(
+            height: AppDimensions.spacingXl,
+          ),
 
-          // Nombre
+          // ==================================================
+          // NOMBRE
+          // ==================================================
+
           Text(
             nombre,
             textAlign: TextAlign.center,
             style: const TextStyle(
+              color: AppColors.textPrimary,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(
+            height: AppDimensions.spacingSm,
+          ),
 
-          // Correo
+          // ==================================================
+          // CORREO
+          // ==================================================
+
           Text(
             email,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
+              color: AppColors.textSecondary,
               fontSize: 15,
-              color: Colors.grey.shade600,
             ),
           ),
 
-          const SizedBox(height: 35),
+          const SizedBox(
+            height: AppDimensions.spacingSection + AppDimensions.spacingXs,
+          ),
 
-          // Información
+          // ==================================================
+          // INFORMACIÓN
+          // ==================================================
+
           Card(
-            elevation: 1,
+            color: AppColors.surface,
+            elevation: AppDimensions.elevationButton,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(
+                AppDimensions.spacingXl,
+              ),
               child: Column(
                 children: [
+                  // ------------------------------------------------
+                  // NOMBRE
+                  // ------------------------------------------------
+
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.person_outline,
-                        color: Colors.green.shade800,
+                        color: AppColors.primary,
                       ),
-                      const SizedBox(width: 14),
+
+                      const SizedBox(
+                        width: AppDimensions.spacingMd + 2,
+                      ),
+
                       const Text(
                         'Nombre',
                         style: TextStyle(
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
                       const Spacer(),
+
                       Flexible(
                         child: Text(
                           nombre,
                           textAlign: TextAlign.end,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ],
                   ),
 
-                  const Divider(height: 30),
+                  const Divider(
+                    height: AppDimensions.spacingSection - 2,
+                    color: AppColors.divider,
+                  ),
+
+                  // ------------------------------------------------
+                  // CORREO
+                  // ------------------------------------------------
 
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.email_outlined,
-                        color: Colors.green.shade800,
+                        color: AppColors.primary,
                       ),
-                      const SizedBox(width: 14),
+
+                      const SizedBox(
+                        width: AppDimensions.spacingMd + 2,
+                      ),
+
                       const Text(
                         'Correo',
                         style: TextStyle(
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
                       const Spacer(),
+
                       Flexible(
                         child: Text(
                           email,
                           textAlign: TextAlign.end,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ],
                   ),
 
-                  const Divider(height: 30),
+                  const Divider(
+                    height: AppDimensions.spacingSection - 2,
+                    color: AppColors.divider,
+                  ),
+
+                  // ------------------------------------------------
+                  // ROL
+                  // ------------------------------------------------
 
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.admin_panel_settings_outlined,
-                        color: Colors.green.shade800,
+                        color: AppColors.primary,
                       ),
-                      const SizedBox(width: 14),
+
+                      const SizedBox(
+                        width: AppDimensions.spacingMd + 2,
+                      ),
+
                       const Text(
                         'Rol',
                         style: TextStyle(
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
                       const Spacer(),
-                      const Text('Administrador'),
+
+                      const Text(
+                        'Administrador',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ],

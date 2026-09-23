@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import '../admin/admin_acceso_screen.dart';
 import '../usuario/login_usuario_screen.dart';
 
@@ -24,76 +26,92 @@ class SeleccionRolScreen extends StatelessWidget {
     );
   }
 
+  // ============================================================
+  // CONSTRUCCIÓN
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.brown.shade700,
-              Colors.brown.shade400,
-              Colors.brown.shade100,
+              AppColors.coffeeDark,
+              AppColors.secondary,
+              AppColors.coffeeLight,
             ],
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(
+                AppDimensions.spacingXxl,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxWidth: 450,
                 ),
                 child: Card(
-                  elevation: 8,
+                  color: AppColors.surface,
+                  elevation: AppDimensions.elevationHigh,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusXxl,
+                    ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(28),
+                    padding: const EdgeInsets.all(
+                      AppDimensions.spacingXxl + 4,
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // =====================================================
+                        // ==================================================
                         // ICONO
-                        // =====================================================
+                        // ==================================================
 
                         Container(
                           width: 90,
                           height: 90,
-                          decoration: BoxDecoration(
-                            color: Colors.brown.shade50,
+                          decoration: const BoxDecoration(
+                            color: AppColors.cream,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.local_cafe_rounded,
                             size: 50,
-                            color: Colors.brown.shade700,
+                            color: AppColors.secondary,
                           ),
                         ),
 
-                        const SizedBox(height: 24),
+                        const SizedBox(
+                          height: AppDimensions.spacingXl,
+                        ),
 
-                        // =====================================================
+                        // ==================================================
                         // TITULO
-                        // =====================================================
+                        // ==================================================
 
-                        Text(
+                        const Text(
                           'Mi Ruta Mágica del Café',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: Colors.brown.shade800,
+                            color: AppColors.secondary,
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        const SizedBox(
+                          height: AppDimensions.spacingSm + 2,
+                        ),
 
                         const Text(
                           'Bienvenido',
@@ -101,29 +119,34 @@ class SeleccionRolScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
                           ),
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(
+                          height: AppDimensions.spacingSm,
+                        ),
 
-                        Text(
+                        const Text(
                           'Selecciona cómo deseas ingresar',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 15,
-                            color: Colors.grey.shade700,
+                            color: AppColors.textSecondary,
                           ),
                         ),
 
-                        const SizedBox(height: 30),
+                        const SizedBox(
+                          height: AppDimensions.spacingSection - 2,
+                        ),
 
-                        // =====================================================
+                        // ==================================================
                         // VISITANTE
-                        // =====================================================
+                        // ==================================================
 
                         SizedBox(
                           width: double.infinity,
-                          height: 58,
+                          height: AppDimensions.buttonHeightLarge,
                           child: ElevatedButton.icon(
                             onPressed: () {
                               Navigator.push(
@@ -144,28 +167,20 @@ class SeleccionRolScreen extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Colors.brown.shade700,
-                              foregroundColor: Colors.white,
-                              elevation: 3,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(14),
-                              ),
-                            ),
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(
+                          height: AppDimensions.spacingMd,
+                        ),
 
-                        // =====================================================
+                        // ==================================================
                         // ADMINISTRADOR
-                        // =====================================================
+                        // ==================================================
 
                         SizedBox(
                           width: double.infinity,
-                          height: 58,
+                          height: AppDimensions.buttonHeightLarge,
                           child: OutlinedButton.icon(
                             onPressed: () {
                               Navigator.push(
@@ -187,29 +202,31 @@ class SeleccionRolScreen extends StatelessWidget {
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor:
-                                  Colors.brown.shade700,
-                              side: BorderSide(
-                                color: Colors.brown.shade700,
+                              foregroundColor: AppColors.primary,
+                              side: const BorderSide(
+                                color: AppColors.primary,
                                 width: 2,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd,
+                                ),
                               ),
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(
+                          height: AppDimensions.spacingMd,
+                        ),
 
-                        // =====================================================
+                        // ==================================================
                         // SITIO TURÍSTICO
-                        // =====================================================
+                        // ==================================================
 
                         SizedBox(
                           width: double.infinity,
-                          height: 58,
+                          height: AppDimensions.buttonHeightLarge,
                           child: OutlinedButton.icon(
                             onPressed: () {
                               _mostrarMensaje(
@@ -228,25 +245,27 @@ class SeleccionRolScreen extends StatelessWidget {
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor:
-                                  Colors.brown.shade700,
-                              side: BorderSide(
-                                color: Colors.brown.shade700,
+                              foregroundColor: AppColors.secondary,
+                              side: const BorderSide(
+                                color: AppColors.secondary,
                                 width: 2,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd,
+                                ),
                               ),
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 24),
+                        const SizedBox(
+                          height: AppDimensions.spacingXl,
+                        ),
 
-                        // =====================================================
+                        // ==================================================
                         // VOLVER
-                        // =====================================================
+                        // ==================================================
 
                         TextButton.icon(
                           onPressed: () {
@@ -259,22 +278,23 @@ class SeleccionRolScreen extends StatelessWidget {
                             'Volver',
                           ),
                           style: TextButton.styleFrom(
-                            foregroundColor:
-                                Colors.brown.shade700,
+                            foregroundColor: AppColors.primary,
                           ),
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(
+                          height: AppDimensions.spacingSm,
+                        ),
 
-                        // =====================================================
+                        // ==================================================
                         // PIE
-                        // =====================================================
+                        // ==================================================
 
-                        Text(
+                        const Text(
                           'Mi Ruta Mágica del Café',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade600,
+                            color: AppColors.textLight,
                           ),
                         ),
                       ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../models/sitio_turistico_model.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 class MapaMarcador extends StatelessWidget {
   final SitioTuristicoModel sitio;
@@ -26,25 +28,41 @@ class MapaMarcador extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: seleccionado ? 44 : 38,
-            height: seleccionado ? 44 : 38,
+            duration: const Duration(
+              milliseconds: 200,
+            ),
+            width: seleccionado
+                ? AppDimensions.mapaMarkerWidth - 8
+                : AppDimensions.mapaMarkerWidth - 14,
+            height: seleccionado
+                ? AppDimensions.mapaMarkerWidth - 8
+                : AppDimensions.mapaMarkerWidth - 14,
             decoration: BoxDecoration(
               color: seleccionado
-                  ? Colors.orange.shade700
+                  ? AppColors.tertiary
                   : colorCategoria,
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white,
-                width: seleccionado ? 4 : 3,
+                color: AppColors.white,
+                width: seleccionado
+                    ? 4
+                    : 3,
               ),
               boxShadow: [
                 BoxShadow(
                   color: seleccionado
-                      ? Colors.orange.withValues(alpha: 0.45)
-                      : Colors.black38,
-                  blurRadius: seleccionado ? 10 : 6,
-                  spreadRadius: seleccionado ? 2 : 0,
+                      ? AppColors.tertiary.withValues(
+                          alpha: 0.45,
+                        )
+                      : AppColors.black.withValues(
+                          alpha: 0.24,
+                        ),
+                  blurRadius: seleccionado
+                      ? 10
+                      : 6,
+                  spreadRadius: seleccionado
+                      ? 2
+                      : 0,
                 ),
               ],
             ),
@@ -53,15 +71,15 @@ class MapaMarcador extends StatelessWidget {
                 ? Text(
                     '$numero',
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   )
                 : Icon(
                     _obtenerIconoCategoria(),
-                    color: Colors.white,
-                    size: 20,
+                    color: AppColors.white,
+                    size: AppDimensions.iconMd,
                   ),
           ),
 
@@ -69,7 +87,7 @@ class MapaMarcador extends StatelessWidget {
             width: 3,
             height: 12,
             color: seleccionado
-                ? Colors.orange.shade700
+                ? AppColors.tertiary
                 : colorCategoria,
           ),
         ],
@@ -77,55 +95,65 @@ class MapaMarcador extends StatelessWidget {
     );
   }
 
+  // =====================================================
+  // COLOR SEGÚN CATEGORÍA
+  // =====================================================
+
   Color _obtenerColorCategoria() {
     final categoria =
         sitio.categoriaNombre.toLowerCase();
 
     if (categoria.contains('café') ||
         categoria.contains('cafe')) {
-      return Colors.brown;
+      return AppColors.secondary;
     }
 
     if (categoria.contains('naturaleza') ||
         categoria.contains('aventura')) {
-      return Colors.green.shade700;
+      return AppColors.success;
     }
 
-    if (categoria.contains('mirador')) {
-      return Colors.teal.shade700;
+    if (categoria.contains('mirador') ||
+        categoria.contains('paisaje')) {
+      return AppColors.info;
     }
 
     if (categoria.contains('cultura') ||
         categoria.contains('historia')) {
-      return Colors.deepPurple;
+      return AppColors.coffeeDark;
     }
 
     if (categoria.contains('artesanía') ||
-        categoria.contains('artesania')) {
-      return Colors.orange.shade700;
+        categoria.contains('artesania') ||
+        categoria.contains('productos locales')) {
+      return AppColors.coffeeLight;
     }
 
     if (categoria.contains('familiar') ||
         categoria.contains('familia')) {
-      return Colors.amber.shade800;
+      return AppColors.warning;
     }
 
     if (categoria.contains('alojamiento') ||
         categoria.contains('hotel') ||
         categoria.contains('hospedaje')) {
-      return Colors.blue;
+      return AppColors.natureLight;
     }
 
     if (categoria.contains('gastronom')) {
-      return Colors.red.shade700;
+      return AppColors.error;
     }
 
     if (categoria.contains('relig')) {
-      return Colors.deepPurple.shade700;
+      return AppColors.coffeeDark;
     }
 
-    return Colors.teal;
+    return AppColors.primary;
   }
+
+  // =====================================================
+  // ICONO SEGÚN CATEGORÍA
+  // =====================================================
 
   IconData _obtenerIconoCategoria() {
     final categoria =
@@ -141,7 +169,8 @@ class MapaMarcador extends StatelessWidget {
       return Icons.park;
     }
 
-    if (categoria.contains('mirador')) {
+    if (categoria.contains('mirador') ||
+        categoria.contains('paisaje')) {
       return Icons.landscape;
     }
 
@@ -151,7 +180,8 @@ class MapaMarcador extends StatelessWidget {
     }
 
     if (categoria.contains('artesanía') ||
-        categoria.contains('artesania')) {
+        categoria.contains('artesania') ||
+        categoria.contains('productos locales')) {
       return Icons.storefront;
     }
 

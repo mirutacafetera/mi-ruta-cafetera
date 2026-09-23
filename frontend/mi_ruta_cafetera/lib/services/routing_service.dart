@@ -23,6 +23,10 @@ class RoutingService {
   static const String _baseUrl =
       'https://router.project-osrm.org';
 
+  // ============================================================
+  // CALCULAR RUTA
+  // ============================================================
+
   /// Calcula una ruta real por carretera utilizando OSRM.
   ///
   /// Los puntos deben estar en el orden:
@@ -40,6 +44,10 @@ class RoutingService {
       );
     }
 
+    // ==========================================================
+    // CONSTRUIR COORDENADAS PARA OSRM
+    // ==========================================================
+
     final coordenadas = puntos
         .map(
           (punto) =>
@@ -54,6 +62,10 @@ class RoutingService {
       '&steps=true',
     );
 
+    // ==========================================================
+    // SOLICITAR RUTA
+    // ==========================================================
+
     final response = await http
         .get(
           uri,
@@ -62,14 +74,21 @@ class RoutingService {
           },
         )
         .timeout(
-          const Duration(seconds: 20),
+          const Duration(
+            seconds: 20,
+          ),
         );
 
     if (response.statusCode != 200) {
       throw Exception(
-        'OSRM respondió con código ${response.statusCode}.',
+        'OSRM respondió con código '
+        '${response.statusCode}.',
       );
     }
+
+    // ==========================================================
+    // PROCESAR RESPUESTA
+    // ==========================================================
 
     final Map<String, dynamic> data =
         jsonDecode(response.body);
@@ -91,6 +110,10 @@ class RoutingService {
     final route =
         Map<String, dynamic>.from(routes.first);
 
+    // ==========================================================
+    // OBTENER GEOMETRÍA
+    // ==========================================================
+
     final geometry = route['geometry'];
 
     if (geometry is! Map) {
@@ -108,6 +131,10 @@ class RoutingService {
         'La ruta no contiene coordenadas.',
       );
     }
+
+    // ==========================================================
+    // CONVERTIR COORDENADAS A LATLNG
+    // ==========================================================
 
     final List<LatLng> puntosRuta = [];
 
@@ -133,6 +160,10 @@ class RoutingService {
         'La geometría de la ruta es insuficiente.',
       );
     }
+
+    // ==========================================================
+    // RESULTADO
+    // ==========================================================
 
     return RutaResultado(
       puntos: puntosRuta,

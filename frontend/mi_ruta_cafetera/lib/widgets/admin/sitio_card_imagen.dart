@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+
 class SitioCardImagen extends StatelessWidget {
   final String? imagen;
 
@@ -15,13 +17,13 @@ class SitioCardImagen extends StatelessWidget {
         width: 90,
         height: 90,
         decoration: BoxDecoration(
-          color: Colors.green.shade50,
+          color: AppColors.cream,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(
+        child: const Icon(
           Icons.place_outlined,
           size: 42,
-          color: Colors.green.shade700,
+          color: AppColors.primary,
         ),
       );
     }
@@ -41,11 +43,11 @@ class SitioCardImagen extends StatelessWidget {
           return Container(
             width: 90,
             height: 90,
-            color: Colors.green.shade50,
-            child: Icon(
+            color: AppColors.cream,
+            child: const Icon(
               Icons.broken_image_outlined,
               size: 38,
-              color: Colors.grey.shade500,
+              color: AppColors.textLight,
             ),
           );
         },
