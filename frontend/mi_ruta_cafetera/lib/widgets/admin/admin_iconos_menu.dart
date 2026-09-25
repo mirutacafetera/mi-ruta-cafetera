@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 
-class AdminDrawerItem extends StatelessWidget {
+class AdminIconoMenu extends StatelessWidget {
   final IconData icon;
   final String titulo;
   final String opcion;
   final Function(String) onOpcionSeleccionada;
 
-  const AdminDrawerItem({
+  const AdminIconoMenu({
     super.key,
     required this.icon,
     required this.titulo,
@@ -19,10 +19,7 @@ class AdminDrawerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: AppColors.primary,
-      ),
+      leading: Icon(icon, color: AppColors.primary),
       title: Text(titulo),
       onTap: () {
         onOpcionSeleccionada(opcion);

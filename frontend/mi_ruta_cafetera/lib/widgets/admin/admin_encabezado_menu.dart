@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 
-class AdminDrawerHeader extends StatelessWidget {
+class AdminEncabezadoMenu extends StatelessWidget {
   final String nombre;
   final String email;
 
-  const AdminDrawerHeader({
+  const AdminEncabezadoMenu({
     super.key,
     required this.nombre,
     required this.email,
@@ -15,9 +15,7 @@ class AdminDrawerHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return UserAccountsDrawerHeader(
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
-      ),
+      decoration: const BoxDecoration(color: AppColors.primary),
       currentAccountPicture: const CircleAvatar(
         backgroundColor: AppColors.white,
         child: Icon(
@@ -33,12 +31,7 @@ class AdminDrawerHeader extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      accountEmail: Text(
-        email,
-        style: const TextStyle(
-          color: AppColors.white,
-        ),
-      ),
+      accountEmail: Text(email, style: const TextStyle(color: AppColors.white)),
     );
   }
 }

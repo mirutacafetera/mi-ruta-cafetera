@@ -26,12 +26,8 @@ class AdminInicio extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(
-            height: AppDimensions.spacingXl + AppDimensions.spacingXs,
+            height: AppDimensions.spacingXl,
           ),
-
-          // ==================================================
-          // ICONO DE ADMINISTRADOR
-          // ==================================================
 
           const Icon(
             Icons.admin_panel_settings,
@@ -40,12 +36,8 @@ class AdminInicio extends StatelessWidget {
           ),
 
           const SizedBox(
-            height: AppDimensions.spacingLg + AppDimensions.spacingXs / 2,
+            height: AppDimensions.spacingLg,
           ),
-
-          // ==================================================
-          // BIENVENIDA
-          // ==================================================
 
           Text(
             'Bienvenido, $nombre',
@@ -58,13 +50,13 @@ class AdminInicio extends StatelessWidget {
           ),
 
           const SizedBox(
-            height: AppDimensions.spacingSm + 2,
+            height: AppDimensions.spacingSm,
           ),
 
-          Text(
+          const Text(
             'Panel de administración\nMi Ruta Mágica del Café',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 17,
               color: AppColors.textLight,
               height: 1.4,
@@ -74,10 +66,6 @@ class AdminInicio extends StatelessWidget {
           const SizedBox(
             height: AppDimensions.spacingSection,
           ),
-
-          // ==================================================
-          // MAPA TURÍSTICO
-          // ==================================================
 
           Card(
             color: AppColors.primary,
@@ -111,16 +99,15 @@ class AdminInicio extends StatelessWidget {
                         color: AppColors.primary,
                       ),
                     ),
-
                     const SizedBox(
-                      width: AppDimensions.spacingLg + AppDimensions.spacingXs / 2,
+                      width: AppDimensions.spacingLg,
                     ),
-
-                    Expanded(
+                    const Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Mapa turístico',
                             style: TextStyle(
                               color: AppColors.white,
@@ -128,25 +115,20 @@ class AdminInicio extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-
-                          const SizedBox(
-                            height: AppDimensions.spacingXs + 1,
+                          SizedBox(
+                            height: AppDimensions.spacingXs,
                           ),
-
                           Text(
                             'Visualiza los sitios turísticos, '
                             'categorías y rutas por carretera.',
                             style: TextStyle(
-                              color: AppColors.white.withValues(
-                                alpha: 0.75,
-                              ),
+                              color: AppColors.white,
                               fontSize: 14,
                             ),
                           ),
                         ],
                       ),
                     ),
-
                     const Icon(
                       Icons.chevron_right,
                       color: AppColors.white,
@@ -159,12 +141,8 @@ class AdminInicio extends StatelessWidget {
           ),
 
           const SizedBox(
-            height: AppDimensions.spacingXl + AppDimensions.spacingSm,
+            height: AppDimensions.spacingXl,
           ),
-
-          // ==================================================
-          // GESTIONAR SITIOS
-          // ==================================================
 
           Card(
             color: AppColors.surface,
@@ -200,14 +178,13 @@ class AdminInicio extends StatelessWidget {
                         color: AppColors.primary,
                       ),
                     ),
-
                     const SizedBox(
                       width: AppDimensions.spacingLg,
                     ),
-
                     const Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Gestionar sitios turísticos',
@@ -217,11 +194,9 @@ class AdminInicio extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-
                           SizedBox(
-                            height: AppDimensions.spacingXs + 1,
+                            height: AppDimensions.spacingXs,
                           ),
-
                           Text(
                             'Crear, editar y administrar sitios turísticos.',
                             style: TextStyle(
@@ -232,7 +207,6 @@ class AdminInicio extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     const Icon(
                       Icons.chevron_right,
                       color: AppColors.textSecondary,
@@ -244,12 +218,8 @@ class AdminInicio extends StatelessWidget {
           ),
 
           const SizedBox(
-            height: AppDimensions.spacingXl + AppDimensions.spacingSm,
+            height: AppDimensions.spacingXl,
           ),
-
-          // ==================================================
-          // INFORMACIÓN DEL ADMINISTRADOR
-          // ==================================================
 
           Card(
             color: AppColors.surface,
@@ -280,14 +250,13 @@ class AdminInicio extends StatelessWidget {
                       color: AppColors.primary,
                     ),
                   ),
-
                   const SizedBox(
                     width: AppDimensions.spacingLg,
                   ),
-
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
                       children: [
                         Text(
                           nombre,
@@ -297,11 +266,9 @@ class AdminInicio extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(
-                          height: AppDimensions.spacingXs + 1,
+                          height: AppDimensions.spacingXs,
                         ),
-
                         Text(
                           email,
                           style: const TextStyle(
@@ -318,7 +285,7 @@ class AdminInicio extends StatelessWidget {
           ),
 
           const SizedBox(
-            height: AppDimensions.spacingSection - AppDimensions.spacingXs / 2,
+            height: AppDimensions.spacingSection,
           ),
         ],
       ),

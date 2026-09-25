@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
-import 'admin_drawer_header.dart';
-import 'admin_drawer_item.dart';
-import 'admin_drawer_logout.dart';
 
-class AdminDrawer extends StatelessWidget {
+import 'admin_encabezado_menu.dart';
+import 'admin_iconos_menu.dart';
+import 'admin_cerrar_sesion.dart';
+
+class AdminMenuLateral extends StatelessWidget {
   final String nombre;
   final String email;
   final Function(String) onOpcionSeleccionada;
 
-  const AdminDrawer({
+  const AdminMenuLateral({
     super.key,
     required this.nombre,
     required this.email,
@@ -26,74 +27,80 @@ class AdminDrawer extends StatelessWidget {
           // ==================================================
           // INFORMACIÓN DEL ADMINISTRADOR
           // ==================================================
-
-          AdminDrawerHeader(
-            nombre: nombre,
-            email: email,
-          ),
+          AdminEncabezadoMenu(nombre: nombre, email: email),
 
           // ==================================================
           // MENÚ PRINCIPAL
           // ==================================================
-
-          AdminDrawerItem(
+          AdminIconoMenu(
             icon: Icons.dashboard,
             titulo: 'Inicio',
             opcion: 'inicio',
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          AdminDrawerItem(
+          AdminIconoMenu(
             icon: Icons.bar_chart,
             titulo: 'Estadísticas',
             opcion: 'estadisticas',
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          AdminDrawerItem(
+          AdminIconoMenu(
             icon: Icons.location_on,
             titulo: 'Sitios turísticos',
             opcion: 'sitios',
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          AdminDrawerItem(
+          AdminIconoMenu(
             icon: Icons.category,
             titulo: 'Categorías',
             opcion: 'categorias',
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          AdminDrawerItem(
+          AdminIconoMenu(
             icon: Icons.article,
             titulo: 'Contenido',
             opcion: 'contenido',
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          AdminDrawerItem(
+          AdminIconoMenu(
             icon: Icons.star,
             titulo: 'Reseñas',
             opcion: 'resenas',
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          AdminDrawerItem(
+          AdminIconoMenu(
+            icon: Icons.calendar_month,
+            titulo: 'Reservas',
+            opcion: 'reservas',
+            onOpcionSeleccionada: onOpcionSeleccionada,
+          ),
+
+          AdminIconoMenu(
+            icon: Icons.report,
+            titulo: 'Reportes',
+            opcion: 'reportes',
+            onOpcionSeleccionada: onOpcionSeleccionada,
+          ),
+
+          AdminIconoMenu(
             icon: Icons.people,
             titulo: 'Usuarios',
             opcion: 'usuarios',
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
 
-          Divider(
-            color: AppColors.divider,
-          ),
+          Divider(color: AppColors.divider),
 
           // ==================================================
           // MI CUENTA
           // ==================================================
-
-          AdminDrawerItem(
+          AdminIconoMenu(
             icon: Icons.person,
             titulo: 'Mi cuenta',
             opcion: 'perfil',
@@ -105,14 +112,9 @@ class AdminDrawer extends StatelessWidget {
           // ==================================================
           // CERRAR SESIÓN
           // ==================================================
+          AdminCerrarSesion(onOpcionSeleccionada: onOpcionSeleccionada),
 
-          AdminDrawerLogout(
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-
-          const SizedBox(
-            height: AppDimensions.spacingMd,
-          ),
+          const SizedBox(height: AppDimensions.spacingMd),
         ],
       ),
     );
