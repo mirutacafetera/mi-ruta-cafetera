@@ -1,38 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../../services/admin/admin_login_screen.dart';
+import '../../screens/admin/admin_inicio_sesion.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 
-class AdminAccesoScreen extends StatelessWidget {
-  const AdminAccesoScreen({
-    super.key,
-  });
+class AdminPantallaAcceso extends StatelessWidget {
+  const AdminPantallaAcceso({super.key});
 
-  // ============================================================
-  // ABRIR LOGIN
-  // ============================================================
-
-  void _abrirLogin(BuildContext context) {
+  void _abrirInicioSesion(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const AdminLoginScreen(),
+        builder: (_) => const AdminInicioSesion(),
       ),
     );
   }
-
-  // ============================================================
-  // VOLVER
-  // ============================================================
-
-  void _volver(BuildContext context) {
-    Navigator.pop(context);
-  }
-
-  // ============================================================
-  // BUILD
-  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -72,37 +54,19 @@ class AdminAccesoScreen extends StatelessWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(
-                      AppDimensions.spacingXxl + 4,
+                      AppDimensions.spacingXxl,
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // ==================================================
-                        // ICONO
-                        // ==================================================
-
-                        Container(
-                          width: 90,
-                          height: 90,
-                          decoration: const BoxDecoration(
-                            color: AppColors.cream,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.admin_panel_settings,
-                            size: 52,
-                            color: AppColors.secondary,
-                          ),
+                        const Icon(
+                          Icons.admin_panel_settings,
+                          size: 70,
+                          color: AppColors.secondary,
                         ),
-
                         const SizedBox(
-                          height: AppDimensions.spacingLg + 6,
+                          height: AppDimensions.spacingLg,
                         ),
-
-                        // ==================================================
-                        // TÍTULO
-                        // ==================================================
-
                         const Text(
                           'Acceso de administrador',
                           textAlign: TextAlign.center,
@@ -112,38 +76,28 @@ class AdminAccesoScreen extends StatelessWidget {
                             color: AppColors.secondary,
                           ),
                         ),
-
                         const SizedBox(
-                          height: AppDimensions.spacingSm + 2,
+                          height: AppDimensions.spacingSm,
                         ),
-
                         const Text(
                           'Esta sección está destinada únicamente '
                           'a administradores autorizados.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 15,
-                            height: 1.4,
                             color: AppColors.textSecondary,
                           ),
                         ),
-
                         const SizedBox(
-                          height: AppDimensions.spacingSection - 2,
+                          height: AppDimensions.spacingSection,
                         ),
-
-                        // ==================================================
-                        // INICIAR SESIÓN
-                        // ==================================================
-
                         SizedBox(
                           width: double.infinity,
                           height: AppDimensions.buttonHeightLarge,
                           child: ElevatedButton.icon(
-                            onPressed: () => _abrirLogin(context),
-                            icon: const Icon(
-                              Icons.login,
-                            ),
+                            onPressed: () =>
+                                _abrirInicioSesion(context),
+                            icon: const Icon(Icons.login),
                             label: const Text(
                               'Iniciar sesión',
                               style: TextStyle(
@@ -153,23 +107,13 @@ class AdminAccesoScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-
                         const SizedBox(
-                          height: AppDimensions.spacingMd + 2,
+                          height: AppDimensions.spacingMd,
                         ),
-
-                        // ==================================================
-                        // VOLVER
-                        // ==================================================
-
                         TextButton.icon(
-                          onPressed: () => _volver(context),
-                          icon: const Icon(
-                            Icons.arrow_back,
-                          ),
-                          label: const Text(
-                            'Volver',
-                          ),
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back),
+                          label: const Text('Volver'),
                         ),
                       ],
                     ),

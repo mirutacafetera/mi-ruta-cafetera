@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
-import '../admin/admin_acceso_screen.dart';
+import '../admin/admin_pantalla_acceso.dart';
 import '../usuario/login_usuario_screen.dart';
 
 class SeleccionRolScreen extends StatelessWidget {
@@ -187,7 +187,7 @@ class SeleccionRolScreen extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      const AdminAccesoScreen(),
+                                      const AdminPantallaAcceso(),
                                 ),
                               );
                             },

@@ -2,22 +2,19 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
-import '../../widgets/admin/admin_drawer.dart';
-import '../../widgets/admin/admin_inicio.dart';
-import '../../widgets/admin/admin_perfil.dart';
+
+import '../../widgets/admin/admin_menu_lateral.dart';
+import '../../screens/admin/admin_inicio.dart';
+import '../../screens/admin/admin_perfil.dart';
 import '../../widgets/admin/admin_proximamente.dart';
-import '../mapa_screen_2.dart';
-import 'admin_sitio_list_screen.dart';
+import '../../screens/mapa_screen_2.dart';
+import '../../screens/admin/admin_sitio_list_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   final String nombre;
   final String email;
 
-  const AdminScreen({
-    super.key,
-    required this.nombre,
-    required this.email,
-  });
+  const AdminScreen({super.key, required this.nombre, required this.email});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -43,9 +40,7 @@ class _AdminScreenState extends State<AdminScreen> {
   void _abrirMapa() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const MapaScreen2(),
-      ),
+      MaterialPageRoute(builder: (context) => const MapaScreen2()),
     );
   }
 
@@ -57,18 +52,18 @@ class _AdminScreenState extends State<AdminScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _tituloPantalla(),
-        ),
+        title: Text(_tituloPantalla()),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         elevation: AppDimensions.elevationNone,
       ),
-      drawer: AdminDrawer(
+
+      drawer: AdminMenuLateral(
         nombre: widget.nombre,
         email: widget.email,
         onOpcionSeleccionada: _cambiarOpcion,
       ),
+
       body: _crearContenido(),
     );
   }
@@ -88,11 +83,20 @@ class _AdminScreenState extends State<AdminScreen> {
       case 'sitios':
         return 'Sitios turísticos';
 
+      case 'categorias':
+        return 'Categorías';
+
       case 'contenido':
         return 'Contenido';
 
       case 'resenas':
         return 'Reseñas';
+
+      case 'reservas':
+        return 'Reservas';
+
+      case 'reportes':
+        return 'Reportes';
 
       case 'usuarios':
         return 'Usuarios';
@@ -122,54 +126,53 @@ class _AdminScreenState extends State<AdminScreen> {
         );
 
       case 'estadisticas':
-        return const AdminProximamente(
-          nombre: 'Estadísticas',
-        );
+        return const AdminProximamente(nombre: 'Estadísticas');
 
       case 'sitios':
         return _sitios();
 
+      case 'categorias':
+        return const AdminProximamente(nombre: 'Categorías');
+
       case 'contenido':
-        return const AdminProximamente(
-          nombre: 'Contenido',
-        );
+        return const AdminProximamente(nombre: 'Contenido');
 
       case 'resenas':
-        return const AdminProximamente(
-          nombre: 'Reseñas',
-        );
+        return const AdminProximamente(nombre: 'Reseñas');
+
+      case 'reservas':
+        return const AdminProximamente(nombre: 'Reservas');
+
+      case 'reportes':
+        return const AdminProximamente(nombre: 'Reportes');
 
       case 'usuarios':
-        return const AdminProximamente(
-          nombre: 'Usuarios',
-        );
+        return const AdminProximamente(nombre: 'Usuarios');
 
       case 'perfil':
-        return AdminPerfil(
-          nombre: widget.nombre,
-          email: widget.email,
-        );
+        return AdminPerfil(nombre: widget.nombre, email: widget.email);
 
       case 'logout':
-        return AdminInicio(
-          nombre: widget.nombre,
-          email: widget.email,
-          onAbrirMapa: _abrirMapa,
-          onGestionarSitios: () {
-            _cambiarOpcion('sitios');
-          },
-        );
+        return _inicio();
 
       default:
-        return AdminInicio(
-          nombre: widget.nombre,
-          email: widget.email,
-          onAbrirMapa: _abrirMapa,
-          onGestionarSitios: () {
-            _cambiarOpcion('sitios');
-          },
-        );
+        return _inicio();
     }
+  }
+
+  // ============================================================
+  // INICIO
+  // ============================================================
+
+  Widget _inicio() {
+    return AdminInicio(
+      nombre: widget.nombre,
+      email: widget.email,
+      onAbrirMapa: _abrirMapa,
+      onGestionarSitios: () {
+        _cambiarOpcion('sitios');
+      },
+    );
   }
 
   // ============================================================
