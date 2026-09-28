@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_map/flutter_map.dart';
+
 import 'package:latlong2/latlong.dart';
 
 import '../controllers/mapa_controller.dart';
 import '../controllers/mapa_ruta_controller.dart';
+
 import '../models/ruta_predefinida_model.dart';
 import '../models/sitio_turistico_model.dart';
+
 import '../theme/app_colors.dart';
 import '../theme/app_dimensions.dart';
+
 import '../widgets/mapa/mapa_buscador.dart';
 import '../widgets/mapa/mapa_capas.dart';
 import '../widgets/mapa/mapa_categorias.dart';
@@ -80,9 +85,11 @@ class _MapaScreen2State extends State<MapaScreen2> {
   }
 
   void _actualizarPantalla() {
-    if (mounted) {
-      setState(() {});
+    if (!mounted) {
+      return;
     }
+
+    setState(() {});
   }
 
   // ============================================================
@@ -105,16 +112,11 @@ class _MapaScreen2State extends State<MapaScreen2> {
     );
 
     if (_rutaController.modoCrearRuta) {
-      _seleccionarSitio(
-        sitio,
-      );
-
+      _seleccionarSitio(sitio);
       return;
     }
 
-    _mostrarDetalles(
-      sitio,
-    );
+    _mostrarDetalles(sitio);
   }
 
   // ============================================================
@@ -126,9 +128,7 @@ class _MapaScreen2State extends State<MapaScreen2> {
   ) {
     _rutaController.limpiarRutaGuardada();
 
-    _mapaController.seleccionarCategoria(
-      id,
-    );
+    _mapaController.seleccionarCategoria(id);
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
@@ -178,29 +178,26 @@ class _MapaScreen2State extends State<MapaScreen2> {
   }
 
   Future<void> _calcularRuta() async {
-    final correcta = await _rutaController.calcularRuta();
+    final correcta =
+        await _rutaController.calcularRuta();
 
     if (!mounted || !correcta) {
       return;
     }
 
-    // ==========================================================
-    // IMPORTANTE:
-    // después de calcular la ruta solo mostramos los sitios
-    // que forman parte de ella.
-    // ==========================================================
-
     setState(() {});
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        if (mounted) {
-          _ajustarMapa(
-            sitios: _rutaController.rutaGuardadaSitios,
-            padding: AppDimensions.mapaRutaPadding,
-            maxZoom: AppDimensions.mapaRutaMaxZoom,
-          );
+        if (!mounted) {
+          return;
         }
+
+        _ajustarMapa(
+          sitios: _rutaController.rutaGuardadaSitios,
+          padding: AppDimensions.mapaRutaPadding,
+          maxZoom: AppDimensions.mapaRutaMaxZoom,
+        );
       },
     );
   }
@@ -214,13 +211,15 @@ class _MapaScreen2State extends State<MapaScreen2> {
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        if (mounted) {
-          _ajustarMapa(
-            sitios: _rutaController.rutaGuardadaSitios,
-            padding: AppDimensions.mapaRutaPadding,
-            maxZoom: AppDimensions.mapaRutaMaxZoom,
-          );
+        if (!mounted) {
+          return;
         }
+
+        _ajustarMapa(
+          sitios: _rutaController.rutaGuardadaSitios,
+          padding: AppDimensions.mapaRutaPadding,
+          maxZoom: AppDimensions.mapaRutaMaxZoom,
+        );
       },
     );
   }
@@ -236,7 +235,8 @@ class _MapaScreen2State extends State<MapaScreen2> {
       isScrollControlled: true,
       builder: (context) {
         return MapaRutasPredefinidas(
-          onSeleccionar: _seleccionarRutaPredefinida,
+          onSeleccionar:
+              _seleccionarRutaPredefinida,
         );
       },
     );
@@ -260,7 +260,7 @@ class _MapaScreen2State extends State<MapaScreen2> {
   }
 
   // ============================================================
-  // DETALLES
+  // DETALLES DEL SITIO
   // ============================================================
 
   void _mostrarDetalles(
@@ -288,9 +288,7 @@ class _MapaScreen2State extends State<MapaScreen2> {
               _iniciarRuta();
             }
 
-            _seleccionarSitio(
-              sitio,
-            );
+            _seleccionarSitio(sitio);
           },
         );
       },
@@ -321,13 +319,11 @@ class _MapaScreen2State extends State<MapaScreen2> {
       return numeroSeleccion;
     }
 
-    return _rutaController.numeroDeSitio(
-      sitio,
-    );
+    return _rutaController.numeroDeSitio(sitio);
   }
 
   // ============================================================
-  // MAPA
+  // AJUSTE AUTOMÁTICO DEL MAPA
   // ============================================================
 
   void _ajustarMapa({
@@ -363,21 +359,21 @@ class _MapaScreen2State extends State<MapaScreen2> {
     double maxLng = validos.first.longitud;
 
     for (final sitio in validos.skip(1)) {
-      minLat = sitio.latitud < minLat
-          ? sitio.latitud
-          : minLat;
+      if (sitio.latitud < minLat) {
+        minLat = sitio.latitud;
+      }
 
-      maxLat = sitio.latitud > maxLat
-          ? sitio.latitud
-          : maxLat;
+      if (sitio.latitud > maxLat) {
+        maxLat = sitio.latitud;
+      }
 
-      minLng = sitio.longitud < minLng
-          ? sitio.longitud
-          : minLng;
+      if (sitio.longitud < minLng) {
+        minLng = sitio.longitud;
+      }
 
-      maxLng = sitio.longitud > maxLng
-          ? sitio.longitud
-          : maxLng;
+      if (sitio.longitud > maxLng) {
+        maxLng = sitio.longitud;
+      }
     }
 
     _mapController.fitCamera(
@@ -400,6 +396,10 @@ class _MapaScreen2State extends State<MapaScreen2> {
     );
   }
 
+  // ============================================================
+  // CENTRAR MAPA
+  // ============================================================
+
   void _centrarMapa() {
     _mapController.move(
       const LatLng(
@@ -410,10 +410,22 @@ class _MapaScreen2State extends State<MapaScreen2> {
     );
   }
 
+  // ============================================================
+  // MOSTRAR TODOS LOS SITIOS
+  // ============================================================
+
   void _mostrarTodosLosSitios() {
     _rutaController.limpiarRutaGuardada();
+
     _mapaController.mostrarTodos();
-    _ajustarMapa();
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        if (mounted) {
+          _ajustarMapa();
+        }
+      },
+    );
   }
 
   // ============================================================
@@ -433,42 +445,57 @@ class _MapaScreen2State extends State<MapaScreen2> {
       child: SafeArea(
         top: false,
         child: Material(
-          elevation: AppDimensions.elevationHigh,
+          elevation:
+              AppDimensions.elevationHigh,
           color: AppColors.white,
           borderRadius: BorderRadius.circular(
             AppDimensions.radiusXl,
           ),
           child: InkWell(
-            onTap: _rutaController.alternarVisibilidadRuta,
-            borderRadius: BorderRadius.circular(
+            onTap:
+                _rutaController
+                    .alternarVisibilidadRuta,
+            borderRadius:
+                BorderRadius.circular(
               AppDimensions.radiusXl,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm +
-                    AppDimensions.spacingXs,
+              padding:
+                  const EdgeInsets.symmetric(
+                horizontal:
+                    AppDimensions.spacingMd,
+                vertical:
+                    AppDimensions.spacingSm +
+                        AppDimensions.spacingXs,
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize:
+                    MainAxisSize.min,
                 children: [
                   Icon(
-                    _rutaController.mostrarRutaGuardada
+                    _rutaController
+                            .mostrarRutaGuardada
                         ? Icons.route
                         : Icons.route_outlined,
-                    color: AppColors.secondary,
+                    color:
+                        AppColors.secondary,
                   ),
                   const SizedBox(
-                    width: AppDimensions.spacingXs +
-                        AppDimensions.spacingXs,
+                    width:
+                        AppDimensions.spacingXs +
+                            AppDimensions.spacingXs,
                   ),
                   Text(
-                    _rutaController.mostrarRutaGuardada
+                    _rutaController
+                            .mostrarRutaGuardada
                         ? 'Ocultar ruta'
                         : 'Ver ruta',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                    style:
+                        const TextStyle(
+                      fontWeight:
+                          FontWeight.w600,
+                      color:
+                          AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -487,20 +514,31 @@ class _MapaScreen2State extends State<MapaScreen2> {
   Widget _panelRuta() {
     return MapaRutaPanel(
       titulo: _rutaController.nombreRuta,
-      sitios: _rutaController.sitiosSeleccionados,
-      distancia: _rutaController.rutaResultado == null
-          ? ''
-          : '${_rutaController.rutaResultado!.distanciaKm.toStringAsFixed(2)} km',
-      duracion: _rutaController.rutaResultado == null
-          ? ''
-          : '${_rutaController.rutaResultado!.duracionMinutos.toStringAsFixed(0)} min',
-      mensaje: _rutaController.mensaje ?? '',
-      calculando: _rutaController.calculando,
-      colorRuta: AppColors.tertiary,
-      onCerrar: _cancelarRuta,
-      onGenerarRuta: _calcularRuta,
+      sitios:
+          _rutaController.sitiosSeleccionados,
+      distancia:
+          _rutaController.rutaResultado == null
+              ? ''
+              : '${_rutaController.rutaResultado!.distanciaKm.toStringAsFixed(2)} km',
+      duracion:
+          _rutaController.rutaResultado == null
+              ? ''
+              : '${_rutaController.rutaResultado!.duracionMinutos.toStringAsFixed(0)} min',
+      mensaje:
+          _rutaController.mensaje ?? '',
+      calculando:
+          _rutaController.calculando,
+      colorRuta:
+          AppColors.tertiary,
+      onCerrar:
+          _cancelarRuta,
+      onGenerarRuta:
+          _calcularRuta,
       mostrarBotonGenerar:
-          _rutaController.sitiosSeleccionados.length >= 2,
+          _rutaController
+                  .sitiosSeleccionados
+                  .length >=
+              2,
     );
   }
 
@@ -514,9 +552,12 @@ class _MapaScreen2State extends State<MapaScreen2> {
         activo: true,
         sitiosSeleccionados:
             _rutaController.sitiosSeleccionados,
-        onIniciar: _iniciarRuta,
-        onCancelar: _cancelarRuta,
-        onCalcular: _calcularRuta,
+        onIniciar:
+            _iniciarRuta,
+        onCancelar:
+            _cancelarRuta,
+        onCalcular:
+            _calcularRuta,
       );
     }
 
@@ -525,27 +566,37 @@ class _MapaScreen2State extends State<MapaScreen2> {
         Expanded(
           child: MapaSelectorRuta(
             activo: false,
-            sitiosSeleccionados: const [],
-            onIniciar: _iniciarRuta,
-            onCancelar: _cancelarRuta,
-            onCalcular: _calcularRuta,
+            sitiosSeleccionados:
+                const [],
+            onIniciar:
+                _iniciarRuta,
+            onCancelar:
+                _cancelarRuta,
+            onCalcular:
+                _calcularRuta,
           ),
         ),
         const SizedBox(
           width: AppDimensions.spacingSm,
         ),
         SizedBox(
-          width: AppDimensions.mapaRutasButtonWidth,
-          height: AppDimensions.bottomBarHeight,
+          width:
+              AppDimensions.mapaRutasButtonWidth,
+          height:
+              AppDimensions.bottomBarHeight,
           child: Material(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(
+            borderRadius:
+                BorderRadius.circular(
               AppDimensions.radiusPill,
             ),
-            elevation: AppDimensions.elevationFloating,
+            elevation:
+                AppDimensions.elevationFloating,
             child: InkWell(
-              onTap: _mostrarRutasPredefinidas,
-              borderRadius: BorderRadius.circular(
+              onTap:
+                  _mostrarRutasPredefinidas,
+              borderRadius:
+                  BorderRadius.circular(
                 AppDimensions.radiusPill,
               ),
               child: Row(
@@ -554,18 +605,25 @@ class _MapaScreen2State extends State<MapaScreen2> {
                 children: [
                   Icon(
                     Icons.route,
-                    color: AppColors.secondary,
-                    size: AppDimensions.iconMd,
+                    color:
+                        AppColors.secondary,
+                    size:
+                        AppDimensions.iconMd,
                   ),
                   const SizedBox(
-                    width: AppDimensions.spacingXs +
-                        AppDimensions.spacingXs / 2,
+                    width:
+                        AppDimensions.spacingXs +
+                            AppDimensions.spacingXs /
+                                2,
                   ),
                   const Text(
                     'Rutas',
-                    style: TextStyle(
-                      color: AppColors.secondary,
-                      fontWeight: FontWeight.w700,
+                    style:
+                        TextStyle(
+                      color:
+                          AppColors.secondary,
+                      fontWeight:
+                          FontWeight.w700,
                     ),
                   ),
                 ],
@@ -588,12 +646,13 @@ class _MapaScreen2State extends State<MapaScreen2> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Mi Ruta Cafetera',
+          'Mi Ruta Mágica del Café',
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: _mapaController.cargarDatos,
+            onPressed:
+                _mapaController.cargarDatos,
             tooltip: 'Actualizar',
             icon: const Icon(
               Icons.refresh,
@@ -606,13 +665,18 @@ class _MapaScreen2State extends State<MapaScreen2> {
           context,
           constraints,
         ) {
-          final ancho = constraints.maxWidth;
+          final ancho =
+              constraints.maxWidth;
 
-          final pantallaPequena = ancho < 600;
+          final pantallaPequena =
+              ancho < 600;
 
-          final controlesTop = pantallaPequena
-              ? AppDimensions.mapaControlesTopPequeno
-              : AppDimensions.mapaControlesTopGrande;
+          final controlesTop =
+              pantallaPequena
+                  ? AppDimensions
+                      .mapaControlesTopPequeno
+                  : AppDimensions
+                      .mapaControlesTopGrande;
 
           return Stack(
             children: [
@@ -621,17 +685,29 @@ class _MapaScreen2State extends State<MapaScreen2> {
               // ==================================================
 
               MapaCapas(
-                mapController: _mapController,
-                sitios: _rutaController.rutaGuardada
-                    ? _rutaController.rutaGuardadaSitios
-                    : _mapaController.sitiosFiltrados,
-                ruta: _rutaController.rutaResultado,
+                mapController:
+                    _mapController,
+                sitios:
+                    _rutaController
+                            .rutaGuardada
+                        ? _rutaController
+                            .rutaGuardadaSitios
+                        : _mapaController
+                            .sitiosFiltrados,
+                ruta:
+                    _rutaController
+                        .rutaResultado,
                 mostrarRuta:
-                    _rutaController.mostrarRutaGuardada,
-                estaSeleccionado: _estaSeleccionado,
-                numeroDeSitio: _numeroDeSitio,
-                onTapSitio: (sitio) {
-                  if (_rutaController.modoCrearRuta) {
+                    _rutaController
+                        .mostrarRutaGuardada,
+                estaSeleccionado:
+                    _estaSeleccionado,
+                numeroDeSitio:
+                    _numeroDeSitio,
+                onTapSitio:
+                    (sitio) {
+                  if (_rutaController
+                      .modoCrearRuta) {
                     _seleccionarSitio(
                       sitio,
                     );
@@ -648,18 +724,28 @@ class _MapaScreen2State extends State<MapaScreen2> {
               // ==================================================
 
               Positioned(
-                top: AppDimensions.spacingMd,
-                left: AppDimensions.spacingMd,
-                right: AppDimensions.spacingMd,
+                top:
+                    AppDimensions.spacingMd,
+                left:
+                    AppDimensions.spacingMd,
+                right:
+                    AppDimensions.spacingMd,
                 child: SafeArea(
                   bottom: false,
-                  child: MapaBuscador(
-                    controller: _busquedaController,
+                  child:
+                      MapaBuscador(
+                    controller:
+                        _busquedaController,
                     resultados:
-                        _mapaController.resultadosBusqueda,
-                    onChanged: _mapaController.buscar,
-                    onSeleccionar: _seleccionarResultado,
-                    onLimpiar: _limpiarBusqueda,
+                        _mapaController
+                            .resultadosBusqueda,
+                    onChanged:
+                        _mapaController
+                            .buscar,
+                    onSeleccionar:
+                        _seleccionarResultado,
+                    onLimpiar:
+                        _limpiarBusqueda,
                   ),
                 ),
               ),
@@ -669,16 +755,20 @@ class _MapaScreen2State extends State<MapaScreen2> {
               // ==================================================
 
               Positioned(
-                top: AppDimensions.mapaCategoriasTop,
-                left: AppDimensions.spacingMd,
-                right: AppDimensions.spacingMd,
+                top:
+                    AppDimensions.mapaCategoriasTop,
+                left:
+                    AppDimensions.spacingMd,
+                right:
+                    AppDimensions.spacingMd,
                 child: SafeArea(
                   bottom: false,
                   child: MapaCategorias(
                     categorias:
                         _mapaController.categorias,
                     categoriaSeleccionada:
-                        _mapaController.categoriaSeleccionada,
+                        _mapaController
+                            .categoriaSeleccionada,
                     onCategoriaSeleccionada:
                         _seleccionarCategoria,
                   ),
@@ -690,12 +780,16 @@ class _MapaScreen2State extends State<MapaScreen2> {
               // ==================================================
 
               Positioned(
-                right: AppDimensions.spacingMd,
-                top: controlesTop,
+                right:
+                    AppDimensions.spacingMd,
+                top:
+                    controlesTop,
                 child: SafeArea(
                   bottom: false,
-                  child: MapaControles(
-                    onCentrar: _centrarMapa,
+                  child:
+                      MapaControles(
+                    onCentrar:
+                        _centrarMapa,
                     onMostrarTodos:
                         _mostrarTodosLosSitios,
                   ),
@@ -706,23 +800,34 @@ class _MapaScreen2State extends State<MapaScreen2> {
               // RUTA GUARDADA
               // ==================================================
 
-              if (!_rutaController.modoCrearRuta)
+              if (!_rutaController
+                  .modoCrearRuta)
                 _botonRutaGuardada(),
 
               // ==================================================
               // PANEL DE RUTA
               // ==================================================
 
-              if (_rutaController.modoCrearRuta &&
-                  (_rutaController.calculando ||
-                      _rutaController.mensaje != null ||
-                      _rutaController.rutaResultado != null))
+              if (_rutaController
+                      .modoCrearRuta &&
+                  (_rutaController
+                          .calculando ||
+                      _rutaController
+                              .mensaje !=
+                          null ||
+                      _rutaController
+                              .rutaResultado !=
+                          null))
                 Positioned(
-                  left: AppDimensions.spacingMd,
-                  right: AppDimensions.spacingMd,
+                  left:
+                      AppDimensions.spacingMd,
+                  right:
+                      AppDimensions.spacingMd,
                   bottom:
-                      AppDimensions.mapaPanelBottom,
-                  child: _panelRuta(),
+                      AppDimensions
+                          .mapaPanelBottom,
+                  child:
+                      _panelRuta(),
                 ),
 
               // ==================================================
@@ -730,14 +835,21 @@ class _MapaScreen2State extends State<MapaScreen2> {
               // ==================================================
 
               Positioned(
-                left: AppDimensions.spacingMd,
-                right: AppDimensions.spacingMd,
-                bottom: _rutaController.modoCrearRuta
-                    ? AppDimensions.mapaBarraRutaBottom
-                    : AppDimensions.spacingXl,
+                left:
+                    AppDimensions.spacingMd,
+                right:
+                    AppDimensions.spacingMd,
+                bottom:
+                    _rutaController
+                            .modoCrearRuta
+                        ? AppDimensions
+                            .mapaBarraRutaBottom
+                        : AppDimensions
+                            .spacingXl,
                 child: SafeArea(
                   top: false,
-                  child: _barraInferior(),
+                  child:
+                      _barraInferior(),
                 ),
               ),
 
@@ -745,30 +857,44 @@ class _MapaScreen2State extends State<MapaScreen2> {
               // CARGANDO
               // ==================================================
 
-              if (_mapaController.cargando)
+              if (_mapaController
+                  .cargando)
                 Positioned(
-                  left: AppDimensions.spacingXl,
-                  right: AppDimensions.spacingXl,
-                  bottom: AppDimensions.mapaCargaBottom,
+                  left:
+                      AppDimensions.spacingXl,
+                  right:
+                      AppDimensions.spacingXl,
+                  bottom:
+                      AppDimensions
+                          .mapaCargaBottom,
                   child: SafeArea(
                     top: false,
                     child: Card(
                       elevation:
-                          AppDimensions.elevationHigh,
+                          AppDimensions
+                              .elevationHigh,
                       child: const Padding(
-                        padding: EdgeInsets.all(
-                          AppDimensions.spacingLg,
+                        padding:
+                            EdgeInsets.all(
+                          AppDimensions
+                              .spacingLg,
                         ),
                         child: Row(
                           children: [
                             SizedBox(
-                              width: AppDimensions.iconLg,
-                              height: AppDimensions.iconLg,
+                              width:
+                                  AppDimensions
+                                      .iconLg,
+                              height:
+                                  AppDimensions
+                                      .iconLg,
                               child:
                                   CircularProgressIndicator(),
                             ),
                             SizedBox(
-                              width: AppDimensions.spacingMd,
+                              width:
+                                  AppDimensions
+                                      .spacingMd,
                             ),
                             Expanded(
                               child: Text(
@@ -786,69 +912,98 @@ class _MapaScreen2State extends State<MapaScreen2> {
               // ERROR
               // ==================================================
 
-              if (_mapaController.error != null)
+              if (_mapaController
+                      .error !=
+                  null)
                 Positioned(
-                  left: AppDimensions.spacingXl,
-                  right: AppDimensions.spacingXl,
-                  bottom: AppDimensions.mapaErrorBottom,
+                  left:
+                      AppDimensions.spacingXl,
+                  right:
+                      AppDimensions.spacingXl,
+                  bottom:
+                      AppDimensions
+                          .mapaErrorBottom,
                   child: SafeArea(
                     top: false,
                     child: Card(
                       elevation:
-                          AppDimensions.elevationHigh,
+                          AppDimensions
+                              .elevationHigh,
                       child: Padding(
-                        padding: const EdgeInsets.all(
-                          AppDimensions.spacingLg,
+                        padding:
+                            const EdgeInsets.all(
+                          AppDimensions
+                              .spacingLg,
                         ),
                         child: Column(
                           crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                              CrossAxisAlignment
+                                  .start,
                           children: [
                             const Row(
                               children: [
                                 Icon(
-                                  Icons.error_outline,
-                                  color: AppColors.error,
+                                  Icons
+                                      .error_outline,
+                                  color:
+                                      AppColors
+                                          .error,
                                 ),
                                 SizedBox(
                                   width:
-                                      AppDimensions.spacingSm,
+                                      AppDimensions
+                                          .spacingSm,
                                 ),
                                 Expanded(
                                   child: Text(
                                     'No se pudieron cargar los datos',
-                                    style: TextStyle(
+                                    style:
+                                        TextStyle(
                                       fontWeight:
-                                          FontWeight.bold,
+                                          FontWeight
+                                              .bold,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(
-                              height: AppDimensions.spacingSm,
+                              height:
+                                  AppDimensions
+                                      .spacingSm,
                             ),
                             Text(
-                              _mapaController.error!,
+                              _mapaController
+                                  .error!,
                               maxLines: 4,
                               overflow:
-                                  TextOverflow.ellipsis,
-                              style: const TextStyle(
+                                  TextOverflow
+                                      .ellipsis,
+                              style:
+                                  const TextStyle(
                                 color:
-                                    AppColors.textSecondary,
+                                    AppColors
+                                        .textSecondary,
                               ),
                             ),
                             const SizedBox(
-                              height: AppDimensions.spacingSm +
-                                  AppDimensions.spacingXs,
+                              height:
+                                  AppDimensions
+                                          .spacingSm +
+                                      AppDimensions
+                                          .spacingXs,
                             ),
-                            ElevatedButton.icon(
+                            ElevatedButton
+                                .icon(
                               onPressed:
-                                  _mapaController.cargarDatos,
-                              icon: const Icon(
+                                  _mapaController
+                                      .cargarDatos,
+                              icon:
+                                  const Icon(
                                 Icons.refresh,
                               ),
-                              label: const Text(
+                              label:
+                                  const Text(
                                 'Reintentar',
                               ),
                             ),

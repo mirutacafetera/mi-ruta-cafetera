@@ -4166,7 +4166,7 @@ class _MapaScreenState
           AppBar(
         title:
             const Text(
-          'Mi Ruta Mágica del Café',
+          'Mi Ruta Cafetera',
           style:
               TextStyle(
             color:

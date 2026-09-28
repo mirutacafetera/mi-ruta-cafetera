@@ -167,7 +167,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                   // ==================================================
 
                   const Text(
-                    'Mi Ruta Mágica del Café',
+                    'Mi Ruta Cafetera',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,

@@ -20,7 +20,7 @@ class HomeUsuarioScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Mi Ruta Mágica del Café',
+          'Mi Ruta Cafetera',
         ),
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -74,7 +74,7 @@ class HomeUsuarioScreen extends StatelessWidget {
 
                     const Text(
                       'Bienvenido a Mi Ruta '
-                      'Mágica del Café',
+                      'Cafetera',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,

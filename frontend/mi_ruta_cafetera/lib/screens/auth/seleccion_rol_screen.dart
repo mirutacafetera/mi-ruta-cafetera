@@ -100,7 +100,7 @@ class SeleccionRolScreen extends StatelessWidget {
                         // ==================================================
 
                         const Text(
-                          'Mi Ruta Mágica del Café',
+                          'Mi Ruta Cafetera',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 28,
@@ -291,7 +291,7 @@ class SeleccionRolScreen extends StatelessWidget {
                         // ==================================================
 
                         const Text(
-                          'Mi Ruta Mágica del Café',
+                          'Mi Ruta Cafetera',
                           style: TextStyle(
                             fontSize: 13,
                             color: AppColors.textLight,

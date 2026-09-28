@@ -4,17 +4,40 @@ class ApiConfig {
   ApiConfig._();
 
   // ============================================================
+  // CONFIGURACIÓN DEL SERVIDOR
+  // ============================================================
+
+  // IP del computador dentro de la red Wi-Fi.
+  //
+  // Esta es la IP de tu PC:
+  // 192.168.100.41
+  //
+  // El Motorola debe estar conectado a la misma red Wi-Fi.
+  static const String _ipPc = '192.168.100.41';
+
+  // ============================================================
   // URL BASE DE LA API
   // ============================================================
 
   static String get baseUrl {
-    // Flutter Web / Chrome
+    // ----------------------------------------------------------
+    // FLUTTER WEB / CHROME
+    // ----------------------------------------------------------
     if (kIsWeb) {
       return 'http://localhost:3000/api';
     }
 
-    // Android Emulator
-    return 'http://10.0.2.2:3000/api';
+    // ----------------------------------------------------------
+    // ANDROID
+    // ----------------------------------------------------------
+    //
+    // Para el Motorola físico utilizamos la IP del PC.
+    //
+    // IMPORTANTE:
+    // El teléfono y el computador deben estar conectados
+    // a la misma red Wi-Fi.
+    //
+    return 'http://$_ipPc:3000/api';
   }
 
   // ============================================================
@@ -63,7 +86,7 @@ class ApiConfig {
   // Se conserva porque puede ser utilizada por otros módulos.
   //
   // Backend:
-  // /api/categorias-sitios
+  // GET /api/categorias-sitios
   //
   // ============================================================
 
@@ -76,7 +99,7 @@ class ApiConfig {
   // ============================================================
   //
   // Backend:
-  // /api/rutas
+  // GET /api/rutas
   //
   // ============================================================
 

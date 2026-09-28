@@ -2,45 +2,29 @@ const express = require('express');
 
 const router = express.Router();
 
-
-
 // ============================================================
 // CONTROLADOR CRUD DE RUTAS DEL USUARIO
 // ============================================================
 
 const {
-
   obtenerRutas,
-
+  obtenerRutasPredefinidas,
   crearRuta,
-
   actualizarRuta,
-
   eliminarRuta
-
 } = require(
-
   '../../controllers/usuario/rutas.controller'
-
 );
-
-
 
 // ============================================================
 // CONTROLADOR DE CÁLCULO DE RUTAS
 // ============================================================
 
 const {
-
   calcularRuta
-
 } = require(
-
   '../../controllers/ruta/ruta.controller'
-
 );
-
-
 
 // ============================================================
 // CALCULAR RUTA REAL POR CARRETERA
@@ -50,8 +34,8 @@ const {
 //
 // /api/rutas/calcular
 //
-// Este endpoint debe estar definido antes de la ruta
-// dinámica /:usuarioId.
+// Este endpoint debe estar definido antes de las rutas
+// dinámicas.
 //
 // Recibe:
 //
@@ -74,14 +58,27 @@ const {
 // ============================================================
 
 router.post(
-
   '/calcular',
-
   calcularRuta
-
 );
 
+// ============================================================
+// OBTENER RUTAS PREDEFINIDAS
+// ============================================================
+//
+// GET
+//
+// /api/rutas/predefinidas
+//
+// Esta ruta debe estar ANTES de /:usuarioId,
+// porque "predefinidas" podría ser interpretado
+// como un usuarioId.
+// ============================================================
 
+router.get(
+  '/predefinidas',
+  obtenerRutasPredefinidas
+);
 
 // ============================================================
 // OBTENER RUTAS DE UN USUARIO
@@ -94,14 +91,9 @@ router.post(
 // ============================================================
 
 router.get(
-
   '/:usuarioId',
-
   obtenerRutas
-
 );
-
-
 
 // ============================================================
 // CREAR RUTA
@@ -114,14 +106,9 @@ router.get(
 // ============================================================
 
 router.post(
-
   '/',
-
   crearRuta
-
 );
-
-
 
 // ============================================================
 // ACTUALIZAR RUTA
@@ -134,14 +121,9 @@ router.post(
 // ============================================================
 
 router.put(
-
   '/:id',
-
   actualizarRuta
-
 );
-
-
 
 // ============================================================
 // ELIMINAR RUTA
@@ -154,14 +136,9 @@ router.put(
 // ============================================================
 
 router.delete(
-
   '/:id',
-
   eliminarRuta
-
 );
-
-
 
 // ============================================================
 // EXPORTAR ROUTER

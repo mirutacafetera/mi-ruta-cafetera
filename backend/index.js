@@ -329,7 +329,7 @@ app.get(
   (req, res) => {
     res.status(200).json({
       mensaje:
-        'API Mi Ruta Mágica del Café funcionando correctamente',
+        'API Mi Ruta Cafetera funcionando correctamente',
       estado: 'OK'
     });
   }

@@ -24,7 +24,7 @@ class MiRutaCafeteraApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mi Ruta Mágica del Café',
+      title: 'Mi Ruta Cafetera',
       debugShowCheckedModeBanner: false,
 
       // ======================================================

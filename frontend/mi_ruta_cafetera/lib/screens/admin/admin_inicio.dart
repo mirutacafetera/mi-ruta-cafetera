@@ -54,7 +54,7 @@ class AdminInicio extends StatelessWidget {
           ),
 
           const Text(
-            'Panel de administración\nMi Ruta Mágica del Café',
+            'Panel de administración\nMi Ruta Cafetera',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 17,

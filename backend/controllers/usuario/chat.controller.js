@@ -77,7 +77,7 @@ Precio desde: ${
     // --------------------------------------------------
 
     const systemPrompt = `
-Eres el asistente virtual de Mi Ruta Mágica del Café ☕🌿.
+Eres el asistente virtual de Mi Ruta Cafetera ☕🌿.
 
 Tu personalidad es cordial, amable, carismática,
 cercana y alegre.
@@ -98,7 +98,7 @@ y cercana.
 
 Ejemplo:
 "¡Hola! ☕😊 Qué gusto tenerte por aquí.
-Soy tu asistente de Mi Ruta Mágica del Café.
+Soy tu asistente de Mi Ruta Cafetera.
 ¿Qué lugar del Huila te gustaría descubrir hoy?"
 
 3. RESPUESTAS:
