@@ -77,6 +77,8 @@ flutter:
   # Assets de la aplicación
   assets:
     - assets/img/mi_ruta_cafetera.png
+    - assets/images/bienvenida/
+    - assets/images/sitios/
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section, see:

@@ -37,7 +37,7 @@ class MapaBuscador extends StatelessWidget {
           Container(
             height: AppDimensions.buttonHeightLarge,
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(
                 AppDimensions.radiusLg,
               ),
@@ -46,7 +46,8 @@ class MapaBuscador extends StatelessWidget {
                   color: AppColors.black.withValues(
                     alpha: 0.18,
                   ),
-                  blurRadius: AppDimensions.elevationFloating * 2,
+                  blurRadius:
+                      AppDimensions.elevationFloating * 2,
                   offset: const Offset(
                     0,
                     3,
@@ -128,7 +129,8 @@ class MapaBuscador extends StatelessWidget {
                       AppDimensions.spacingXs / 2,
                 ),
                 itemCount: resultados.length,
-                separatorBuilder: (_, __) => const Divider(
+                separatorBuilder: (context, index) =>
+                    const Divider(
                   height: 1,
                   color: AppColors.divider,
                 ),

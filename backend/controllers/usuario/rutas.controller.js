@@ -37,18 +37,69 @@ const obtenerRutas = async (req, res) => {
       ]
     })
       .populate('sitios')
-      .sort({ tipo: 1, nombre: 1 });
+      .sort({
+        tipo: 1,
+        nombre: 1
+      });
 
     return res.status(200).json({
       ok: true,
       rutas
     });
   } catch (error) {
-    console.error('Error al obtener rutas:', error);
+    console.error(
+      'Error al obtener rutas:',
+      error
+    );
 
     return res.status(500).json({
       ok: false,
       mensaje: 'Error al obtener rutas.',
+      error: error.message
+    });
+  }
+};
+
+// ============================================================
+// OBTENER RUTAS PREDEFINIDAS
+// ============================================================
+//
+// Endpoint público:
+//
+// GET /api/rutas/predefinidas
+//
+// Devuelve únicamente rutas:
+// - tipo: predefinida
+// - activa: true
+//
+// Las rutas predefinidas no pertenecen a ningún usuario
+// y son permanentes.
+// ============================================================
+
+const obtenerRutasPredefinidas = async (req, res) => {
+  try {
+    const rutas = await Ruta.find({
+      tipo: 'predefinida',
+      activa: true
+    })
+      .populate('sitios')
+      .sort({
+        nombre: 1
+      });
+
+    return res.status(200).json({
+      ok: true,
+      rutas
+    });
+  } catch (error) {
+    console.error(
+      'Error al obtener rutas predefinidas:',
+      error
+    );
+
+    return res.status(500).json({
+      ok: false,
+      mensaje: 'Error al obtener rutas predefinidas.',
       error: error.message
     });
   }
@@ -73,7 +124,9 @@ const crearRuta = async (req, res) => {
     // VALIDAR TIPO
     // --------------------------------------------------------
 
-    if (!['personalizada', 'predefinida'].includes(tipo)) {
+    if (
+      !['personalizada', 'predefinida'].includes(tipo)
+    ) {
       return res.status(400).json({
         ok: false,
         mensaje:
@@ -109,19 +162,21 @@ const crearRuta = async (req, res) => {
     if (sitios.length === 0) {
       return res.status(400).json({
         ok: false,
-        mensaje: 'La ruta debe contener al menos un sitio.'
+        mensaje:
+          'La ruta debe contener al menos un sitio.'
       });
     }
 
     if (sitios.length > 4) {
       return res.status(400).json({
         ok: false,
-        mensaje: 'Una ruta no puede contener más de 4 sitios.'
+        mensaje:
+          'Una ruta no puede contener más de 4 sitios.'
       });
     }
 
     // --------------------------------------------------------
-    // VALIDAR IDs DE SITIOS
+    // VALIDAR IDS DE SITIOS
     // --------------------------------------------------------
 
     const idsInvalidos = sitios.filter(
@@ -131,7 +186,8 @@ const crearRuta = async (req, res) => {
     if (idsInvalidos.length > 0) {
       return res.status(400).json({
         ok: false,
-        mensaje: 'Uno o más IDs de sitios turísticos no son válidos.'
+        mensaje:
+          'Uno o más IDs de sitios turísticos no son válidos.'
       });
     }
 
@@ -140,13 +196,18 @@ const crearRuta = async (req, res) => {
     // --------------------------------------------------------
 
     const sitiosUnicos = [
-      ...new Set(sitios.map((id) => id.toString()))
+      ...new Set(
+        sitios.map(
+          (id) => id.toString()
+        )
+      )
     ];
 
     if (sitiosUnicos.length !== sitios.length) {
       return res.status(400).json({
         ok: false,
-        mensaje: 'La ruta no puede contener sitios repetidos.'
+        mensaje:
+          'La ruta no puede contener sitios repetidos.'
       });
     }
 
@@ -154,11 +215,17 @@ const crearRuta = async (req, res) => {
     // COMPROBAR QUE LOS SITIOS EXISTAN
     // --------------------------------------------------------
 
-    const sitiosExistentes = await SitioTuristico.find({
-      _id: { $in: sitiosUnicos }
-    }).select('_id');
+    const sitiosExistentes =
+      await SitioTuristico.find({
+        _id: {
+          $in: sitiosUnicos
+        }
+      }).select('_id');
 
-    if (sitiosExistentes.length !== sitiosUnicos.length) {
+    if (
+      sitiosExistentes.length !==
+      sitiosUnicos.length
+    ) {
       return res.status(400).json({
         ok: false,
         mensaje:
@@ -179,10 +246,13 @@ const crearRuta = async (req, res) => {
         });
       }
 
-      if (!mongoose.Types.ObjectId.isValid(usuario)) {
+      if (
+        !mongoose.Types.ObjectId.isValid(usuario)
+      ) {
         return res.status(400).json({
           ok: false,
-          mensaje: 'El ID del usuario no es válido.'
+          mensaje:
+            'El ID del usuario no es válido.'
         });
       }
     }
@@ -191,7 +261,10 @@ const crearRuta = async (req, res) => {
     // RUTA PREDEFINIDA
     // --------------------------------------------------------
 
-    if (tipo === 'predefinida' && usuario) {
+    if (
+      tipo === 'predefinida' &&
+      usuario
+    ) {
       return res.status(400).json({
         ok: false,
         mensaje:
@@ -205,7 +278,10 @@ const crearRuta = async (req, res) => {
 
     const expiraEn =
       tipo === 'personalizada'
-        ? new Date(Date.now() + 24 * 60 * 60 * 1000)
+        ? new Date(
+            Date.now() +
+            24 * 60 * 60 * 1000
+          )
         : null;
 
     // --------------------------------------------------------
@@ -218,14 +294,16 @@ const crearRuta = async (req, res) => {
           ? usuario
           : null,
 
-      nombre: nombre.trim(),
+      nombre:
+        nombre.trim(),
 
       descripcion:
         typeof descripcion === 'string'
           ? descripcion.trim()
           : '',
 
-      sitios: sitiosUnicos,
+      sitios:
+        sitiosUnicos,
 
       tipo,
 
@@ -240,15 +318,20 @@ const crearRuta = async (req, res) => {
 
     return res.status(201).json({
       ok: true,
-      mensaje: 'Ruta creada correctamente.',
+      mensaje:
+        'Ruta creada correctamente.',
       ruta
     });
   } catch (error) {
-    console.error('Error al crear ruta:', error);
+    console.error(
+      'Error al crear ruta:',
+      error
+    );
 
     return res.status(500).json({
       ok: false,
-      mensaje: 'Error al crear ruta.',
+      mensaje:
+        'Error al crear ruta.',
       error: error.message
     });
   }
@@ -262,19 +345,24 @@ const actualizarRuta = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(id)
+    ) {
       return res.status(400).json({
         ok: false,
-        mensaje: 'El ID de la ruta no es válido.'
+        mensaje:
+          'El ID de la ruta no es válido.'
       });
     }
 
-    const ruta = await Ruta.findById(id);
+    const ruta =
+      await Ruta.findById(id);
 
     if (!ruta) {
       return res.status(404).json({
         ok: false,
-        mensaje: 'Ruta no encontrada.'
+        mensaje:
+          'Ruta no encontrada.'
       });
     }
 
@@ -282,7 +370,9 @@ const actualizarRuta = async (req, res) => {
     // NO MODIFICAR RUTAS PREDEFINIDAS DESDE ESTE CRUD
     // --------------------------------------------------------
 
-    if (ruta.tipo === 'predefinida') {
+    if (
+      ruta.tipo === 'predefinida'
+    ) {
       return res.status(400).json({
         ok: false,
         mensaje:
@@ -294,11 +384,18 @@ const actualizarRuta = async (req, res) => {
     // SITIOS
     // --------------------------------------------------------
 
-    if (req.body.sitios !== undefined) {
-      if (!Array.isArray(req.body.sitios)) {
+    if (
+      req.body.sitios !== undefined
+    ) {
+      if (
+        !Array.isArray(
+          req.body.sitios
+        )
+      ) {
         return res.status(400).json({
           ok: false,
-          mensaje: 'El campo sitios debe ser un arreglo.'
+          mensaje:
+            'El campo sitios debe ser un arreglo.'
         });
       }
 
@@ -313,12 +410,17 @@ const actualizarRuta = async (req, res) => {
         });
       }
 
-      const idsInvalidos = req.body.sitios.filter(
-        (sitioId) =>
-          !mongoose.Types.ObjectId.isValid(sitioId)
-      );
+      const idsInvalidos =
+        req.body.sitios.filter(
+          (sitioId) =>
+            !mongoose.Types.ObjectId.isValid(
+              sitioId
+            )
+        );
 
-      if (idsInvalidos.length > 0) {
+      if (
+        idsInvalidos.length > 0
+      ) {
         return res.status(400).json({
           ok: false,
           mensaje:
@@ -329,7 +431,8 @@ const actualizarRuta = async (req, res) => {
       const sitiosUnicos = [
         ...new Set(
           req.body.sitios.map(
-            (sitioId) => sitioId.toString()
+            (sitioId) =>
+              sitioId.toString()
           )
         )
       ];
@@ -347,10 +450,15 @@ const actualizarRuta = async (req, res) => {
 
       const cantidadExistente =
         await SitioTuristico.countDocuments({
-          _id: { $in: sitiosUnicos }
+          _id: {
+            $in: sitiosUnicos
+          }
         });
 
-      if (cantidadExistente !== sitiosUnicos.length) {
+      if (
+        cantidadExistente !==
+        sitiosUnicos.length
+      ) {
         return res.status(400).json({
           ok: false,
           mensaje:
@@ -358,41 +466,63 @@ const actualizarRuta = async (req, res) => {
         });
       }
 
-      ruta.sitios = sitiosUnicos;
+      ruta.sitios =
+        sitiosUnicos;
     }
 
     // --------------------------------------------------------
     // CAMPOS PERMITIDOS
     // --------------------------------------------------------
 
-    if (req.body.nombre !== undefined) {
-      ruta.nombre = String(req.body.nombre).trim();
+    if (
+      req.body.nombre !== undefined
+    ) {
+      ruta.nombre =
+        String(
+          req.body.nombre
+        ).trim();
     }
 
-    if (req.body.descripcion !== undefined) {
+    if (
+      req.body.descripcion !== undefined
+    ) {
       ruta.descripcion =
-        String(req.body.descripcion).trim();
+        String(
+          req.body.descripcion
+        ).trim();
     }
 
-    if (req.body.activa !== undefined) {
-      ruta.activa = Boolean(req.body.activa);
+    if (
+      req.body.activa !== undefined
+    ) {
+      ruta.activa =
+        Boolean(
+          req.body.activa
+        );
     }
 
     await ruta.save();
 
-    await ruta.populate('sitios');
+    await ruta.populate(
+      'sitios'
+    );
 
     return res.status(200).json({
       ok: true,
-      mensaje: 'Ruta actualizada correctamente.',
+      mensaje:
+        'Ruta actualizada correctamente.',
       ruta
     });
   } catch (error) {
-    console.error('Error al actualizar ruta:', error);
+    console.error(
+      'Error al actualizar ruta:',
+      error
+    );
 
     return res.status(500).json({
       ok: false,
-      mensaje: 'Error al actualizar ruta.',
+      mensaje:
+        'Error al actualizar ruta.',
       error: error.message
     });
   }
@@ -406,23 +536,30 @@ const eliminarRuta = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(id)
+    ) {
       return res.status(400).json({
         ok: false,
-        mensaje: 'El ID de la ruta no es válido.'
+        mensaje:
+          'El ID de la ruta no es válido.'
       });
     }
 
-    const ruta = await Ruta.findById(id);
+    const ruta =
+      await Ruta.findById(id);
 
     if (!ruta) {
       return res.status(404).json({
         ok: false,
-        mensaje: 'Ruta no encontrada.'
+        mensaje:
+          'Ruta no encontrada.'
       });
     }
 
-    if (ruta.tipo === 'predefinida') {
+    if (
+      ruta.tipo === 'predefinida'
+    ) {
       return res.status(400).json({
         ok: false,
         mensaje:
@@ -430,18 +567,25 @@ const eliminarRuta = async (req, res) => {
       });
     }
 
-    await Ruta.findByIdAndDelete(id);
+    await Ruta.findByIdAndDelete(
+      id
+    );
 
     return res.status(200).json({
       ok: true,
-      mensaje: 'Ruta eliminada correctamente.'
+      mensaje:
+        'Ruta eliminada correctamente.'
     });
   } catch (error) {
-    console.error('Error al eliminar ruta:', error);
+    console.error(
+      'Error al eliminar ruta:',
+      error
+    );
 
     return res.status(500).json({
       ok: false,
-      mensaje: 'Error al eliminar ruta.',
+      mensaje:
+        'Error al eliminar ruta.',
       error: error.message
     });
   }
@@ -453,6 +597,7 @@ const eliminarRuta = async (req, res) => {
 
 module.exports = {
   obtenerRutas,
+  obtenerRutasPredefinidas,
   crearRuta,
   actualizarRuta,
   eliminarRuta

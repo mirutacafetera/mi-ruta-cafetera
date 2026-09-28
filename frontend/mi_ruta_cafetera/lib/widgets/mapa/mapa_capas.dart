@@ -53,23 +53,12 @@ class MapaCapas extends StatelessWidget {
           flags: InteractiveFlag.all,
         ),
       ),
-
       children: [
-        // ========================================================
-        // MAPA BASE
-        // ========================================================
-
         TileLayer(
           urlTemplate:
               'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName:
-              'com.mirutacafetera.app',
+          userAgentPackageName: 'com.mirutacafetera.app',
         ),
-
-        // ========================================================
-        // RECORRIDO
-        // ========================================================
-
         if (ruta != null && mostrarRuta)
           PolylineLayer(
             polylines: [
@@ -77,14 +66,12 @@ class MapaCapas extends StatelessWidget {
                 points: ruta!.puntos,
                 strokeWidth: AppDimensions.mapaStrokeWidth,
                 color: AppColors.tertiary,
+                borderColor:
+                    AppColors.white.withValues(alpha: 0.8),
+                borderStrokeWidth: 1.0,
               ),
             ],
           ),
-
-        // ========================================================
-        // POI
-        // ========================================================
-
         MarkerLayer(
           markers: sitios
               .where(
@@ -92,25 +79,19 @@ class MapaCapas extends StatelessWidget {
               )
               .map(
                 (sitio) {
-                  final seleccionado = estaSeleccionado(
-                    sitio,
-                  );
+                  final seleccionado =
+                      estaSeleccionado(sitio);
 
                   return Marker(
                     point: sitio.ubicacion,
                     width: AppDimensions.mapaMarkerWidth,
                     height: AppDimensions.mapaMarkerHeight,
+                    alignment: Alignment.topCenter,
                     child: MapaMarcador(
                       sitio: sitio,
                       seleccionado: seleccionado,
-                      numero: numeroDeSitio(
-                        sitio,
-                      ),
-                      onTap: () {
-                        onTapSitio(
-                          sitio,
-                        );
-                      },
+                      numero: numeroDeSitio(sitio),
+                      onTap: () => onTapSitio(sitio),
                     ),
                   );
                 },

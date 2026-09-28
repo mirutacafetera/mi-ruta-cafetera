@@ -7,13 +7,21 @@ import '../models/ruta_model.dart';
 
 class RutaService {
   // ============================================================
-  // OBTENER TODAS LAS RUTAS
+  // OBTENER RUTAS PREDEFINIDAS
+  // ============================================================
+  //
+  // GET
+  //
+  // /api/rutas/predefinidas
+  //
+  // Estas rutas son públicas, permanentes y no pertenecen
+  // a un usuario específico.
   // ============================================================
 
-  Future<List<RutaModel>> obtenerRutas() async {
+  Future<List<RutaModel>> obtenerRutasPredefinidas() async {
     final response = await http.get(
       Uri.parse(
-        ApiConfig.rutasUrl,
+        '${ApiConfig.rutasUrl}/predefinidas',
       ),
       headers: {
         'Content-Type': 'application/json',
@@ -23,7 +31,62 @@ class RutaService {
     if (response.statusCode < 200 ||
         response.statusCode >= 300) {
       throw Exception(
-        'Error al obtener las rutas: '
+        'Error al obtener las rutas predefinidas: '
+        '${response.statusCode}',
+      );
+    }
+
+    final decoded = jsonDecode(
+      response.body,
+    );
+
+    dynamic data = decoded;
+
+    if (decoded is Map<String, dynamic>) {
+      data = decoded['rutas'] ??
+          decoded['data'] ??
+          decoded['results'] ??
+          [];
+    }
+
+    if (data is! List) {
+      return [];
+    }
+
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(RutaModel.fromJson)
+        .toList();
+  }
+
+  // ============================================================
+  // OBTENER RUTAS DE UN USUARIO
+  // ============================================================
+  //
+  // GET
+  //
+  // /api/rutas/:usuarioId
+  //
+  // Devuelve las rutas personalizadas activas del usuario
+  // y las rutas predefinidas disponibles.
+  // ============================================================
+
+  Future<List<RutaModel>> obtenerRutasPorUsuario(
+    String usuarioId,
+  ) async {
+    final response = await http.get(
+      Uri.parse(
+        '${ApiConfig.rutasUrl}/$usuarioId',
+      ),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode < 200 ||
+        response.statusCode >= 300) {
+      throw Exception(
+        'Error al obtener las rutas del usuario: '
         '${response.statusCode}',
       );
     }

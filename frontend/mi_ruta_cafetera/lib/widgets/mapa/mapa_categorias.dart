@@ -16,16 +16,8 @@ class MapaCategorias extends StatelessWidget {
     required this.onCategoriaSeleccionada,
   });
 
-  // ============================================================
-  // ICONOS SEGÚN EL NOMBRE REAL DE MONGODB
-  // ============================================================
-
-  IconData _obtenerIcono(
-    CategoriaModel categoria,
-  ) {
-    final nombre = _normalizar(
-      categoria.nombre,
-    );
+  IconData _obtenerIcono(CategoriaModel categoria) {
+    final nombre = _normalizar(categoria.nombre);
 
     if (nombre.contains('cafe') ||
         nombre.contains('experiencias cafeteras')) {
@@ -71,9 +63,7 @@ class MapaCategorias extends StatelessWidget {
     return Icons.category_outlined;
   }
 
-  String _normalizar(
-    String texto,
-  ) {
+  String _normalizar(String texto) {
     return texto
         .toLowerCase()
         .trim()
@@ -82,283 +72,123 @@ class MapaCategorias extends StatelessWidget {
         .replaceAll('í', 'i')
         .replaceAll('ó', 'o')
         .replaceAll('ú', 'u')
-        .replaceAll('ü', 'u');
+        .replaceAll('ü', 'u')
+        .replaceAll('ñ', 'n');
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (
-        context,
-        constraints,
-      ) {
-        final ancho = constraints.maxWidth;
-
-        // --------------------------------------------------------
-        // Pantallas pequeñas
-        // --------------------------------------------------------
-
-        if (ancho < 600) {
-          return _construirVersionCompacta(
-            context,
-          );
-        }
-
-        // --------------------------------------------------------
-        // Pantallas grandes
-        // --------------------------------------------------------
-
-        return _construirVersionResponsive(
-          context,
-        );
-      },
-    );
-  }
-
-  // ============================================================
-  // VERSION COMPACTA
-  // ============================================================
-
-  Widget _construirVersionCompacta(
-    BuildContext context,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: SizedBox(
-        height: AppDimensions.floatingButtonSize +
-            AppDimensions.spacingXs,
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingXs / 2,
-          ),
-          children: [
-            _construirIconoCategoria(
-              icono: Icons.apps_outlined,
-              seleccionada: categoriaSeleccionada == null,
-              tooltip: 'Todas',
-              onTap: () {
-                onCategoriaSeleccionada(null);
-              },
-            ),
-            ...categorias.map(
-              (categoria) {
-                return _construirIconoCategoria(
-                  icono: _obtenerIcono(categoria),
-                  seleccionada:
-                      categoriaSeleccionada == categoria.id,
-                  tooltip: categoria.nombre,
-                  onTap: () {
-                    final seleccionada =
-                        categoriaSeleccionada == categoria.id;
-
-                    onCategoriaSeleccionada(
-                      seleccionada
-                          ? null
-                          : categoria.id,
-                    );
-                  },
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // VERSION RESPONSIVE
-  // ============================================================
-
-  Widget _construirVersionResponsive(
-    BuildContext context,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: Container(
+    return SizedBox(
+      height: 58,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingXs / 2,
-          vertical: AppDimensions.spacingXs / 2,
+          horizontal: 2,
         ),
-        child: Wrap(
-          spacing: AppDimensions.spacingSm - 1,
-          runSpacing: AppDimensions.spacingSm - 1,
-          children: [
-            _construirChipCategoria(
-              icono: Icons.apps_outlined,
-              nombre: 'Todas',
-              seleccionada:
-                  categoriaSeleccionada == null,
-              onTap: () {
+        itemCount: categorias.length + 1,
+        separatorBuilder: (context, index) =>
+            const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          // ==========================================================
+          // OPCIÓN "TODAS"
+          // ==========================================================
+
+          if (index == 0) {
+            final seleccionada =
+                categoriaSeleccionada == null;
+
+            return ChoiceChip(
+              avatar: Icon(
+                Icons.apps_outlined,
+                size: 18,
+                color: seleccionada
+                    ? AppColors.white
+                    : AppColors.textSecondary,
+              ),
+              label: const Text('Todas'),
+              selected: seleccionada,
+              onSelected: (_) {
                 onCategoriaSeleccionada(null);
               },
-            ),
-            ...categorias.map(
-              (categoria) {
-                final seleccionada =
-                    categoriaSeleccionada == categoria.id;
-
-                return _construirChipCategoria(
-                  icono: _obtenerIcono(categoria),
-                  nombre: categoria.nombre,
-                  seleccionada: seleccionada,
-                  onTap: () {
-                    onCategoriaSeleccionada(
-                      seleccionada
-                          ? null
-                          : categoria.id,
-                    );
-                  },
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // ICONO DE CATEGORÍA - MÓVIL
-  // ============================================================
-
-  Widget _construirIconoCategoria({
-    required IconData icono,
-    required bool seleccionada,
-    required String tooltip,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        right: AppDimensions.spacingSm,
-      ),
-      child: Tooltip(
-        message: tooltip,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(
-              AppDimensions.radiusPill,
-            ),
-            child: AnimatedContainer(
-              duration: const Duration(
-                milliseconds: 180,
+              selectedColor: AppColors.primary,
+              backgroundColor:
+                  AppColors.surfaceVariant.withValues(
+                alpha: 0.8,
               ),
-              width: AppDimensions.floatingButtonSize,
-              height: AppDimensions.floatingButtonSize,
-              decoration: BoxDecoration(
+              labelStyle: TextStyle(
+                color: seleccionada
+                    ? AppColors.white
+                    : AppColors.textSecondary,
+                fontWeight: seleccionada
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+              ),
+              side: BorderSide(
                 color: seleccionada
                     ? AppColors.primary
-                    : AppColors.white,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: seleccionada
-                      ? AppColors.primary
-                      : AppColors.border,
+                    : AppColors.border.withValues(
+                        alpha: 0.5,
+                      ),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.radiusMd,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.black.withValues(
-                      alpha: 0.12,
-                    ),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
-              child: Icon(
-                icono,
-                color: seleccionada
-                    ? AppColors.white
-                    : AppColors.primary,
-                size: AppDimensions.iconLg,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+            );
+          }
 
-  // ============================================================
-  // CHIP DE CATEGORÍA - RESPONSIVE
-  // ============================================================
+          // ==========================================================
+          // CATEGORÍAS
+          // ==========================================================
 
-  Widget _construirChipCategoria({
-    required IconData icono,
-    required String nombre,
-    required bool seleccionada,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.radiusPill,
-        ),
-        child: AnimatedContainer(
-          duration: const Duration(
-            milliseconds: 180,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
-          ),
-          decoration: BoxDecoration(
-            color: seleccionada
-                ? AppColors.primary
-                : AppColors.white,
-            borderRadius: BorderRadius.circular(
-              AppDimensions.radiusPill,
+          final categoria = categorias[index - 1];
+
+          final seleccionada =
+              categoria.id == categoriaSeleccionada;
+
+          return ChoiceChip(
+            avatar: Icon(
+              _obtenerIcono(categoria),
+              size: 18,
+              color: seleccionada
+                  ? AppColors.white
+                  : AppColors.textSecondary,
             ),
-            border: Border.all(
+            label: Text(categoria.nombre),
+            selected: seleccionada,
+            onSelected: (_) {
+              onCategoriaSeleccionada(
+                seleccionada ? null : categoria.id,
+              );
+            },
+            selectedColor: AppColors.primary,
+            backgroundColor:
+                AppColors.surfaceVariant.withValues(
+              alpha: 0.8,
+            ),
+            labelStyle: TextStyle(
+              color: seleccionada
+                  ? AppColors.white
+                  : AppColors.textSecondary,
+              fontWeight: seleccionada
+                  ? FontWeight.bold
+                  : FontWeight.normal,
+            ),
+            side: BorderSide(
               color: seleccionada
                   ? AppColors.primary
-                  : AppColors.border,
+                  : AppColors.border.withValues(
+                      alpha: 0.5,
+                    ),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.black.withValues(
-                  alpha: 0.10,
-                ),
-                blurRadius: 5,
-                offset: const Offset(0, 2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icono,
-                size: AppDimensions.iconSm,
-                color: seleccionada
-                    ? AppColors.white
-                    : AppColors.primary,
-              ),
-
-              const SizedBox(
-                width: AppDimensions.spacingSm,
-              ),
-
-              Text(
-                nombre,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: seleccionada
-                      ? FontWeight.w700
-                      : FontWeight.w500,
-                  color: seleccionada
-                      ? AppColors.white
-                      : AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

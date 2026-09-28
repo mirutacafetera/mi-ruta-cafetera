@@ -182,7 +182,7 @@ class _RegistroUsuarioScreenState
 
               const Text(
                 'Regístrate para comenzar a descubrir '
-                'la Ruta Mágica del Café.',
+                'Mi Ruta Cafetera',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
