@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import 'sitio_form_field.dart';
-import 'sitio_section_card.dart';
-import 'sitio_section_title.dart';
+import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_dimensions.dart';
+
+import 'sitio_formulario/campo_formulario_sitio.dart';
+import 'sitio_formulario/contenedor_seccion_sitio.dart';
+import 'sitio_formulario/titulo_seccion_sitio.dart';
 
 class SitioInformacionTuristica extends StatelessWidget {
   final TextEditingController horarioController;
@@ -22,26 +23,26 @@ class SitioInformacionTuristica extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SitioSectionCard(
-      child: Column(
+    return ContenedorSeccionSitio(
+      contenido: Column(
         children: [
-          const SitioSectionTitle(
+          const TituloSeccionSitio(
             icono: Icons.travel_explore_rounded,
             titulo: 'Información turística',
             subtitulo: 'Información útil para los visitantes',
           ),
 
-          SitioFormField(
-            controller: horarioController,
-            label: 'Horario de atención',
-            icon: Icons.schedule_rounded,
+          CampoFormularioSitio(
+            controlador: horarioController,
+            etiqueta: 'Horario de atención',
+            icono: Icons.schedule_rounded,
           ),
 
-          SitioFormField(
-            controller: precioController,
-            label: 'Precio desde',
-            icon: Icons.payments_rounded,
-            keyboardType: const TextInputType.numberWithOptions(
+          CampoFormularioSitio(
+            controlador: precioController,
+            etiqueta: 'Precio desde',
+            icono: Icons.payments_rounded,
+            tipoTeclado: const TextInputType.numberWithOptions(
               decimal: true,
             ),
           ),
@@ -63,6 +64,7 @@ class SitioInformacionTuristica extends StatelessWidget {
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
               activeThumbColor: AppColors.primary,
+
               title: const Text(
                 'Sitio activo',
                 style: TextStyle(
@@ -70,6 +72,7 @@ class SitioInformacionTuristica extends StatelessWidget {
                   color: AppColors.secondary,
                 ),
               ),
+
               subtitle: Text(
                 activo
                     ? 'Disponible para los visitantes'
@@ -79,6 +82,7 @@ class SitioInformacionTuristica extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
               ),
+
               value: activo,
               onChanged: onActivoChanged,
             ),

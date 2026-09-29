@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
+import '../../../../../theme/app_colors.dart';
+import '../../../../../theme/app_dimensions.dart';
 
-class SitioSectionTitle extends StatelessWidget {
+class TituloSeccionSitio extends StatelessWidget {
   final IconData icono;
   final String titulo;
   final String subtitulo;
 
-  const SitioSectionTitle({
+  const TituloSeccionSitio({
     super.key,
     required this.icono,
     required this.titulo,
@@ -18,9 +18,7 @@ class SitioSectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
-        bottom: AppDimensions.spacingLg,
-      ),
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -29,20 +27,12 @@ class SitioSectionTitle extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(
-                AppDimensions.radiusMd + 1,
-              ),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMd + 1),
             ),
-            child: Icon(
-              icono,
-              color: AppColors.primary,
-              size: 22,
-            ),
+            child: Icon(icono, color: AppColors.primary, size: 22),
           ),
 
-          const SizedBox(
-            width: AppDimensions.spacingMd,
-          ),
+          const SizedBox(width: AppDimensions.spacingMd),
 
           Expanded(
             child: Column(
@@ -57,9 +47,7 @@ class SitioSectionTitle extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(
-                  height: AppDimensions.spacingXs - 1,
-                ),
+                const SizedBox(height: AppDimensions.spacingXs - 1),
 
                 Text(
                   subtitulo,

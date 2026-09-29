@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
 
 class SitioEmptyState extends StatelessWidget {
   final bool buscando;
