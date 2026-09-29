@@ -8,7 +8,7 @@ import '../../screens/admin/admin_inicio.dart';
 import '../../screens/admin/admin_perfil.dart';
 import '../../widgets/admin/admin_proximamente.dart';
 import '../../screens/mapa_screen_2.dart';
-import '../../screens/admin/admin_sitio_list_screen.dart';
+import 'sitio_turistico/pantalla_lista_sitios.dart';
 
 class AdminScreen extends StatefulWidget {
   final String nombre;
@@ -180,6 +180,6 @@ class _AdminScreenState extends State<AdminScreen> {
   // ============================================================
 
   Widget _sitios() {
-    return const AdminSitioListScreen();
+    return const PantallaListaSitios();
   }
 }

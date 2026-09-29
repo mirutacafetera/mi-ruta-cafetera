@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import 'sitio_form_field.dart';
-import 'sitio_section_card.dart';
-import 'sitio_section_title.dart';
+import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_dimensions.dart';
+
+import 'sitio_formulario/campo_formulario_sitio.dart';
+import 'sitio_formulario/contenedor_seccion_sitio.dart';
+import 'sitio_formulario/titulo_seccion_sitio.dart';
 
 class SitioInformacion extends StatelessWidget {
   final TextEditingController nombreController;
@@ -12,7 +13,9 @@ class SitioInformacion extends StatelessWidget {
   final TextEditingController etiquetasController;
 
   final List<Map<String, dynamic>> categorias;
+
   final String? categoriaSeleccionada;
+
   final ValueChanged<String?> onCategoriaChanged;
 
   const SitioInformacion({
@@ -27,30 +30,42 @@ class SitioInformacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SitioSectionCard(
-      child: Column(
+    return ContenedorSeccionSitio(
+      contenido: Column(
         children: [
-          const SitioSectionTitle(
+          // =========================================================
+          // TÍTULO DE LA SECCIÓN
+          // =========================================================
+          const TituloSeccionSitio(
             icono: Icons.place_outlined,
             titulo: 'Información del sitio',
             subtitulo: 'Datos principales del lugar turístico',
           ),
 
-          SitioFormField(
-            controller: nombreController,
-            label: 'Nombre del sitio',
-            icon: Icons.place_rounded,
+          // =========================================================
+          // NOMBRE DEL SITIO
+          // =========================================================
+          CampoFormularioSitio(
+            controlador: nombreController,
+            etiqueta: 'Nombre del sitio',
+            icono: Icons.place_rounded,
             obligatorio: true,
           ),
 
-          SitioFormField(
-            controller: descripcionController,
-            label: 'Descripción',
-            icon: Icons.description_rounded,
+          // =========================================================
+          // DESCRIPCIÓN
+          // =========================================================
+          CampoFormularioSitio(
+            controlador: descripcionController,
+            etiqueta: 'Descripción',
+            icono: Icons.description_rounded,
             maxLines: 4,
             obligatorio: true,
           ),
 
+          // =========================================================
+          // CATEGORÍA
+          // =========================================================
           Padding(
             padding: const EdgeInsets.only(
               bottom: AppDimensions.spacingMd + 2,
@@ -58,19 +73,24 @@ class SitioInformacion extends StatelessWidget {
             child: DropdownButtonFormField<String>(
               initialValue: categoriaSeleccionada,
               isExpanded: true,
+
               decoration: InputDecoration(
                 labelText: 'Categoría',
+
                 filled: true,
                 fillColor: AppColors.surface,
+
                 prefixIcon: const Icon(
                   Icons.category_rounded,
                   color: AppColors.secondary,
                   size: AppDimensions.iconMd,
                 ),
+
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingLg,
                   vertical: AppDimensions.spacingLg,
                 ),
+
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusMd,
@@ -79,6 +99,7 @@ class SitioInformacion extends StatelessWidget {
                     color: AppColors.border,
                   ),
                 ),
+
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusMd,
@@ -87,6 +108,7 @@ class SitioInformacion extends StatelessWidget {
                     color: AppColors.border,
                   ),
                 ),
+
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusMd,
@@ -97,11 +119,17 @@ class SitioInformacion extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // =====================================================
+              // CATEGORÍAS
+              // =====================================================
               items: categorias
                   .map((categoria) {
                     final id = categoria['_id']?.toString();
+
                     final nombre =
-                        categoria['nombre']?.toString() ?? 'Sin nombre';
+                        categoria['nombre']?.toString() ??
+                        'Sin nombre';
 
                     if (id == null || id.isEmpty) {
                       return null;
@@ -117,7 +145,12 @@ class SitioInformacion extends StatelessWidget {
                   })
                   .whereType<DropdownMenuItem<String>>()
                   .toList(),
+
               onChanged: onCategoriaChanged,
+
+              // =====================================================
+              // VALIDACIÓN
+              // =====================================================
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Selecciona una categoría';
@@ -128,24 +161,33 @@ class SitioInformacion extends StatelessWidget {
             ),
           ),
 
-          SitioFormField(
-            controller: etiquetasController,
-            label: 'Etiquetas',
-            icon: Icons.local_offer_rounded,
+          // =========================================================
+          // ETIQUETAS
+          // =========================================================
+          CampoFormularioSitio(
+            controlador: etiquetasController,
+            etiqueta: 'Etiquetas',
+            icono: Icons.local_offer_rounded,
           ),
 
+          // =========================================================
+          // INFORMACIÓN SOBRE LAS ETIQUETAS
+          // =========================================================
           Container(
             width: double.infinity,
+
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingMd,
               vertical: AppDimensions.spacingSm + 2,
             ),
+
             decoration: BoxDecoration(
               color: AppColors.background,
               borderRadius: BorderRadius.circular(
                 AppDimensions.radiusSm,
               ),
             ),
+
             child: const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -154,9 +196,11 @@ class SitioInformacion extends StatelessWidget {
                   size: AppDimensions.iconSm,
                   color: AppColors.primary,
                 ),
+
                 SizedBox(
                   width: AppDimensions.spacingSm,
                 ),
+
                 Expanded(
                   child: Text(
                     'Separa las etiquetas con comas. Ejemplo: café, naturaleza, aventura.',

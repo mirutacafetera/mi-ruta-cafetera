@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
+import '../../../../theme/app_colors.dart';
 
-class SitioCardImagen extends StatelessWidget {
+class ImagenTarjetaSitio extends StatelessWidget {
   final String? imagen;
 
-  const SitioCardImagen({
-    super.key,
-    required this.imagen,
-  });
+  const ImagenTarjetaSitio({super.key, required this.imagen});
 
   @override
   Widget build(BuildContext context) {
+    // Cuando el sitio no tiene imagen
     if (imagen == null || imagen!.isEmpty) {
       return Container(
         width: 90,
@@ -28,6 +26,7 @@ class SitioCardImagen extends StatelessWidget {
       );
     }
 
+    // Cuando el sitio tiene imagen
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: Image.network(
@@ -35,11 +34,7 @@ class SitioCardImagen extends StatelessWidget {
         width: 90,
         height: 90,
         fit: BoxFit.cover,
-        errorBuilder: (
-          context,
-          error,
-          stackTrace,
-        ) {
+        errorBuilder: (context, error, stackTrace) {
           return Container(
             width: 90,
             height: 90,

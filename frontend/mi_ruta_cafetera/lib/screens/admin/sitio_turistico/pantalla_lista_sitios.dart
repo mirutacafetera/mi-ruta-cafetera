@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 
-import '../../../services/admin/admin_sitio_service.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../widgets/admin/sitio_card.dart';
-import '../../../widgets/admin/sitio_empty_state.dart';
-import '../../../widgets/admin/sitio_form_sheet.dart';
-import '../../../widgets/admin/sitio_list_header.dart';
-import '../../../widgets/admin/sitio_search_bar.dart';
+import '../../../../services/admin/admin_sitio_service.dart';
+import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_dimensions.dart';
 
-class AdminSitioListScreen extends StatefulWidget {
-  const AdminSitioListScreen({
+import '../../../widgets/admin/sitio_turistico/sitios_tarjetas/tarjeta_sitio.dart';
+import '../../../widgets/admin/sitio_turistico/sitio_empty_state.dart';
+import '../../../widgets/admin/sitio_turistico/sitio_form_sheet.dart';
+import '../../../widgets/admin/sitio_turistico/sitio_list_header.dart';
+import '../../../widgets/admin/sitio_turistico/sitio_search_bar.dart';
+
+class PantallaListaSitios extends StatefulWidget {
+  const PantallaListaSitios({
     super.key,
   });
 
   @override
-  State<AdminSitioListScreen> createState() =>
-      _AdminSitioListScreenState();
+  State<PantallaListaSitios> createState() =>
+      _PantallaListaSitiosState();
 }
 
-class _AdminSitioListScreenState
-    extends State<AdminSitioListScreen> {
+class _PantallaListaSitiosState extends State<PantallaListaSitios> {
   // ============================================================
   // DATOS
   // ============================================================
@@ -58,9 +58,7 @@ class _AdminSitioListScreenState
       final sitios = respuestaSitios
           .whereType<Map>()
           .map(
-            (sitio) => Map<String, dynamic>.from(
-              sitio,
-            ),
+            (sitio) => Map<String, dynamic>.from(sitio),
           )
           .toList();
 
@@ -68,9 +66,7 @@ class _AdminSitioListScreenState
           .whereType<Map>()
           .map(
             (categoria) =>
-                Map<String, dynamic>.from(
-              categoria,
-            ),
+                Map<String, dynamic>.from(categoria),
           )
           .toList();
 
@@ -234,8 +230,10 @@ class _AdminSitioListScreenState
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.error,
-                foregroundColor: AppColors.white,
+                backgroundColor:
+                    AppColors.error,
+                foregroundColor:
+                    AppColors.white,
               ),
               onPressed: () {
                 Navigator.pop(
@@ -356,8 +354,6 @@ class _AdminSitioListScreenState
   bool _estaActivo(
     Map<String, dynamic> sitio,
   ) {
-    // La base de datos actualmente puede
-    // utilizar "activo" o "estado".
     final activo =
         sitio['activo'];
 
@@ -435,8 +431,10 @@ class _AdminSitioListScreenState
         margin: const EdgeInsets.all(
           AppDimensions.spacingMd,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
+        shape:
+            RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.circular(
             AppDimensions.radiusMd,
           ),
         ),
@@ -505,7 +503,8 @@ class _AdminSitioListScreenState
     return RefreshIndicator(
       onRefresh: _cargarDatos,
       child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(
+        padding:
+            const EdgeInsets.fromLTRB(
           AppDimensions.spacingLg,
           AppDimensions.spacingXs,
           AppDimensions.spacingLg,
@@ -519,7 +518,7 @@ class _AdminSitioListScreenState
           final sitio =
               sitios[index];
 
-          return SitioCard(
+          return TarjetaSitio(
             sitio: sitio,
             categoria:
                 _obtenerCategoria(sitio),

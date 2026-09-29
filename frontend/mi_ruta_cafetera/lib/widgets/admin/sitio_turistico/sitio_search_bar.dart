@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
+import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_dimensions.dart';
 
 class SitioSearchBar extends StatelessWidget {
   final String valor;
