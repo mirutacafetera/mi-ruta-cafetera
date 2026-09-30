@@ -56,9 +56,10 @@ const verificarToken = (req, res, next) => {
 
     req.usuario = {
       id: decoded.id,
+      sitioId: decoded.sitioId,
       correo: decoded.correo,
       rol: decoded.rol
-    };
+   };
 
     // -------------------------------------------------
     // CONTINUAR
@@ -130,6 +131,55 @@ const verificarAdministrador = (
   next();
 };
 
+// =====================================================
+// VERIFICAR QUE SEA CUENTA DE SITIO
+// =====================================================
+
+const verificarSitio = (
+  req,
+  res,
+  next
+) => {
+
+  // -------------------------------------------------
+  // COMPROBAR QUE EXISTE USUARIO AUTENTICADO
+  // -------------------------------------------------
+
+  if (!req.usuario) {
+    return res.status(401).json({
+      mensaje: 'Debes iniciar sesión'
+    });
+  }
+
+  // -------------------------------------------------
+  // COMPROBAR ROL
+  // -------------------------------------------------
+
+  if (req.usuario.rol !== 'sitio') {
+    return res.status(403).json({
+      mensaje:
+        'No tienes permisos de sitio'
+    });
+  }
+
+  // -------------------------------------------------
+  // COMPROBAR SITIO ASOCIADO
+  // -------------------------------------------------
+
+  if (!req.usuario.sitioId) {
+    return res.status(403).json({
+      mensaje:
+        'La cuenta no tiene un sitio asociado'
+    });
+  }
+
+  // -------------------------------------------------
+  // CONTINUAR
+  // -------------------------------------------------
+
+  next();
+};
+
 
 // =====================================================
 // EXPORTAR
@@ -137,5 +187,6 @@ const verificarAdministrador = (
 
 module.exports = {
   verificarToken,
-  verificarAdministrador
+  verificarAdministrador,
+  verificarSitio
 };

@@ -1,35 +1,28 @@
 const Contenido = require('../../models/sitio/contenido');
 
 
-// ======================================================
-// OBTENER MULTIMEDIA DE UN SITIO
-// ======================================================
+// =====================================================
+// OBTENER MULTIMEDIA
+// =====================================================
 
 const obtenerMultimedia = async (req, res) => {
   try {
 
-    const multimedia = await Contenido.find(
-      {
-        sitio: req.params.id,
-
-        tipo: {
-          $in: ['imagen', 'video', 'audio']
-        },
-
-        activo: true
+    const multimedia = await Contenido.find({
+      sitio: req.params.id,
+      tipo: {
+        $in: [
+          'imagen',
+          'video',
+          'audio'
+        ]
       },
-      {
-        _id: 1,
-        tipo: 1,
-        titulo: 1,
-        descripcion: 1,
-        url: 1,
-        idioma: 1,
-        activo: 1
-      }
+      activo: true
+    }).select(
+      'tipo titulo descripcion url idioma activo'
     );
 
-    res.status(200).json(multimedia);
+    res.json(multimedia);
 
   } catch (error) {
 
@@ -42,54 +35,55 @@ const obtenerMultimedia = async (req, res) => {
 };
 
 
-// ======================================================
+// =====================================================
 // ACTUALIZAR MULTIMEDIA
-// ======================================================
+// =====================================================
 
 const actualizarMultimedia = async (req, res) => {
   try {
 
-    const {
-      tipo,
-      titulo,
-      descripcion,
-      url,
-      idioma,
-      activo
-    } = req.body;
+    // -------------------------------------------------
+    // BUSCAR EL CONTENIDO
+    // -------------------------------------------------
 
-
-    const multimedia = await Contenido.findByIdAndUpdate(
-      req.params.id,
-      {
-        tipo,
-        titulo,
-        descripcion,
-        url,
-        idioma,
-        activo
-      },
-      {
-        new: true,
-        runValidators: true
-      }
-    );
-
-
-    if (!multimedia) {
-
-      return res.status(404).json({
-        mensaje: 'Multimedia no encontrada'
+    const contenido =
+      await Contenido.findOne({
+        _id: req.params.id,
+        sitio: req.usuario.sitioId
       });
 
+    // -------------------------------------------------
+    // COMPROBAR PROPIEDAD
+    // -------------------------------------------------
+
+    if (!contenido) {
+      return res.status(404).json({
+        mensaje:
+          'Contenido multimedia no encontrado o no pertenece a este sitio'
+      });
     }
 
+    // -------------------------------------------------
+    // ACTUALIZAR CAMPOS PERMITIDOS
+    // -------------------------------------------------
 
-    res.status(200).json({
+    contenido.tipo = req.body.tipo;
+    contenido.titulo = req.body.titulo;
+    contenido.descripcion = req.body.descripcion;
+    contenido.url = req.body.url;
+    contenido.idioma = req.body.idioma;
+    contenido.activo = req.body.activo;
+
+    await contenido.save();
+
+    // -------------------------------------------------
+    // RESPUESTA
+    // -------------------------------------------------
+
+    res.json({
       mensaje: 'Multimedia actualizada correctamente',
-      multimedia
+      multimedia: contenido
     });
-
 
   } catch (error) {
 
@@ -101,6 +95,10 @@ const actualizarMultimedia = async (req, res) => {
   }
 };
 
+
+// =====================================================
+// EXPORTAR
+// =====================================================
 
 module.exports = {
   obtenerMultimedia,

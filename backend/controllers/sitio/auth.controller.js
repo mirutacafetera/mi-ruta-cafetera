@@ -82,7 +82,8 @@ const iniciarSesion = async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: cuenta._id,
+        id: cuenta._id.toString(),
+        sitioId: cuenta.sitioId.toString(),
         correo: cuenta.correo,
         rol: 'sitio'
       },
@@ -90,7 +91,7 @@ const iniciarSesion = async (req, res) => {
       {
         expiresIn: '7d'
       }
-    );
+  );
 
     // --------------------------------------------------
     // RESPUESTA
@@ -98,20 +99,21 @@ const iniciarSesion = async (req, res) => {
 
     return res.status(200).json({
       mensaje:
-        'Inicio de sesión del sitio exitoso',
+      'Inicio de sesión del sitio exitoso',
 
       token,
 
       cuenta: {
-        id: cuenta._id,
+        id: cuenta._id.toString(),
+        sitioId: cuenta.sitioId.toString(),
         nombre: cuenta.nombre,
         apellido: cuenta.apellido,
         correo: cuenta.correo,
         telefono: cuenta.telefono,
         rol: 'sitio',
-        activo: cuenta.activo
-      }
-    });
+       activo: cuenta.activo
+     }
+  });
 
   } catch (error) {
     console.error(

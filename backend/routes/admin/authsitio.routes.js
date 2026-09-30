@@ -1,49 +1,70 @@
 const express = require('express');
 
 const {
-  iniciarSesionAdmin,
-  obtenerAdministrador,
-  recuperarPasswordAdmin,
-  verificarCodigoRecuperacionAdmin,
-  restablecerPasswordAdmin
+  crearCuentaSitio,
+  iniciarSesion,
+  recuperarPassword,
+  verificarCodigoRecuperacion,
+  restablecerPassword
 } = require(
   '../../controllers/admin/authsitio.controller'
 );
 
+const {
+  verificarToken,
+  verificarAdministrador
+} = require(
+  '../../middlewares/authmiddleware'
+);
+
 const router = express.Router();
 
-// ======================================================
-// AUTENTICACIÓN DEL ADMINISTRADOR
-// ======================================================
+// =====================================================
+// CREAR CUENTA DE SITIO
+// SOLO ADMINISTRADOR
+// =====================================================
 
-// Iniciar sesión
+router.post(
+  '/crear-cuenta-sitio',
+  verificarToken,
+  verificarAdministrador,
+  crearCuentaSitio
+);
+
+// =====================================================
+// INICIAR SESIÓN DEL SITIO
+// =====================================================
+
 router.post(
   '/login',
-  iniciarSesionAdmin
+  iniciarSesion
 );
 
-// Recuperar contraseña
+// =====================================================
+// RECUPERAR CONTRASEÑA DEL SITIO
+// =====================================================
+
 router.post(
   '/recuperar-password',
-  recuperarPasswordAdmin
+  recuperarPassword
 );
 
-// Verificar código de recuperación
+// =====================================================
+// VERIFICAR CÓDIGO DE RECUPERACIÓN
+// =====================================================
+
 router.post(
   '/verificar-codigo-recuperacion',
-  verificarCodigoRecuperacionAdmin
+  verificarCodigoRecuperacion
 );
 
-// Restablecer contraseña
+// =====================================================
+// RESTABLECER CONTRASEÑA
+// =====================================================
+
 router.post(
   '/restablecer-password',
-  restablecerPasswordAdmin
-);
-
-// Obtener administrador
-router.get(
-  '/:id',
-  obtenerAdministrador
+  restablecerPassword
 );
 
 module.exports = router;

@@ -1,31 +1,42 @@
 const Reserva = require('../../models/sitio/reserva');
 
-const {
-  crearNotificacion
-} = require('../../services/notificacion.service');
-
 
 // =====================================================
-// OBTENER TODAS LAS RESERVAS DEL SITIO
+// OBTENER RESERVAS DEL SITIO
 // =====================================================
 
 const obtenerReservas = async (req, res) => {
   try {
 
+    // -------------------------------------------------
+    // COMPROBAR QUE EL SITIO PERTENECE A LA CUENTA
+    // -------------------------------------------------
+
+    if (req.usuario.sitioId !== req.params.id) {
+      return res.status(403).json({
+        mensaje:
+          'No tienes permisos para consultar las reservas de este sitio'
+      });
+    }
+
+    // -------------------------------------------------
+    // BUSCAR RESERVAS
+    // -------------------------------------------------
+
     const reservas = await Reserva.find({
-      sitio: req.params.id
+      sitio: req.usuario.sitioId
     })
       .populate(
         'usuario',
-        'nombre apellido telefono'
+        'nombre apellido correo telefono'
       )
       .populate(
         'actividad',
-        'nombre descripcion precio horario duracion'
+        'nombre descripcion precio'
       )
       .populate(
         'sitio',
-        'nombre descripcion direccion ciudad departamento imagen'
+        'nombre'
       )
       .sort({
         fecha: 1
@@ -45,32 +56,49 @@ const obtenerReservas = async (req, res) => {
 
 
 // =====================================================
-// OBTENER UNA RESERVA ESPECÍFICA
+// OBTENER UNA RESERVA
 // =====================================================
 
 const obtenerReserva = async (req, res) => {
   try {
 
-    const reserva = await Reserva.findOne({
-      _id: req.params.reservaId,
-      sitio: req.params.id
-    })
-      .populate(
-        'usuario',
-        'nombre apellido telefono'
-      )
-      .populate(
-        'actividad',
-        'nombre descripcion precio horario duracion'
-      )
-      .populate(
-        'sitio',
-        'nombre descripcion direccion ciudad departamento imagen'
-      );
+    // -------------------------------------------------
+    // COMPROBAR SITIO
+    // -------------------------------------------------
+
+    if (req.usuario.sitioId !== req.params.id) {
+      return res.status(403).json({
+        mensaje:
+          'No tienes permisos para consultar esta reserva'
+      });
+    }
+
+    // -------------------------------------------------
+    // BUSCAR RESERVA
+    // -------------------------------------------------
+
+    const reserva =
+      await Reserva.findOne({
+        _id: req.params.reservaId,
+        sitio: req.usuario.sitioId
+      })
+        .populate(
+          'usuario',
+          'nombre apellido correo telefono'
+        )
+        .populate(
+          'actividad',
+          'nombre descripcion precio'
+        )
+        .populate(
+          'sitio',
+          'nombre'
+        );
 
     if (!reserva) {
       return res.status(404).json({
-        mensaje: 'Reserva no encontrada'
+        mensaje:
+          'Reserva no encontrada o no pertenece a este sitio'
       });
     }
 
@@ -88,13 +116,25 @@ const obtenerReserva = async (req, res) => {
 
 
 // =====================================================
-// ACTUALIZAR ESTADO DE LA RESERVA
+// ACTUALIZAR ESTADO DE RESERVA
 // =====================================================
 
-const actualizarEstadoReserva = async (req, res) => {
+const actualizarEstadoReserva = async (
+  req,
+  res
+) => {
   try {
 
-    const { estado } = req.body;
+    // -------------------------------------------------
+    // COMPROBAR SITIO
+    // -------------------------------------------------
+
+    if (req.usuario.sitioId !== req.params.id) {
+      return res.status(403).json({
+        mensaje:
+          'No tienes permisos para modificar reservas de este sitio'
+      });
+    }
 
     // -------------------------------------------------
     // VALIDAR ESTADO
@@ -107,113 +147,74 @@ const actualizarEstadoReserva = async (req, res) => {
       'completada'
     ];
 
+    const {
+      estado
+    } = req.body;
+
     if (!estadosPermitidos.includes(estado)) {
       return res.status(400).json({
         mensaje:
-          'Estado no válido. Los estados permitidos son: pendiente, confirmada, cancelada y completada'
+          'Estado de reserva no válido'
       });
     }
 
     // -------------------------------------------------
-    // BUSCAR Y ACTUALIZAR RESERVA
+    // ACTUALIZAR RESERVA
     // -------------------------------------------------
 
-    const reserva = await Reserva.findOneAndUpdate(
-      {
-        _id: req.params.reservaId,
-        sitio: req.params.id
-      },
-      {
-        estado
-      },
-      {
-        new: true,
-        runValidators: true
-      }
-    )
-      .populate(
-        'usuario',
-        'nombre apellido telefono'
+    const reserva =
+      await Reserva.findOneAndUpdate(
+        {
+          _id: req.params.reservaId,
+          sitio: req.usuario.sitioId
+        },
+        {
+          estado
+        },
+        {
+          new: true,
+          runValidators: true
+        }
       )
-      .populate(
-        'actividad',
-        'nombre descripcion precio horario duracion'
-      )
-      .populate(
-        'sitio',
-        'nombre descripcion direccion ciudad departamento imagen'
-      );
+        .populate(
+          'usuario',
+          'nombre apellido correo telefono'
+        )
+        .populate(
+          'actividad',
+          'nombre descripcion precio'
+        )
+        .populate(
+          'sitio',
+          'nombre'
+        );
+
+    // -------------------------------------------------
+    // COMPROBAR EXISTENCIA
+    // -------------------------------------------------
 
     if (!reserva) {
       return res.status(404).json({
-        mensaje: 'Reserva no encontrada'
+        mensaje:
+          'Reserva no encontrada o no pertenece a este sitio'
       });
     }
-
-    // -------------------------------------------------
-    // PREPARAR NOTIFICACIÓN
-    // -------------------------------------------------
-
-    let titulo = 'Actualización de reserva';
-
-    let mensaje =
-      'El estado de tu reserva ha sido actualizado.';
-
-    if (estado === 'pendiente') {
-      titulo = 'Reserva pendiente';
-      mensaje =
-        'Tu reserva se encuentra pendiente de confirmación.';
-    }
-
-    if (estado === 'confirmada') {
-      titulo = 'Reserva confirmada';
-      mensaje =
-        'Tu reserva ha sido confirmada correctamente.';
-    }
-
-    if (estado === 'cancelada') {
-      titulo = 'Reserva cancelada';
-      mensaje =
-        'Tu reserva ha sido cancelada.';
-    }
-
-    if (estado === 'completada') {
-      titulo = 'Reserva completada';
-      mensaje =
-        'Tu reserva ha sido completada correctamente.';
-    }
-
-    // -------------------------------------------------
-    // CREAR NOTIFICACIÓN PARA EL USUARIO
-    // -------------------------------------------------
-
-    await crearNotificacion(
-      reserva.usuario._id,
-      titulo,
-      mensaje,
-      'reserva'
-    );
 
     // -------------------------------------------------
     // RESPUESTA
     // -------------------------------------------------
 
-    res.status(200).json({
+    res.json({
       mensaje:
-        'Estado de la reserva actualizado correctamente',
+        'Estado de reserva actualizado correctamente',
       reserva
     });
 
   } catch (error) {
 
-    console.error(
-      'Error al actualizar estado de la reserva:',
-      error
-    );
-
     res.status(500).json({
       mensaje:
-        'Error al actualizar estado de la reserva',
+        'Error al actualizar estado de reserva',
       error: error.message
     });
 

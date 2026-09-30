@@ -3,6 +3,11 @@ const express = require('express');
 const router = express.Router();
 
 const {
+  verificarToken,
+  verificarSitio
+} = require('../../middlewares/authmiddleware');
+
+const {
   obtenerContenidos,
   obtenerContenido,
   crearContenido,
@@ -12,18 +17,58 @@ const {
   eliminarContenido
 } = require('../../controllers/sitio/contenido.controller');
 
-router.get('/sitio/:sitioId', obtenerContenidos);
 
-router.get('/:id', obtenerContenido);
+// =====================================================
+// CONTENIDO
+// =====================================================
 
-router.post('/', crearContenido);
+// Consultas públicas
+router.get(
+  '/sitio/:sitioId',
+  obtenerContenidos
+);
 
-router.put('/:id', actualizarContenido);
+router.get(
+  '/:id',
+  obtenerContenido
+);
 
-router.put('/:id/desactivar', desactivarContenido);
 
-router.put('/:id/activar', activarContenido);
+// Operaciones privadas del sitio
+router.post(
+  '/',
+  verificarToken,
+  verificarSitio,
+  crearContenido
+);
 
-router.delete('/:id', eliminarContenido);
+router.put(
+  '/:id',
+  verificarToken,
+  verificarSitio,
+  actualizarContenido
+);
+
+router.put(
+  '/:id/desactivar',
+  verificarToken,
+  verificarSitio,
+  desactivarContenido
+);
+
+router.put(
+  '/:id/activar',
+  verificarToken,
+  verificarSitio,
+  activarContenido
+);
+
+router.delete(
+  '/:id',
+  verificarToken,
+  verificarSitio,
+  eliminarContenido
+);
+
 
 module.exports = router;
