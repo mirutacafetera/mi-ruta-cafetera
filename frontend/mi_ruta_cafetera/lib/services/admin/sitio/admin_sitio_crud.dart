@@ -4,16 +4,23 @@ import 'package:http/http.dart' as http;
 
 class AdminSitioCrud {
   // ============================================================
-  // CREAR
+  // CREAR SITIO TURÍSTICO Y SU CUENTA
   // ============================================================
 
   static Future<Map<String, dynamic>> crearSitio({
     required String baseUrl,
+
+    // Token del administrador
+    String? tokenAdmin,
+
+    // Datos de la cuenta
     required String nombreCuenta,
     required String apellidoCuenta,
     required String correo,
     required String password,
     String telefonoCuenta = '',
+
+    // Datos del sitio
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -32,6 +39,23 @@ class AdminSitioCrud {
     String horario = '',
     double precioDesde = 0,
   }) async {
+    // ==========================================================
+    // VALIDAR TOKEN ANTES DE CREAR
+    // ==========================================================
+
+    final token = tokenAdmin?.trim() ?? '';
+
+    if (token.isEmpty) {
+      throw Exception(
+        'No se encontró el token del administrador. '
+        'Inicia sesión nuevamente.',
+      );
+    }
+
+    // ==========================================================
+    // CREAR SITIO TURÍSTICO
+    // ==========================================================
+
     final responseSitio = await http.post(
       Uri.parse('$baseUrl/admin/sitios'),
       headers: {
@@ -65,6 +89,10 @@ class AdminSitioCrud {
       );
     }
 
+    // ==========================================================
+    // OBTENER SITIO CREADO
+    // ==========================================================
+
     final dataSitio = jsonDecode(responseSitio.body);
 
     if (dataSitio is! Map<String, dynamic>) {
@@ -95,9 +123,12 @@ class AdminSitioCrud {
     // ==========================================================
 
     final responseCuenta = await http.post(
-      Uri.parse('$baseUrl/admin/authsitio/cuenta'),
+      Uri.parse(
+        '$baseUrl/admin/authsitio/crear-cuenta-sitio',
+      ),
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
       body: jsonEncode({
         'sitioId': sitioId,
@@ -109,35 +140,47 @@ class AdminSitioCrud {
       }),
     );
 
+    // ==========================================================
+    // VALIDAR RESPUESTA DE LA CUENTA
+    // ==========================================================
+
     if (responseCuenta.statusCode != 201) {
       throw Exception(
-        'El sitio fue creado, pero no se pudo crear '
-        'su cuenta: ${responseCuenta.statusCode} - '
+        'El sitio turístico fue creado, pero no se pudo '
+        'crear su cuenta.\n'
+        'ID del sitio: $sitioId\n'
+        'Error: ${responseCuenta.statusCode} - '
         '${responseCuenta.body}',
       );
     }
 
-    final dataCuenta = jsonDecode(
-      responseCuenta.body,
-    );
+    final dataCuenta = jsonDecode(responseCuenta.body);
+
+    if (dataCuenta is! Map<String, dynamic>) {
+      throw Exception(
+        'El sitio fue creado, pero la respuesta de '
+        'su cuenta no tiene el formato esperado.',
+      );
+    }
+
+    // ==========================================================
+    // RESULTADO
+    // ==========================================================
 
     return {
       'sitio': sitioCreado,
-      'cuenta': dataCuenta is Map<String, dynamic>
-          ? dataCuenta['cuenta']
-          : null,
+      'cuenta': dataCuenta['cuenta'],
     };
   }
 
   // ============================================================
-  // ACTUALIZAR
+  // ACTUALIZAR SITIO TURÍSTICO
   // ============================================================
 
   static Future<void> actualizarSitio({
     required String baseUrl,
     required String id,
-    String? correo,
-    String? password,
+
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -193,7 +236,7 @@ class AdminSitioCrud {
   }
 
   // ============================================================
-  // ELIMINAR
+  // ELIMINAR SITIO TURÍSTICO
   // ============================================================
 
   static Future<void> eliminarSitio(

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
+import '../../../../../theme/app_colors.dart';
+import '../../../../../theme/app_dimensions.dart';
 
-import 'sitio_formulario/campo_formulario_sitio.dart';
-import 'sitio_formulario/contenedor_seccion_sitio.dart';
-import 'sitio_formulario/titulo_seccion_sitio.dart';
+import 'campo_formulario_sitio.dart';
+import 'contenedor_seccion_sitio.dart';
+import 'titulo_seccion_sitio.dart';
 
 class SitioInformacionTuristica extends StatelessWidget {
   final TextEditingController horarioController;

@@ -2,11 +2,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
+import '../../../../../theme/app_colors.dart';
+import '../../../../../theme/app_dimensions.dart';
 
-import 'sitio_formulario/contenedor_seccion_sitio.dart';
-import 'sitio_formulario/titulo_seccion_sitio.dart';
+import 'contenedor_seccion_sitio.dart';
+import 'titulo_seccion_sitio.dart';
 
 class SitioImagen extends StatelessWidget {
   final Uint8List? imagenBytes;

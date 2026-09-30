@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
 
-class SitioSearchBar extends StatelessWidget {
+class BarraBusqueda extends StatelessWidget {
   final String valor;
+  final String textoAyuda;
   final ValueChanged<String> onChanged;
   final VoidCallback onLimpiar;
 
-  const SitioSearchBar({
+  const BarraBusqueda({
     super.key,
     required this.valor,
+    required this.textoAyuda,
     required this.onChanged,
     required this.onLimpiar,
   });
@@ -27,24 +29,16 @@ class SitioSearchBar extends StatelessWidget {
       child: TextField(
         onChanged: onChanged,
         decoration: InputDecoration(
-          hintText: 'Buscar por nombre, ciudad, dirección o categoría...',
-          prefixIcon: const Icon(
-            Icons.search,
-            color: AppColors.primary,
-          ),
+          hintText: textoAyuda,
+          prefixIcon: const Icon(Icons.search, color: AppColors.primary),
           suffixIcon: valor.isNotEmpty
               ? IconButton(
                   onPressed: onLimpiar,
-                  icon: const Icon(
-                    Icons.clear,
-                    color: AppColors.textSecondary,
-                  ),
+                  icon: const Icon(Icons.clear, color: AppColors.textSecondary),
                 )
               : null,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(
-              AppDimensions.radiusMd,
-            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           ),
         ),
       ),

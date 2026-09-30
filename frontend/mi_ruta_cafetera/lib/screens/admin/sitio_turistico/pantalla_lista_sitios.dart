@@ -1,197 +1,75 @@
 import 'package:flutter/material.dart';
 
-import '../../../../services/admin/admin_sitio_service.dart';
+import '../../../../controllers/admin/sitio/controlador_lista_sitios.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
 
+import '../../../widgets/admin/sitio_turistico/barra_busqueda.dart';
+import '../../../widgets/admin/sitio_turistico/encabezado_lista.dart';
+import '../../../widgets/admin/sitio_turistico/formulario_sitio.dart';
+import '../../../widgets/admin/sitio_turistico/sitios_tarjetas/informacion_sitios.dart';
 import '../../../widgets/admin/sitio_turistico/sitios_tarjetas/tarjeta_sitio.dart';
-import '../../../widgets/admin/sitio_turistico/sitio_empty_state.dart';
-import '../../../widgets/admin/sitio_turistico/sitio_form_sheet.dart';
-import '../../../widgets/admin/sitio_turistico/sitio_list_header.dart';
-import '../../../widgets/admin/sitio_turistico/sitio_search_bar.dart';
 
 class PantallaListaSitios extends StatefulWidget {
-  const PantallaListaSitios({
-    super.key,
-  });
+  const PantallaListaSitios({super.key});
 
   @override
-  State<PantallaListaSitios> createState() =>
-      _PantallaListaSitiosState();
+  State<PantallaListaSitios> createState() => _PantallaListaSitiosState();
 }
 
 class _PantallaListaSitiosState extends State<PantallaListaSitios> {
-  // ============================================================
-  // DATOS
-  // ============================================================
-
-  List<Map<String, dynamic>> _sitios = [];
-  List<Map<String, dynamic>> _categorias = [];
-
-  bool _cargando = true;
-  String _busqueda = '';
-
-  // ============================================================
-  // CARGAR DATOS
-  // ============================================================
+  late final ControladorListaSitios controlador;
 
   @override
   void initState() {
     super.initState();
-    _cargarDatos();
+
+    controlador = ControladorListaSitios();
+    controlador.addListener(_actualizar);
+    controlador.cargarDatos();
   }
 
-  Future<void> _cargarDatos() async {
+  void _actualizar() {
     if (mounted) {
-      setState(() {
-        _cargando = true;
-      });
-    }
-
-    try {
-      final respuestaSitios =
-          await AdminSitioService.obtenerSitios();
-
-      final respuestaCategorias =
-          await AdminSitioService.obtenerCategorias();
-
-      final sitios = respuestaSitios
-          .whereType<Map>()
-          .map(
-            (sitio) => Map<String, dynamic>.from(sitio),
-          )
-          .toList();
-
-      final categorias = respuestaCategorias
-          .whereType<Map>()
-          .map(
-            (categoria) =>
-                Map<String, dynamic>.from(categoria),
-          )
-          .toList();
-
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _sitios = sitios;
-        _categorias = categorias;
-        _cargando = false;
-      });
-    } catch (e) {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _cargando = false;
-      });
-
-      _mostrarMensaje(
-        'Error al cargar los datos: $e',
-        error: true,
-      );
+      setState(() {});
     }
   }
-
-  // ============================================================
-  // FILTRAR
-  // ============================================================
-
-  List<Map<String, dynamic>> get _sitiosFiltrados {
-    if (_busqueda.trim().isEmpty) {
-      return _sitios;
-    }
-
-    final texto = _busqueda
-        .toLowerCase()
-        .trim();
-
-    return _sitios.where((sitio) {
-      final nombre =
-          (sitio['nombre'] ?? '')
-              .toString()
-              .toLowerCase();
-
-      final ciudad =
-          (sitio['ciudad'] ?? '')
-              .toString()
-              .toLowerCase();
-
-      final direccion =
-          (sitio['direccion'] ?? '')
-              .toString()
-              .toLowerCase();
-
-      final categoria =
-          _obtenerCategoria(sitio)
-              .toLowerCase();
-
-      return nombre.contains(texto) ||
-          ciudad.contains(texto) ||
-          direccion.contains(texto) ||
-          categoria.contains(texto);
-    }).toList();
-  }
-
-  // ============================================================
-  // CREAR
-  // ============================================================
 
   Future<void> _crearSitio() async {
-    final resultado =
-        await showModalBottomSheet<bool>(
+    final resultado = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return SitioFormSheet(
-          categorias: _categorias,
-        );
-      },
+      builder: (_) => FormularioSitio(
+        categorias: controlador.categorias,
+      ),
     );
 
     if (resultado == true) {
-      await _cargarDatos();
+      await controlador.cargarDatos();
     }
   }
 
-  // ============================================================
-  // EDITAR
-  // ============================================================
-
-  Future<void> _editarSitio(
-    Map<String, dynamic> sitio,
-  ) async {
-    final resultado =
-        await showModalBottomSheet<bool>(
+  Future<void> _editarSitio(Map<String, dynamic> sitio) async {
+    final resultado = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return SitioFormSheet(
-          sitio: sitio,
-          categorias: _categorias,
-        );
-      },
+      builder: (_) => FormularioSitio(
+        sitio: sitio,
+        categorias: controlador.categorias,
+      ),
     );
 
     if (resultado == true) {
-      await _cargarDatos();
+      await controlador.cargarDatos();
     }
   }
 
-  // ============================================================
-  // ELIMINAR
-  // ============================================================
-
-  Future<void> _eliminarSitio(
-    Map<String, dynamic> sitio,
-  ) async {
-    final id = _obtenerId(sitio);
+  Future<void> _eliminarSitio(Map<String, dynamic> sitio) async {
+    final id = controlador.obtenerId(sitio);
 
     if (id == null || id.isEmpty) {
       _mostrarMensaje(
@@ -201,77 +79,42 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
       return;
     }
 
-    final nombre =
-        (sitio['nombre'] ?? 'este sitio')
-            .toString();
+    final nombre = (sitio['nombre'] ?? 'este sitio').toString();
 
-    final confirmar =
-        await showDialog<bool>(
+    final confirmar = await showDialog<bool>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            'Eliminar sitio',
+      builder: (_) => AlertDialog(
+        title: const Text('Eliminar sitio'),
+        content: Text(
+          '¿Seguro que deseas eliminar "$nombre"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
           ),
-          content: Text(
-            '¿Seguro que deseas eliminar "$nombre"?',
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.white,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(
-                  context,
-                  false,
-                );
-              },
-              child: const Text(
-                'Cancelar',
-              ),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor:
-                    AppColors.error,
-                foregroundColor:
-                    AppColors.white,
-              ),
-              onPressed: () {
-                Navigator.pop(
-                  context,
-                  true,
-                );
-              },
-              child: const Text(
-                'Eliminar',
-              ),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
 
-    if (confirmar != true) {
-      return;
-    }
+    if (confirmar != true) return;
 
     try {
-      await AdminSitioService.eliminarSitio(
-        id,
-      );
+      await controlador.eliminarSitio(id);
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
-      _mostrarMensaje(
-        'Sitio eliminado correctamente.',
-      );
-
-      await _cargarDatos();
+      _mostrarMensaje('Sitio eliminado correctamente.');
     } catch (e) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       _mostrarMensaje(
         'Error al eliminar el sitio: $e',
@@ -280,261 +123,101 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
     }
   }
 
-  // ============================================================
-  // ID
-  // ============================================================
-
-  String? _obtenerId(
-    Map<String, dynamic> sitio,
-  ) {
-    final id =
-        sitio['_id'] ?? sitio['id'];
-
-    if (id == null) {
-      return null;
-    }
-
-    if (id is Map) {
-      return id[r'$oid']?.toString();
-    }
-
-    return id.toString();
-  }
-
-  // ============================================================
-  // CATEGORÍA
-  // ============================================================
-
-  String _obtenerCategoria(
-    Map<String, dynamic> sitio,
-  ) {
-    final categoria =
-        sitio['categoria'];
-
-    if (categoria == null) {
-      return 'Sin categoría';
-    }
-
-    if (categoria is String) {
-      final categoriaEncontrada =
-          _categorias
-              .cast<Map<String, dynamic>?>()
-              .firstWhere(
-                (item) =>
-                    item?['_id']?.toString() ==
-                    categoria,
-                orElse: () => null,
-              );
-
-      if (categoriaEncontrada != null) {
-        return (
-          categoriaEncontrada['nombre'] ??
-          'Sin categoría'
-        ).toString();
-      }
-
-      return categoria;
-    }
-
-    if (categoria is Map) {
-      return (
-        categoria['nombre'] ??
-        categoria['name'] ??
-        'Sin categoría'
-      ).toString();
-    }
-
-    return categoria.toString();
-  }
-
-  // ============================================================
-  // ESTADO
-  // ============================================================
-
-  bool _estaActivo(
-    Map<String, dynamic> sitio,
-  ) {
-    final activo =
-        sitio['activo'];
-
-    if (activo is bool) {
-      return activo;
-    }
-
-    final estado =
-        sitio['estado'];
-
-    if (estado is bool) {
-      return estado;
-    }
-
-    return true;
-  }
-
-  // ============================================================
-  // IMAGEN
-  // ============================================================
-
-  String? _obtenerImagen(
-    Map<String, dynamic> sitio,
-  ) {
-    final imagen =
-        sitio['imagen'];
-
-    if (imagen != null &&
-        imagen.toString().trim().isNotEmpty) {
-      return imagen.toString();
-    }
-
-    final imagenes =
-        sitio['imagenes'];
-
-    if (imagenes is List &&
-        imagenes.isNotEmpty) {
-      final primera =
-          imagenes.first;
-
-      if (primera != null &&
-          primera.toString().trim().isNotEmpty) {
-        return primera.toString();
-      }
-    }
-
-    return null;
-  }
-
-  // ============================================================
-  // MENSAJE
-  // ============================================================
-
   void _mostrarMensaje(
     String mensaje, {
     bool error = false,
   }) {
-    if (!mounted) {
-      return;
-    }
-
     ScaffoldMessenger.of(context)
-        .hideCurrentSnackBar();
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        backgroundColor:
-            error
-                ? AppColors.error
-                : AppColors.success,
-        behavior:
-            SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(
-          AppDimensions.spacingMd,
-        ),
-        shape:
-            RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.circular(
-            AppDimensions.radiusMd,
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(mensaje),
+          backgroundColor:
+              error ? AppColors.error : AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(
+            AppDimensions.spacingMd,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
           ),
         ),
-      ),
-    );
+      );
   }
 
-  // ============================================================
-  // BUILD
-  // ============================================================
-
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
+    final sitios = controlador.sitiosFiltrados;
+
     return Column(
       children: [
-        SitioListHeader(
-          cantidadSitios: _sitios.length,
-          cargando: _cargando,
-          onActualizar: _cargarDatos,
-          onNuevoSitio: _crearSitio,
+        EncabezadoLista(
+          titulo: 'Sitios turísticos',
+          descripcion: 'sitios registrados',
+          textoNuevo: 'Nuevo sitio',
+          cantidad: controlador.sitios.length,
+          cargando: controlador.cargando,
+          onActualizar: controlador.cargarDatos,
+          onNuevo: _crearSitio,
         ),
-
-        SitioSearchBar(
-          valor: _busqueda,
-          onChanged: (valor) {
-            setState(() {
-              _busqueda = valor;
-            });
-          },
-          onLimpiar: () {
-            setState(() {
-              _busqueda = '';
-            });
-          },
+        BarraBusqueda(
+          valor: controlador.busqueda,
+          textoAyuda:
+              'Buscar por nombre, ciudad, dirección o categoría...',
+          onChanged: controlador.buscar,
+          onLimpiar: controlador.limpiarBusqueda,
         ),
-
         Expanded(
-          child: _cargando
+          child: controlador.cargando
               ? const Center(
-                  child:
-                      CircularProgressIndicator(),
+                  child: CircularProgressIndicator(),
                 )
-              : _contenido(),
+              : _contenido(sitios),
         ),
       ],
     );
   }
 
-  // ============================================================
-  // CONTENIDO
-  // ============================================================
-
-  Widget _contenido() {
-    final sitios =
-        _sitiosFiltrados;
-
+  Widget _contenido(List<Map<String, dynamic>> sitios) {
     if (sitios.isEmpty) {
-      return SitioEmptyState(
-        buscando: _busqueda.isNotEmpty,
+      return InformacionSitios(
+        buscando: controlador.busqueda.isNotEmpty,
         onRegistrar: _crearSitio,
       );
     }
 
     return RefreshIndicator(
-      onRefresh: _cargarDatos,
+      onRefresh: controlador.cargarDatos,
       child: ListView.builder(
-        padding:
-            const EdgeInsets.fromLTRB(
+        padding: const EdgeInsets.fromLTRB(
           AppDimensions.spacingLg,
           AppDimensions.spacingXs,
           AppDimensions.spacingLg,
           AppDimensions.spacingXl,
         ),
         itemCount: sitios.length,
-        itemBuilder: (
-          context,
-          index,
-        ) {
-          final sitio =
-              sitios[index];
+        itemBuilder: (_, index) {
+          final sitio = sitios[index];
 
           return TarjetaSitio(
             sitio: sitio,
-            categoria:
-                _obtenerCategoria(sitio),
-            activo:
-                _estaActivo(sitio),
-            imagen:
-                _obtenerImagen(sitio),
-            onEditar: () {
-              _editarSitio(sitio);
-            },
-            onEliminar: () {
-              _eliminarSitio(sitio);
-            },
+            categoria: controlador.obtenerCategoria(sitio),
+            activo: controlador.estaActivo(sitio),
+            imagen: controlador.obtenerImagen(sitio),
+            onEditar: () => _editarSitio(sitio),
+            onEliminar: () => _eliminarSitio(sitio),
           );
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    controlador.removeListener(_actualizar);
+    controlador.dispose();
+    super.dispose();
   }
 }

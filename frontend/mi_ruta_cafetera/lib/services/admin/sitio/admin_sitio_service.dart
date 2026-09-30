@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../admin_servicio_autenticacion.dart';
+
 import 'admin_sitio_consultas.dart';
 import 'admin_sitio_crud.dart';
 
@@ -21,11 +23,15 @@ class AdminSitioService {
   // ============================================================
 
   static Future<List<dynamic>> obtenerSitios() {
-    return AdminSitioConsultas.obtenerSitios(baseUrl);
+    return AdminSitioConsultas.obtenerSitios(
+      baseUrl,
+    );
   }
 
   static Future<List<dynamic>> obtenerCategorias() {
-    return AdminSitioConsultas.obtenerCategorias(baseUrl);
+    return AdminSitioConsultas.obtenerCategorias(
+      baseUrl,
+    );
   }
 
   static Future<Map<String, dynamic>> obtenerSitio(
@@ -38,15 +44,24 @@ class AdminSitioService {
   }
 
   // ============================================================
-  // CRUD
+  // CREAR SITIO TURÍSTICO
   // ============================================================
 
   static Future<Map<String, dynamic>> crearSitio({
+    // ----------------------------------------------------------
+    // DATOS DE LA CUENTA
+    // ----------------------------------------------------------
+
     required String nombreCuenta,
     required String apellidoCuenta,
     required String correo,
     required String password,
     String telefonoCuenta = '',
+
+    // ----------------------------------------------------------
+    // DATOS DEL SITIO
+    // ----------------------------------------------------------
+
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -67,11 +82,28 @@ class AdminSitioService {
   }) {
     return AdminSitioCrud.crearSitio(
       baseUrl: baseUrl,
+
+      // --------------------------------------------------------
+      // TOKEN DEL ADMINISTRADOR
+      // --------------------------------------------------------
+
+      tokenAdmin:
+          AdminServicioAutenticacion.tokenAdmin,
+
+      // --------------------------------------------------------
+      // DATOS DE LA CUENTA
+      // --------------------------------------------------------
+
       nombreCuenta: nombreCuenta,
       apellidoCuenta: apellidoCuenta,
       correo: correo,
       password: password,
       telefonoCuenta: telefonoCuenta,
+
+      // --------------------------------------------------------
+      // DATOS DEL SITIO
+      // --------------------------------------------------------
+
       nombre: nombre,
       descripcion: descripcion,
       categoria: categoria,
@@ -92,10 +124,12 @@ class AdminSitioService {
     );
   }
 
+  // ============================================================
+  // ACTUALIZAR SITIO TURÍSTICO
+  // ============================================================
+
   static Future<void> actualizarSitio({
     required String id,
-    String? correo,
-    String? password,
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -117,8 +151,6 @@ class AdminSitioService {
     return AdminSitioCrud.actualizarSitio(
       baseUrl: baseUrl,
       id: id,
-      correo: correo,
-      password: password,
       nombre: nombre,
       descripcion: descripcion,
       categoria: categoria,
@@ -138,6 +170,10 @@ class AdminSitioService {
       precioDesde: precioDesde,
     );
   }
+
+  // ============================================================
+  // ELIMINAR SITIO TURÍSTICO
+  // ============================================================
 
   static Future<void> eliminarSitio(
     String id,
