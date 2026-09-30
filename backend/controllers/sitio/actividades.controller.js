@@ -20,9 +20,25 @@ const obtenerActividades = async (req, res) => {
 
 const crearActividad = async (req, res) => {
   try {
+
+    // -------------------------------------------------
+    // COMPROBAR QUE EL SITIO PERTENECE A LA CUENTA
+    // -------------------------------------------------
+
+    if (req.usuario.sitioId !== req.params.id) {
+      return res.status(403).json({
+        mensaje:
+          'No tienes permisos para administrar este sitio'
+      });
+    }
+
+    // -------------------------------------------------
+    // CREAR ACTIVIDAD
+    // -------------------------------------------------
+
     const actividad = new Actividad({
       ...req.body,
-      sitio: req.params.id
+      sitio: req.usuario.sitioId
     });
 
     await actividad.save();
@@ -40,23 +56,40 @@ const crearActividad = async (req, res) => {
   }
 };
 
-
 const actualizarActividad = async (req, res) => {
   try {
-    const actividad = await Actividad.findByIdAndUpdate(
-      req.params.actividadId,
-      req.body,
-      {
-        new: true,
-        runValidators: true
-      }
-    );
+
+    // -------------------------------------------------
+    // BUSCAR ACTIVIDAD DEL SITIO AUTENTICADO
+    // -------------------------------------------------
+
+    const actividad =
+      await Actividad.findOneAndUpdate(
+        {
+          _id: req.params.actividadId,
+          sitio: req.usuario.sitioId
+        },
+        req.body,
+        {
+          new: true,
+          runValidators: true
+        }
+      );
+
+    // -------------------------------------------------
+    // COMPROBAR EXISTENCIA
+    // -------------------------------------------------
 
     if (!actividad) {
       return res.status(404).json({
-        mensaje: 'Actividad no encontrada'
+        mensaje:
+          'Actividad no encontrada o no pertenece a este sitio'
       });
     }
+
+    // -------------------------------------------------
+    // RESPUESTA
+    // -------------------------------------------------
 
     res.json({
       mensaje: 'Actividad actualizada correctamente',
@@ -74,21 +107,39 @@ const actualizarActividad = async (req, res) => {
 
 const desactivarActividad = async (req, res) => {
   try {
-    const actividad = await Actividad.findByIdAndUpdate(
-      req.params.actividadId,
-      {
-        activo: false
-      },
-      {
-        new: true
-      }
-    );
+
+    // -------------------------------------------------
+    // BUSCAR ACTIVIDAD DEL SITIO AUTENTICADO
+    // -------------------------------------------------
+
+    const actividad =
+      await Actividad.findOneAndUpdate(
+        {
+          _id: req.params.actividadId,
+          sitio: req.usuario.sitioId
+        },
+        {
+          activo: false
+        },
+        {
+          new: true
+        }
+      );
+
+    // -------------------------------------------------
+    // COMPROBAR EXISTENCIA
+    // -------------------------------------------------
 
     if (!actividad) {
       return res.status(404).json({
-        mensaje: 'Actividad no encontrada'
+        mensaje:
+          'Actividad no encontrada o no pertenece a este sitio'
       });
     }
+
+    // -------------------------------------------------
+    // RESPUESTA
+    // -------------------------------------------------
 
     res.json({
       mensaje: 'Actividad desactivada correctamente',

@@ -2,21 +2,31 @@ const mongoose = require('mongoose');
 
 const authAdminSchema = new mongoose.Schema(
   {
+    // =====================================================
+    // DATOS PERSONALES
+    // =====================================================
+
     nombre: {
       type: String,
-      required: true,
-      trim: true
+      required: [true, 'El nombre es obligatorio'],
+      trim: true,
+      minlength: [2, 'El nombre debe tener al menos 2 caracteres']
     },
 
     apellido: {
       type: String,
-      required: true,
-      trim: true
+      required: [true, 'El apellido es obligatorio'],
+      trim: true,
+      minlength: [2, 'El apellido debe tener al menos 2 caracteres']
     },
+
+    // =====================================================
+    // CREDENCIALES
+    // =====================================================
 
     correo: {
       type: String,
-      required: true,
+      required: [true, 'El correo es obligatorio'],
       unique: true,
       lowercase: true,
       trim: true
@@ -24,26 +34,42 @@ const authAdminSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: [true, 'La contraseña es obligatoria'],
       select: false
     },
 
+    // =====================================================
+    // CONTACTO
+    // =====================================================
+
     telefono: {
       type: String,
-      default: '',
-      trim: true
+      trim: true,
+      default: ''
     },
+
+    // =====================================================
+    // ROL
+    // =====================================================
 
     rol: {
       type: String,
-      default: 'admin',
-      enum: ['admin']
+      enum: ['admin'],
+      default: 'admin'
     },
+
+    // =====================================================
+    // ESTADO
+    // =====================================================
 
     activo: {
       type: Boolean,
       default: true
     },
+
+    // =====================================================
+    // RECUPERACIÓN DE CONTRASEÑA
+    // =====================================================
 
     codigoRecuperacion: {
       type: String,
@@ -70,6 +96,10 @@ const authAdminSchema = new mongoose.Schema(
     collection: 'authadmins'
   }
 );
+
+// =====================================================
+// MODELO
+// =====================================================
 
 const AuthAdmin =
   mongoose.models.AuthAdmin ||

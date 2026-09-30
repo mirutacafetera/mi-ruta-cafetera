@@ -145,6 +145,13 @@ const authSitioRoutes = require(
   './routes/sitios/auth.routes'
 );
 
+const dashboardSitioRoutes = require(
+  './routes/sitios/dashboard.routes'
+);
+
+const informacionSitioRoutes = require(
+  './routes/sitios/informacion.routes'
+);
 
 // ======================================================
 // RUTAS DE USUARIOS
@@ -317,8 +324,15 @@ app.use(
   authSitioRoutes
 );
 
+app.use(
+  '/api/sitios/panel/dashboard',
+  dashboardSitioRoutes
+);
 
-
+app.use(
+  '/api/sitiosturisticos/informacion',
+  informacionSitioRoutes
+);
 
 // ======================================================
 // RUTA PRINCIPAL

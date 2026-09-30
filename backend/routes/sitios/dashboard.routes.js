@@ -8,27 +8,19 @@ const {
 } = require('../../middlewares/authmiddleware');
 
 const {
-  obtenerMultimedia,
-  actualizarMultimedia
-} = require('../../controllers/sitio/multimedia.controller');
+  obtenerDashboard
+} = require('../../controllers/sitio/dashboard.controller');
 
 
 // =====================================================
-// MULTIMEDIA
+// DASHBOARD DEL SITIO
 // =====================================================
 
-// Consulta pública
 router.get(
-  '/:id',
-  obtenerMultimedia
-);
-
-// Operación privada del sitio
-router.put(
-  '/:id',
+  '/',
   verificarToken,
   verificarSitio,
-  actualizarMultimedia
+  obtenerDashboard
 );
 
 
