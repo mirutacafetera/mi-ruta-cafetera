@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/admin/admin_servicio_autenticacion.dart';
+import '../../services/admin/admin_sesion_service.dart';
 import '../../screens/admin/admin_screen.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
@@ -38,6 +39,8 @@ class _AdminInicioSesionState extends State<AdminInicioSesion> {
         correo: _correoController.text,
         password: _passwordController.text,
       );
+
+      await AdminSesionService.guardarSesion(resultado);
 
       if (!mounted) return;
 

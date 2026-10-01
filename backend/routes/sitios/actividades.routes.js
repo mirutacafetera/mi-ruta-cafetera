@@ -11,15 +11,61 @@ const {
   obtenerActividades,
   crearActividad,
   actualizarActividad,
+  enviarActividadRevision,
   desactivarActividad
 } = require('../../controllers/sitio/actividades.controller');
 
-router.get('/:id', obtenerActividades);
+// ======================================================
+// OBTENER ACTIVIDADES
+// ======================================================
 
-router.post('/:id', verificarToken, verificarSitio, crearActividad);
+router.get(
+  '/:id',
+  obtenerActividades
+);
 
-router.put('/:id/:actividadId', verificarToken, verificarSitio, actualizarActividad);
+// ======================================================
+// CREAR ACTIVIDAD
+// ======================================================
 
-router.put('/:id/:actividadId/desactivar', verificarToken, verificarSitio, desactivarActividad);
+router.post(
+  '/:id',
+  verificarToken,
+  verificarSitio,
+  crearActividad
+);
+
+// ======================================================
+// ACTUALIZAR ACTIVIDAD
+// ======================================================
+
+router.put(
+  '/:id/:actividadId',
+  verificarToken,
+  verificarSitio,
+  actualizarActividad
+);
+
+// ======================================================
+// ENVIAR ACTIVIDAD A REVISIÓN
+// ======================================================
+
+router.put(
+  '/:id/:actividadId/enviar-revision',
+  verificarToken,
+  verificarSitio,
+  enviarActividadRevision
+);
+
+// ======================================================
+// DESACTIVAR ACTIVIDAD
+// ======================================================
+
+router.put(
+  '/:id/:actividadId/desactivar',
+  verificarToken,
+  verificarSitio,
+  desactivarActividad
+);
 
 module.exports = router;

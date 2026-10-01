@@ -6,6 +6,7 @@ import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_menu_lateral.dart';
 import '../../screens/admin/admin_inicio.dart';
 import '../../screens/admin/admin_perfil.dart';
+import '../../screens/admin/admin_actividades_screen.dart';
 import '../../widgets/admin/admin_proximamente.dart';
 import '../../screens/mapa_screen_2.dart';
 import '../../screens/admin/admin_sitio_list_screen.dart';
@@ -83,6 +84,9 @@ class _AdminScreenState extends State<AdminScreen> {
       case 'sitios':
         return 'Sitios turísticos';
 
+      case 'actividades':
+        return 'Actividades pendientes';
+
       case 'categorias':
         return 'Categorías';
 
@@ -130,6 +134,10 @@ class _AdminScreenState extends State<AdminScreen> {
 
       case 'sitios':
         return _sitios();
+
+      case 'actividades':
+       return const AdminActividadesScreen();
+
 
       case 'categorias':
         return const AdminProximamente(nombre: 'Categorías');
