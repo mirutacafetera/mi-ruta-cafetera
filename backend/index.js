@@ -117,6 +117,9 @@ const adminAyudaRoutes = require(
   './routes/admin/ayuda.routes'
 );
 
+const adminActividadesRoutes = require(
+  './routes/admin/actividades.routes'
+);
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
@@ -288,6 +291,11 @@ app.use(
 app.use(
   '/api/categorias-sitios',
   categoriaSitioRoutes
+);
+
+app.use(
+  '/api/admin/actividades',
+  adminActividadesRoutes
 );
 
 // ======================================================

@@ -1,27 +1,59 @@
-import multer from 'multer';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import cloudinary from '../config/cloudinary.js';
+const multer = require('multer');
+
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+const cloudinary = require('../config/cloudinary');
 
 const storage = new CloudinaryStorage({
   cloudinary,
+
   params: {
-    folder: 'cafe-mistico/productos',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'avif', 'webp'],
-    transformation: [{ width: 800, height: 800, crop: 'limit' }], // evita imágenes gigantes
+    folder: 'mi-ruta-cafetera/sitios',
+
+    allowed_formats: [
+      'jpg',
+      'jpeg',
+      'png',
+      'webp',
+    ],
+
+    transformation: [
+      {
+        width: 1200,
+        height: 1200,
+        crop: 'limit',
+      },
+    ],
   },
 });
 
 const filtroImagenes = (req, file, cb) => {
-  const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+  const tiposPermitidos = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+  ];
+
   if (tiposPermitidos.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Solo se permiten imágenes (jpg, jpeg, png, webp)'), false);
+    cb(
+      new Error(
+        'Solo se permiten imágenes JPG, JPEG, PNG o WEBP',
+      ),
+      false,
+    );
   }
 };
 
-export const upload = multer({
+const upload = multer({
   storage,
   fileFilter: filtroImagenes,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB máximo
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
 });
+
+module.exports = {
+  upload,
+};

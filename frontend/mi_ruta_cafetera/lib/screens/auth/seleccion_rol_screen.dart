@@ -3,28 +3,13 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../admin/admin_pantalla_acceso.dart';
+import '../sitio/sitio_login_screen.dart';
 import '../usuario/login_usuario_screen.dart';
 
 class SeleccionRolScreen extends StatelessWidget {
   const SeleccionRolScreen({
     super.key,
   });
-
-  // ============================================================
-  // MENSAJE
-  // ============================================================
-
-  void _mostrarMensaje(
-    BuildContext context,
-    String mensaje,
-  ) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
 
   // ============================================================
   // CONSTRUCCIÓN
@@ -229,9 +214,12 @@ class SeleccionRolScreen extends StatelessWidget {
                           height: AppDimensions.buttonHeightLarge,
                           child: OutlinedButton.icon(
                             onPressed: () {
-                              _mostrarMensaje(
+                              Navigator.push(
                                 context,
-                                'Acceso de sitio turístico próximamente',
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const SitioLoginScreen(),
+                                ),
                               );
                             },
                             icon: const Icon(

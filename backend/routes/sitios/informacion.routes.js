@@ -8,9 +8,16 @@ const {
 } = require('../../middlewares/authmiddleware');
 
 const {
+  upload
+} = require('../../middlewares/uploadmiddleware');
+
+const {
   obtenerInformacion,
-  actualizarInformacion
-} = require('../../controllers/sitio/informacion.controller');
+  actualizarInformacion,
+  subirImagenPrincipal
+} = require(
+  '../../controllers/sitio/informacion.controller'
+);
 
 
 // ======================================================
@@ -18,6 +25,7 @@ const {
 // ======================================================
 
 // Obtener información
+
 router.get(
   '/',
   verificarToken,
@@ -27,11 +35,25 @@ router.get(
 
 
 // Actualizar información
+
 router.put(
   '/',
   verificarToken,
   verificarSitio,
   actualizarInformacion
+);
+
+
+// ======================================================
+// IMAGEN PRINCIPAL DEL SITIO
+// ======================================================
+
+router.post(
+  '/imagen',
+  verificarToken,
+  verificarSitio,
+  upload.single('imagen'),
+  subirImagenPrincipal
 );
 
 
