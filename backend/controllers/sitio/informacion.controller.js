@@ -87,8 +87,6 @@ const actualizarInformacion = async (req, res) => {
       'telefono',
       'correos',
       'sitioWeb',
-      'imagen',
-      'imagenes',
       'horario',
       'precioDesde'
     ];
@@ -183,6 +181,82 @@ const actualizarInformacion = async (req, res) => {
   }
 };
 
+// ======================================================
+// SUBIR IMAGEN PRINCIPAL DEL SITIO
+// ======================================================
+
+const subirImagenPrincipal = async (req, res) => {
+  try {
+    const sitioId = req.usuario.sitioId;
+
+    if (!sitioId) {
+      return res.status(400).json({
+        mensaje: 'La cuenta no tiene un sitio asociado'
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(sitioId)) {
+      return res.status(400).json({
+        mensaje: 'El sitio asociado no es válido'
+      });
+    }
+
+    // ==================================================
+    // VERIFICAR QUE SE RECIBIÓ UNA IMAGEN
+    // ==================================================
+
+    if (!req.file) {
+      return res.status(400).json({
+        mensaje: 'Debes seleccionar una imagen'
+      });
+    }
+
+    // ==================================================
+    // OBTENER EL SITIO DEL TOKEN
+    // ==================================================
+
+    const sitio = await SitioTuristico.findById(sitioId);
+
+    if (!sitio) {
+      return res.status(404).json({
+        mensaje: 'Sitio turístico no encontrado'
+      });
+    }
+
+    // ==================================================
+    // GUARDAR URL DE CLOUDINARY
+    // ==================================================
+
+    sitio.imagen = req.file.path;
+
+    await sitio.save();
+
+    // ==================================================
+    // DEVOLVER SITIO ACTUALIZADO
+    // ==================================================
+
+    const sitioActualizado = await SitioTuristico
+      .findById(sitioId)
+      .populate('categoria');
+
+    return res.status(200).json({
+      mensaje: 'Imagen principal actualizada correctamente',
+      sitio: sitioActualizado
+    });
+
+  } catch (error) {
+    console.error(
+      '❌ Error al subir la imagen principal:',
+      error
+    );
+
+    return res.status(500).json({
+      mensaje: 'Error al subir la imagen principal',
+      error: error.message
+    });
+  }
+};
+
 
 // ======================================================
 // EXPORTAR
@@ -190,5 +264,6 @@ const actualizarInformacion = async (req, res) => {
 
 module.exports = {
   obtenerInformacion,
-  actualizarInformacion
+  actualizarInformacion,
+  subirImagenPrincipal
 };

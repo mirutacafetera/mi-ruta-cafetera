@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'screens/admin/pantalla_administrador.dart';
 import 'screens/mapa_screen_2.dart';
 import 'screens/publico/bienvenida_screen.dart';
+import 'screens/sitio/sitio_login_screen.dart';
 import 'services/google_auth_service.dart';
 import 'theme/app_theme.dart';
 
@@ -53,6 +54,14 @@ class MiRutaCafeteraApp extends StatelessWidget {
             nombre: 'Administrador',
             email: 'admin@mirutacafetera.com',
           );
+        },
+
+        // ----------------------------------------------------
+        // ACCESO PARA SITIOS TURÍSTICOS
+        // ----------------------------------------------------
+
+        '/sitio-login': (context) {
+          return const SitioLoginScreen();
         },
 
         // ----------------------------------------------------
