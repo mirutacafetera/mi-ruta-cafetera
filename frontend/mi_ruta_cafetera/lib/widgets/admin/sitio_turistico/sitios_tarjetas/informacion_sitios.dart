@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
+import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_dimensions.dart';
 
-class SitioEmptyState extends StatelessWidget {
+class InformacionSitios extends StatelessWidget {
   final bool buscando;
   final VoidCallback onRegistrar;
 
-  const SitioEmptyState({
+  const InformacionSitios({
     super.key,
     required this.buscando,
     required this.onRegistrar,
@@ -23,24 +23,14 @@ class SitioEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ==================================================
-            // ICONO
-            // ==================================================
-
             const Icon(
               Icons.location_off_outlined,
               size: 70,
               color: AppColors.textLight,
             ),
-
             const SizedBox(
               height: AppDimensions.spacingLg,
             ),
-
-            // ==================================================
-            // TÍTULO
-            // ==================================================
-
             Text(
               buscando
                   ? 'No se encontraron sitios'
@@ -52,15 +42,9 @@ class SitioEmptyState extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(
               height: AppDimensions.spacingSm,
             ),
-
-            // ==================================================
-            // DESCRIPCIÓN
-            // ==================================================
-
             Text(
               buscando
                   ? 'Prueba con otro nombre, ciudad, dirección o categoría.'
@@ -70,11 +54,6 @@ class SitioEmptyState extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
             ),
-
-            // ==================================================
-            // REGISTRAR SITIO
-            // ==================================================
-
             if (!buscando) ...[
               const SizedBox(
                 height: AppDimensions.spacingXl,

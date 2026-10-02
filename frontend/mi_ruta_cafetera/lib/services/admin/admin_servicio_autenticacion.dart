@@ -8,7 +8,15 @@ class AdminServicioAutenticacion {
   AdminServicioAutenticacion._();
 
   // ============================================================
-  // URL DE INICIO DE SESIÓN DEL ADMINISTRADOR
+  // TOKEN DEL ADMINISTRADOR
+  // ============================================================
+
+  static String? _tokenAdmin;
+
+  static String? get tokenAdmin => _tokenAdmin;
+
+  // ============================================================
+  // URL DE INICIO DE SESIÓN
   // ============================================================
 
   static String get urlInicioSesion {
@@ -36,15 +44,20 @@ class AdminServicioAutenticacion {
               'password': password,
             }),
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(
+            const Duration(seconds: 15),
+          );
 
-      // ==========================================================
+      // ========================================================
       // RESPUESTA EXITOSA
-      // ==========================================================
+      // ========================================================
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.statusCode >= 200 &&
+          response.statusCode < 300) {
         if (response.body.isEmpty) {
-          throw Exception('El servidor no devolvió ninguna respuesta.');
+          throw Exception(
+            'El servidor no devolvió ninguna respuesta.',
+          );
         }
 
         final data = jsonDecode(response.body);
@@ -53,37 +66,61 @@ class AdminServicioAutenticacion {
           final token = data['token'];
           final administrador = data['administrador'];
 
-          if (token == null || token.toString().trim().isEmpty) {
+          // ----------------------------------------------------
+          // VALIDAR TOKEN
+          // ----------------------------------------------------
+
+          if (token == null ||
+              token.toString().trim().isEmpty) {
             throw Exception(
               'El servidor no devolvió el token de autenticación.',
             );
           }
 
-          if (administrador == null || administrador is! Map<String, dynamic>) {
+          // ----------------------------------------------------
+          // VALIDAR ADMINISTRADOR
+          // ----------------------------------------------------
+
+          if (administrador == null ||
+              administrador is! Map<String, dynamic>) {
             throw Exception(
               'El servidor no devolvió los datos del administrador.',
             );
           }
 
-          // ======================================================
-          // COMPROBAR ROL DEVUELTO POR EL BACKEND
-          // ======================================================
+          // ----------------------------------------------------
+          // VALIDAR ROL
+          // ----------------------------------------------------
 
           if (administrador['rol'] != 'admin') {
-            throw Exception('La cuenta no tiene permisos de administrador.');
+            throw Exception(
+              'La cuenta no tiene permisos de administrador.',
+            );
           }
 
-          return {'token': token.toString(), 'administrador': administrador};
+          // ----------------------------------------------------
+          // GUARDAR TOKEN
+          // ----------------------------------------------------
+
+          _tokenAdmin = token.toString().trim();
+
+          return {
+            'token': _tokenAdmin,
+            'administrador': administrador,
+          };
         }
 
-        throw Exception('La respuesta del servidor tiene un formato inválido.');
+        throw Exception(
+          'La respuesta del servidor tiene un formato inválido.',
+        );
       }
 
-      // ==========================================================
+      // ========================================================
       // RESPUESTA DE ERROR
-      // ==========================================================
+      // ========================================================
 
-      String mensajeError = 'No fue posible iniciar sesión.';
+      String mensajeError =
+          'No fue posible iniciar sesión.';
 
       try {
         final data = jsonDecode(response.body);
@@ -96,23 +133,36 @@ class AdminServicioAutenticacion {
           }
         }
       } catch (_) {
-        // Si la respuesta no es JSON,
-        // utilizamos el mensaje general.
+        // La respuesta no era JSON.
       }
 
       throw Exception(mensajeError);
     } on http.ClientException {
-      throw Exception('No fue posible conectarse con el servidor.');
+      throw Exception(
+        'No fue posible conectarse con el servidor.',
+      );
     } on FormatException {
-      throw Exception('El servidor devolvió una respuesta inválida.');
+      throw Exception(
+        'El servidor devolvió una respuesta inválida.',
+      );
     } catch (e) {
       final mensaje = e.toString();
 
       if (mensaje.contains('TimeoutException')) {
-        throw Exception('El servidor tardó demasiado en responder.');
+        throw Exception(
+          'El servidor tardó demasiado en responder.',
+        );
       }
 
       rethrow;
     }
+  }
+
+  // ============================================================
+  // CERRAR SESIÓN
+  // ============================================================
+
+  static void cerrarSesion() {
+    _tokenAdmin = null;
   }
 }

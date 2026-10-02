@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/admin/admin_screen.dart';
+import 'screens/admin/pantalla_administrador.dart';
 import 'screens/mapa_screen_2.dart';
 import 'screens/publico/bienvenida_screen.dart';
 import 'screens/sitio/sitio_login_screen.dart';
@@ -50,7 +50,7 @@ class MiRutaCafeteraApp extends StatelessWidget {
         // ----------------------------------------------------
 
         '/admin': (context) {
-          return const AdminScreen(
+          return const PantallaAdministrador(
             nombre: 'Administrador',
             email: 'admin@mirutacafetera.com',
           );

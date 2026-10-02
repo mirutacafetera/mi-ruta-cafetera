@@ -2,11 +2,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-
-import 'sitio_formulario/contenedor_seccion_sitio.dart';
-import 'sitio_formulario/titulo_seccion_sitio.dart';
+import '../../../../../theme/app_colors.dart';
+import '../../../../../theme/app_dimensions.dart';
+import 'contenedor_seccion_sitio.dart';
+import 'titulo_seccion_sitio.dart';
 
 class SitioImagen extends StatelessWidget {
   final Uint8List? imagenBytes;
@@ -31,16 +30,13 @@ class SitioImagen extends StatelessWidget {
             titulo: 'Imagen principal',
             subtitulo: 'Una buena imagen ayuda a mostrar el sitio',
           ),
-
           GestureDetector(
             onTap: onSeleccionarImagen,
             child: _imagen(),
           ),
-
           const SizedBox(
-            height: AppDimensions.spacingSm + 2,
+            height: AppDimensions.spacingSm,
           ),
-
           const Row(
             children: [
               Icon(
@@ -48,11 +44,9 @@ class SitioImagen extends StatelessWidget {
                 size: AppDimensions.iconSm,
                 color: AppColors.textSecondary,
               ),
-
               SizedBox(
-                width: AppDimensions.spacingXs + 3,
+                width: AppDimensions.spacingXs,
               ),
-
               Expanded(
                 child: Text(
                   'Toca la imagen para seleccionar una foto desde la galería.',
@@ -70,8 +64,6 @@ class SitioImagen extends StatelessWidget {
   }
 
   Widget _imagen() {
-    // Si el usuario acaba de seleccionar una imagen,
-    // mostramos esa imagen.
     if (imagenBytes != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(
@@ -80,14 +72,12 @@ class SitioImagen extends StatelessWidget {
         child: Image.memory(
           imagenBytes!,
           width: double.infinity,
-          height: 190,
+          height: AppDimensions.featuredImageHeight,
           fit: BoxFit.cover,
         ),
       );
     }
 
-    // Si estamos editando y ya existe una imagen,
-    // mostramos la imagen existente.
     if (imagenesExistentes.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(
@@ -96,7 +86,7 @@ class SitioImagen extends StatelessWidget {
         child: Image.network(
           imagenesExistentes.first,
           width: double.infinity,
-          height: 190,
+          height: AppDimensions.featuredImageHeight,
           fit: BoxFit.cover,
           errorBuilder: (
             context,
@@ -109,15 +99,13 @@ class SitioImagen extends StatelessWidget {
       );
     }
 
-    // Si no existe ninguna imagen,
-    // mostramos el espacio para agregarla.
     return _placeholder();
   }
 
   Widget _placeholder() {
     return Container(
       width: double.infinity,
-      height: 190,
+      height: AppDimensions.featuredImageHeight,
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(
@@ -145,11 +133,9 @@ class SitioImagen extends StatelessWidget {
               size: 30,
             ),
           ),
-
           const SizedBox(
             height: AppDimensions.spacingMd,
           ),
-
           const Text(
             'Agregar imagen',
             style: TextStyle(
@@ -157,11 +143,9 @@ class SitioImagen extends StatelessWidget {
               color: AppColors.secondary,
             ),
           ),
-
           const SizedBox(
             height: AppDimensions.spacingXs,
           ),
-
           const Text(
             'Toca aquí para seleccionar una foto',
             style: TextStyle(
