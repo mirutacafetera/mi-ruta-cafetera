@@ -1,11 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 import '../admin_servicio_autenticacion.dart';
-
 import 'admin_sitio_consultas.dart';
 import 'admin_sitio_crud.dart';
 
-class AdminSitioService {
+class ServicioAdminSitio {
   // ============================================================
   // URL BASE
   // ============================================================
@@ -23,24 +22,15 @@ class AdminSitioService {
   // ============================================================
 
   static Future<List<dynamic>> obtenerSitios() {
-    return AdminSitioConsultas.obtenerSitios(
-      baseUrl,
-    );
+    return AdminSitioConsultas.obtenerSitios(baseUrl);
   }
 
   static Future<List<dynamic>> obtenerCategorias() {
-    return AdminSitioConsultas.obtenerCategorias(
-      baseUrl,
-    );
+    return AdminSitioConsultas.obtenerCategorias(baseUrl);
   }
 
-  static Future<Map<String, dynamic>> obtenerSitio(
-    String id,
-  ) {
-    return AdminSitioConsultas.obtenerSitio(
-      baseUrl,
-      id,
-    );
+  static Future<Map<String, dynamic>> obtenerSitio(String id) {
+    return AdminSitioConsultas.obtenerSitio(baseUrl, id);
   }
 
   // ============================================================
@@ -48,20 +38,11 @@ class AdminSitioService {
   // ============================================================
 
   static Future<Map<String, dynamic>> crearSitio({
-    // ----------------------------------------------------------
-    // DATOS DE LA CUENTA
-    // ----------------------------------------------------------
-
     required String nombreCuenta,
     required String apellidoCuenta,
     required String correo,
     required String password,
     String telefonoCuenta = '',
-
-    // ----------------------------------------------------------
-    // DATOS DEL SITIO
-    // ----------------------------------------------------------
-
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -82,28 +63,12 @@ class AdminSitioService {
   }) {
     return AdminSitioCrud.crearSitio(
       baseUrl: baseUrl,
-
-      // --------------------------------------------------------
-      // TOKEN DEL ADMINISTRADOR
-      // --------------------------------------------------------
-
-      tokenAdmin:
-          AdminServicioAutenticacion.tokenAdmin,
-
-      // --------------------------------------------------------
-      // DATOS DE LA CUENTA
-      // --------------------------------------------------------
-
+      tokenAdmin: AdminServicioAutenticacion.tokenAdmin,
       nombreCuenta: nombreCuenta,
       apellidoCuenta: apellidoCuenta,
       correo: correo,
       password: password,
       telefonoCuenta: telefonoCuenta,
-
-      // --------------------------------------------------------
-      // DATOS DEL SITIO
-      // --------------------------------------------------------
-
       nombre: nombre,
       descripcion: descripcion,
       categoria: categoria,
@@ -175,12 +140,7 @@ class AdminSitioService {
   // ELIMINAR SITIO TURÍSTICO
   // ============================================================
 
-  static Future<void> eliminarSitio(
-    String id,
-  ) {
-    return AdminSitioCrud.eliminarSitio(
-      baseUrl,
-      id,
-    );
+  static Future<void> eliminarSitio(String id) {
+    return AdminSitioCrud.eliminarSitio(baseUrl, id);
   }
 }

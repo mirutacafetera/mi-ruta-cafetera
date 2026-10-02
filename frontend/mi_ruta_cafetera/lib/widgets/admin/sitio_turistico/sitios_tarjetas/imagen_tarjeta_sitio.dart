@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_dimensions.dart';
 
 class ImagenTarjetaSitio extends StatelessWidget {
   final String? imagen;
 
-  const ImagenTarjetaSitio({super.key, required this.imagen});
+  const ImagenTarjetaSitio({
+    super.key,
+    required this.imagen,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Cuando el sitio no tiene imagen
     if (imagen == null || imagen!.isEmpty) {
       return Container(
-        width: 90,
-        height: 90,
+        width: AppDimensions.categoryCardWidth,
+        height: AppDimensions.categoryCardWidth,
         decoration: BoxDecoration(
           color: AppColors.cream,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusMd,
+          ),
         ),
         child: const Icon(
           Icons.place_outlined,
@@ -26,18 +31,19 @@ class ImagenTarjetaSitio extends StatelessWidget {
       );
     }
 
-    // Cuando el sitio tiene imagen
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(
+        AppDimensions.radiusMd,
+      ),
       child: Image.network(
         imagen!,
-        width: 90,
-        height: 90,
+        width: AppDimensions.categoryCardWidth,
+        height: AppDimensions.categoryCardWidth,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           return Container(
-            width: 90,
-            height: 90,
+            width: AppDimensions.categoryCardWidth,
+            height: AppDimensions.categoryCardWidth,
             color: AppColors.cream,
             child: const Icon(
               Icons.broken_image_outlined,

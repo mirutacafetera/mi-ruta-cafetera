@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../theme/app_dimensions.dart';
-
 import 'campo_formulario_sitio.dart';
 import 'contenedor_seccion_sitio.dart';
 import 'titulo_seccion_sitio.dart';
@@ -27,27 +26,16 @@ class SitioUbicacion extends StatelessWidget {
     return ContenedorSeccionSitio(
       contenido: Column(
         children: [
-          // =========================================================
-          // TÍTULO DE LA SECCIÓN
-          // =========================================================
           const TituloSeccionSitio(
             icono: Icons.map_outlined,
             titulo: 'Ubicación',
             subtitulo: 'Indica dónde se encuentra el sitio',
           ),
-
-          // =========================================================
-          // DIRECCIÓN
-          // =========================================================
           CampoFormularioSitio(
             controlador: direccionController,
             etiqueta: 'Dirección',
             icono: Icons.location_on_rounded,
           ),
-
-          // =========================================================
-          // CIUDAD Y DEPARTAMENTO
-          // =========================================================
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -59,11 +47,9 @@ class SitioUbicacion extends StatelessWidget {
                   obligatorio: true,
                 ),
               ),
-
               const SizedBox(
-                width: AppDimensions.spacingSm + 2,
+                width: AppDimensions.spacingSm,
               ),
-
               Expanded(
                 child: CampoFormularioSitio(
                   controlador: departamentoController,
@@ -74,10 +60,6 @@ class SitioUbicacion extends StatelessWidget {
               ),
             ],
           ),
-
-          // =========================================================
-          // LATITUD Y LONGITUD
-          // =========================================================
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -93,11 +75,9 @@ class SitioUbicacion extends StatelessWidget {
                   obligatorio: true,
                 ),
               ),
-
               const SizedBox(
-                width: AppDimensions.spacingSm + 2,
+                width: AppDimensions.spacingSm,
               ),
-
               Expanded(
                 child: CampoFormularioSitio(
                   controlador: longitudController,

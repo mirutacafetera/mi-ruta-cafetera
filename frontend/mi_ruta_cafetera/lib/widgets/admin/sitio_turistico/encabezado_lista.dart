@@ -27,9 +27,9 @@ class EncabezadoLista extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
+        AppDimensions.pageHorizontalSmall,
         AppDimensions.spacingLg,
-        AppDimensions.spacingLg,
-        AppDimensions.spacingLg,
+        AppDimensions.pageHorizontalSmall,
         AppDimensions.spacingSm,
       ),
       child: Row(
@@ -53,18 +53,19 @@ class EncabezadoLista extends StatelessWidget {
               ],
             ),
           ),
-
           IconButton(
             tooltip: 'Actualizar',
             onPressed: cargando ? null : onActualizar,
-            icon: const Icon(Icons.refresh, color: AppColors.primary),
+            icon: const Icon(
+              Icons.refresh,
+              color: AppColors.primary,
+              size: AppDimensions.iconMd,
+            ),
           ),
-
           const SizedBox(width: AppDimensions.spacingXs),
-
           FilledButton.icon(
             onPressed: onNuevo,
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add, size: AppDimensions.iconMd),
             label: Text(textoNuevo),
           ),
         ],

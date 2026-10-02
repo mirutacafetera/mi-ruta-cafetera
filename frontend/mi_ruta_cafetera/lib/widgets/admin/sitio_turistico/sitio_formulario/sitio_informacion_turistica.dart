@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../theme/app_colors.dart';
 import '../../../../../theme/app_dimensions.dart';
-
 import 'campo_formulario_sitio.dart';
 import 'contenedor_seccion_sitio.dart';
 import 'titulo_seccion_sitio.dart';
@@ -31,13 +30,11 @@ class SitioInformacionTuristica extends StatelessWidget {
             titulo: 'Información turística',
             subtitulo: 'Información útil para los visitantes',
           ),
-
           CampoFormularioSitio(
             controlador: horarioController,
             etiqueta: 'Horario de atención',
             icono: Icons.schedule_rounded,
           ),
-
           CampoFormularioSitio(
             controlador: precioController,
             etiqueta: 'Precio desde',
@@ -46,10 +43,9 @@ class SitioInformacionTuristica extends StatelessWidget {
               decimal: true,
             ),
           ),
-
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd + 2,
+              horizontal: AppDimensions.spacingMd,
               vertical: AppDimensions.spacingSm,
             ),
             decoration: BoxDecoration(
@@ -64,7 +60,6 @@ class SitioInformacionTuristica extends StatelessWidget {
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
               activeThumbColor: AppColors.primary,
-
               title: const Text(
                 'Sitio activo',
                 style: TextStyle(
@@ -72,7 +67,6 @@ class SitioInformacionTuristica extends StatelessWidget {
                   color: AppColors.secondary,
                 ),
               ),
-
               subtitle: Text(
                 activo
                     ? 'Disponible para los visitantes'
@@ -82,7 +76,6 @@ class SitioInformacionTuristica extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
               ),
-
               value: activo,
               onChanged: onActivoChanged,
             ),

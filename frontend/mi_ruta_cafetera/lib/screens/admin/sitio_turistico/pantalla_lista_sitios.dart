@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../../controllers/admin/sitio/controlador_lista_sitios.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-
+import '../../../controllers/admin/sitio/lista_sitios.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
 import '../../../widgets/admin/sitio_turistico/barra_busqueda.dart';
 import '../../../widgets/admin/sitio_turistico/encabezado_lista.dart';
-import '../../../widgets/admin/sitio_turistico/formulario_sitio.dart';
 import '../../../widgets/admin/sitio_turistico/sitios_tarjetas/informacion_sitios.dart';
 import '../../../widgets/admin/sitio_turistico/sitios_tarjetas/tarjeta_sitio.dart';
+
+import 'formulario_sitio.dart';
 
 class PantallaListaSitios extends StatefulWidget {
   const PantallaListaSitios({super.key});
@@ -18,13 +18,13 @@ class PantallaListaSitios extends StatefulWidget {
 }
 
 class _PantallaListaSitiosState extends State<PantallaListaSitios> {
-  late final ControladorListaSitios controlador;
+  late final ListaSitios controlador;
 
   @override
   void initState() {
     super.initState();
 
-    controlador = ControladorListaSitios();
+    controlador = ListaSitios();
     controlador.addListener(_actualizar);
     controlador.cargarDatos();
   }
@@ -35,21 +35,35 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
     }
   }
 
+  // ============================================================
+  // CREAR SITIO
+  // ============================================================
+
   Future<void> _crearSitio() async {
     final resultado = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => FormularioSitio(
-        categorias: controlador.categorias,
-      ),
+      builder: (contextModal) {
+        return FormularioSitio(categorias: controlador.categorias);
+      },
     );
+
+    if (!mounted) return;
 
     if (resultado == true) {
       await controlador.cargarDatos();
+
+      if (!mounted) return;
+
+      _mostrarMensaje('Sitio turístico creado correctamente.');
     }
   }
+
+  // ============================================================
+  // EDITAR SITIO
+  // ============================================================
 
   Future<void> _editarSitio(Map<String, dynamic> sitio) async {
     final resultado = await showModalBottomSheet<bool>(
@@ -57,25 +71,34 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => FormularioSitio(
-        sitio: sitio,
-        categorias: controlador.categorias,
-      ),
+      builder: (contextModal) {
+        return FormularioSitio(
+          sitio: sitio,
+          categorias: controlador.categorias,
+        );
+      },
     );
+
+    if (!mounted) return;
 
     if (resultado == true) {
       await controlador.cargarDatos();
+
+      if (!mounted) return;
+
+      _mostrarMensaje('Sitio turístico actualizado correctamente.');
     }
   }
+
+  // ============================================================
+  // ELIMINAR SITIO
+  // ============================================================
 
   Future<void> _eliminarSitio(Map<String, dynamic> sitio) async {
     final id = controlador.obtenerId(sitio);
 
     if (id == null || id.isEmpty) {
-      _mostrarMensaje(
-        'No se encontró el ID del sitio.',
-        error: true,
-      );
+      _mostrarMensaje('No se encontró el ID del sitio.', error: true);
       return;
     }
 
@@ -83,29 +106,35 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
 
     final confirmar = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Eliminar sitio'),
-        content: Text(
-          '¿Seguro que deseas eliminar "$nombre"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: AppColors.white,
+      builder: (contextDialogo) {
+        return AlertDialog(
+          title: const Text('Eliminar sitio'),
+          content: Text('¿Seguro que deseas eliminar "$nombre"?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(contextDialogo).pop(false);
+              },
+              child: const Text('Cancelar'),
             ),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: AppColors.white,
+              ),
+              onPressed: () {
+                Navigator.of(contextDialogo).pop(true);
+              },
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
     );
 
-    if (confirmar != true) return;
+    if (confirmar != true) {
+      return;
+    }
 
     try {
       await controlador.eliminarSitio(id);
@@ -116,36 +145,30 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
     } catch (e) {
       if (!mounted) return;
 
-      _mostrarMensaje(
-        'Error al eliminar el sitio: $e',
-        error: true,
-      );
+      _mostrarMensaje('Error al eliminar el sitio: $e', error: true);
     }
   }
 
-  void _mostrarMensaje(
-    String mensaje, {
-    bool error = false,
-  }) {
+  // ============================================================
+  // MENSAJES
+  // ============================================================
+
+  void _mostrarMensaje(String mensaje, {bool error = false}) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           content: Text(mensaje),
-          backgroundColor:
-              error ? AppColors.error : AppColors.success,
+          backgroundColor: error ? AppColors.error : AppColors.success,
           behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(
-            AppDimensions.spacingMd,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              AppDimensions.radiusMd,
-            ),
-          ),
+          margin: const EdgeInsets.all(AppDimensions.spacingMd),
         ),
       );
   }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -162,23 +185,26 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
           onActualizar: controlador.cargarDatos,
           onNuevo: _crearSitio,
         ),
+
         BarraBusqueda(
           valor: controlador.busqueda,
-          textoAyuda:
-              'Buscar por nombre, ciudad, dirección o categoría...',
+          textoAyuda: 'Buscar por nombre, ciudad, dirección o categoría...',
           onChanged: controlador.buscar,
           onLimpiar: controlador.limpiarBusqueda,
         ),
+
         Expanded(
           child: controlador.cargando
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
+              ? const Center(child: CircularProgressIndicator())
               : _contenido(sitios),
         ),
       ],
     );
   }
+
+  // ============================================================
+  // CONTENIDO
+  // ============================================================
 
   Widget _contenido(List<Map<String, dynamic>> sitios) {
     if (sitios.isEmpty) {
@@ -198,7 +224,7 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
           AppDimensions.spacingXl,
         ),
         itemCount: sitios.length,
-        itemBuilder: (_, index) {
+        itemBuilder: (context, index) {
           final sitio = sitios[index];
 
           return TarjetaSitio(
@@ -213,6 +239,10 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
       ),
     );
   }
+
+  // ============================================================
+  // DISPOSE
+  // ============================================================
 
   @override
   void dispose() {

@@ -15,10 +15,12 @@ class EtiquetaSitio extends StatelessWidget {
     this.activo,
   });
 
-  const EtiquetaSitio.estado({super.key, required bool activo})
-    : texto = activo ? 'Activo' : 'Inactivo',
-      icono = Icons.circle,
-      activo = activo;
+  const EtiquetaSitio.estado({
+    super.key,
+    required bool activo,
+  }) : texto = activo ? 'Activo' : 'Inactivo',
+       icono = Icons.circle,
+       activo = activo;
 
   @override
   Widget build(BuildContext context) {
@@ -26,35 +28,45 @@ class EtiquetaSitio extends StatelessWidget {
 
     final colorFondo = esEstado
         ? activo!
-              ? AppColors.success.withValues(alpha: 0.12)
-              : AppColors.error.withValues(alpha: 0.12)
+            ? AppColors.success.withValues(alpha: 0.12)
+            : AppColors.error.withValues(alpha: 0.12)
         : AppColors.divider;
 
     final colorTexto = esEstado
         ? activo!
-              ? AppColors.success
-              : AppColors.error
+            ? AppColors.success
+            : AppColors.error
         : AppColors.textSecondary;
 
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs + 1,
+        vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
         color: colorFondo,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.chipRadius,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icono, size: 14, color: colorTexto),
-          const SizedBox(width: AppDimensions.spacingXs),
+          Icon(
+            icono,
+            size: AppDimensions.iconSm,
+            color: colorTexto,
+          ),
+          const SizedBox(
+            width: AppDimensions.spacingXs,
+          ),
           Text(
             texto,
             style: TextStyle(
               fontSize: 12,
-              fontWeight: esEstado ? FontWeight.w600 : FontWeight.normal,
+              fontWeight: esEstado
+                  ? FontWeight.w600
+                  : FontWeight.normal,
               color: colorTexto,
             ),
           ),

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../services/admin/sitio/admin_sitio_service.dart';
+import '../../../services/admin/sitio/servicio_admin_sitio.dart';
 
-class ControladorListaSitios extends ChangeNotifier {
+class ListaSitios extends ChangeNotifier {
   List<Map<String, dynamic>> sitios = [];
   List<Map<String, dynamic>> categorias = [];
 
@@ -14,18 +14,24 @@ class ControladorListaSitios extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final respuestaSitios = await AdminSitioService.obtenerSitios();
-      final respuestaCategorias =
-          await AdminSitioService.obtenerCategorias();
+      final datosSitios =
+          await ServicioAdminSitio.obtenerSitios();
 
-      sitios = respuestaSitios
+      final datosCategorias =
+          await ServicioAdminSitio.obtenerCategorias();
+
+      sitios = datosSitios
           .whereType<Map>()
-          .map((e) => Map<String, dynamic>.from(e))
+          .map(
+            (e) => Map<String, dynamic>.from(e),
+          )
           .toList();
 
-      categorias = respuestaCategorias
+      categorias = datosCategorias
           .whereType<Map>()
-          .map((e) => Map<String, dynamic>.from(e))
+          .map(
+            (e) => Map<String, dynamic>.from(e),
+          )
           .toList();
     } finally {
       cargando = false;
@@ -52,15 +58,16 @@ class ControladorListaSitios extends ChangeNotifier {
 
     return sitios.where((sitio) {
       final nombre =
-          (sitio['nombre'] ?? '').toString().toLowerCase();
+          '${sitio['nombre'] ?? ''}'.toLowerCase();
 
       final ciudad =
-          (sitio['ciudad'] ?? '').toString().toLowerCase();
+          '${sitio['ciudad'] ?? ''}'.toLowerCase();
 
       final direccion =
-          (sitio['direccion'] ?? '').toString().toLowerCase();
+          '${sitio['direccion'] ?? ''}'.toLowerCase();
 
-      final categoria = obtenerCategoria(sitio).toLowerCase();
+      final categoria =
+          obtenerCategoria(sitio).toLowerCase();
 
       return nombre.contains(texto) ||
           ciudad.contains(texto) ||
@@ -70,14 +77,16 @@ class ControladorListaSitios extends ChangeNotifier {
   }
 
   Future<void> eliminarSitio(String id) async {
-    await AdminSitioService.eliminarSitio(id);
+    await ServicioAdminSitio.eliminarSitio(id);
     await cargarDatos();
   }
 
   String? obtenerId(Map<String, dynamic> sitio) {
     final id = sitio['_id'] ?? sitio['id'];
 
-    if (id == null) return null;
+    if (id == null) {
+      return null;
+    }
 
     if (id is Map) {
       return id[r'$oid']?.toString();
@@ -94,24 +103,17 @@ class ControladorListaSitios extends ChangeNotifier {
     }
 
     if (categoria is String) {
-      final encontrada = categorias.cast<Map<String, dynamic>?>().firstWhere(
-        (item) => item?['_id']?.toString() == categoria,
-        orElse: () => null,
+      final encontrada = categorias.where(
+        (item) => item['_id']?.toString() == categoria,
       );
 
-      if (encontrada != null) {
-        return (encontrada['nombre'] ?? 'Sin categoría').toString();
-      }
-
-      return categoria;
+      return encontrada.isNotEmpty
+          ? '${encontrada.first['nombre'] ?? 'Sin categoría'}'
+          : categoria;
     }
 
     if (categoria is Map) {
-      return (
-        categoria['nombre'] ??
-        categoria['name'] ??
-        'Sin categoría'
-      ).toString();
+      return '${categoria['nombre'] ?? categoria['name'] ?? 'Sin categoría'}';
     }
 
     return categoria.toString();
@@ -124,27 +126,18 @@ class ControladorListaSitios extends ChangeNotifier {
       return activo;
     }
 
-    if (activo != null) {
-      final texto = activo.toString().toLowerCase().trim();
+    final texto = activo?.toString().toLowerCase().trim();
 
-      if (texto == 'true' || texto == 'activo' || texto == 'activa') {
-        return true;
-      }
-
-      if (texto == 'false' ||
-          texto == 'inactivo' ||
-          texto == 'inactiva') {
-        return false;
-      }
-    }
-
-    return true;
+    return texto != 'false' &&
+        texto != 'inactivo' &&
+        texto != 'inactiva';
   }
 
   String? obtenerImagen(Map<String, dynamic> sitio) {
     final imagen = sitio['imagen'];
 
-    if (imagen != null && imagen.toString().trim().isNotEmpty) {
+    if (imagen != null &&
+        imagen.toString().trim().isNotEmpty) {
       return imagen.toString();
     }
 
@@ -166,6 +159,7 @@ class ControladorListaSitios extends ChangeNotifier {
   void dispose() {
     sitios.clear();
     categorias.clear();
+
     super.dispose();
   }
 }

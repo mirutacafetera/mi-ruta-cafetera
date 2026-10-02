@@ -26,45 +26,50 @@ class TarjetaSitio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nombre = (sitio['nombre'] ?? 'Sin nombre').toString();
-
-    final descripcion = (sitio['descripcion'] ?? 'Sin descripción').toString();
-
+    final descripcion =
+        (sitio['descripcion'] ?? 'Sin descripción').toString();
     final ciudad = (sitio['ciudad'] ?? '').toString();
-
     final direccion = (sitio['direccion'] ?? '').toString();
 
     return Card(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+      margin: const EdgeInsets.only(
+        bottom: AppDimensions.spacingMd,
+      ),
       elevation: AppDimensions.elevationCard,
       color: AppColors.surface,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioCardRadius,
+        ),
+        side: const BorderSide(
+          color: AppColors.border,
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        padding: const EdgeInsets.all(
+          AppDimensions.sitioContentPadding,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ==================================================
-            // IMAGEN
-            // ==================================================
-            ImagenTarjetaSitio(imagen: imagen),
-
-            const SizedBox(width: AppDimensions.spacingMd + 2),
-
+            ImagenTarjetaSitio(
+              imagen: imagen,
+            ),
+            const SizedBox(
+              width: AppDimensions.spacingMd,
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ============================================
-                  // NOMBRE Y MENÚ
-                  // ============================================
                   Row(
                     children: [
                       Expanded(
                         child: Text(
                           nombre,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 17,
@@ -72,14 +77,15 @@ class TarjetaSitio extends StatelessWidget {
                           ),
                         ),
                       ),
-
                       PopupMenuButton<String>(
+                        icon: const Icon(
+                          Icons.more_vert,
+                          color: AppColors.textSecondary,
+                        ),
                         onSelected: (opcion) {
                           if (opcion == 'editar') {
                             onEditar();
-                          }
-
-                          if (opcion == 'eliminar') {
+                          } else if (opcion == 'eliminar') {
                             onEliminar();
                           }
                         },
@@ -92,7 +98,9 @@ class TarjetaSitio extends StatelessWidget {
                                   Icons.edit_outlined,
                                   color: AppColors.primary,
                                 ),
-                                SizedBox(width: AppDimensions.spacingSm + 2),
+                                SizedBox(
+                                  width: AppDimensions.spacingSm,
+                                ),
                                 Text('Editar'),
                               ],
                             ),
@@ -105,7 +113,9 @@ class TarjetaSitio extends StatelessWidget {
                                   Icons.delete_outline,
                                   color: AppColors.error,
                                 ),
-                                SizedBox(width: AppDimensions.spacingSm + 2),
+                                SizedBox(
+                                  width: AppDimensions.spacingSm,
+                                ),
                                 Text('Eliminar'),
                               ],
                             ),
@@ -114,49 +124,42 @@ class TarjetaSitio extends StatelessWidget {
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: AppDimensions.spacingXs + 1),
-
-                  // ============================================
-                  // ETIQUETAS
-                  // ============================================
+                  const SizedBox(
+                    height: AppDimensions.spacingXs,
+                  ),
                   Wrap(
-                    spacing: AppDimensions.spacingXs + 2,
-                    runSpacing: AppDimensions.spacingXs + 2,
+                    spacing: AppDimensions.spacingXs,
+                    runSpacing: AppDimensions.spacingXs,
                     children: [
                       EtiquetaSitio(
                         texto: categoria,
                         icono: Icons.category_outlined,
                       ),
-
                       if (ciudad.isNotEmpty)
                         EtiquetaSitio(
                           texto: ciudad,
                           icono: Icons.location_city_outlined,
                         ),
-
-                      EtiquetaSitio.estado(activo: activo),
+                      EtiquetaSitio.estado(
+                        activo: activo,
+                      ),
                     ],
                   ),
-
-                  const SizedBox(height: AppDimensions.spacingSm),
-
-                  // ============================================
-                  // DESCRIPCIÓN
-                  // ============================================
+                  const SizedBox(
+                    height: AppDimensions.spacingSm,
+                  ),
                   Text(
                     descripcion,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-
-                  // ============================================
-                  // DIRECCIÓN
-                  // ============================================
                   if (direccion.isNotEmpty) ...[
-                    const SizedBox(height: AppDimensions.spacingSm),
-
+                    const SizedBox(
+                      height: AppDimensions.spacingSm,
+                    ),
                     Row(
                       children: [
                         const Icon(
@@ -164,9 +167,9 @@ class TarjetaSitio extends StatelessWidget {
                           size: AppDimensions.iconSm,
                           color: AppColors.textSecondary,
                         ),
-
-                        const SizedBox(width: AppDimensions.spacingXs + 1),
-
+                        const SizedBox(
+                          width: AppDimensions.spacingXs,
+                        ),
                         Expanded(
                           child: Text(
                             direccion,

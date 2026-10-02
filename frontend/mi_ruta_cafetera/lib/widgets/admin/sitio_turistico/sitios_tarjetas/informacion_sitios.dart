@@ -28,11 +28,9 @@ class InformacionSitios extends StatelessWidget {
               size: 70,
               color: AppColors.textLight,
             ),
-
             const SizedBox(
               height: AppDimensions.spacingLg,
             ),
-
             Text(
               buscando
                   ? 'No se encontraron sitios'
@@ -44,11 +42,9 @@ class InformacionSitios extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(
               height: AppDimensions.spacingSm,
             ),
-
             Text(
               buscando
                   ? 'Prueba con otro nombre, ciudad, dirección o categoría.'
@@ -58,12 +54,10 @@ class InformacionSitios extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
             ),
-
             if (!buscando) ...[
               const SizedBox(
                 height: AppDimensions.spacingXl,
               ),
-
               FilledButton.icon(
                 onPressed: onRegistrar,
                 icon: const Icon(

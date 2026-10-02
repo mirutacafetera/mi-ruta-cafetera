@@ -30,15 +30,23 @@ class BarraBusqueda extends StatelessWidget {
         onChanged: onChanged,
         decoration: InputDecoration(
           hintText: textoAyuda,
-          prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+          prefixIcon: const Icon(
+            Icons.search,
+            color: AppColors.primary,
+          ),
           suffixIcon: valor.isNotEmpty
               ? IconButton(
                   onPressed: onLimpiar,
-                  icon: const Icon(Icons.clear, color: AppColors.textSecondary),
+                  icon: const Icon(
+                    Icons.clear,
+                    color: AppColors.textSecondary,
+                  ),
                 )
               : null,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.searchRadius,
+            ),
           ),
         ),
       ),

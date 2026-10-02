@@ -18,22 +18,32 @@ class TituloSeccionSitio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
+      padding: const EdgeInsets.only(
+        bottom: AppDimensions.spacingLg,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: AppDimensions.circularButtonSmall,
+            height: AppDimensions.circularButtonSmall,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusMd + 1),
+              color: AppColors.primary.withValues(
+                alpha: 0.10,
+              ),
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
             ),
-            child: Icon(icono, color: AppColors.primary, size: 22),
+            child: Icon(
+              icono,
+              color: AppColors.primary,
+              size: AppDimensions.iconMd,
+            ),
           ),
-
-          const SizedBox(width: AppDimensions.spacingMd),
-
+          const SizedBox(
+            width: AppDimensions.spacingMd,
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,9 +56,9 @@ class TituloSeccionSitio extends StatelessWidget {
                     color: AppColors.secondary,
                   ),
                 ),
-
-                const SizedBox(height: AppDimensions.spacingXs - 1),
-
+                const SizedBox(
+                  height: AppDimensions.spacingXs,
+                ),
                 Text(
                   subtitulo,
                   style: const TextStyle(

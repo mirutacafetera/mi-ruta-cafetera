@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 class AdminEncabezadoMenu extends StatelessWidget {
   final String nombre;
@@ -15,12 +16,14 @@ class AdminEncabezadoMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return UserAccountsDrawerHeader(
-      decoration: const BoxDecoration(color: AppColors.primary),
+      decoration: const BoxDecoration(
+        color: AppColors.primary,
+      ),
       currentAccountPicture: const CircleAvatar(
         backgroundColor: AppColors.white,
         child: Icon(
           Icons.admin_panel_settings,
-          size: 35,
+          size: AppDimensions.iconLg,
           color: AppColors.primary,
         ),
       ),
@@ -31,7 +34,12 @@ class AdminEncabezadoMenu extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      accountEmail: Text(email, style: const TextStyle(color: AppColors.white)),
+      accountEmail: Text(
+        email,
+        style: const TextStyle(
+          color: AppColors.white,
+        ),
+      ),
     );
   }
 }
