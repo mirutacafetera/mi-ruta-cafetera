@@ -4,49 +4,39 @@ class ApiConfig {
   ApiConfig._();
 
   // ============================================================
-  // CONFIGURACIÓN DEL SERVIDOR
+  // IP DEL PC EN LA RED LOCAL
+  // ============================================================
+  //
+  // Esta es la IPv4 actual obtenida mediante ipconfig.
+  //
+  // PC:
+  // 192.168.1.102
+  //
+  // Android:
+  // utiliza esta IP para comunicarse con Node.js.
   // ============================================================
 
-  // IP del computador dentro de la red Wi-Fi.
-  //
-  // Esta es la IP de tu PC:
-  // 192.168.100.41
-  //
-  // El Motorola debe estar conectado a la misma red Wi-Fi.
-  static const String _ipPc = '192.168.100.41';
+  static const String _ipPc = '192.168.1.111';
 
   // ============================================================
-  // URL BASE DE LA API
+  // URL BASE
   // ============================================================
 
   static String get baseUrl {
-    // ----------------------------------------------------------
-    // FLUTTER WEB / CHROME
-    // ----------------------------------------------------------
+    // Flutter Web se ejecuta directamente en el PC,
+    // por lo tanto puede utilizar localhost.
+
     if (kIsWeb) {
       return 'http://localhost:3000/api';
     }
 
-    // ----------------------------------------------------------
-    // ANDROID
-    // ----------------------------------------------------------
-    //
-    // Para el Motorola físico utilizamos la IP del PC.
-    //
-    // IMPORTANTE:
-    // El teléfono y el computador deben estar conectados
-    // a la misma red Wi-Fi.
-    //
+    // Android / dispositivo físico:
+    // utiliza la IP del PC dentro de la red Wi-Fi.
     return 'http://$_ipPc:3000/api';
   }
 
   // ============================================================
   // CHAT
-  // ============================================================
-  //
-  // Backend:
-  // POST /api/chat
-  //
   // ============================================================
 
   static String get chatUrl {
@@ -54,12 +44,7 @@ class ApiConfig {
   }
 
   // ============================================================
-  // SITIOS / PUNTOS DE INTERÉS
-  // ============================================================
-  //
-  // Backend:
-  // GET /api/sitios
-  //
+  // SITIOS TURÍSTICOS
   // ============================================================
 
   static String get sitiosUrl {
@@ -67,12 +52,7 @@ class ApiConfig {
   }
 
   // ============================================================
-  // CATEGORÍAS
-  // ============================================================
-  //
-  // Backend:
-  // GET /api/categorias
-  //
+  // CATEGORÍAS GENERALES
   // ============================================================
 
   static String get categoriasUrl {
@@ -80,14 +60,7 @@ class ApiConfig {
   }
 
   // ============================================================
-  // CATEGORÍAS DE SITIOS
-  // ============================================================
-  //
-  // Se conserva porque puede ser utilizada por otros módulos.
-  //
-  // Backend:
-  // GET /api/categorias-sitios
-  //
+  // CATEGORÍAS DE SITIOS TURÍSTICOS
   // ============================================================
 
   static String get categoriasSitiosUrl {
@@ -97,11 +70,6 @@ class ApiConfig {
   // ============================================================
   // RUTAS
   // ============================================================
-  //
-  // Backend:
-  // GET /api/rutas
-  //
-  // ============================================================
 
   static String get rutasUrl {
     return '$baseUrl/rutas';
@@ -109,11 +77,6 @@ class ApiConfig {
 
   // ============================================================
   // CALCULAR RUTA
-  // ============================================================
-  //
-  // Backend:
-  // POST /api/rutas/calcular
-  //
   // ============================================================
 
   static String get calcularRutaUrl {
