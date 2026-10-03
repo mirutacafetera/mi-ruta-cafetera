@@ -1,26 +1,31 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../config/api_config.dart';
 
 class AdminServicioAutenticacion {
   AdminServicioAutenticacion._();
 
-  // ============================================================
-  // TOKEN DEL ADMINISTRADOR
-  // ============================================================
+  static const String _claveToken = 'token_admin';
 
   static String? _tokenAdmin;
 
   static String? get tokenAdmin => _tokenAdmin;
 
-  // ============================================================
-  // URL DE INICIO DE SESIÓN
-  // ============================================================
-
   static String get urlInicioSesion {
     return '${ApiConfig.baseUrl}/admin/administradores/login';
+  }
+
+  // ============================================================
+  // CARGAR TOKEN GUARDADO
+  // ============================================================
+
+  static Future<void> cargarToken() async {
+    final preferencias = await SharedPreferences.getInstance();
+
+    _tokenAdmin = preferencias.getString(_claveToken);
   }
 
   // ============================================================
@@ -48,10 +53,6 @@ class AdminServicioAutenticacion {
             const Duration(seconds: 15),
           );
 
-      // ========================================================
-      // RESPUESTA EXITOSA
-      // ========================================================
-
       if (response.statusCode >= 200 &&
           response.statusCode < 300) {
         if (response.body.isEmpty) {
@@ -62,62 +63,51 @@ class AdminServicioAutenticacion {
 
         final data = jsonDecode(response.body);
 
-        if (data is Map<String, dynamic>) {
-          final token = data['token'];
-          final administrador = data['administrador'];
-
-          // ----------------------------------------------------
-          // VALIDAR TOKEN
-          // ----------------------------------------------------
-
-          if (token == null ||
-              token.toString().trim().isEmpty) {
-            throw Exception(
-              'El servidor no devolvió el token de autenticación.',
-            );
-          }
-
-          // ----------------------------------------------------
-          // VALIDAR ADMINISTRADOR
-          // ----------------------------------------------------
-
-          if (administrador == null ||
-              administrador is! Map<String, dynamic>) {
-            throw Exception(
-              'El servidor no devolvió los datos del administrador.',
-            );
-          }
-
-          // ----------------------------------------------------
-          // VALIDAR ROL
-          // ----------------------------------------------------
-
-          if (administrador['rol'] != 'admin') {
-            throw Exception(
-              'La cuenta no tiene permisos de administrador.',
-            );
-          }
-
-          // ----------------------------------------------------
-          // GUARDAR TOKEN
-          // ----------------------------------------------------
-
-          _tokenAdmin = token.toString().trim();
-
-          return {
-            'token': _tokenAdmin,
-            'administrador': administrador,
-          };
+        if (data is! Map<String, dynamic>) {
+          throw Exception(
+            'La respuesta del servidor tiene un formato inválido.',
+          );
         }
 
-        throw Exception(
-          'La respuesta del servidor tiene un formato inválido.',
-        );
-      }
+        final token = data['token'];
+        final administrador = data['administrador'];
 
-      // ========================================================
-      // RESPUESTA DE ERROR
-      // ========================================================
+        if (token == null ||
+            token.toString().trim().isEmpty) {
+          throw Exception(
+            'El servidor no devolvió el token de autenticación.',
+          );
+        }
+
+        if (administrador == null ||
+            administrador is! Map<String, dynamic>) {
+          throw Exception(
+            'El servidor no devolvió los datos del administrador.',
+          );
+        }
+
+        if (administrador['rol'] != 'admin') {
+          throw Exception(
+            'La cuenta no tiene permisos de administrador.',
+          );
+        }
+
+        _tokenAdmin = token.toString().trim();
+
+        // Guardar token
+        final preferencias =
+            await SharedPreferences.getInstance();
+
+        await preferencias.setString(
+          _claveToken,
+          _tokenAdmin!,
+        );
+
+        return {
+          'token': _tokenAdmin,
+          'administrador': administrador,
+        };
+      }
 
       String mensajeError =
           'No fue posible iniciar sesión.';
@@ -132,9 +122,7 @@ class AdminServicioAutenticacion {
             mensajeError = data['error'].toString();
           }
         }
-      } catch (_) {
-        // La respuesta no era JSON.
-      }
+      } catch (_) {}
 
       throw Exception(mensajeError);
     } on http.ClientException {
@@ -162,7 +150,12 @@ class AdminServicioAutenticacion {
   // CERRAR SESIÓN
   // ============================================================
 
-  static void cerrarSesion() {
+  static Future<void> cerrarSesion() async {
     _tokenAdmin = null;
+
+    final preferencias =
+        await SharedPreferences.getInstance();
+
+    await preferencias.remove(_claveToken);
   }
 }

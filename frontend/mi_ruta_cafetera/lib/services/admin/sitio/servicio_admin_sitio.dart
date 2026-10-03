@@ -1,20 +1,27 @@
-import 'package:flutter/foundation.dart';
-
 import '../admin_servicio_autenticacion.dart';
 import 'admin_sitio_consultas.dart';
 import 'admin_sitio_crud.dart';
+
+import '../../../config/api_config.dart';
 
 class ServicioAdminSitio {
   // ============================================================
   // URL BASE
   // ============================================================
 
-  static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:3000/api';
-    }
+  // La URL la controla ApiConfig.
+  //
+  // EMULADOR ANDROID:
+  // http://10.0.2.2:3000/api
+  //
+  // CELULAR FÍSICO:
+  // http://192.168.1.112:3000/api
+  //
+  // WEB:
+  // http://localhost:3000/api
 
-    return 'http://10.0.2.2:3000/api';
+  static String get baseUrl {
+    return ApiConfig.baseUrl;
   }
 
   // ============================================================
@@ -141,6 +148,9 @@ class ServicioAdminSitio {
   // ============================================================
 
   static Future<void> eliminarSitio(String id) {
-    return AdminSitioCrud.eliminarSitio(baseUrl, id);
+    return AdminSitioCrud.eliminarSitio(
+      baseUrl,
+      id,
+    );
   }
 }
