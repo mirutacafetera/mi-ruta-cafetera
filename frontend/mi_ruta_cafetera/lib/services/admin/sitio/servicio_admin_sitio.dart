@@ -1,19 +1,27 @@
-import 'package:flutter/foundation.dart';
-
+import '../admin_servicio_autenticacion.dart';
 import 'admin_sitio_consultas.dart';
 import 'admin_sitio_crud.dart';
 
-class AdminSitioService {
+import '../../../config/api_config.dart';
+
+class ServicioAdminSitio {
   // ============================================================
   // URL BASE
   // ============================================================
 
-  static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:3000/api';
-    }
+  // La URL la controla ApiConfig.
+  //
+  // EMULADOR ANDROID:
+  // http://10.0.2.2:3000/api
+  //
+  // CELULAR FÍSICO:
+  // http://192.168.1.112:3000/api
+  //
+  // WEB:
+  // http://localhost:3000/api
 
-    return 'http://10.0.2.2:3000/api';
+  static String get baseUrl {
+    return ApiConfig.baseUrl;
   }
 
   // ============================================================
@@ -28,17 +36,12 @@ class AdminSitioService {
     return AdminSitioConsultas.obtenerCategorias(baseUrl);
   }
 
-  static Future<Map<String, dynamic>> obtenerSitio(
-    String id,
-  ) {
-    return AdminSitioConsultas.obtenerSitio(
-      baseUrl,
-      id,
-    );
+  static Future<Map<String, dynamic>> obtenerSitio(String id) {
+    return AdminSitioConsultas.obtenerSitio(baseUrl, id);
   }
 
   // ============================================================
-  // CRUD
+  // CREAR SITIO TURÍSTICO
   // ============================================================
 
   static Future<Map<String, dynamic>> crearSitio({
@@ -67,6 +70,7 @@ class AdminSitioService {
   }) {
     return AdminSitioCrud.crearSitio(
       baseUrl: baseUrl,
+      tokenAdmin: AdminServicioAutenticacion.tokenAdmin,
       nombreCuenta: nombreCuenta,
       apellidoCuenta: apellidoCuenta,
       correo: correo,
@@ -92,10 +96,12 @@ class AdminSitioService {
     );
   }
 
+  // ============================================================
+  // ACTUALIZAR SITIO TURÍSTICO
+  // ============================================================
+
   static Future<void> actualizarSitio({
     required String id,
-    String? correo,
-    String? password,
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -117,8 +123,6 @@ class AdminSitioService {
     return AdminSitioCrud.actualizarSitio(
       baseUrl: baseUrl,
       id: id,
-      correo: correo,
-      password: password,
       nombre: nombre,
       descripcion: descripcion,
       categoria: categoria,
@@ -139,9 +143,11 @@ class AdminSitioService {
     );
   }
 
-  static Future<void> eliminarSitio(
-    String id,
-  ) {
+  // ============================================================
+  // ELIMINAR SITIO TURÍSTICO
+  // ============================================================
+
+  static Future<void> eliminarSitio(String id) {
     return AdminSitioCrud.eliminarSitio(
       baseUrl,
       id,

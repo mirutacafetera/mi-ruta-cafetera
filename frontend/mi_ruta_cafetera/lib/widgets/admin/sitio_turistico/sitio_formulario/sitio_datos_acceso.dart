@@ -6,7 +6,6 @@ import 'titulo_seccion_sitio.dart';
 
 class SitioDatosAcceso extends StatelessWidget {
   final bool esEdicion;
-
   final TextEditingController controladorNombre;
   final TextEditingController controladorApellido;
   final TextEditingController controladorCorreo;
@@ -35,21 +34,18 @@ class SitioDatosAcceso extends StatelessWidget {
                 ? 'Información del responsable'
                 : 'Cuenta que administrará este sitio',
           ),
-
           CampoFormularioSitio(
             controlador: controladorNombre,
             etiqueta: 'Nombre del responsable',
             icono: Icons.person_rounded,
             obligatorio: !esEdicion,
           ),
-
           CampoFormularioSitio(
             controlador: controladorApellido,
             etiqueta: 'Apellido del responsable',
             icono: Icons.person_outline_rounded,
             obligatorio: !esEdicion,
           ),
-
           CampoFormularioSitio(
             controlador: controladorCorreo,
             etiqueta: 'Correo de acceso',
@@ -57,15 +53,15 @@ class SitioDatosAcceso extends StatelessWidget {
             tipoTeclado: TextInputType.emailAddress,
             obligatorio: !esEdicion,
           ),
-
           CampoFormularioSitio(
             controlador: controladorContrasena,
-            etiqueta: esEdicion ? 'Nueva contraseña (opcional)' : 'Contraseña',
+            etiqueta: esEdicion
+                ? 'Nueva contraseña (opcional)'
+                : 'Contraseña',
             icono: Icons.lock_rounded,
             ocultarTexto: true,
             obligatorio: !esEdicion,
           ),
-
           CampoFormularioSitio(
             controlador: controladorTelefono,
             etiqueta: 'Teléfono de la cuenta',

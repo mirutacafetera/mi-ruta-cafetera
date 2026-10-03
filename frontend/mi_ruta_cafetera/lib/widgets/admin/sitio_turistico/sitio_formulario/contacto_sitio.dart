@@ -26,21 +26,18 @@ class ContactoSitio extends StatelessWidget {
             titulo: 'Información de contacto',
             subtitulo: 'Datos para comunicarse con el sitio',
           ),
-
           CampoFormularioSitio(
             controlador: controladorTelefono,
             etiqueta: 'Teléfono del sitio',
             icono: Icons.phone_rounded,
             tipoTeclado: TextInputType.phone,
           ),
-
           CampoFormularioSitio(
             controlador: controladorCorreos,
             etiqueta: 'Correo de contacto',
             icono: Icons.email_outlined,
             tipoTeclado: TextInputType.emailAddress,
           ),
-
           CampoFormularioSitio(
             controlador: controladorSitioWeb,
             etiqueta: 'Sitio web',

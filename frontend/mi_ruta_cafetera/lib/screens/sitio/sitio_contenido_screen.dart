@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../../models/sitio/sitio_informacion_model.dart';
-import '../../services/sitio/sitio_informacion_service.dart';
+import '../../models/sitio/sitio_contenido_model.dart';
+import '../../services/sitio/sitio_contenido_service.dart';
 import '../../services/sitio/sitio_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
@@ -10,33 +11,52 @@ class SitioContenidoScreen extends StatefulWidget {
   const SitioContenidoScreen({super.key});
 
   @override
-  State<SitioContenidoScreen> createState() =>
-      _SitioContenidoScreenState();
+  State<SitioContenidoScreen> createState() => _SitioContenidoScreenState();
 }
 
-class _SitioContenidoScreenState
-    extends State<SitioContenidoScreen> {
-  final SitioInformacionService _informacionService =
-      SitioInformacionService();
+class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
+  final SitioContenidoService _contenidoService =
+      SitioContenidoService();
 
   final SitioSesionService _sesionService =
       SitioSesionService();
 
-  SitioInformacionModel? _sitio;
+  final ImagePicker _imagePicker = ImagePicker();
+
+  final TextEditingController _tituloController =
+      TextEditingController();
+
+  final TextEditingController _descripcionController =
+      TextEditingController();
+
+  List<SitioContenidoModel> _contenidos = [];
+
+  XFile? _imagenPrincipalSeleccionada;
+  List<XFile> _imagenesSeleccionadas = [];
 
   bool _cargando = true;
   bool _guardando = false;
 
   String? _error;
-  String _token = '';
 
   @override
   void initState() {
     super.initState();
-    _cargarContenido();
+    _cargarContenidos();
   }
 
-  Future<void> _cargarContenido() async {
+  @override
+  void dispose() {
+    _tituloController.dispose();
+    _descripcionController.dispose();
+    super.dispose();
+  }
+
+  // =========================================================
+  // CARGAR CONTENIDOS
+  // =========================================================
+
+  Future<void> _cargarContenidos() async {
     setState(() {
       _cargando = true;
       _error = null;
@@ -46,1024 +66,1230 @@ class _SitioContenidoScreenState
       final sesion = await _sesionService.obtenerSesion();
 
       if (sesion == null || sesion.token.isEmpty) {
-        throw Exception(
-          'No hay una sesión de sitio disponible.',
+        throw Exception('No hay una sesión activa.');
+      }
+
+      final contenidos =
+          await _contenidoService.obtenerMisContenidos(
+        token: sesion.token,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _contenidos = contenidos;
+        _cargando = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        _cargando = false;
+        _error = error.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  // =========================================================
+  // PREPARAR FORMULARIO NUEVO
+  // =========================================================
+
+  void _mostrarFormularioNuevo() {
+    _tituloController.clear();
+    _descripcionController.clear();
+
+    setState(() {
+      _imagenPrincipalSeleccionada = null;
+      _imagenesSeleccionadas = [];
+    });
+
+    showDialog(
+      context: context,
+      builder: (_) => _dialogoFormulario(
+        tituloDialogo: 'Nuevo contenido',
+        textoBoton: 'Crear contenido',
+        contenidoExistente: null,
+        onGuardar: _crearContenido,
+      ),
+    );
+  }
+
+  // =========================================================
+  // PREPARAR FORMULARIO EDITAR
+  // =========================================================
+
+  void _mostrarFormularioEditar(
+    SitioContenidoModel contenido,
+  ) {
+    _tituloController.text = contenido.titulo;
+    _descripcionController.text = contenido.descripcion;
+
+    setState(() {
+      _imagenPrincipalSeleccionada = null;
+      _imagenesSeleccionadas = [];
+    });
+
+    showDialog(
+      context: context,
+      builder: (_) => _dialogoFormulario(
+        tituloDialogo: 'Editar contenido',
+        textoBoton: 'Guardar cambios',
+        contenidoExistente: contenido,
+        onGuardar: () => _actualizarContenido(contenido),
+      ),
+    );
+  }
+
+  // =========================================================
+  // SELECCIONAR IMAGEN PRINCIPAL
+  // =========================================================
+
+  Future<void> _seleccionarImagenPrincipal() async {
+    try {
+      final imagen = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (imagen == null || !mounted) return;
+
+      setState(() {
+        _imagenPrincipalSeleccionada = imagen;
+      });
+    } catch (error) {
+      _mostrarMensaje(
+        'No fue posible seleccionar la imagen.',
+        esError: true,
+      );
+    }
+  }
+
+  // =========================================================
+  // SELECCIONAR GALERÍA
+  // =========================================================
+
+  Future<void> _seleccionarGaleria() async {
+    try {
+      final imagenes = await _imagePicker.pickMultiImage(
+        imageQuality: 85,
+      );
+
+      if (imagenes.isEmpty || !mounted) return;
+
+      setState(() {
+        _imagenesSeleccionadas = [
+          ..._imagenesSeleccionadas,
+          ...imagenes,
+        ];
+      });
+    } catch (error) {
+      _mostrarMensaje(
+        'No fue posible seleccionar las imágenes.',
+        esError: true,
+      );
+    }
+  }
+
+  // =========================================================
+  // ELIMINAR SELECCIÓN DE GALERÍA
+  // =========================================================
+
+  void _eliminarImagenSeleccionada(int index) {
+    setState(() {
+      _imagenesSeleccionadas.removeAt(index);
+    });
+  }
+
+  // =========================================================
+  // FORMULARIO
+  // =========================================================
+
+  Widget _dialogoFormulario({
+    required String tituloDialogo,
+    required String textoBoton,
+    required SitioContenidoModel? contenidoExistente,
+    required Future<bool> Function() onGuardar,
+  }) {
+    final esEdicion = contenidoExistente != null;
+
+    return StatefulBuilder(
+      builder: (dialogContext, setDialogState) {
+        return AlertDialog(
+          title: Text(
+            tituloDialogo,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: SizedBox(
+            width: 650,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // =====================================================
+                  // TÍTULO
+                  // =====================================================
+
+                  TextField(
+                    controller: _tituloController,
+                    decoration: const InputDecoration(
+                      labelText: 'Título',
+                      hintText:
+                          'Ej. Experiencia del café especial',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: AppDimensions.spacingMd,
+                  ),
+
+                  // =====================================================
+                  // DESCRIPCIÓN
+                  // =====================================================
+
+                  TextField(
+                    controller: _descripcionController,
+                    minLines: 5,
+                    maxLines: 8,
+                    decoration: const InputDecoration(
+                      labelText: 'Descripción',
+                      hintText:
+                          'Describe la experiencia turística...',
+                      border: OutlineInputBorder(),
+                      alignLabelWithHint: true,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: AppDimensions.spacingXl,
+                  ),
+
+                  // =====================================================
+                  // IMAGEN PRINCIPAL
+                  // =====================================================
+
+                  const Text(
+                    'Imagen principal',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    'Será la imagen principal que representará este contenido.',
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  _construirSelectorImagenPrincipal(
+                    contenidoExistente,
+                    setDialogState,
+                  ),
+
+                  const SizedBox(
+                    height: AppDimensions.spacingXl,
+                  ),
+
+                  // =====================================================
+                  // GALERÍA
+                  // =====================================================
+
+                  const Text(
+                    'Galería de imágenes',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    esEdicion
+                        ? 'Puedes agregar nuevas imágenes al carrusel.'
+                        : 'Selecciona las imágenes que formarán el carrusel.',
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  OutlinedButton.icon(
+                    onPressed: _guardando
+                        ? null
+                        : () async {
+                            await _seleccionarGaleria();
+                            setDialogState(() {});
+                          },
+                    icon: const Icon(
+                      Icons.photo_library_outlined,
+                    ),
+                    label: const Text(
+                      'Seleccionar imágenes',
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  if (_imagenesSeleccionadas.isNotEmpty)
+                    _construirGaleriaSeleccionada(
+                      setDialogState,
+                    ),
+
+                  if (esEdicion &&
+                      contenidoExistente.imagenes.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Imágenes actuales',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _construirGaleriaExistente(
+                      contenidoExistente.imagenes,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: _guardando
+                  ? null
+                  : () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: _guardando
+                  ? null
+                  : () async {
+                      setDialogState(() {
+                        _guardando = true;
+                      });
+
+                      final resultado = await onGuardar();
+
+                      if (!mounted) return;
+
+                      setDialogState(() {
+                        _guardando = false;
+                      });
+
+                      if (resultado &&
+                          dialogContext.mounted) {
+                        Navigator.of(dialogContext).pop();
+                      }
+                    },
+              child: _guardando
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(textoBoton),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // SELECTOR IMAGEN PRINCIPAL
+  // =========================================================
+
+  Widget _construirSelectorImagenPrincipal(
+    SitioContenidoModel? contenido,
+    StateSetter setDialogState,
+  ) {
+    final imagenNueva = _imagenPrincipalSeleccionada;
+
+    if (imagenNueva != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _vistaPreviaImagen(
+            imagenNueva,
+            alto: 210,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              OutlinedButton.icon(
+                onPressed: _guardando
+                    ? null
+                    : () async {
+                        await _seleccionarImagenPrincipal();
+                        setDialogState(() {});
+                      },
+                icon: const Icon(Icons.swap_horiz),
+                label: const Text('Cambiar'),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: _guardando
+                    ? null
+                    : () {
+                        setState(() {
+                          _imagenPrincipalSeleccionada = null;
+                        });
+                        setDialogState(() {});
+                      },
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Quitar'),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    if (contenido != null &&
+        contenido.imagenPrincipal.isNotEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusMd,
+            ),
+            child: Image.network(
+              contenido.imagenPrincipal,
+              width: double.infinity,
+              height: 210,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) {
+                return _marcoImagenVacia(
+                  alto: 210,
+                  icono: Icons.broken_image_outlined,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: _guardando
+                ? null
+                : () async {
+                    await _seleccionarImagenPrincipal();
+                    setDialogState(() {});
+                  },
+            icon: const Icon(Icons.swap_horiz),
+            label: const Text('Reemplazar imagen principal'),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _marcoImagenVacia(
+          alto: 180,
+          icono: Icons.image_outlined,
+        ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          onPressed: _guardando
+              ? null
+              : () async {
+                  await _seleccionarImagenPrincipal();
+                  setDialogState(() {});
+                },
+          icon: const Icon(Icons.add_photo_alternate_outlined),
+          label: const Text('Seleccionar imagen principal'),
+        ),
+      ],
+    );
+  }
+
+  // =========================================================
+  // GALERÍA SELECCIONADA
+  // =========================================================
+
+  Widget _construirGaleriaSeleccionada(
+    StateSetter setDialogState,
+  ) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _imagenesSeleccionadas.length,
+      gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 1,
+      ),
+      itemBuilder: (_, index) {
+        final imagen = _imagenesSeleccionadas[index];
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _vistaPreviaImagen(
+              imagen,
+            ),
+            Positioned(
+              top: 4,
+              right: 4,
+              child: Material(
+                color: Colors.black54,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: _guardando
+                      ? null
+                      : () {
+                          _eliminarImagenSeleccionada(index);
+                          setDialogState(() {});
+                        },
+                  child: const Padding(
+                    padding: EdgeInsets.all(5),
+                    child: Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // GALERÍA EXISTENTE
+  // =========================================================
+
+  Widget _construirGaleriaExistente(
+    List<String> imagenes,
+  ) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: imagenes.length,
+      gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 1,
+      ),
+      itemBuilder: (_, index) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusSm,
+          ),
+          child: Image.network(
+            imagenes[index],
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) {
+              return _marcoImagenVacia(
+                icono: Icons.broken_image_outlined,
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // VISTA PREVIA XFILE
+  // =========================================================
+
+  Widget _vistaPreviaImagen(
+    XFile imagen, {
+    double? alto,
+  }) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(
+        AppDimensions.radiusMd,
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: alto,
+        child: FutureBuilder(
+          future: imagen.readAsBytes(),
+          builder: (_, snapshot) {
+            if (snapshot.connectionState ==
+                ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            if (!snapshot.hasData) {
+              return _marcoImagenVacia(
+                alto: alto,
+                icono: Icons.broken_image_outlined,
+              );
+            }
+
+            return Image.memory(
+              snapshot.data!,
+              fit: BoxFit.cover,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // =========================================================
+  // MARCO IMAGEN VACÍA
+  // =========================================================
+
+  Widget _marcoImagenVacia({
+    double? alto,
+    IconData icono = Icons.image_outlined,
+  }) {
+    return Container(
+      width: double.infinity,
+      height: alto,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusMd,
+        ),
+      ),
+      child: Icon(
+        icono,
+        size: 42,
+      ),
+    );
+  }
+
+  // =========================================================
+  // CREAR
+  // =========================================================
+
+  Future<bool> _crearContenido() async {
+    if (_tituloController.text.trim().length < 2) {
+      _mostrarMensaje(
+        'El título es obligatorio.',
+        esError: true,
+      );
+      return false;
+    }
+
+    if (_descripcionController.text.trim().length < 10) {
+      _mostrarMensaje(
+        'La descripción debe tener al menos 10 caracteres.',
+        esError: true,
+      );
+      return false;
+    }
+
+    try {
+      final sesion = await _sesionService.obtenerSesion();
+
+      if (sesion == null || sesion.token.isEmpty) {
+        throw Exception('No hay una sesión activa.');
+      }
+
+      final contenido =
+          await _contenidoService.crearContenido(
+        token: sesion.token,
+        titulo: _tituloController.text.trim(),
+        descripcion: _descripcionController.text.trim(),
+      );
+
+      if (_imagenPrincipalSeleccionada != null ||
+          _imagenesSeleccionadas.isNotEmpty) {
+        await _contenidoService.subirImagenesContenido(
+          token: sesion.token,
+          contenidoId: contenido.id,
+          imagenPrincipal: _imagenPrincipalSeleccionada,
+          imagenes: _imagenesSeleccionadas,
         );
       }
 
-      _token = sesion.token;
+      await _cargarContenidos();
 
-      final sitio =
-          await _informacionService.obtenerInformacion(
-        _token,
+      if (!mounted) return false;
+
+      _mostrarMensaje(
+        'Contenido creado correctamente.',
       );
 
-      if (!mounted) return;
-
-      setState(() {
-        _sitio = sitio;
-        _cargando = false;
-      });
+      return true;
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) return false;
 
-      setState(() {
-        _cargando = false;
-        _error = error
-            .toString()
-            .replaceFirst('Exception: ', '');
-      });
+      _mostrarMensaje(
+        error.toString().replaceFirst('Exception: ', ''),
+        esError: true,
+      );
+
+      return false;
     }
   }
 
-  Future<void> _guardarCambios({
-    required String descripcion,
-    required String horario,
-    required double precioDesde,
-    required String telefono,
-    required String correos,
-  }) async {
-    if (_sitio == null || _token.isEmpty) {
+  // =========================================================
+  // ACTUALIZAR
+  // =========================================================
+
+  Future<bool> _actualizarContenido(
+    SitioContenidoModel contenido,
+  ) async {
+    if (_tituloController.text.trim().length < 2) {
+      _mostrarMensaje(
+        'El título es obligatorio.',
+        esError: true,
+      );
+      return false;
+    }
+
+    if (_descripcionController.text.trim().length < 10) {
+      _mostrarMensaje(
+        'La descripción debe tener al menos 10 caracteres.',
+        esError: true,
+      );
+      return false;
+    }
+
+    try {
+      final sesion = await _sesionService.obtenerSesion();
+
+      if (sesion == null || sesion.token.isEmpty) {
+        throw Exception('No hay una sesión activa.');
+      }
+
+      await _contenidoService.actualizarContenido(
+        token: sesion.token,
+        contenidoId: contenido.id,
+        titulo: _tituloController.text.trim(),
+        descripcion: _descripcionController.text.trim(),
+        imagenPrincipal: contenido.imagenPrincipal,
+        imagenes: contenido.imagenes,
+        audioGuias: contenido.audioGuias,
+      );
+
+      if (_imagenPrincipalSeleccionada != null ||
+          _imagenesSeleccionadas.isNotEmpty) {
+        await _contenidoService.subirImagenesContenido(
+          token: sesion.token,
+          contenidoId: contenido.id,
+          imagenPrincipal: _imagenPrincipalSeleccionada,
+          imagenes: _imagenesSeleccionadas,
+        );
+      }
+
+      await _cargarContenidos();
+
+      if (!mounted) return false;
+
+      _mostrarMensaje(
+        'Contenido actualizado correctamente.',
+      );
+
+      return true;
+    } catch (error) {
+      if (!mounted) return false;
+
+      _mostrarMensaje(
+        error.toString().replaceFirst('Exception: ', ''),
+        esError: true,
+      );
+
+      return false;
+    }
+  }
+
+  // =========================================================
+  // ENVIAR A REVISIÓN
+  // =========================================================
+
+  Future<void> _enviarRevision(
+    SitioContenidoModel contenido,
+  ) async {
+    if (contenido.estadoPublicacion ==
+        'pendiente_revision') {
       return;
     }
 
-    setState(() {
-      _guardando = true;
-    });
-
     try {
-      final sitioActualizado = SitioInformacionModel(
-        id: _sitio!.id,
-        nombre: _sitio!.nombre,
-        descripcion: descripcion,
-        direccion: _sitio!.direccion,
-        ciudad: _sitio!.ciudad,
-        departamento: _sitio!.departamento,
-        latitud: _sitio!.latitud,
-        longitud: _sitio!.longitud,
-        categoria: _sitio!.categoria,
-        etiquetas: _sitio!.etiquetas,
-        activo: _sitio!.activo,
-        telefono: telefono,
-        correos: correos.isEmpty
-            ? []
-            : correos
-                .split(',')
-                .map((correo) => correo.trim())
-                .where(
-                  (correo) => correo.isNotEmpty,
-                )
-                .toList(),
-        sitioWeb: _sitio!.sitioWeb,
-        imagen: _sitio!.imagen,
-        imagenes: _sitio!.imagenes,
-        horario: horario,
-        precioDesde: precioDesde,
+      final sesion = await _sesionService.obtenerSesion();
+
+      if (sesion == null || sesion.token.isEmpty) {
+        throw Exception('No hay una sesión activa.');
+      }
+
+      await _contenidoService.enviarContenidoRevision(
+        token: sesion.token,
+        contenidoId: contenido.id,
       );
 
-      final resultado =
-          await _informacionService.actualizarInformacion(
-        token: _token,
-        sitio: sitioActualizado,
-      );
+      await _cargarContenidos();
 
       if (!mounted) return;
 
-      setState(() {
-        _sitio = resultado;
-        _guardando = false;
-      });
-
-      Navigator.of(context).pop();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Información actualizada correctamente.',
-          ),
-        ),
+      _mostrarMensaje(
+        'Contenido enviado a revisión correctamente.',
       );
     } catch (error) {
       if (!mounted) return;
 
-      setState(() {
-        _guardando = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            error
-                .toString()
-                .replaceFirst('Exception: ', ''),
-          ),
-        ),
+      _mostrarMensaje(
+        error.toString().replaceFirst('Exception: ', ''),
+        esError: true,
       );
     }
   }
 
-  void _editarDescripcion() {
-    if (_sitio == null) return;
+  // =========================================================
+  // ACTIVAR / DESACTIVAR
+  // =========================================================
 
-    final controller = TextEditingController(
-      text: _sitio!.descripcion,
-    );
+  Future<void> _cambiarEstado(
+    SitioContenidoModel contenido,
+  ) async {
+    try {
+      final sesion = await _sesionService.obtenerSesion();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Container(
-              padding: EdgeInsets.only(
-                left: AppDimensions.pageHorizontal,
-                right: AppDimensions.pageHorizontal,
-                top: AppDimensions.spacingLg,
-                bottom:
-                    MediaQuery.of(context).viewInsets.bottom +
-                        AppDimensions.spacingLg,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surface,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+      if (sesion == null || sesion.token.isEmpty) {
+        throw Exception('No hay una sesión activa.');
+      }
+
+      if (contenido.activo) {
+        await _contenidoService.desactivarContenido(
+          token: sesion.token,
+          contenidoId: contenido.id,
+        );
+      } else {
+        await _contenidoService.activarContenido(
+          token: sesion.token,
+          contenidoId: contenido.id,
+        );
+      }
+
+      await _cargarContenidos();
+
+      if (!mounted) return;
+
+      _mostrarMensaje(
+        contenido.activo
+            ? 'Contenido desactivado.'
+            : 'Contenido activado.',
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      _mostrarMensaje(
+        error.toString().replaceFirst('Exception: ', ''),
+        esError: true,
+      );
+    }
+  }
+
+  // =========================================================
+  // TARJETA
+  // =========================================================
+
+  Widget _construirTarjeta(
+    SitioContenidoModel contenido,
+  ) {
+    final estado = contenido.estadoPublicacion;
+
+    return Card(
+      margin: const EdgeInsets.only(
+        bottom: AppDimensions.spacingMd,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(
+          AppDimensions.spacingMd,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _imagenPrincipal(contenido),
+                const SizedBox(
+                  width: AppDimensions.spacingMd,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        contenido.titulo,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        contenido.descripcion,
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 12),
+                      _estadoChip(estado),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            Wrap(
+              spacing: 10,
+              runSpacing: 8,
+              children: [
+                if (contenido.imagenes.isNotEmpty)
+                  Chip(
+                    avatar: const Icon(
+                      Icons.photo_library_outlined,
+                      size: 18,
+                    ),
+                    label: Text(
+                      '${contenido.imagenes.length} imágenes',
+                    ),
+                  ),
+                if (contenido.audioGuias.isNotEmpty)
+                  Chip(
+                    avatar: const Icon(
+                      Icons.headphones_outlined,
+                      size: 18,
+                    ),
+                    label: Text(
+                      '${contenido.audioGuias.length} audio-guías',
+                    ),
+                  ),
+              ],
+            ),
+
+            if (contenido.motivoRechazo.isNotEmpty &&
+                estado == 'rechazado') ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(
+                    alpha: 0.08,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'Motivo del rechazo: '
+                  '${contenido.motivoRechazo}',
                 ),
               ),
-              child: SingleChildScrollView(
+            ],
+
+            const SizedBox(height: 16),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed:
+                      estado == 'pendiente_revision'
+                          ? null
+                          : () {
+                              _mostrarFormularioEditar(
+                                contenido,
+                              );
+                            },
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Editar'),
+                ),
+
+                if (estado != 'pendiente_revision')
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      _enviarRevision(contenido);
+                    },
+                    icon: const Icon(
+                      Icons.send_outlined,
+                    ),
+                    label: const Text(
+                      'Enviar a revisión',
+                    ),
+                  ),
+
+                OutlinedButton.icon(
+                  onPressed: () {
+                    _cambiarEstado(contenido);
+                  },
+                  icon: Icon(
+                    contenido.activo
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                  ),
+                  label: Text(
+                    contenido.activo
+                        ? 'Desactivar'
+                        : 'Activar',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =========================================================
+  // IMAGEN PRINCIPAL DE TARJETA
+  // =========================================================
+
+  Widget _imagenPrincipal(
+    SitioContenidoModel contenido,
+  ) {
+    if (contenido.imagenPrincipal.isEmpty) {
+      return Container(
+        width: 120,
+        height: 100,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Icon(
+          Icons.image_outlined,
+          size: 40,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Image.network(
+        contenido.imagenPrincipal,
+        width: 120,
+        height: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) {
+          return Container(
+            width: 120,
+            height: 100,
+            color: AppColors.surfaceVariant,
+            child: const Icon(
+              Icons.broken_image_outlined,
+              size: 40,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // =========================================================
+  // ESTADO
+  // =========================================================
+
+  Widget _estadoChip(String estado) {
+    late String texto;
+    late IconData icono;
+
+    switch (estado) {
+      case 'aprobado':
+        texto = 'Aprobado';
+        icono = Icons.check_circle_outline;
+        break;
+
+      case 'pendiente_revision':
+        texto = 'Pendiente de revisión';
+        icono = Icons.hourglass_top_outlined;
+        break;
+
+      case 'rechazado':
+        texto = 'Rechazado';
+        icono = Icons.cancel_outlined;
+        break;
+
+      default:
+        texto = 'Borrador';
+        icono = Icons.edit_note_outlined;
+    }
+
+    return Chip(
+      avatar: Icon(
+        icono,
+        size: 18,
+      ),
+      label: Text(texto),
+    );
+  }
+
+  // =========================================================
+  // ESTADO VACÍO
+  // =========================================================
+
+  Widget _estadoVacio() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(
+          AppDimensions.spacingLg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.article_outlined,
+              size: 64,
+              color: AppColors.primary,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Aún no tienes contenido turístico',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Crea contenido para presentar las experiencias '
+              'de tu sitio a los visitantes.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _mostrarFormularioNuevo,
+              icon: const Icon(Icons.add),
+              label: const Text('Crear contenido'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =========================================================
+  // MENSAJES
+  // =========================================================
+
+  void _mostrarMensaje(
+    String mensaje, {
+    bool esError = false,
+  }) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor:
+            esError ? AppColors.error : AppColors.primary,
+      ),
+    );
+  }
+
+  // =========================================================
+  // BUILD
+  // =========================================================
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(
+        AppDimensions.spacingLg,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
                 child: Column(
                   crossAxisAlignment:
                       CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Editar descripción',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontWeight:
-                                      FontWeight.w700,
-                                  color:
-                                      AppColors.textPrimary,
-                                ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: _guardando
-                              ? null
-                              : () =>
-                                  Navigator.pop(context),
-                          icon: const Icon(
-                            Icons.close_rounded,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(
-                      height: AppDimensions.spacingLg,
-                    ),
-
-                    TextField(
-                      controller: controller,
-                      maxLines: 7,
-                      enabled: !_guardando,
-                      decoration: InputDecoration(
-                        labelText: 'Descripción del sitio',
-                        alignLabelWithHint: true,
-                        filled: true,
-                        fillColor: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(
-                            AppDimensions.radiusMd,
-                          ),
-                        ),
+                    Text(
+                      'Contenido turístico',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-
-                    const SizedBox(
-                      height: AppDimensions.spacingLg,
-                    ),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height:
-                          AppDimensions.buttonHeightLarge,
-                      child: ElevatedButton.icon(
-                        onPressed: _guardando
-                            ? null
-                            : () async {
-                                final descripcion =
-                                    controller.text.trim();
-
-                                if (descripcion.isEmpty) {
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'La descripción no puede estar vacía.',
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                setModalState(() {});
-
-                                await _guardarCambios(
-                                  descripcion:
-                                      descripcion,
-                                  horario:
-                                      _sitio!.horario,
-                                  precioDesde:
-                                      _sitio!.precioDesde,
-                                  telefono:
-                                      _sitio!.telefono,
-                                  correos:
-                                      _sitio!.correos
-                                          .join(', '),
-                                );
-                              },
-                        icon: _guardando
-                            ? const SizedBox(
-                                width:
-                                    AppDimensions.iconMd,
-                                height:
-                                    AppDimensions.iconMd,
-                                child:
-                                    CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.save_rounded,
-                              ),
-                        label: Text(
-                          _guardando
-                              ? 'Guardando...'
-                              : 'Guardar descripción',
-                        ),
-                      ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Administra la información que quieres '
+                      'presentar sobre las experiencias de tu sitio.',
                     ),
                   ],
                 ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _editarInformacion() {
-    if (_sitio == null) return;
-
-    final horarioController = TextEditingController(
-      text: _sitio!.horario,
-    );
-
-    final precioController = TextEditingController(
-      text: _sitio!.precioDesde == 0
-          ? ''
-          : _sitio!.precioDesde.toString(),
-    );
-
-    final telefonoController = TextEditingController(
-      text: _sitio!.telefono,
-    );
-
-    final correoController = TextEditingController(
-      text: _sitio!.correos.join(', '),
-    );
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.only(
-            left: AppDimensions.pageHorizontal,
-            right: AppDimensions.pageHorizontal,
-            top: AppDimensions.spacingLg,
-            bottom:
-                MediaQuery.of(context).viewInsets.bottom +
-                    AppDimensions.spacingLg,
-          ),
-          decoration: BoxDecoration(
-            color:
-                Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(24),
-            ),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Editar información turística',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(
-                              fontWeight:
-                                  FontWeight.w700,
-                              color:
-                                  AppColors.textPrimary,
-                            ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: _guardando
-                          ? null
-                          : () =>
-                              Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(
-                  height: AppDimensions.spacingLg,
-                ),
-
-                _campo(
-                  controller: horarioController,
-                  label: 'Horarios',
-                  icono: Icons.schedule_rounded,
-                  maxLines: 3,
-                ),
-
-                const SizedBox(
-                  height: AppDimensions.spacingMd,
-                ),
-
-                _campo(
-                  controller: precioController,
-                  label: 'Precio de ingreso',
-                  icono:
-                      Icons.attach_money_rounded,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                ),
-
-                const SizedBox(
-                  height: AppDimensions.spacingMd,
-                ),
-
-                _campo(
-                  controller: telefonoController,
-                  label: 'Teléfono',
-                  icono: Icons.phone_rounded,
-                  keyboardType:
-                      TextInputType.phone,
-                ),
-
-                const SizedBox(
-                  height: AppDimensions.spacingMd,
-                ),
-
-                _campo(
-                  controller: correoController,
-                  label: 'Correo electrónico',
-                  icono: Icons.email_rounded,
-                  keyboardType:
-                      TextInputType.emailAddress,
-                ),
-
-                const SizedBox(
-                  height: AppDimensions.spacingLg,
-                ),
-
-                SizedBox(
-                  width: double.infinity,
-                  height:
-                      AppDimensions.buttonHeightLarge,
-                  child: ElevatedButton.icon(
-                    onPressed: _guardando
-                        ? null
-                        : () async {
-                            final precio =
-                                double.tryParse(
-                                  precioController
-                                      .text
-                                      .trim(),
-                                ) ??
-                                    0;
-
-                            await _guardarCambios(
-                              descripcion:
-                                  _sitio!.descripcion,
-                              horario:
-                                  horarioController
-                                      .text
-                                      .trim(),
-                              precioDesde: precio,
-                              telefono:
-                                  telefonoController
-                                      .text
-                                      .trim(),
-                              correos:
-                                  correoController
-                                      .text
-                                      .trim(),
-                            );
-                          },
-                    icon: _guardando
-                        ? const SizedBox(
-                            width:
-                                AppDimensions.iconMd,
-                            height:
-                                AppDimensions.iconMd,
-                            child:
-                                CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.save_rounded,
-                          ),
-                    label: Text(
-                      _guardando
-                          ? 'Guardando...'
-                          : 'Guardar información',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _campo({
-    required TextEditingController controller,
-    required String label,
-    required IconData icono,
-    int maxLines = 1,
-    TextInputType? keyboardType,
-  }) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      enabled: !_guardando,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(
-          icono,
-          color: AppColors.primary,
-        ),
-        filled: true,
-        fillColor: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusMd,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _tarjetaResumen({
-    required IconData icono,
-    required String titulo,
-    required String valor,
-  }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(
-          AppDimensions.spacingMd,
-        ),
-        decoration: BoxDecoration(
-          color: Theme.of(context)
-              .colorScheme
-              .surface,
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusLg,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(
-                  alpha: 0.10,
-                ),
-                borderRadius:
-                    BorderRadius.circular(
-                  AppDimensions.radiusMd,
-                ),
-              ),
-              child: Icon(
-                icono,
-                color: AppColors.primary,
-              ),
-            ),
-
-            const SizedBox(
-              width: AppDimensions.spacingMd,
-            ),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    titulo,
-                    style: const TextStyle(
-                      color:
-                          AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    valor,
-                    style: const TextStyle(
-                      color:
-                          AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _filaInformacion({
-    required IconData icono,
-    required String titulo,
-    required String valor,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.spacingSm,
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icono,
-            color: AppColors.primary,
-          ),
-
-          const SizedBox(
-            width: AppDimensions.spacingMd,
-          ),
-
-          Expanded(
-            child: Text(
-              titulo,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-
-          Flexible(
-            child: Text(
-              valor.isEmpty ? 'No registrado' : valor,
-              textAlign: TextAlign.end,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _contenido() {
-    if (_cargando) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(
-            AppDimensions.pageHorizontal,
-          ),
-          child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline_rounded,
-                size: AppDimensions.iconLg,
-                color: AppColors.error,
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingMd,
-              ),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingMd,
               ),
               ElevatedButton.icon(
-                onPressed: _cargarContenido,
-                icon: const Icon(
-                  Icons.refresh_rounded,
-                ),
-                label: const Text('Reintentar'),
+                onPressed: _mostrarFormularioNuevo,
+                icon: const Icon(Icons.add),
+                label: const Text('Nuevo contenido'),
               ),
             ],
           ),
-        ),
-      );
-    }
 
-    if (_sitio == null) {
-      return const Center(
-        child: Text(
-          'No se encontró información del sitio.',
-        ),
-      );
-    }
+          const SizedBox(
+            height: AppDimensions.spacingLg,
+          ),
 
-    final descripcionRegistrada =
-        _sitio!.descripcion.trim().isNotEmpty;
-
-    final informacionRegistrada =
-        _sitio!.horario.trim().isNotEmpty ||
-        _sitio!.precioDesde > 0 ||
-        _sitio!.telefono.trim().isNotEmpty ||
-        _sitio!.correos.isNotEmpty;
-
-    final contacto = [
-      if (_sitio!.telefono.trim().isNotEmpty)
-        _sitio!.telefono.trim(),
-      if (_sitio!.correos.isNotEmpty)
-        _sitio!.correos.join(', '),
-    ].join(' · ');
-
-    return RefreshIndicator(
-      onRefresh: _cargarContenido,
-      child: SingleChildScrollView(
-        physics:
-            const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(
-          AppDimensions.pageHorizontal,
-        ),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _tarjetaResumen(
-                  icono: Icons.description_rounded,
-                  titulo: 'Descripción',
-                  valor: descripcionRegistrada
-                      ? 'Registrada'
-                      : 'Pendiente',
-                ),
-
-                const SizedBox(
-                  width: AppDimensions.spacingMd,
-                ),
-
-                _tarjetaResumen(
-                  icono: Icons.info_rounded,
-                  titulo: 'Información',
-                  valor: informacionRegistrada
-                      ? 'Registrada'
-                      : 'Pendiente',
-                ),
-              ],
-            ),
-
-            const SizedBox(
-              height: AppDimensions.spacingLg,
-            ),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(
-                AppDimensions.spacingLg,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surface,
-                borderRadius:
-                    BorderRadius.circular(
-                  AppDimensions.radiusLg,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color:
-                              AppColors.primary.withValues(
-                            alpha: 0.10,
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(
-                            AppDimensions.radiusMd,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.description_rounded,
-                          color:
-                              AppColors.primary,
-                        ),
-                      ),
-
-                      const SizedBox(
-                        width:
-                            AppDimensions.spacingMd,
-                      ),
-
-                      Expanded(
+          Expanded(
+            child: _cargando
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : _error != null
+                    ? Center(
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              'Descripción del sitio',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight:
-                                        FontWeight.w700,
-                                  ),
+                            const Icon(
+                              Icons.error_outline,
+                              size: 48,
                             ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Información principal que aparecerá para los visitantes.',
-                              style: TextStyle(
-                                color:
-                                    AppColors.textSecondary,
-                              ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _error!,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _cargarContenidos,
+                              child: const Text('Reintentar'),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(
-                    height:
-                        AppDimensions.spacingLg,
-                  ),
-
-                  Container(
-                    width: double.infinity,
-                    padding:
-                        const EdgeInsets.all(
-                      AppDimensions.spacingMd,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest,
-                      borderRadius:
-                          BorderRadius.circular(
-                        AppDimensions.radiusMd,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Descripción',
-                          style: TextStyle(
-                            color:
-                                AppColors.textSecondary,
-                            fontWeight:
-                                FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          descripcionRegistrada
-                              ? _sitio!.descripcion
-                              : 'Aquí aparecerá la descripción turística de tu sitio.',
-                          style: const TextStyle(
-                            color:
-                                AppColors.textPrimary,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height:
-                        AppDimensions.spacingMd,
-                  ),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed:
-                          _editarDescripcion,
-                      icon: const Icon(
-                        Icons.edit_rounded,
-                      ),
-                      label: const Text(
-                        'Editar descripción',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(
-              height: AppDimensions.spacingLg,
-            ),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(
-                AppDimensions.spacingLg,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surface,
-                borderRadius:
-                    BorderRadius.circular(
-                  AppDimensions.radiusLg,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color:
-                              AppColors.primary.withValues(
-                            alpha: 0.10,
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(
-                            AppDimensions.radiusMd,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.travel_explore_rounded,
-                          color:
-                              AppColors.primary,
-                        ),
-                      ),
-
-                      const SizedBox(
-                        width:
-                            AppDimensions.spacingMd,
-                      ),
-
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Información turística',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight:
-                                        FontWeight.w700,
-                                  ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Datos adicionales que ayudan al visitante a conocer tu experiencia.',
-                              style: TextStyle(
-                                color:
-                                    AppColors.textSecondary,
+                      )
+                    : _contenidos.isEmpty
+                        ? _estadoVacio()
+                        : RefreshIndicator(
+                            onRefresh: _cargarContenidos,
+                            child: ListView.builder(
+                              padding: const EdgeInsets.only(
+                                bottom: 24,
                               ),
+                              itemCount: _contenidos.length,
+                              itemBuilder: (_, index) {
+                                return _construirTarjeta(
+                                  _contenidos[index],
+                                );
+                              },
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(
-                    height:
-                        AppDimensions.spacingLg,
-                  ),
-
-                  _filaInformacion(
-                    icono: Icons.schedule_rounded,
-                    titulo: 'Horarios',
-                    valor: _sitio!.horario,
-                  ),
-
-                  const Divider(),
-
-                  _filaInformacion(
-                    icono:
-                        Icons.local_atm_rounded,
-                    titulo:
-                        'Información de ingreso',
-                    valor: _sitio!.precioDesde > 0
-                        ? '\$${_sitio!.precioDesde.toStringAsFixed(0)}'
-                        : '',
-                  ),
-
-                  const Divider(),
-
-                  _filaInformacion(
-                    icono: Icons.phone_rounded,
-                    titulo: 'Contacto',
-                    valor: contacto,
-                  ),
-
-                  const SizedBox(
-                    height:
-                        AppDimensions.spacingMd,
-                  ),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed:
-                          _editarInformacion,
-                      icon: const Icon(
-                        Icons.edit_rounded,
-                      ),
-                      label: const Text(
-                        'Editar información',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(
-              height: AppDimensions.spacingXl,
-            ),
-          ],
-        ),
+                          ),
+          ),
+        ],
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor:
-          Theme.of(context).colorScheme.surfaceContainerLowest,
-      body: _contenido(),
     );
   }
 }

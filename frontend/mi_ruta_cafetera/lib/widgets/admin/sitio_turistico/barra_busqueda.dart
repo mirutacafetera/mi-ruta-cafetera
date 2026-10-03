@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
 
-class SitioSearchBar extends StatelessWidget {
+class BarraBusqueda extends StatelessWidget {
   final String valor;
+  final String textoAyuda;
   final ValueChanged<String> onChanged;
   final VoidCallback onLimpiar;
 
-  const SitioSearchBar({
+  const BarraBusqueda({
     super.key,
     required this.valor,
+    required this.textoAyuda,
     required this.onChanged,
     required this.onLimpiar,
   });
@@ -27,7 +29,7 @@ class SitioSearchBar extends StatelessWidget {
       child: TextField(
         onChanged: onChanged,
         decoration: InputDecoration(
-          hintText: 'Buscar por nombre, ciudad, dirección o categoría...',
+          hintText: textoAyuda,
           prefixIcon: const Icon(
             Icons.search,
             color: AppColors.primary,
@@ -43,7 +45,7 @@ class SitioSearchBar extends StatelessWidget {
               : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
-              AppDimensions.radiusMd,
+              AppDimensions.searchRadius,
             ),
           ),
         ),

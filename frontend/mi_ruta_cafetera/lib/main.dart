@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
-import 'screens/admin/admin_screen.dart';
+import 'screens/admin/pantalla_administrador.dart';
 import 'screens/mapa_screen_2.dart';
 import 'screens/publico/bienvenida_screen.dart';
 import 'screens/sitio/sitio_login_screen.dart';
 import 'services/google_auth_service.dart';
+import 'services/admin/admin_servicio_autenticacion.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await GoogleAuthService.instance.initialize();
+  await AdminServicioAutenticacion.cargarToken();
 
   runApp(
     const MiRutaCafeteraApp(),
@@ -50,7 +52,7 @@ class MiRutaCafeteraApp extends StatelessWidget {
         // ----------------------------------------------------
 
         '/admin': (context) {
-          return const AdminScreen(
+          return const PantallaAdministrador(
             nombre: 'Administrador',
             email: 'admin@mirutacafetera.com',
           );

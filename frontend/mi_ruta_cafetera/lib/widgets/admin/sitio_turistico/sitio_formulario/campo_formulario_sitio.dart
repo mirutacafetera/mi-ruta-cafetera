@@ -26,40 +26,30 @@ class CampoFormularioSitio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd + 2),
+      padding: const EdgeInsets.only(
+        bottom: AppDimensions.spacingMd,
+      ),
       child: TextFormField(
         controller: controlador,
         maxLines: ocultarTexto ? 1 : maxLines,
         keyboardType: tipoTeclado,
         obscureText: ocultarTexto,
-
-        // ====================================================
-        // TEXTO
-        // ====================================================
-        style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
-
-        // ====================================================
-        // DECORACIÓN
-        // ====================================================
+        style: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textPrimary,
+        ),
         decoration: InputDecoration(
           labelText: etiqueta,
-
           labelStyle: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 14,
           ),
-
           floatingLabelStyle: const TextStyle(
             color: AppColors.primary,
             fontWeight: FontWeight.w600,
           ),
-
           filled: true,
           fillColor: AppColors.surface,
-
-          // ==================================================
-          // ICONO
-          // ==================================================
           prefixIcon: icono != null
               ? Icon(
                   icono,
@@ -67,62 +57,58 @@ class CampoFormularioSitio extends StatelessWidget {
                   size: AppDimensions.iconMd,
                 )
               : null,
-
-          // ==================================================
-          // ESPACIADO INTERNO
-          // ==================================================
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
             vertical: AppDimensions.spacingLg,
           ),
-
-          // ==================================================
-          // BORDE NORMAL
-          // ==================================================
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.searchRadius,
+            ),
+            borderSide: const BorderSide(
+              color: AppColors.border,
+            ),
           ),
-
-          // ==================================================
-          // BORDE HABILITADO
-          // ==================================================
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.searchRadius,
+            ),
+            borderSide: const BorderSide(
+              color: AppColors.border,
+            ),
           ),
-
-          // ==================================================
-          // BORDE ENFOCADO
-          // ==================================================
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.searchRadius,
+            ),
+            borderSide: const BorderSide(
+              color: AppColors.primary,
+              width: 2,
+            ),
           ),
-
-          // ==================================================
-          // BORDE DE ERROR
-          // ==================================================
           errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            borderSide: const BorderSide(color: AppColors.error),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.searchRadius,
+            ),
+            borderSide: const BorderSide(
+              color: AppColors.error,
+            ),
           ),
-
           focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            borderSide: const BorderSide(color: AppColors.error, width: 2),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.searchRadius,
+            ),
+            borderSide: const BorderSide(
+              color: AppColors.error,
+              width: 2,
+            ),
           ),
         ),
-
-        // ====================================================
-        // VALIDACIÓN
-        // ====================================================
         validator: obligatorio
             ? (valor) {
                 if (valor == null || valor.trim().isEmpty) {
                   return 'Este campo es obligatorio';
                 }
-
                 return null;
               }
             : null,
