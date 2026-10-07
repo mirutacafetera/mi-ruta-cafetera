@@ -5,31 +5,59 @@ import '../../../../theme/app_dimensions.dart';
 
 class ImagenTarjetaSitio extends StatelessWidget {
   final String? imagen;
+  final String? categoria;
 
   const ImagenTarjetaSitio({
     super.key,
     required this.imagen,
+    this.categoria,
   });
 
   @override
   Widget build(BuildContext context) {
+    // ==========================================================
+    // COLOR E ICONO DE LA CATEGORÍA
+    // ==========================================================
+
+    final colorCategoria =
+        AppColors.getColorForCategory(categoria);
+
+    final iconoCategoria =
+        AppColors.getIconForCategory(categoria);
+
+    final fondoCategoria =
+        AppColors.getSoftColorForCategory(categoria);
+
+    // ==========================================================
+    // SIN IMAGEN
+    // ==========================================================
+
     if (imagen == null || imagen!.isEmpty) {
       return Container(
         width: AppDimensions.categoryCardWidth,
         height: AppDimensions.categoryCardWidth,
         decoration: BoxDecoration(
-          color: AppColors.cream,
+          color: fondoCategoria,
           borderRadius: BorderRadius.circular(
             AppDimensions.radiusMd,
           ),
+          border: Border.all(
+            color: AppColors.getBorderColorForCategory(
+              categoria,
+            ),
+          ),
         ),
-        child: const Icon(
-          Icons.place_outlined,
-          size: 42,
-          color: AppColors.primary,
+        child: Icon(
+          iconoCategoria,
+          size: AppDimensions.categoryIconLarge,
+          color: colorCategoria,
         ),
       );
     }
+
+    // ==========================================================
+    // CON IMAGEN
+    // ==========================================================
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(
@@ -44,11 +72,21 @@ class ImagenTarjetaSitio extends StatelessWidget {
           return Container(
             width: AppDimensions.categoryCardWidth,
             height: AppDimensions.categoryCardWidth,
-            color: AppColors.cream,
-            child: const Icon(
-              Icons.broken_image_outlined,
-              size: 38,
-              color: AppColors.textLight,
+            decoration: BoxDecoration(
+              color: fondoCategoria,
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
+              border: Border.all(
+                color: AppColors.getBorderColorForCategory(
+                  categoria,
+                ),
+              ),
+            ),
+            child: Icon(
+              iconoCategoria,
+              size: AppDimensions.categoryIconLarge,
+              color: colorCategoria,
             ),
           );
         },

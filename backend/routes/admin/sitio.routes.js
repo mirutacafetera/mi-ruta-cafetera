@@ -8,20 +8,55 @@ const {
   eliminarSitio
 } = require('../../controllers/admin/sitio.controller');
 
+const { upload } = require('../../middlewares/uploadmiddleware');
+
 const router = express.Router();
 
-// ======================================================
-// SITIOS TURÍSTICOS - ADMIN
-// ======================================================
+// ============================================================
+// CREAR SITIO
+// ============================================================
 
-router.post('/', crearSitio);
+router.post(
+  '/',
+  upload.single('imagen'),
+  crearSitio
+);
 
-router.get('/', obtenerSitios);
+// ============================================================
+// OBTENER SITIOS
+// ============================================================
 
-router.get('/:id', obtenerSitio);
+router.get(
+  '/',
+  obtenerSitios
+);
 
-router.put('/:id', actualizarSitio);
+// ============================================================
+// OBTENER UN SITIO
+// ============================================================
 
-router.delete('/:id', eliminarSitio);
+router.get(
+  '/:id',
+  obtenerSitio
+);
+
+// ============================================================
+// ACTUALIZAR SITIO
+// ============================================================
+
+router.put(
+  '/:id',
+  upload.single('imagen'),
+  actualizarSitio
+);
+
+// ============================================================
+// ELIMINAR SITIO
+// ============================================================
+
+router.delete(
+  '/:id',
+  eliminarSitio
+);
 
 module.exports = router;

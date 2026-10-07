@@ -25,11 +25,35 @@ class TarjetaSitio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nombre = (sitio['nombre'] ?? 'Sin nombre').toString();
+    // ==========================================================
+    // DATOS DEL SITIO
+    // ==========================================================
+
+    final nombre =
+        (sitio['nombre'] ?? 'Sin nombre').toString();
+
     final descripcion =
         (sitio['descripcion'] ?? 'Sin descripción').toString();
-    final ciudad = (sitio['ciudad'] ?? '').toString();
-    final direccion = (sitio['direccion'] ?? '').toString();
+
+    final ciudad =
+        (sitio['ciudad'] ?? '').toString();
+
+    final direccion =
+        (sitio['direccion'] ?? '').toString();
+
+    // ==========================================================
+    // CATEGORÍA
+    // ==========================================================
+
+    final colorCategoria =
+        AppColors.getColorForCategory(categoria);
+
+    final iconoCategoria =
+        AppColors.getIconForCategory(categoria);
+
+    // ==========================================================
+    // TARJETA
+    // ==========================================================
 
     return Card(
       margin: const EdgeInsets.only(
@@ -53,16 +77,30 @@ class TarjetaSitio extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
+            // ==================================================
+            // IMAGEN / ICONO DE CATEGORÍA
+            // ==================================================
+
             ImagenTarjetaSitio(
               imagen: imagen,
+              categoria: categoria,
             ),
+
             const SizedBox(
               width: AppDimensions.spacingMd,
             ),
+
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
                 children: [
+
+                  // ==============================================
+                  // NOMBRE + MENÚ
+                  // ==============================================
+
                   Row(
                     children: [
                       Expanded(
@@ -77,6 +115,7 @@ class TarjetaSitio extends StatelessWidget {
                           ),
                         ),
                       ),
+
                       PopupMenuButton<String>(
                         icon: const Icon(
                           Icons.more_vert,
@@ -124,30 +163,58 @@ class TarjetaSitio extends StatelessWidget {
                       ),
                     ],
                   ),
+
                   const SizedBox(
                     height: AppDimensions.spacingXs,
                   ),
+
+                  // ==============================================
+                  // ETIQUETAS
+                  // ==============================================
+
                   Wrap(
                     spacing: AppDimensions.spacingXs,
                     runSpacing: AppDimensions.spacingXs,
                     children: [
+
+                      // ------------------------------------------
+                      // CATEGORÍA
+                      // ------------------------------------------
+
                       EtiquetaSitio(
                         texto: categoria,
-                        icono: Icons.category_outlined,
+                        icono: iconoCategoria,
+                        esCategoria: true,
                       ),
+
+                      // ------------------------------------------
+                      // CIUDAD
+                      // ------------------------------------------
+
                       if (ciudad.isNotEmpty)
                         EtiquetaSitio(
                           texto: ciudad,
                           icono: Icons.location_city_outlined,
                         ),
+
+                      // ------------------------------------------
+                      // ESTADO
+                      // ------------------------------------------
+
                       EtiquetaSitio.estado(
                         activo: activo,
                       ),
                     ],
                   ),
+
                   const SizedBox(
                     height: AppDimensions.spacingSm,
                   ),
+
+                  // ==============================================
+                  // DESCRIPCIÓN
+                  // ==============================================
+
                   Text(
                     descripcion,
                     maxLines: 2,
@@ -156,6 +223,11 @@ class TarjetaSitio extends StatelessWidget {
                       color: AppColors.textSecondary,
                     ),
                   ),
+
+                  // ==============================================
+                  // DIRECCIÓN
+                  // ==============================================
+
                   if (direccion.isNotEmpty) ...[
                     const SizedBox(
                       height: AppDimensions.spacingSm,

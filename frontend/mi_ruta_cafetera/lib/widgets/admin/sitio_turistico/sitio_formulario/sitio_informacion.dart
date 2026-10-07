@@ -36,12 +36,14 @@ class SitioInformacion extends StatelessWidget {
             titulo: 'Información del sitio',
             subtitulo: 'Datos principales del lugar turístico',
           ),
+
           CampoFormularioSitio(
             controlador: nombreController,
             etiqueta: 'Nombre del sitio',
             icono: Icons.place_rounded,
             obligatorio: true,
           ),
+
           CampoFormularioSitio(
             controlador: descripcionController,
             etiqueta: 'Descripción',
@@ -49,6 +51,7 @@ class SitioInformacion extends StatelessWidget {
             maxLines: 4,
             obligatorio: true,
           ),
+
           Padding(
             padding: const EdgeInsets.only(
               bottom: AppDimensions.spacingMd,
@@ -57,9 +60,9 @@ class SitioInformacion extends StatelessWidget {
               initialValue: categoriaSeleccionada,
               isExpanded: true,
               decoration: InputDecoration(
-                labelText: 'Categoría',
+                hintText: 'Categoría',
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: AppColors.creamLight,
                 prefixIcon: Icon(
                   iconoCategoria,
                   color: AppColors.secondary,
@@ -90,7 +93,7 @@ class SitioInformacion extends StatelessWidget {
                     AppDimensions.searchRadius,
                   ),
                   borderSide: const BorderSide(
-                    color: AppColors.primary,
+                    color: AppColors.secondary,
                     width: 2,
                   ),
                 ),
@@ -125,11 +128,13 @@ class SitioInformacion extends StatelessWidget {
               },
             ),
           ),
+
           CampoFormularioSitio(
             controlador: etiquetasController,
             etiqueta: 'Etiquetas',
             icono: Icons.local_offer_rounded,
           ),
+
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
@@ -137,7 +142,7 @@ class SitioInformacion extends StatelessWidget {
               vertical: AppDimensions.spacingSm,
             ),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.cream,
               borderRadius: BorderRadius.circular(
                 AppDimensions.radiusSm,
               ),
@@ -148,7 +153,7 @@ class SitioInformacion extends StatelessWidget {
                 Icon(
                   Icons.info_outline_rounded,
                   size: AppDimensions.iconSm,
-                  color: AppColors.primary,
+                  color: AppColors.nature,
                 ),
                 SizedBox(
                   width: AppDimensions.spacingSm,
