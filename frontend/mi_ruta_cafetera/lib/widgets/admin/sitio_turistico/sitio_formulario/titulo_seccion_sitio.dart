@@ -28,8 +28,8 @@ class TituloSeccionSitio extends StatelessWidget {
             width: AppDimensions.circularButtonSmall,
             height: AppDimensions.circularButtonSmall,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(
-                alpha: 0.10,
+              color: AppColors.secondary.withValues(
+                alpha: 0.12,
               ),
               borderRadius: BorderRadius.circular(
                 AppDimensions.radiusMd,
@@ -37,7 +37,7 @@ class TituloSeccionSitio extends StatelessWidget {
             ),
             child: Icon(
               icono,
-              color: AppColors.primary,
+              color: AppColors.secondary,
               size: AppDimensions.iconMd,
             ),
           ),
@@ -63,7 +63,7 @@ class TituloSeccionSitio extends StatelessWidget {
                   subtitulo,
                   style: const TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: AppColors.textOnDarkSecondary,
                   ),
                 ),
               ],

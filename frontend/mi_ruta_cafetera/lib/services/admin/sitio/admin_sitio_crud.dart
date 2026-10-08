@@ -1,29 +1,34 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class AdminSitioCrud {
+  AdminSitioCrud._();
+
   // ============================================================
-  // CREAR SITIO TURÍSTICO + CUENTA DEL SITIO
+  // CREAR SITIO TURÍSTICO
   // ============================================================
 
   static Future<Map<String, dynamic>> crearSitio({
     required String baseUrl,
     String? tokenAdmin,
 
-    // ------------------------------------------------------------
-    // DATOS DE LA CUENTA
-    // ------------------------------------------------------------
+    // ----------------------------------------------------------
+    // CUENTA DEL SITIO
+    // ----------------------------------------------------------
+
     required String nombreCuenta,
     required String apellidoCuenta,
     required String correo,
     required String password,
     String telefonoCuenta = '',
 
-    // ------------------------------------------------------------
-    // DATOS DEL SITIO
-    // ------------------------------------------------------------
+    // ----------------------------------------------------------
+    // INFORMACIÓN DEL SITIO
+    // ----------------------------------------------------------
+
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -35,20 +40,27 @@ class AdminSitioCrud {
     List<String> etiquetas = const [],
     bool activo = true,
 
-    // ------------------------------------------------------------
-    // INFORMACIÓN ADICIONAL
-    // ------------------------------------------------------------
     String telefono = '',
     String correos = '',
     String sitioWeb = '',
-    String imagen = '',
-    List<String> imagenes = const [],
+
+    // ----------------------------------------------------------
+    // IMAGEN PRINCIPAL
+    // ----------------------------------------------------------
+
+    required Uint8List imagenBytes,
+    String nombreImagen = 'imagen.jpg',
+
+    // ----------------------------------------------------------
+    // INFORMACIÓN TURÍSTICA
+    // ----------------------------------------------------------
+
     String horario = '',
     double precioDesde = 0,
   }) async {
-    // ============================================================
+    // ==========================================================
     // VALIDAR TOKEN
-    // ============================================================
+    // ==========================================================
 
     final token = tokenAdmin?.trim() ?? '';
 
@@ -59,104 +71,103 @@ class AdminSitioCrud {
       );
     }
 
-    // ============================================================
-    // INFORMACIÓN INICIAL
-    // ============================================================
+    // ==========================================================
+    // VALIDAR IMAGEN
+    // ==========================================================
 
-    debugPrint('========================================');
-    debugPrint('🚀 INICIANDO CREACIÓN DEL SITIO');
-    debugPrint('========================================');
-    debugPrint('🌐 BASE URL: $baseUrl');
-    debugPrint('🏞️ SITIO: $nombre');
-    debugPrint('📂 CATEGORÍA: $categoria');
-    debugPrint('👤 CUENTA: $nombreCuenta $apellidoCuenta');
-    debugPrint('📧 CORREO: $correo');
-    debugPrint('========================================');
-
-    // ============================================================
-    // 1. CREAR SITIO TURÍSTICO
-    // ============================================================
-
-    final urlSitio = '$baseUrl/admin/sitios';
-
-    debugPrint('📤 CREANDO SITIO TURÍSTICO');
-    debugPrint('🌐 URL: $urlSitio');
-
-    late http.Response responseSitio;
-
-    try {
-      responseSitio = await http
-          .post(
-            Uri.parse(urlSitio),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: jsonEncode({
-              'nombre': nombre,
-              'descripcion': descripcion,
-              'direccion': direccion,
-              'ciudad': ciudad,
-              'departamento': departamento,
-              'latitud': latitud,
-              'longitud': longitud,
-              'categoria': categoria,
-              'etiquetas': etiquetas,
-              'activo': activo,
-              'telefono': telefono,
-              'correos': correos,
-              'sitioWeb': sitioWeb,
-              'imagen': imagen,
-              'imagenes': imagenes,
-              'horario': horario,
-              'precioDesde': precioDesde,
-            }),
-          )
-          .timeout(const Duration(seconds: 15));
-    } catch (e) {
-      debugPrint('❌ ERROR DE CONEXIÓN AL CREAR SITIO');
-      debugPrint('$e');
-
+    if (imagenBytes.isEmpty) {
       throw Exception(
-        'No se pudo conectar con el servidor para crear el sitio.',
+        'La imagen principal es obligatoria.',
       );
     }
 
-    // ============================================================
-    // RESPUESTA DEL SITIO
-    // ============================================================
+    // ==========================================================
+    // CREAR PETICIÓN MULTIPART
+    // ==========================================================
 
-    debugPrint('========================================');
-    debugPrint('📥 RESPUESTA CREAR SITIO');
-    debugPrint('📊 STATUS: ${responseSitio.statusCode}');
-    debugPrint('📄 BODY: ${responseSitio.body}');
-    debugPrint('========================================');
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/admin/sitios'),
+    );
 
-    if (responseSitio.statusCode != 201) {
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    // ==========================================================
+    // CAMPOS DEL SITIO
+    // ==========================================================
+
+    request.fields.addAll({
+      'nombre': nombre,
+      'descripcion': descripcion,
+      'direccion': direccion,
+      'ciudad': ciudad,
+      'departamento': departamento,
+      'latitud': latitud.toString(),
+      'longitud': longitud.toString(),
+      'categoria': categoria,
+      'etiquetas': jsonEncode(etiquetas),
+      'activo': activo.toString(),
+      'telefono': telefono,
+      'correos': correos,
+      'sitioWeb': sitioWeb,
+      'horario': horario,
+      'precioDesde': precioDesde.toString(),
+    });
+
+    // ==========================================================
+    // IMAGEN PRINCIPAL
+    // ==========================================================
+    //
+    // IMPORTANTE:
+    // Indicamos explícitamente que la imagen enviada es JPEG.
+    //
+    // Esto evita que el backend reciba el archivo como:
+    // application/octet-stream
+    //
+    // El backend espera:
+    // image/jpeg
+    // ==========================================================
+
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'imagen',
+        imagenBytes,
+        filename: 'imagen.jpg',
+        contentType: MediaType('image', 'jpeg'),
+      ),
+    );
+
+    // ==========================================================
+    // ENVIAR PETICIÓN
+    // ==========================================================
+
+    final streamedResponse = await request.send().timeout(
+      const Duration(seconds: 30),
+    );
+
+    final response = await http.Response.fromStream(
+      streamedResponse,
+    );
+
+    // ==========================================================
+    // VALIDAR RESPUESTA
+    // ==========================================================
+
+    if (response.statusCode != 201) {
       throw Exception(
         'Error al crear el sitio turístico: '
-        '${responseSitio.statusCode} - ${responseSitio.body}',
+        '${response.statusCode} - ${response.body}',
       );
     }
 
-    // ============================================================
+    // ==========================================================
     // DECODIFICAR RESPUESTA
-    // ============================================================
+    // ==========================================================
 
-    late dynamic dataSitio;
-
-    try {
-      dataSitio = jsonDecode(responseSitio.body);
-    } catch (e) {
-      debugPrint('❌ ERROR DECODIFICANDO RESPUESTA DEL SITIO');
-      debugPrint('$e');
-
-      throw Exception(
-        'El servidor devolvió una respuesta inválida '
-        'al crear el sitio.',
-      );
-    }
+    final dataSitio = jsonDecode(response.body);
 
     if (dataSitio is! Map<String, dynamic>) {
       throw Exception(
@@ -165,31 +176,24 @@ class AdminSitioCrud {
       );
     }
 
-    // ============================================================
+    // ==========================================================
     // OBTENER SITIO CREADO
-    // ============================================================
+    // ==========================================================
 
     final sitioCreado = dataSitio['sitio'];
 
     if (sitioCreado is! Map<String, dynamic>) {
-      debugPrint('❌ NO SE ENCONTRÓ EL SITIO EN LA RESPUESTA');
-      debugPrint('📄 RESPUESTA: $dataSitio');
-
       throw Exception(
         'El servidor no devolvió el sitio creado.',
       );
     }
 
-    // ============================================================
+    // ==========================================================
     // OBTENER ID DEL SITIO
-    // ============================================================
+    // ==========================================================
 
-    final sitioId = sitioCreado['_id']?.toString() ?? '';
-
-    debugPrint('========================================');
-    debugPrint('✅ SITIO TURÍSTICO CREADO');
-    debugPrint('🆔 ID DEL SITIO: $sitioId');
-    debugPrint('========================================');
+    final sitioId =
+        sitioCreado['_id']?.toString() ?? '';
 
     if (sitioId.isEmpty) {
       throw Exception(
@@ -197,129 +201,75 @@ class AdminSitioCrud {
       );
     }
 
-    // ============================================================
-    // 2. CREAR CUENTA DEL SITIO
-    // ============================================================
+    // ==========================================================
+    // CREAR CUENTA DEL SITIO
+    // ==========================================================
 
-    final urlCuenta =
-        '$baseUrl/admin/authsitio/crear-cuenta-sitio';
+    final responseCuenta = await http
+        .post(
+          Uri.parse(
+            '$baseUrl/admin/authsitio/crear-cuenta-sitio',
+          ),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'sitioId': sitioId,
+            'nombre': nombreCuenta,
+            'apellido': apellidoCuenta,
+            'correo': correo.trim().toLowerCase(),
+            'password': password,
+            'telefono': telefonoCuenta,
+          }),
+        )
+        .timeout(
+          const Duration(seconds: 15),
+        );
 
-    debugPrint('========================================');
-    debugPrint('📤 CREANDO CUENTA DEL SITIO');
-    debugPrint('========================================');
-    debugPrint('🌐 URL: $urlCuenta');
-    debugPrint('🆔 sitioId: $sitioId');
-    debugPrint('👤 nombre: $nombreCuenta');
-    debugPrint('👤 apellido: $apellidoCuenta');
-    debugPrint('📧 correo: $correo');
-    debugPrint('📱 telefono: $telefonoCuenta');
-    debugPrint('========================================');
-
-    late http.Response responseCuenta;
-
-    try {
-      responseCuenta = await http
-          .post(
-            Uri.parse(urlCuenta),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: jsonEncode({
-              'sitioId': sitioId,
-              'nombre': nombreCuenta,
-              'apellido': apellidoCuenta,
-              'correo': correo,
-              'password': password,
-              'telefono': telefonoCuenta,
-            }),
-          )
-          .timeout(const Duration(seconds: 15));
-    } catch (e) {
-      debugPrint('========================================');
-      debugPrint('❌ ERROR DE CONEXIÓN AL CREAR CUENTA');
-      debugPrint('$e');
-      debugPrint('========================================');
-
-      throw Exception(
-        'El sitio fue creado, pero no se pudo conectar '
-        'con el servidor para crear su cuenta.',
-      );
-    }
-
-    // ============================================================
-    // RESPUESTA DE LA CUENTA
-    // ============================================================
-
-    debugPrint('========================================');
-    debugPrint('📥 RESPUESTA CREAR CUENTA');
-    debugPrint('========================================');
-    debugPrint('📊 STATUS: ${responseCuenta.statusCode}');
-    debugPrint('📄 BODY: ${responseCuenta.body}');
-    debugPrint('========================================');
-
-    // ============================================================
-    // VALIDAR CREACIÓN DE CUENTA
-    // ============================================================
+    // ==========================================================
+    // VALIDAR CUENTA
+    // ==========================================================
 
     if (responseCuenta.statusCode != 201) {
+      String mensaje =
+          'No se pudo crear la cuenta del sitio.';
+
+      try {
+        final error = jsonDecode(
+          responseCuenta.body,
+        );
+
+        if (error is Map<String, dynamic> &&
+            error['mensaje'] != null) {
+          mensaje = error['mensaje'].toString();
+        }
+      } catch (_) {}
+
       throw Exception(
-        'El sitio turístico fue creado, pero no se pudo '
-        'crear su cuenta.\n\n'
-        'ID del sitio: $sitioId\n\n'
-        'Error: ${responseCuenta.statusCode}\n'
-        '${responseCuenta.body}',
+        '$mensaje\nID del sitio: $sitioId',
       );
     }
 
-    // ============================================================
-    // DECODIFICAR RESPUESTA DE CUENTA
-    // ============================================================
-
-    late dynamic dataCuenta;
-
-    try {
-      dataCuenta = jsonDecode(responseCuenta.body);
-    } catch (e) {
-      debugPrint('❌ ERROR DECODIFICANDO RESPUESTA DE CUENTA');
-      debugPrint('$e');
-
-      throw Exception(
-        'El sitio fue creado, pero la respuesta de su cuenta '
-        'no tiene un formato válido.',
-      );
-    }
+    final dataCuenta = jsonDecode(
+      responseCuenta.body,
+    );
 
     if (dataCuenta is! Map<String, dynamic>) {
       throw Exception(
-        'El sitio fue creado, pero la respuesta de su cuenta '
-        'no tiene el formato esperado.',
+        'El sitio fue creado, pero la respuesta de '
+        'su cuenta no tiene el formato esperado.',
       );
     }
 
-    // ============================================================
-    // CUENTA CREADA
-    // ============================================================
-
-    final cuentaCreada = dataCuenta['cuenta'];
-
-    debugPrint('========================================');
-    debugPrint('✅ CUENTA DEL SITIO CREADA');
-    debugPrint('📄 CUENTA: $cuentaCreada');
-    debugPrint('========================================');
-
-    // ============================================================
-    // PROCESO COMPLETADO
-    // ============================================================
-
-    debugPrint('========================================');
-    debugPrint('🎉 SITIO Y CUENTA CREADOS CORRECTAMENTE');
-    debugPrint('========================================');
+    // ==========================================================
+    // RESULTADO
+    // ==========================================================
 
     return {
       'sitio': sitioCreado,
-      'cuenta': cuentaCreada,
+      'cuenta': dataCuenta['cuenta'],
     };
   }
 
@@ -330,28 +280,45 @@ class AdminSitioCrud {
   static Future<void> actualizarSitio({
     required String baseUrl,
     String? tokenAdmin,
+
     required String id,
+
     required String nombre,
     required String descripcion,
     required String categoria,
+
     String direccion = '',
     String ciudad = 'Garzón',
     String departamento = 'Huila',
+
     required double latitud,
     required double longitud,
+
     List<String> etiquetas = const [],
+
     bool activo = true,
+
     String telefono = '',
     String correos = '',
     String sitioWeb = '',
-    String imagen = '',
-    List<String> imagenes = const [],
+
+    // ----------------------------------------------------------
+    // IMAGEN PRINCIPAL
+    // ----------------------------------------------------------
+
+    Uint8List? imagenBytes,
+    String nombreImagen = 'imagen.jpg',
+
+    // ----------------------------------------------------------
+    // INFORMACIÓN TURÍSTICA
+    // ----------------------------------------------------------
+
     String horario = '',
     double precioDesde = 0,
   }) async {
-    // ============================================================
+    // ==========================================================
     // VALIDAR TOKEN
-    // ============================================================
+    // ==========================================================
 
     final token = tokenAdmin?.trim() ?? '';
 
@@ -362,66 +329,78 @@ class AdminSitioCrud {
       );
     }
 
-    // ============================================================
-    // URL
-    // ============================================================
+    // ==========================================================
+    // CREAR PETICIÓN MULTIPART
+    // ==========================================================
 
-    final url = '$baseUrl/admin/sitios/$id';
+    final request = http.MultipartRequest(
+      'PUT',
+      Uri.parse('$baseUrl/admin/sitios/$id'),
+    );
 
-    debugPrint('========================================');
-    debugPrint('✏️ ACTUALIZANDO SITIO');
-    debugPrint('🌐 URL: $url');
-    debugPrint('🆔 ID: $id');
-    debugPrint('========================================');
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
 
-    // ============================================================
-    // PETICIÓN
-    // ============================================================
+    // ==========================================================
+    // CAMPOS DEL SITIO
+    // ==========================================================
 
-    final response = await http
-        .put(
-          Uri.parse(url),
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-          body: jsonEncode({
-            'nombre': nombre,
-            'descripcion': descripcion,
-            'categoria': categoria,
-            'direccion': direccion,
-            'ciudad': ciudad,
-            'departamento': departamento,
-            'latitud': latitud,
-            'longitud': longitud,
-            'etiquetas': etiquetas,
-            'activo': activo,
-            'telefono': telefono,
-            'correos': correos,
-            'sitioWeb': sitioWeb,
-            'imagen': imagen,
-            'imagenes': imagenes,
-            'horario': horario,
-            'precioDesde': precioDesde,
-          }),
-        )
-        .timeout(const Duration(seconds: 15));
+    request.fields.addAll({
+      'nombre': nombre,
+      'descripcion': descripcion,
+      'direccion': direccion,
+      'ciudad': ciudad,
+      'departamento': departamento,
+      'latitud': latitud.toString(),
+      'longitud': longitud.toString(),
+      'categoria': categoria,
+      'etiquetas': jsonEncode(etiquetas),
+      'activo': activo.toString(),
+      'telefono': telefono,
+      'correos': correos,
+      'sitioWeb': sitioWeb,
+      'horario': horario,
+      'precioDesde': precioDesde.toString(),
+    });
 
-    // ============================================================
-    // RESPUESTA
-    // ============================================================
+    // ==========================================================
+    // NUEVA IMAGEN PRINCIPAL
+    // ==========================================================
 
-    debugPrint('========================================');
-    debugPrint('📥 RESPUESTA ACTUALIZAR SITIO');
-    debugPrint('📊 STATUS: ${response.statusCode}');
-    debugPrint('📄 BODY: ${response.body}');
-    debugPrint('========================================');
+    if (imagenBytes != null &&
+        imagenBytes.isNotEmpty) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'imagen',
+          imagenBytes,
+          filename: 'imagen.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        ),
+      );
+    }
+
+    // ==========================================================
+    // ENVIAR PETICIÓN
+    // ==========================================================
+
+    final streamedResponse = await request.send().timeout(
+      const Duration(seconds: 30),
+    );
+
+    final response = await http.Response.fromStream(
+      streamedResponse,
+    );
+
+    // ==========================================================
+    // VALIDAR RESPUESTA
+    // ==========================================================
 
     if (response.statusCode < 200 ||
         response.statusCode >= 300) {
       throw Exception(
-        'Error al actualizar el sitio: '
+        'Error al actualizar el sitio turístico: '
         '${response.statusCode} - ${response.body}',
       );
     }
@@ -431,14 +410,14 @@ class AdminSitioCrud {
   // ELIMINAR SITIO TURÍSTICO
   // ============================================================
 
-  static Future<void> eliminarSitio(
-    String baseUrl,
-    String id, {
+  static Future<void> eliminarSitio({
+    required String baseUrl,
+    required String id,
     String? tokenAdmin,
   }) async {
-    // ============================================================
+    // ==========================================================
     // VALIDAR TOKEN
-    // ============================================================
+    // ==========================================================
 
     final token = tokenAdmin?.trim() ?? '';
 
@@ -449,46 +428,30 @@ class AdminSitioCrud {
       );
     }
 
-    // ============================================================
-    // URL
-    // ============================================================
-
-    final url = '$baseUrl/admin/sitios/$id';
-
-    debugPrint('========================================');
-    debugPrint('🗑️ ELIMINANDO SITIO');
-    debugPrint('🌐 URL: $url');
-    debugPrint('🆔 ID: $id');
-    debugPrint('========================================');
-
-    // ============================================================
-    // PETICIÓN
-    // ============================================================
+    // ==========================================================
+    // ELIMINAR
+    // ==========================================================
 
     final response = await http
         .delete(
-          Uri.parse(url),
+          Uri.parse('$baseUrl/admin/sitios/$id'),
           headers: {
             'Accept': 'application/json',
             'Authorization': 'Bearer $token',
           },
         )
-        .timeout(const Duration(seconds: 15));
+        .timeout(
+          const Duration(seconds: 15),
+        );
 
-    // ============================================================
-    // RESPUESTA
-    // ============================================================
-
-    debugPrint('========================================');
-    debugPrint('📥 RESPUESTA ELIMINAR SITIO');
-    debugPrint('📊 STATUS: ${response.statusCode}');
-    debugPrint('📄 BODY: ${response.body}');
-    debugPrint('========================================');
+    // ==========================================================
+    // VALIDAR RESPUESTA
+    // ==========================================================
 
     if (response.statusCode < 200 ||
         response.statusCode >= 300) {
       throw Exception(
-        'Error al eliminar el sitio: '
+        'Error al eliminar el sitio turístico: '
         '${response.statusCode} - ${response.body}',
       );
     }

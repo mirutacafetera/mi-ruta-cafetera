@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
+import '../../controllers/admin/cuenta/cuenta_admin_controlador.dart';
+import '../../services/admin/admin_servicio_autenticacion.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_menu_lateral.dart';
-import 'admin_inicio.dart';
-import 'admin_perfil.dart';
 import '../../widgets/admin/admin_proximamente.dart';
+
+import 'admin_inicio.dart';
+import 'cuenta/admin_cuenta.dart';
+import 'admin_inicio_sesion.dart';
+
 import '../mapa_screen_2.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
 
@@ -21,26 +26,78 @@ class PantallaAdministrador extends StatefulWidget {
   });
 
   @override
-  State<PantallaAdministrador> createState() => _PantallaAdministradorState();
+  State<PantallaAdministrador> createState() =>
+      _PantallaAdministradorState();
 }
 
-class _PantallaAdministradorState extends State<PantallaAdministrador> {
+class _PantallaAdministradorState
+    extends State<PantallaAdministrador> {
   late final ControladorPantallaAdministrador controlador;
+  late final CuentaAdminController cuentaAdminController;
 
   @override
   void initState() {
     super.initState();
-    controlador = ControladorPantallaAdministrador()..addListener(_actualizar);
+
+    controlador = ControladorPantallaAdministrador()
+      ..addListener(_actualizar);
+
+    cuentaAdminController = CuentaAdminController();
+
+    _cargarCuenta();
+  }
+
+  Future<void> _cargarCuenta() async {
+    await AdminServicioAutenticacion.cargarToken();
+
+    final idAdministrador =
+        AdminServicioAutenticacion.idAdministrador;
+
+    if (idAdministrador != null &&
+        idAdministrador.isNotEmpty) {
+      await cuentaAdminController.cargarCuenta(
+        idAdministrador,
+      );
+    }
   }
 
   void _actualizar() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _cerrarSesion() async {
+    await AdminServicioAutenticacion.cerrarSesion();
+
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AdminInicioSesion(),
+      ),
+      (route) => false,
+    );
+  }
+
+  void _manejarOpcion(String opcion) {
+    if (opcion == 'logout') {
+      _cerrarSesion();
+      return;
+    }
+
+    controlador.cambiarOpcion(opcion);
   }
 
   void _abrirMapa() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const MapaScreen2()),
+      MaterialPageRoute(
+        builder: (_) => const MapaScreen2(),
+      ),
     );
   }
 
@@ -56,7 +113,7 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       drawer: AdminMenuLateral(
         nombre: widget.nombre,
         email: widget.email,
-        onOpcionSeleccionada: controlador.cambiarOpcion,
+        onOpcionSeleccionada: _manejarOpcion,
       ),
       body: _contenido(),
     );
@@ -68,28 +125,44 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
         return const PantallaListaSitios();
 
       case 'perfil':
-        return AdminPerfil(nombre: widget.nombre, email: widget.email);
+        return AdminCuenta(
+          controller: cuentaAdminController,
+        );
 
       case 'estadisticas':
-        return const AdminProximamente(nombre: 'Estadísticas');
+        return const AdminProximamente(
+          nombre: 'Estadísticas',
+        );
 
       case 'categorias':
-        return const AdminProximamente(nombre: 'Categorías');
+        return const AdminProximamente(
+          nombre: 'Categorías',
+        );
 
       case 'contenido':
-        return const AdminProximamente(nombre: 'Contenido');
+        return const AdminProximamente(
+          nombre: 'Contenido',
+        );
 
       case 'resenas':
-        return const AdminProximamente(nombre: 'Reseñas');
+        return const AdminProximamente(
+          nombre: 'Reseñas',
+        );
 
       case 'reservas':
-        return const AdminProximamente(nombre: 'Reservas');
+        return const AdminProximamente(
+          nombre: 'Reservas',
+        );
 
       case 'reportes':
-        return const AdminProximamente(nombre: 'Reportes');
+        return const AdminProximamente(
+          nombre: 'Reportes',
+        );
 
       case 'usuarios':
-        return const AdminProximamente(nombre: 'Usuarios');
+        return const AdminProximamente(
+          nombre: 'Usuarios',
+        );
 
       default:
         return _inicio();
@@ -101,7 +174,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       nombre: widget.nombre,
       email: widget.email,
       onAbrirMapa: _abrirMapa,
-      onGestionarSitios: () => controlador.cambiarOpcion('sitios'),
+      onGestionarSitios: () {
+        controlador.cambiarOpcion('sitios');
+      },
     );
   }
 
@@ -109,6 +184,8 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   void dispose() {
     controlador.removeListener(_actualizar);
     controlador.dispose();
+    cuentaAdminController.dispose();
+
     super.dispose();
   }
 }

@@ -22,15 +22,17 @@ class ContenedorSeccionSitio extends StatelessWidget {
         AppDimensions.spacingLg,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.borderDark,
         borderRadius: BorderRadius.circular(
           AppDimensions.radiusXxl,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: AppColors.black.withValues(
+              alpha: 0.10,
+            ),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),

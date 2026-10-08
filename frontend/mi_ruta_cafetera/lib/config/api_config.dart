@@ -6,8 +6,9 @@ class ApiConfig {
   // ============================================================
   // IP DEL COMPUTADOR EN LA RED LOCAL
   // ============================================================
-  //
+
   // Para celular físico.
+  //
   // Si la IP del PC cambia, se puede cambiar al ejecutar mediante:
   //
   // --dart-define=API_PC_IP=192.168.1.101
@@ -20,7 +21,7 @@ class ApiConfig {
   // ============================================================
   // DISPOSITIVO FÍSICO
   // ============================================================
-  //
+
   // Por defecto Flutter utilizará el emulador Android.
   //
   // Para celular físico:
