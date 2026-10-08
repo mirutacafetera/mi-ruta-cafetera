@@ -1,9 +1,10 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 
 import '../models/categoria_model.dart';
 import '../models/sitio_turistico_model.dart';
 import '../services/categoria_service.dart';
 import '../services/sitio_service.dart';
+import '../utils/text_utils.dart';
 
 class MapaController extends ChangeNotifier {
   final SitioService _sitioService;
@@ -150,7 +151,7 @@ class MapaController extends ChangeNotifier {
   }
 
   // ============================================================
-  // SELECCIONAR CATEGORÍA
+  // SELECCIONAR CATEGORÃA
   // ============================================================
 
   void seleccionarCategoria(
@@ -164,7 +165,7 @@ class MapaController extends ChangeNotifier {
   }
 
   // ============================================================
-  // FILTRAR CATEGORÍA
+  // FILTRAR CATEGORÃA
   // ============================================================
 
   void aplicarFiltroCategoria() {
@@ -192,7 +193,7 @@ class MapaController extends ChangeNotifier {
         _normalizarId(categoria.id);
 
     final nombreSeleccionado =
-        _normalizarTexto(categoria.nombre);
+        TextUtils.normalizar(categoria.nombre);
 
     _sitiosFiltrados =
         _todosLosSitios.where(
@@ -203,7 +204,7 @@ class MapaController extends ChangeNotifier {
         );
 
         final nombreSitio =
-            _normalizarTexto(
+            TextUtils.normalizar(
           sitio.categoriaNombre,
         );
 
@@ -257,7 +258,7 @@ class MapaController extends ChangeNotifier {
 
   void buscar(String texto) {
     final consulta =
-        texto.trim().toLowerCase();
+        TextUtils.normalizar(texto);
 
     if (consulta.isEmpty) {
       _resultadosBusqueda = [];
@@ -271,24 +272,24 @@ class MapaController extends ChangeNotifier {
         _todosLosSitios.where(
       (sitio) {
         final nombre =
-            sitio.nombre
-                .trim()
-                .toLowerCase();
+            TextUtils.normalizar(
+          sitio.nombre,
+        );
 
         final descripcion =
-            sitio.descripcion
-                .trim()
-                .toLowerCase();
+            TextUtils.normalizar(
+          sitio.descripcion,
+        );
 
         final categoria =
-            sitio.categoriaNombre
-                .trim()
-                .toLowerCase();
+            TextUtils.normalizar(
+          sitio.categoriaNombre,
+        );
 
         final ciudad =
-            sitio.ciudad
-                .trim()
-                .toLowerCase();
+            TextUtils.normalizar(
+          sitio.ciudad,
+        );
 
         return nombre.contains(consulta) ||
             descripcion.contains(consulta) ||
@@ -311,24 +312,12 @@ class MapaController extends ChangeNotifier {
   // ============================================================
 
   String normalizarTexto(String valor) {
-    return _normalizarTexto(valor);
+    return TextUtils.normalizar(valor);
   }
 
   String _normalizarId(String valor) {
     return valor
         .trim()
         .toLowerCase();
-  }
-
-  String _normalizarTexto(String valor) {
-    return valor
-        .trim()
-        .toLowerCase()
-        .replaceAll('á', 'a')
-        .replaceAll('é', 'e')
-        .replaceAll('í', 'i')
-        .replaceAll('ó', 'o')
-        .replaceAll('ú', 'u')
-        .replaceAll('ü', 'u');
   }
 }

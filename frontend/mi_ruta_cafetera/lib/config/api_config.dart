@@ -1,28 +1,37 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 
 class ApiConfig {
   ApiConfig._();
 
   // ============================================================
-  // IP DEL COMPUTADOR
+  // IP DEL COMPUTADOR EN LA RED LOCAL
   // ============================================================
 
   // Para celular físico.
-  // Si la IP de tu PC cambia, puedes cambiarla al ejecutar
-  // usando --dart-define=API_PC_IP=...
+  //
+  // Si la IP del PC cambia, se puede cambiar al ejecutar mediante:
+  //
+  // --dart-define=API_PC_IP=192.168.1.101
+  //
   static const String _ipPc = String.fromEnvironment(
     'API_PC_IP',
-    defaultValue: '192.168.0.42',
+    defaultValue: '192.168.1.101',
   );
 
   // ============================================================
   // DISPOSITIVO FÍSICO
   // ============================================================
 
-  static const bool _celular = String.fromEnvironment(
+  // Por defecto Flutter utilizará el emulador Android.
+  //
+  // Para celular físico:
+  //
+  // --dart-define=USE_PHYSICAL_DEVICE=true
+  //
+  static const bool _celular = bool.fromEnvironment(
     'USE_PHYSICAL_DEVICE',
-    defaultValue: 'false',
-  ) == 'true';
+    defaultValue: false,
+  );
 
   // ============================================================
   // URL BASE
@@ -34,7 +43,7 @@ class ApiConfig {
       return 'http://localhost:3000/api';
     }
 
-    // Celular físico
+    // Celular físico conectado a la misma red del PC
     if (_celular) {
       return 'http://$_ipPc:3000/api';
     }
@@ -47,51 +56,28 @@ class ApiConfig {
   // URL PARA CELULAR FÍSICO
   // ============================================================
 
-  static String get baseUrlCelular {
-    return 'http://$_ipPc:3000/api';
-  }
+  static String get baseUrlCelular =>
+      'http://$_ipPc:3000/api';
 
   // ============================================================
-  // SITIOS
+  // ENDPOINTS
   // ============================================================
 
-  static String get sitiosUrl {
-    return '$baseUrl/sitios';
-  }
+  static String get chatUrl =>
+      '$baseUrl/chat';
 
-  // ============================================================
-  // CATEGORÍAS DE SITIOS
-  // ============================================================
+  static String get sitiosUrl =>
+      '$baseUrl/sitios';
 
-  static String get categoriasSitiosUrl {
-    return '$baseUrl/categorias-sitios';
-  }
+  static String get categoriasUrl =>
+      '$baseUrl/categorias';
 
-  // ============================================================
-  // CATEGORÍAS GENERALES
-  // ============================================================
+  static String get categoriasSitiosUrl =>
+      '$baseUrl/categorias-sitios';
 
-  static String get categoriasUrl {
-    return '$baseUrl/categorias';
-  }
+  static String get rutasUrl =>
+      '$baseUrl/rutas';
 
-  // ============================================================
-  // RUTAS
-  // ============================================================
-
-  static String get rutasUrl {
-    return '$baseUrl/rutas';
-  }
-
-  static String get calcularRutaUrl {
-    return '$rutasUrl/calcular';
-  }
-
-  // ============================================================
-  // CHAT
-  // ============================================================
-
-  static String get chatUrl {
-    return '$baseUrl/chat';
-  }
+  static String get calcularRutaUrl =>
+      '$rutasUrl/calcular';
 }

@@ -3,15 +3,46 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
-class RutaResultado {
-  final List<LatLng> puntos;
+/// Información de un tramo entre dos puntos consecutivos
+/// de la ruta.
+class TramoRuta {
+  final int indice;
   final double distanciaMetros;
   final double duracionSegundos;
+
+  const TramoRuta({
+    required this.indice,
+    required this.distanciaMetros,
+    required this.duracionSegundos,
+  });
+
+  double get distanciaKm => distanciaMetros / 1000;
+
+  double get duracionMinutos => duracionSegundos / 60;
+}
+
+/// Resultado completo de una ruta calculada por carretera.
+class RutaResultado {
+  final List<LatLng> puntos;
+
+  final double distanciaMetros;
+
+  final double duracionSegundos;
+
+  /// Tramos entre cada par de puntos consecutivos.
+  ///
+  /// Ejemplo para 4 sitios:
+  ///
+  /// tramo 0 = sitio 1 → sitio 2
+  /// tramo 1 = sitio 2 → sitio 3
+  /// tramo 2 = sitio 3 → sitio 4
+  final List<TramoRuta> tramos;
 
   const RutaResultado({
     required this.puntos,
     required this.distanciaMetros,
     required this.duracionSegundos,
+    required this.tramos,
   });
 
   double get distanciaKm => distanciaMetros / 1000;
@@ -33,8 +64,8 @@ class RoutingService {
   ///
   /// inicio -> parada 1 -> parada 2 -> destino
   ///
-  /// OSRM se encarga de encontrar las calles y carreteras
-  /// disponibles entre los puntos.
+  /// OSRM encuentra las calles y carreteras disponibles
+  /// entre los puntos.
   Future<RutaResultado> calcularRuta(
     List<LatLng> puntos,
   ) async {
@@ -162,6 +193,69 @@ class RoutingService {
     }
 
     // ==========================================================
+    // OBTENER TRAMOS
+    // ==========================================================
+
+    final List<TramoRuta> tramos = [];
+
+    final legs = route['legs'];
+
+    if (legs is List) {
+      for (
+        var i = 0;
+        i < legs.length;
+        i++
+      ) {
+        final leg = legs[i];
+
+        if (leg is! Map) {
+          continue;
+        }
+
+        final distancia =
+            leg['distance'];
+
+        final duracion =
+            leg['duration'];
+
+        if (distancia is! num ||
+            duracion is! num) {
+          continue;
+        }
+
+        tramos.add(
+          TramoRuta(
+            indice: i,
+            distanciaMetros:
+                distancia.toDouble(),
+            duracionSegundos:
+                duracion.toDouble(),
+          ),
+        );
+      }
+    }
+
+    // ==========================================================
+    // VALIDAR TRAMOS
+    // ==========================================================
+
+    //
+    // Una ruta con N puntos debe tener N - 1 tramos.
+    //
+    // Si OSRM no devuelve los legs correctamente, no
+    // inventamos distancias ni tiempos.
+    //
+    final cantidadTramosEsperada =
+        puntos.length - 1;
+
+    if (tramos.length != cantidadTramosEsperada) {
+      throw Exception(
+        'OSRM no devolvió los tramos completos '
+        'de la ruta.',
+      );
+    }
+
+    // ==========================================================
     // RESULTADO
     // ==========================================================
 
@@ -171,6 +265,7 @@ class RoutingService {
           (route['distance'] as num).toDouble(),
       duracionSegundos:
           (route['duration'] as num).toDouble(),
+      tramos: tramos,
     );
   }
 }

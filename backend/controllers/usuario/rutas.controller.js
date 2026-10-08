@@ -11,13 +11,38 @@ const obtenerRutas = async (req, res) => {
   try {
     const { usuarioId } = req.params;
 
+    // --------------------------------------------------------
+    // VALIDAR ID DEL USUARIO
+    // --------------------------------------------------------
+
     if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
       return res.status(400).json({
+        ok: false,
         mensaje: 'El ID del usuario no es válido.'
       });
     }
 
+    // --------------------------------------------------------
+    // VALIDAR PROPIETARIO
+    // --------------------------------------------------------
+
+    if (
+      !req.usuario ||
+      !req.usuario.id ||
+      req.usuario.id !== usuarioId
+    ) {
+      return res.status(403).json({
+        ok: false,
+        mensaje:
+          'No tienes permiso para consultar las rutas de este usuario.'
+      });
+    }
+
     const ahora = new Date();
+
+    // --------------------------------------------------------
+    // OBTENER RUTAS
+    // --------------------------------------------------------
 
     const rutas = await Ruta.find({
       $or: [
@@ -112,13 +137,16 @@ const obtenerRutasPredefinidas = async (req, res) => {
 const crearRuta = async (req, res) => {
   try {
     const {
-      usuario,
       nombre,
       descripcion,
       sitios,
       tipo = 'personalizada',
       activa = true
     } = req.body;
+
+    // El usuario nunca se toma del body.
+    // Para rutas personalizadas se obtiene del token.
+    let usuario = null;
 
     // --------------------------------------------------------
     // VALIDAR TIPO
@@ -238,13 +266,20 @@ const crearRuta = async (req, res) => {
     // --------------------------------------------------------
 
     if (tipo === 'personalizada') {
-      if (!usuario) {
-        return res.status(400).json({
+      // La ruta personalizada siempre pertenece
+      // al usuario autenticado.
+      if (
+        !req.usuario ||
+        !req.usuario.id
+      ) {
+        return res.status(401).json({
           ok: false,
           mensaje:
-            'Una ruta personalizada necesita un usuario.'
+            'Debes iniciar sesión para crear una ruta personalizada.'
         });
       }
+
+      usuario = req.usuario.id;
 
       if (
         !mongoose.Types.ObjectId.isValid(usuario)
@@ -252,7 +287,33 @@ const crearRuta = async (req, res) => {
         return res.status(400).json({
           ok: false,
           mensaje:
-            'El ID del usuario no es válido.'
+            'El ID del usuario autenticado no es válido.'
+        });
+      }
+
+      // ------------------------------------------------------
+      // LIMITE DE 2 RUTAS PERSONALIZADAS
+      // ------------------------------------------------------
+
+      const ahora = new Date();
+
+      const cantidadRutasPersonalizadas =
+        await Ruta.countDocuments({
+          usuario,
+          tipo: 'personalizada',
+          activa: true,
+          $or: [
+            { expiraEn: null },
+            { expiraEn: { $gt: ahora } }
+          ]
+        });
+
+      if (cantidadRutasPersonalizadas >= 2) {
+        return res.status(400).json({
+          ok: false,
+          mensaje:
+            'Has alcanzado el límite de 2 rutas personalizadas. ' +
+            'Elimina una ruta o espera a que expire para crear otra.'
         });
       }
     }
@@ -261,15 +322,9 @@ const crearRuta = async (req, res) => {
     // RUTA PREDEFINIDA
     // --------------------------------------------------------
 
-    if (
-      tipo === 'predefinida' &&
-      usuario
-    ) {
-      return res.status(400).json({
-        ok: false,
-        mensaje:
-          'Una ruta predefinida no debe estar asociada a un usuario.'
-      });
+    // Las rutas predefinidas no pertenecen a usuarios.
+    if (tipo === 'predefinida') {
+      usuario = null;
     }
 
     // --------------------------------------------------------
@@ -345,6 +400,10 @@ const actualizarRuta = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // --------------------------------------------------------
+    // VALIDAR ID
+    // --------------------------------------------------------
+
     if (
       !mongoose.Types.ObjectId.isValid(id)
     ) {
@@ -354,6 +413,10 @@ const actualizarRuta = async (req, res) => {
           'El ID de la ruta no es válido.'
       });
     }
+
+    // --------------------------------------------------------
+    // BUSCAR RUTA
+    // --------------------------------------------------------
 
     const ruta =
       await Ruta.findById(id);
@@ -367,7 +430,24 @@ const actualizarRuta = async (req, res) => {
     }
 
     // --------------------------------------------------------
-    // NO MODIFICAR RUTAS PREDEFINIDAS DESDE ESTE CRUD
+    // VALIDAR PROPIETARIO
+    // --------------------------------------------------------
+
+    if (
+      !req.usuario ||
+      !req.usuario.id ||
+      !ruta.usuario ||
+      ruta.usuario.toString() !== req.usuario.id
+    ) {
+      return res.status(403).json({
+        ok: false,
+        mensaje:
+          'No tienes permiso para modificar esta ruta.'
+      });
+    }
+
+    // --------------------------------------------------------
+    // NO MODIFICAR RUTAS PREDEFINIDAS
     // --------------------------------------------------------
 
     if (
@@ -477,10 +557,20 @@ const actualizarRuta = async (req, res) => {
     if (
       req.body.nombre !== undefined
     ) {
-      ruta.nombre =
+      const nombre =
         String(
           req.body.nombre
         ).trim();
+
+      if (nombre.length === 0) {
+        return res.status(400).json({
+          ok: false,
+          mensaje:
+            'El nombre de la ruta es obligatorio.'
+        });
+      }
+
+      ruta.nombre = nombre;
     }
 
     if (
@@ -536,6 +626,10 @@ const eliminarRuta = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // --------------------------------------------------------
+    // VALIDAR ID
+    // --------------------------------------------------------
+
     if (
       !mongoose.Types.ObjectId.isValid(id)
     ) {
@@ -545,6 +639,10 @@ const eliminarRuta = async (req, res) => {
           'El ID de la ruta no es válido.'
       });
     }
+
+    // --------------------------------------------------------
+    // BUSCAR RUTA
+    // --------------------------------------------------------
 
     const ruta =
       await Ruta.findById(id);
@@ -557,6 +655,27 @@ const eliminarRuta = async (req, res) => {
       });
     }
 
+    // --------------------------------------------------------
+    // VALIDAR PROPIETARIO
+    // --------------------------------------------------------
+
+    if (
+      !req.usuario ||
+      !req.usuario.id ||
+      !ruta.usuario ||
+      ruta.usuario.toString() !== req.usuario.id
+    ) {
+      return res.status(403).json({
+        ok: false,
+        mensaje:
+          'No tienes permiso para eliminar esta ruta.'
+      });
+    }
+
+    // --------------------------------------------------------
+    // NO ELIMINAR RUTAS PREDEFINIDAS
+    // --------------------------------------------------------
+
     if (
       ruta.tipo === 'predefinida'
     ) {
@@ -566,6 +685,10 @@ const eliminarRuta = async (req, res) => {
           'Las rutas predefinidas son permanentes y no se eliminan mediante este endpoint.'
       });
     }
+
+    // --------------------------------------------------------
+    // ELIMINAR
+    // --------------------------------------------------------
 
     await Ruta.findByIdAndDelete(
       id

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/sitio/sitio_contenido_model.dart';
@@ -66,7 +66,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       final sesion = await _sesionService.obtenerSesion();
 
       if (sesion == null || sesion.token.isEmpty) {
-        throw Exception('No hay una sesión activa.');
+        throw Exception('No hay una sesiÃ³n activa.');
       }
 
       final contenidos =
@@ -165,7 +165,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   }
 
   // =========================================================
-  // SELECCIONAR GALERÍA
+  // SELECCIONAR GALERÃA
   // =========================================================
 
   Future<void> _seleccionarGaleria() async {
@@ -184,14 +184,14 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       });
     } catch (error) {
       _mostrarMensaje(
-        'No fue posible seleccionar las imágenes.',
+        'No fue posible seleccionar las imÃ¡genes.',
         esError: true,
       );
     }
   }
 
   // =========================================================
-  // ELIMINAR SELECCIÓN DE GALERÍA
+  // ELIMINAR SELECCIÃ“N DE GALERÃA
   // =========================================================
 
   void _eliminarImagenSeleccionada(int index) {
@@ -229,15 +229,15 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // =====================================================
-                  // TÍTULO
+                  // TÃTULO
                   // =====================================================
 
                   TextField(
                     controller: _tituloController,
                     decoration: const InputDecoration(
-                      labelText: 'Título',
+                      labelText: 'TÃ­tulo',
                       hintText:
-                          'Ej. Experiencia del café especial',
+                          'Ej. Experiencia del cafÃ© especial',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -247,7 +247,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                   ),
 
                   // =====================================================
-                  // DESCRIPCIÓN
+                  // DESCRIPCIÃ“N
                   // =====================================================
 
                   TextField(
@@ -255,9 +255,9 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                     minLines: 5,
                     maxLines: 8,
                     decoration: const InputDecoration(
-                      labelText: 'Descripción',
+                      labelText: 'DescripciÃ³n',
                       hintText:
-                          'Describe la experiencia turística...',
+                          'Describe la experiencia turÃ­stica...',
                       border: OutlineInputBorder(),
                       alignLabelWithHint: true,
                     ),
@@ -282,7 +282,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                   const SizedBox(height: 8),
 
                   const Text(
-                    'Será la imagen principal que representará este contenido.',
+                    'SerÃ¡ la imagen principal que representarÃ¡ este contenido.',
                   ),
 
                   const SizedBox(height: 12),
@@ -297,11 +297,11 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                   ),
 
                   // =====================================================
-                  // GALERÍA
+                  // GALERÃA
                   // =====================================================
 
                   const Text(
-                    'Galería de imágenes',
+                    'GalerÃ­a de imÃ¡genes',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -312,8 +312,8 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
 
                   Text(
                     esEdicion
-                        ? 'Puedes agregar nuevas imágenes al carrusel.'
-                        : 'Selecciona las imágenes que formarán el carrusel.',
+                        ? 'Puedes agregar nuevas imÃ¡genes al carrusel.'
+                        : 'Selecciona las imÃ¡genes que formarÃ¡n el carrusel.',
                   ),
 
                   const SizedBox(height: 12),
@@ -329,7 +329,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                       Icons.photo_library_outlined,
                     ),
                     label: const Text(
-                      'Seleccionar imágenes',
+                      'Seleccionar imÃ¡genes',
                     ),
                   ),
 
@@ -344,7 +344,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                       contenidoExistente.imagenes.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     const Text(
-                      'Imágenes actuales',
+                      'ImÃ¡genes actuales',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                       ),
@@ -466,7 +466,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
               width: double.infinity,
               height: 210,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) {
+              errorBuilder: (_, _, _) {
                 return _marcoImagenVacia(
                   alto: 210,
                   icono: Icons.broken_image_outlined,
@@ -512,7 +512,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   }
 
   // =========================================================
-  // GALERÍA SELECCIONADA
+  // GALERÃA SELECCIONADA
   // =========================================================
 
   Widget _construirGaleriaSeleccionada(
@@ -570,7 +570,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   }
 
   // =========================================================
-  // GALERÍA EXISTENTE
+  // GALERÃA EXISTENTE
   // =========================================================
 
   Widget _construirGaleriaExistente(
@@ -595,7 +595,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
           child: Image.network(
             imagenes[index],
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) {
+            errorBuilder: (_, _, _) {
               return _marcoImagenVacia(
                 icono: Icons.broken_image_outlined,
               );
@@ -649,7 +649,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   }
 
   // =========================================================
-  // MARCO IMAGEN VACÍA
+  // MARCO IMAGEN VACÃA
   // =========================================================
 
   Widget _marcoImagenVacia({
@@ -679,7 +679,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   Future<bool> _crearContenido() async {
     if (_tituloController.text.trim().length < 2) {
       _mostrarMensaje(
-        'El título es obligatorio.',
+        'El tÃ­tulo es obligatorio.',
         esError: true,
       );
       return false;
@@ -687,7 +687,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
 
     if (_descripcionController.text.trim().length < 10) {
       _mostrarMensaje(
-        'La descripción debe tener al menos 10 caracteres.',
+        'La descripciÃ³n debe tener al menos 10 caracteres.',
         esError: true,
       );
       return false;
@@ -697,7 +697,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       final sesion = await _sesionService.obtenerSesion();
 
       if (sesion == null || sesion.token.isEmpty) {
-        throw Exception('No hay una sesión activa.');
+        throw Exception('No hay una sesiÃ³n activa.');
       }
 
       final contenido =
@@ -747,7 +747,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   ) async {
     if (_tituloController.text.trim().length < 2) {
       _mostrarMensaje(
-        'El título es obligatorio.',
+        'El tÃ­tulo es obligatorio.',
         esError: true,
       );
       return false;
@@ -755,7 +755,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
 
     if (_descripcionController.text.trim().length < 10) {
       _mostrarMensaje(
-        'La descripción debe tener al menos 10 caracteres.',
+        'La descripciÃ³n debe tener al menos 10 caracteres.',
         esError: true,
       );
       return false;
@@ -765,7 +765,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       final sesion = await _sesionService.obtenerSesion();
 
       if (sesion == null || sesion.token.isEmpty) {
-        throw Exception('No hay una sesión activa.');
+        throw Exception('No hay una sesiÃ³n activa.');
       }
 
       await _contenidoService.actualizarContenido(
@@ -810,7 +810,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   }
 
   // =========================================================
-  // ENVIAR A REVISIÓN
+  // ENVIAR A REVISIÃ“N
   // =========================================================
 
   Future<void> _enviarRevision(
@@ -825,7 +825,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       final sesion = await _sesionService.obtenerSesion();
 
       if (sesion == null || sesion.token.isEmpty) {
-        throw Exception('No hay una sesión activa.');
+        throw Exception('No hay una sesiÃ³n activa.');
       }
 
       await _contenidoService.enviarContenidoRevision(
@@ -838,7 +838,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       if (!mounted) return;
 
       _mostrarMensaje(
-        'Contenido enviado a revisión correctamente.',
+        'Contenido enviado a revisiÃ³n correctamente.',
       );
     } catch (error) {
       if (!mounted) return;
@@ -861,7 +861,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       final sesion = await _sesionService.obtenerSesion();
 
       if (sesion == null || sesion.token.isEmpty) {
-        throw Exception('No hay una sesión activa.');
+        throw Exception('No hay una sesiÃ³n activa.');
       }
 
       if (contenido.activo) {
@@ -961,7 +961,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                       size: 18,
                     ),
                     label: Text(
-                      '${contenido.imagenes.length} imágenes',
+                      '${contenido.imagenes.length} imÃ¡genes',
                     ),
                   ),
                 if (contenido.audioGuias.isNotEmpty)
@@ -971,7 +971,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                       size: 18,
                     ),
                     label: Text(
-                      '${contenido.audioGuias.length} audio-guías',
+                      '${contenido.audioGuias.length} audio-guÃ­as',
                     ),
                   ),
               ],
@@ -1024,7 +1024,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                       Icons.send_outlined,
                     ),
                     label: const Text(
-                      'Enviar a revisión',
+                      'Enviar a revisiÃ³n',
                     ),
                   ),
 
@@ -1080,7 +1080,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
         width: 120,
         height: 100,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) {
+        errorBuilder: (_, _, _) {
           return Container(
             width: 120,
             height: 100,
@@ -1110,7 +1110,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
         break;
 
       case 'pendiente_revision':
-        texto = 'Pendiente de revisión';
+        texto = 'Pendiente de revisiÃ³n';
         icono = Icons.hourglass_top_outlined;
         break;
 
@@ -1134,7 +1134,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   }
 
   // =========================================================
-  // ESTADO VACÍO
+  // ESTADO VACÃO
   // =========================================================
 
   Widget _estadoVacio() {
@@ -1153,7 +1153,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Aún no tienes contenido turístico',
+              'AÃºn no tienes contenido turÃ­stico',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 20,
@@ -1218,7 +1218,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                       CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Contenido turístico',
+                      'Contenido turÃ­stico',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -1226,7 +1226,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      'Administra la información que quieres '
+                      'Administra la informaciÃ³n que quieres '
                       'presentar sobre las experiencias de tu sitio.',
                     ),
                   ],

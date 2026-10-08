@@ -545,24 +545,15 @@ class _BienvenidaScreenState
           ),
 
           // ========================================================
-          // BRILLO SUPERIOR
+          // ELEMENTO DECORATIVO DE LA EXPERIENCIA
           // ========================================================
 
           Positioned(
-            top: -120,
-            right: -90,
-            child: _CirculoDecorativo(
-              size: 280,
-              opacity: 0.08,
-            ),
-          ),
-
-          Positioned(
-            top: 160,
-            left: -80,
-            child: _CirculoDecorativo(
-              size: 170,
-              opacity: 0.05,
+            top: -80,
+            right: -60,
+            child: _IconoDecorativo(
+              imagen:
+                  _imagenes[_paginaActual],
             ),
           ),
 
@@ -590,16 +581,14 @@ class _BienvenidaScreenState
                             AppDimensions.spacingMd,
                       ),
                       child: Row(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.center,
                         children: [
-                          _LogoPequeno(),
-
-                          const Spacer(),
-
-                          _IndicadorExperiencia(
-                            pagina:
-                                _paginaActual,
-                            total:
-                                _imagenes.length,
+                          Align(
+                            alignment:
+                                Alignment.centerLeft,
+                            child:
+                                _LogoPequeno(),
                           ),
                         ],
                       ),
@@ -613,11 +602,12 @@ class _BienvenidaScreenState
 
                     Padding(
                       padding:
-                          EdgeInsets.symmetric(
+                          const EdgeInsets.symmetric(
                         horizontal:
                             AppDimensions.spacingXl,
                       ),
-                      child: AnimatedSwitcher(
+                      child:
+                          AnimatedSwitcher(
                         duration:
                             const Duration(
                           milliseconds: 450,
@@ -644,7 +634,8 @@ class _BienvenidaScreenState
                           );
 
                           return FadeTransition(
-                            opacity: animation,
+                            opacity:
+                                animation,
                             child:
                                 SlideTransition(
                               position: slide,
@@ -665,9 +656,10 @@ class _BienvenidaScreenState
                     ),
 
                     SizedBox(
-                      height: esPantallaPequena
-                          ? 16
-                          : 26,
+                      height:
+                          esPantallaPequena
+                              ? 16
+                              : 26,
                     ),
 
                     // ====================================================
@@ -680,9 +672,10 @@ class _BienvenidaScreenState
                     ),
 
                     SizedBox(
-                      height: esPantallaPequena
-                          ? 18
-                          : 28,
+                      height:
+                          esPantallaPequena
+                              ? 18
+                              : 28,
                     ),
 
                     // ====================================================
@@ -710,9 +703,10 @@ class _BienvenidaScreenState
                     ),
 
                     SizedBox(
-                      height: esPantallaPequena
-                          ? 18
-                          : 28,
+                      height:
+                          esPantallaPequena
+                              ? 18
+                              : 28,
                     ),
 
                     // ====================================================
@@ -769,7 +763,8 @@ class _BienvenidaScreenState
                       onPressed:
                           _abrirAccesoPrivado,
                       icon: Icon(
-                        Icons.lock_outline_rounded,
+                        Icons
+                            .lock_outline_rounded,
                         color: AppColors.white
                             .withValues(
                           alpha: 0.75,
@@ -908,23 +903,33 @@ class _ImagenHero extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedScale(
-      scale: activa ? 1.0 : 1.04,
-      duration: const Duration(milliseconds: 900),
-      curve: Curves.easeOutCubic,
-      child: Image.asset(
-        imagen.asset,
-        fit: BoxFit.cover,
-        errorBuilder: (
-          context,
-          error,
-          stackTrace,
-        ) {
-          return _FondoImagenRespaldo(
-            imagen: imagen,
-          );
-        },
+  Widget build(
+    BuildContext context,
+  ) {
+    return SizedBox.expand(
+      child: AnimatedScale(
+        scale: activa ? 1.0 : 1.015,
+        duration:
+            const Duration(
+          milliseconds: 900,
+        ),
+        curve: Curves.easeOutCubic,
+        child: Image.asset(
+          imagen.asset,
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+          filterQuality:
+              FilterQuality.high,
+          errorBuilder: (
+            context,
+            error,
+            stackTrace,
+          ) {
+            return _FondoImagenRespaldo(
+              imagen: imagen,
+            );
+          },
+        ),
       ),
     );
   }
@@ -1010,89 +1015,45 @@ class _LogoPequeno
   Widget build(
     BuildContext context,
   ) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: AppColors.white
-                .withValues(alpha: 0.13),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: AppColors.white
-                  .withValues(alpha: 0.24),
-            ),
-          ),
-          child: const Icon(
-            Icons.local_cafe_rounded,
-            color: AppColors.white,
-            size: 23,
-          ),
-        ),
-        const SizedBox(
-          width: AppDimensions.spacingSm,
-        ),
-        const Text(
-          'Mi Ruta Cafetera',
-          style: TextStyle(
-            color: AppColors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.2,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ============================================================================
-// INDICADOR SUPERIOR
-// ============================================================================
-
-class _IndicadorExperiencia
-    extends StatelessWidget {
-  final int pagina;
-  final int total;
-
-  const _IndicadorExperiencia({
-    required this.pagina,
-    required this.total,
-  });
-
-  @override
-  Widget build(
-    BuildContext context,
-  ) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal:
-            AppDimensions.spacingMd,
-        vertical:
-            AppDimensions.spacingSm,
-      ),
+      width: 64,
+      height: 64,
+      padding: const EdgeInsets.all(7),
       decoration: BoxDecoration(
         color: AppColors.black
-            .withValues(alpha: 0.22),
-        borderRadius:
-            BorderRadius.circular(
-          AppDimensions.radiusPill,
-        ),
+            .withValues(alpha: 0.20),
+        shape: BoxShape.circle,
         border: Border.all(
           color: AppColors.white
-              .withValues(alpha: 0.12),
+              .withValues(alpha: 0.20),
+          width: 1.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black
+                .withValues(alpha: 0.20),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
-      child: Text(
-        '${pagina + 1} / $total',
-        style: TextStyle(
-          color: AppColors.white
-              .withValues(alpha: 0.82),
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
+      child: ClipOval(
+        child: Image.asset(
+          'assets/img/mi_ruta_cafetera.png',
+          fit: BoxFit.contain,
+          filterQuality:
+              FilterQuality.high,
+          errorBuilder: (
+            context,
+            error,
+            stackTrace,
+          ) {
+            return const Icon(
+              Icons.coffee_rounded,
+              color: AppColors.white,
+              size: 28,
+            );
+          },
         ),
       ),
     );
@@ -1118,12 +1079,13 @@ class _TextoExperiencia
   ) {
     return Column(
       crossAxisAlignment:
-          CrossAxisAlignment.start,
+          CrossAxisAlignment.center,
       children: [
         Container(
           width: 46,
           height: 46,
-          decoration: BoxDecoration(
+          decoration:
+              BoxDecoration(
             color: imagen.color
                 .withValues(alpha: 0.92),
             borderRadius:
@@ -1142,33 +1104,44 @@ class _TextoExperiencia
           ),
           child: Icon(
             imagen.icono,
-            color: AppColors.white,
+            color:
+                AppColors.white,
             size: 24,
           ),
         ),
         const SizedBox(
-          height: AppDimensions.spacingMd,
+          height:
+              AppDimensions.spacingMd,
         ),
         Text(
           imagen.titulo,
-          style: const TextStyle(
-            color: AppColors.white,
+          textAlign:
+              TextAlign.center,
+          style:
+              const TextStyle(
+            color:
+                AppColors.white,
             fontSize: 29,
-            fontWeight: FontWeight.w800,
+            fontWeight:
+                FontWeight.w800,
             height: 1.08,
           ),
         ),
         const SizedBox(
-          height: AppDimensions.spacingSm,
+          height:
+              AppDimensions.spacingSm,
         ),
         Text(
           imagen.subtitulo,
+          textAlign:
+              TextAlign.center,
           style: TextStyle(
             color: AppColors.white
                 .withValues(alpha: 0.86),
             fontSize: 15,
             height: 1.45,
-            fontWeight: FontWeight.w400,
+            fontWeight:
+                FontWeight.w400,
           ),
         ),
       ],
@@ -1196,27 +1169,34 @@ class _MarcaPrincipal
       children: [
         Text(
           'Mi Ruta Cafetera',
-          textAlign: TextAlign.center,
+          textAlign:
+              TextAlign.center,
           style: TextStyle(
-            color: AppColors.white,
-            fontSize: compacto ? 29 : 34,
-            fontWeight: FontWeight.w800,
+            color:
+                AppColors.white,
+            fontSize:
+                compacto ? 29 : 34,
+            fontWeight:
+                FontWeight.w800,
             height: 1,
             letterSpacing: -0.6,
           ),
         ),
         const SizedBox(
-          height: AppDimensions.spacingSm,
+          height:
+              AppDimensions.spacingSm,
         ),
         Text(
           'Descubre · Explora · Vive',
-          textAlign: TextAlign.center,
+          textAlign:
+              TextAlign.center,
           style: TextStyle(
             color: AppColors.white
                 .withValues(alpha: 0.84),
             fontSize: 12,
             letterSpacing: 2.1,
-            fontWeight: FontWeight.w500,
+            fontWeight:
+                FontWeight.w500,
           ),
         ),
       ],
@@ -1254,8 +1234,10 @@ class _IndicadoresCarrusel
               index == actual;
 
           return GestureDetector(
-            onTap: () => onTap(index),
-            child: AnimatedContainer(
+            onTap: () =>
+                onTap(index),
+            child:
+                AnimatedContainer(
               duration:
                   const Duration(
                 milliseconds: 250,
@@ -1263,9 +1245,11 @@ class _IndicadoresCarrusel
               curve:
                   Curves.easeOutCubic,
               margin:
-                  const EdgeInsets.symmetric(
+                  const EdgeInsets
+                      .symmetric(
                 horizontal:
-                    AppDimensions.spacingXs,
+                    AppDimensions
+                        .spacingXs,
               ),
               width:
                   activo ? 28 : 7,
@@ -1273,14 +1257,18 @@ class _IndicadoresCarrusel
               decoration:
                   BoxDecoration(
                 color: activo
-                    ? AppColors.secondary
-                    : AppColors.white
+                    ? AppColors
+                        .secondary
+                    : AppColors
+                        .white
                         .withValues(
                         alpha: 0.45,
                       ),
                 borderRadius:
-                    BorderRadius.circular(
-                  AppDimensions.radiusPill,
+                    BorderRadius
+                        .circular(
+                  AppDimensions
+                      .radiusPill,
                 ),
               ),
             ),
@@ -1304,8 +1292,9 @@ class _BotonComenzar
   });
 
   @override
-  State<_BotonComenzar> createState() =>
-      _BotonComenzarState();
+  State<_BotonComenzar>
+      createState() =>
+          _BotonComenzarState();
 }
 
 class _BotonComenzarState
@@ -1334,7 +1323,8 @@ class _BotonComenzarState
           _presionado = false;
         });
       },
-      child: AnimatedScale(
+      child:
+          AnimatedScale(
         scale:
             _presionado ? 0.96 : 1,
         duration:
@@ -1342,10 +1332,13 @@ class _BotonComenzarState
           milliseconds: 120,
         ),
         child: Container(
-          width: double.infinity,
+          width:
+              double.infinity,
           height: 58,
-          decoration: BoxDecoration(
-            color: AppColors.secondary,
+          decoration:
+              BoxDecoration(
+            color:
+                AppColors.secondary,
             borderRadius:
                 BorderRadius.circular(
               AppDimensions.radiusXl,
@@ -1364,40 +1357,19 @@ class _BotonComenzarState
               ),
             ],
           ),
-          child: Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Comenzar a explorar',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 16,
-                  fontWeight:
-                      FontWeight.w800,
-                ),
-              ),
-              const SizedBox(
-                width:
-                    AppDimensions.spacingMd,
-              ),
-              Container(
-                width: 34,
-                height: 34,
-                decoration:
-                    const BoxDecoration(
-                  color: AppColors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.arrow_forward_rounded,
-                  color:
-                      AppColors.secondary,
-                  size:
-                      AppDimensions.iconMd,
-                ),
-              ),
-            ],
+          alignment:
+              Alignment.center,
+          child: const Text(
+            'Comenzar a explorar',
+            textAlign:
+                TextAlign.center,
+            style: TextStyle(
+              color:
+                  AppColors.white,
+              fontSize: 16,
+              fontWeight:
+                  FontWeight.w800,
+            ),
           ),
         ),
       ),
@@ -1429,10 +1401,13 @@ class _BotonGoogle
 
     if (kIsWeb) {
       return Container(
-        width: double.infinity,
+        width:
+            double.infinity,
         height: 54,
-        decoration: BoxDecoration(
-          color: AppColors.white,
+        decoration:
+            BoxDecoration(
+          color:
+              AppColors.white,
           borderRadius:
               BorderRadius.circular(
             AppDimensions.radiusLg,
@@ -1447,8 +1422,10 @@ class _BotonGoogle
             ),
           ],
         ),
-        alignment: Alignment.center,
-        child: crearBotonGoogleWeb(),
+        alignment:
+            Alignment.center,
+        child:
+            crearBotonGoogleWeb(),
       );
     }
 
@@ -1457,24 +1434,30 @@ class _BotonGoogle
     // ==============================================================
 
     return SizedBox(
-      width: double.infinity,
+      width:
+          double.infinity,
       height: 54,
       child: Material(
-        color: AppColors.white,
+        color:
+            AppColors.white,
         borderRadius:
             BorderRadius.circular(
           AppDimensions.radiusLg,
         ),
         elevation:
-            AppDimensions.elevationButton,
+            AppDimensions
+                .elevationButton,
         child: InkWell(
           onTap:
-              cargando ? null : onPressed,
+              cargando
+                  ? null
+                  : onPressed,
           borderRadius:
               BorderRadius.circular(
             AppDimensions.radiusLg,
           ),
-          child: AnimatedOpacity(
+          child:
+              AnimatedOpacity(
             duration:
                 const Duration(
               milliseconds: 180,
@@ -1483,14 +1466,17 @@ class _BotonGoogle
                 cargando ? 0.65 : 1,
             child: Row(
               mainAxisAlignment:
-                  MainAxisAlignment.center,
+                  MainAxisAlignment
+                      .center,
               children: [
                 if (cargando)
                   const SizedBox(
                     width:
-                        AppDimensions.iconMd,
+                        AppDimensions
+                            .iconMd,
                     height:
-                        AppDimensions.iconMd,
+                        AppDimensions
+                            .iconMd,
                     child:
                         CircularProgressIndicator(
                       strokeWidth: 2.5,
@@ -1502,28 +1488,36 @@ class _BotonGoogle
                     height: 28,
                     alignment:
                         Alignment.center,
-                    child: const Text(
+                    child:
+                        const Text(
                       'G',
-                      style: TextStyle(
+                      style:
+                          TextStyle(
                         fontSize: 21,
                         fontWeight:
                             FontWeight.w700,
                         color:
-                            Color(0xFF4285F4),
+                            Color(
+                          0xFF4285F4,
+                        ),
                       ),
                     ),
                   ),
                 const SizedBox(
                   width:
-                      AppDimensions.spacingMd,
+                      AppDimensions
+                          .spacingMd,
                 ),
                 Text(
                   cargando
                       ? 'Conectando con Google...'
                       : 'Continuar con Google',
-                  style: const TextStyle(
+                  style:
+                      const TextStyle(
                     color:
-                        Color(0xFF333333),
+                        Color(
+                      0xFF333333,
+                    ),
                     fontSize: 14,
                     fontWeight:
                         FontWeight.w600,
@@ -1539,30 +1533,51 @@ class _BotonGoogle
 }
 
 // ============================================================================
-// CÍRCULO DECORATIVO
+// ICONO DECORATIVO
 // ============================================================================
 
-class _CirculoDecorativo
+class _IconoDecorativo
     extends StatelessWidget {
-  final double size;
-  final double opacity;
+  final _ImagenBienvenida imagen;
 
-  const _CirculoDecorativo({
-    required this.size,
-    required this.opacity,
+  const _IconoDecorativo({
+    required this.imagen,
   });
 
   @override
   Widget build(
     BuildContext context,
   ) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: AppColors.white
-            .withValues(alpha: opacity),
-        shape: BoxShape.circle,
+    return IgnorePointer(
+      child: Container(
+        width: 300,
+        height: 300,
+        alignment:
+            Alignment.center,
+        decoration:
+            BoxDecoration(
+          shape:
+              BoxShape.circle,
+          gradient:
+              RadialGradient(
+            colors: [
+              imagen.color.withValues(
+                alpha: 0.22,
+              ),
+              imagen.color.withValues(
+                alpha: 0.0,
+              ),
+            ],
+          ),
+        ),
+        child: Icon(
+          imagen.icono,
+          size: 190,
+          color: AppColors.white
+              .withValues(
+            alpha: 0.075,
+          ),
+        ),
       ),
     );
   }
