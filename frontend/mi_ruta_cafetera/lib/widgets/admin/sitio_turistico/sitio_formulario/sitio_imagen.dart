@@ -30,19 +30,22 @@ class SitioImagen extends StatelessWidget {
             titulo: 'Imagen principal',
             subtitulo: 'Una buena imagen ayuda a mostrar el sitio',
           ),
+
           GestureDetector(
             onTap: onSeleccionarImagen,
             child: _imagen(),
           ),
+
           const SizedBox(
             height: AppDimensions.spacingSm,
           ),
+
           const Row(
             children: [
               Icon(
                 Icons.photo_library_outlined,
                 size: AppDimensions.iconSm,
-                color: AppColors.textSecondary,
+                color: AppColors.nature,
               ),
               SizedBox(
                 width: AppDimensions.spacingXs,
@@ -107,7 +110,7 @@ class SitioImagen extends StatelessWidget {
       width: double.infinity,
       height: AppDimensions.featuredImageHeight,
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.creamLight,
         borderRadius: BorderRadius.circular(
           AppDimensions.radiusXl,
         ),
@@ -122,20 +125,22 @@ class SitioImagen extends StatelessWidget {
             width: 62,
             height: 62,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(
+              color: AppColors.secondary.withValues(
                 alpha: 0.10,
               ),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.add_a_photo_rounded,
-              color: AppColors.primary,
+              color: AppColors.secondary,
               size: 30,
             ),
           ),
+
           const SizedBox(
             height: AppDimensions.spacingMd,
           ),
+
           const Text(
             'Agregar imagen',
             style: TextStyle(
@@ -143,9 +148,11 @@ class SitioImagen extends StatelessWidget {
               color: AppColors.secondary,
             ),
           ),
+
           const SizedBox(
             height: AppDimensions.spacingXs,
           ),
+
           const Text(
             'Toca aquí para seleccionar una foto',
             style: TextStyle(

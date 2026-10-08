@@ -7,78 +7,91 @@ class ApiConfig {
   // IP DEL COMPUTADOR
   // ============================================================
 
+  // Para celular físico.
+  // Si la IP de tu PC cambia, puedes cambiarla al ejecutar
+  // usando --dart-define=API_PC_IP=...
   static const String _ipPc = String.fromEnvironment(
     'API_PC_IP',
-    defaultValue: '192.168.1.112',
+    defaultValue: '192.168.0.42',
   );
 
   // ============================================================
   // DISPOSITIVO FÍSICO
   // ============================================================
 
-  static const bool _celular = bool.fromEnvironment(
+  static const bool _celular = String.fromEnvironment(
     'USE_PHYSICAL_DEVICE',
-    defaultValue: false,
-  );
+    defaultValue: 'false',
+  ) == 'true';
 
   // ============================================================
   // URL BASE
   // ============================================================
 
   static String get baseUrl {
+    // Flutter Web
     if (kIsWeb) {
       return 'http://localhost:3000/api';
     }
 
+    // Celular físico
     if (_celular) {
       return 'http://$_ipPc:3000/api';
     }
 
+    // Emulador Android
     return 'http://10.0.2.2:3000/api';
   }
 
   // ============================================================
-  // URL PARA CELULAR
+  // URL PARA CELULAR FÍSICO
   // ============================================================
 
-  static String get baseUrlCelular =>
-      'http://$_ipPc:3000/api';
+  static String get baseUrlCelular {
+    return 'http://$_ipPc:3000/api';
+  }
 
   // ============================================================
-  // SITIOS TURÍSTICOS
+  // SITIOS
   // ============================================================
 
-  static String get sitiosUrl =>
-    '$baseUrl/sitios';
+  static String get sitiosUrl {
+    return '$baseUrl/sitios';
+  }
 
   // ============================================================
   // CATEGORÍAS DE SITIOS
   // ============================================================
 
-  static String get categoriasSitiosUrl =>
-      '$baseUrl/categorias-sitios';
+  static String get categoriasSitiosUrl {
+    return '$baseUrl/categorias-sitios';
+  }
 
   // ============================================================
   // CATEGORÍAS GENERALES
   // ============================================================
 
-  static String get categoriasUrl =>
-      '$baseUrl/categorias';
+  static String get categoriasUrl {
+    return '$baseUrl/categorias';
+  }
 
   // ============================================================
   // RUTAS
   // ============================================================
 
-  static String get rutasUrl =>
-      '$baseUrl/rutas';
+  static String get rutasUrl {
+    return '$baseUrl/rutas';
+  }
 
-  static String get calcularRutaUrl =>
-      '$rutasUrl/calcular';
+  static String get calcularRutaUrl {
+    return '$rutasUrl/calcular';
+  }
 
   // ============================================================
   // CHAT
   // ============================================================
 
-  static String get chatUrl =>
-      '$baseUrl/chat';
+  static String get chatUrl {
+    return '$baseUrl/chat';
+  }
 }

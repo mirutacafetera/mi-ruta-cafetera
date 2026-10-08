@@ -34,18 +34,21 @@ class SitioDatosAcceso extends StatelessWidget {
                 ? 'Información del responsable'
                 : 'Cuenta que administrará este sitio',
           ),
+
           CampoFormularioSitio(
             controlador: controladorNombre,
             etiqueta: 'Nombre del responsable',
             icono: Icons.person_rounded,
             obligatorio: !esEdicion,
           ),
+
           CampoFormularioSitio(
             controlador: controladorApellido,
             etiqueta: 'Apellido del responsable',
             icono: Icons.person_outline_rounded,
             obligatorio: !esEdicion,
           ),
+
           CampoFormularioSitio(
             controlador: controladorCorreo,
             etiqueta: 'Correo de acceso',
@@ -53,6 +56,7 @@ class SitioDatosAcceso extends StatelessWidget {
             tipoTeclado: TextInputType.emailAddress,
             obligatorio: !esEdicion,
           ),
+
           CampoFormularioSitio(
             controlador: controladorContrasena,
             etiqueta: esEdicion
@@ -62,6 +66,7 @@ class SitioDatosAcceso extends StatelessWidget {
             ocultarTexto: true,
             obligatorio: !esEdicion,
           ),
+
           CampoFormularioSitio(
             controlador: controladorTelefono,
             etiqueta: 'Teléfono de la cuenta',

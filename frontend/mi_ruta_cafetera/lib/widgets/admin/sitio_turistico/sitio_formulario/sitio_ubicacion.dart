@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../theme/app_colors.dart';
 import '../../../../../theme/app_dimensions.dart';
 import 'campo_formulario_sitio.dart';
 import 'contenedor_seccion_sitio.dart';
@@ -31,11 +32,13 @@ class SitioUbicacion extends StatelessWidget {
             titulo: 'Ubicación',
             subtitulo: 'Indica dónde se encuentra el sitio',
           ),
+
           CampoFormularioSitio(
             controlador: direccionController,
             etiqueta: 'Dirección',
             icono: Icons.location_on_rounded,
           ),
+
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -60,6 +63,7 @@ class SitioUbicacion extends StatelessWidget {
               ),
             ],
           ),
+
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

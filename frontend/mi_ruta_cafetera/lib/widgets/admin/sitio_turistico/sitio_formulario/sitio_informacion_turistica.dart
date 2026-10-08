@@ -30,11 +30,13 @@ class SitioInformacionTuristica extends StatelessWidget {
             titulo: 'Información turística',
             subtitulo: 'Información útil para los visitantes',
           ),
+
           CampoFormularioSitio(
             controlador: horarioController,
             etiqueta: 'Horario de atención',
             icono: Icons.schedule_rounded,
           ),
+
           CampoFormularioSitio(
             controlador: precioController,
             etiqueta: 'Precio desde',
@@ -43,13 +45,14 @@ class SitioInformacionTuristica extends StatelessWidget {
               decimal: true,
             ),
           ),
+
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingMd,
               vertical: AppDimensions.spacingSm,
             ),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.creamLight,
               borderRadius: BorderRadius.circular(
                 AppDimensions.radiusMd,
               ),
@@ -59,7 +62,7 @@ class SitioInformacionTuristica extends StatelessWidget {
             ),
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              activeThumbColor: AppColors.primary,
+              activeThumbColor: AppColors.secondary,
               title: const Text(
                 'Sitio activo',
                 style: TextStyle(
