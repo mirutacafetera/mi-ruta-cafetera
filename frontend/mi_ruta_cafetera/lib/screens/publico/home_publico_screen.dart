@@ -12,10 +12,15 @@ import '../../widgets/publico/categoria_card.dart';
 import '../../widgets/publico/home_hero.dart';
 import '../../widgets/publico/requiere_cuenta_sheet.dart';
 import '../../widgets/publico/sitio_card.dart';
+import '../mapa_screen_2.dart';
 import '../usuario/login_usuario_screen.dart';
 
 class HomePublicoScreen extends StatefulWidget {
-  final VoidCallback? onIrMapa;
+  /// Callback utilizado por PublicShellScreen.
+  ///
+  /// Recibe el sitio exacto que el usuario seleccionó
+  /// para abrirlo en el mapa.
+  final void Function(SitioTuristicoModel sitio)? onIrMapa;
 
   const HomePublicoScreen({
     super.key,
@@ -235,10 +240,9 @@ class _HomePublicoScreenState
   // ============================================================
   // SITIOS DESTACADOS
   //
-  // IMPORTANTE:
-  // Antes se limitaban a 8 sitios.
-  // Ahora se conservan todos los sitios que devuelve la API
-  // y todos los sitios correspondientes a la categoría elegida.
+  // Se conservan todos los sitios devueltos
+  // por la API y los correspondientes a la
+  // categoría seleccionada.
   // ============================================================
 
   List<SitioTuristicoModel>
@@ -327,18 +331,39 @@ class _HomePublicoScreenState
   }
 
   // ============================================================
-  // MAPA
+  // ABRIR MAPA GENERAL
   // ============================================================
 
   void _abrirMapa() {
-    if (widget.onIrMapa != null) {
-      widget.onIrMapa!();
-      return;
-    }
-
     Navigator.pushNamed(
       context,
       '/mapa',
+    );
+  }
+
+  // ============================================================
+  // ABRIR SITIO SELECCIONADO EN EL MAPA
+  // ============================================================
+
+  void _abrirSitio(
+    SitioTuristicoModel sitio,
+  ) {
+    // Si el Home está dentro de PublicShellScreen,
+    // enviamos el sitio seleccionado al Shell.
+    if (widget.onIrMapa != null) {
+      widget.onIrMapa!(sitio);
+      return;
+    }
+
+    // Si HomePublicoScreen se utiliza directamente,
+    // abrimos el mapa y enviamos el sitio seleccionado.
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapaScreen2(
+          sitioInicial: sitio,
+        ),
+      ),
     );
   }
 
@@ -570,16 +595,13 @@ class _HomePublicoScreenState
 
         if (_cargandoSitios)
           _construirCargaSitios()
-
         else if (_errorSitios != null &&
             _sitios.isEmpty)
           _construirEstadoError()
-
         else if (sitios.isEmpty)
           _construirEstadoVacio(
             hayFiltro: hayFiltro,
           )
-
         else
           SizedBox(
             height: 330,
@@ -607,8 +629,15 @@ class _HomePublicoScreenState
                       _imagenSitio(sitio),
                   onFavorite:
                       _requiereCuenta,
+
+                  // ==================================================
+                  // IMPORTANTE:
+                  // Aquí enviamos el sitio seleccionado.
+                  // Ya no abrimos simplemente el mapa general.
+                  // ==================================================
+
                   onTap: () {
-                    _abrirMapa();
+                    _abrirSitio(sitio);
                   },
                 );
               },
@@ -673,8 +702,7 @@ class _HomePublicoScreenState
       return 'assets/images/sitios/miradores.jpeg';
     }
 
-    // Imagen existente dentro de la carpeta
-    // de sitios como respaldo.
+    // Imagen existente como respaldo.
     return 'assets/images/sitios/naturaleza.jpeg';
   }
 
@@ -707,6 +735,10 @@ class _HomePublicoScreenState
       ],
     );
   }
+
+  // ============================================================
+  // RUTAS VACÍAS
+  // ============================================================
 
   Widget _construirRutasVacias() {
     return Container(
@@ -863,8 +895,7 @@ class _HomePublicoScreenState
           'Explora por experiencia',
           style: TextStyle(
             fontSize: 21,
-            fontWeight:
-                FontWeight.w800,
+            fontWeight: FontWeight.w800,
             color:
                 AppColors.textOnDark,
           ),
@@ -892,7 +923,8 @@ class _HomePublicoScreenState
             },
             itemBuilder:
                 (context, index) {
-              return const _CategoriaSkeleton();
+              return const
+                  _CategoriaSkeleton();
             },
           ),
         ),

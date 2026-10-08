@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../services/sitio/sitio_dashboard_service.dart';
 
@@ -43,14 +43,14 @@ class _SitioDashboardScreenState
   // =====================================================
 
   /*
-   * Temporalmente dejaremos el token definido aquí
-   * hasta conectar el servicio de autenticación del sitio.
+   * Temporalmente dejaremos el token definido aquÃ­
+   * hasta conectar el servicio de autenticaciÃ³n del sitio.
    *
-   * En el siguiente paso lo obtendremos desde la sesión
+   * En el siguiente paso lo obtendremos desde la sesiÃ³n
    * real de la cuenta.
    */
 
-  String _token = '';
+  final String _token = '';
 
   // =====================================================
   // CICLO DE VIDA
@@ -78,13 +78,13 @@ class _SitioDashboardScreenState
     try {
 
       /*
-       * Todavía necesitamos conectar aquí el token real
-       * de la sesión del sitio.
+       * TodavÃ­a necesitamos conectar aquÃ­ el token real
+       * de la sesiÃ³n del sitio.
        */
 
       if (_token.isEmpty) {
         throw Exception(
-          'No hay una sesión de sitio disponible.',
+          'No hay una sesiÃ³n de sitio disponible.',
         );
       }
 
@@ -245,8 +245,8 @@ class _SitioDashboardScreenState
                 Text(
                   nombreSitio == null ||
                           nombreSitio.isEmpty
-                      ? '¡Bienvenido a tu panel! ☕'
-                      : '¡Bienvenido a $nombreSitio! ☕',
+                      ? 'Â¡Bienvenido a tu panel! â˜•'
+                      : 'Â¡Bienvenido a $nombreSitio! â˜•',
                   style: Theme.of(context)
                       .textTheme
                       .headlineSmall
@@ -259,8 +259,8 @@ class _SitioDashboardScreenState
                 const SizedBox(height: 8),
 
                 Text(
-                  'Administra la información de tu sitio turístico y '
-                  'mantén actualizada tu experiencia en Mi Ruta Cafetera.',
+                  'Administra la informaciÃ³n de tu sitio turÃ­stico y '
+                  'mantÃ©n actualizada tu experiencia en Mi Ruta Cafetera.',
                   style: Theme.of(context)
                       .textTheme
                       .bodyLarge
@@ -302,7 +302,7 @@ class _SitioDashboardScreenState
   }
 
   // =====================================================
-  // ESTADÍSTICAS
+  // ESTADÃSTICAS
   // =====================================================
 
   Widget _seccionEstadisticas(
@@ -326,10 +326,10 @@ class _SitioDashboardScreenState
       ),
 
       TarjetaEstadisticaSitio(
-        titulo: 'Reseñas',
+        titulo: 'ReseÃ±as',
         valor: dashboard.totalResenas.toString(),
         descripcion:
-            'Promedio ${dashboard.promedioCalificacion.toStringAsFixed(1)} ⭐',
+            'Promedio ${dashboard.promedioCalificacion.toStringAsFixed(1)} â­',
         icono: Icons.star_rounded,
       ),
 
@@ -434,16 +434,16 @@ class _SitioDashboardScreenState
   }
 
   // =====================================================
-  // ACCIONES RÁPIDAS
+  // ACCIONES RÃPIDAS
   // =====================================================
 
   Widget _seccionAcciones(
     BuildContext context,
   ) {
     return TarjetaSeccionSitio(
-      titulo: 'Acciones rápidas',
+      titulo: 'Acciones rÃ¡pidas',
       subtitulo:
-          'Gestiona rápidamente la información de tu sitio.',
+          'Gestiona rÃ¡pidamente la informaciÃ³n de tu sitio.',
       icono: Icons.bolt_rounded,
       child: Column(
         children: [
@@ -452,7 +452,7 @@ class _SitioDashboardScreenState
             icono: Icons.storefront_rounded,
             titulo: 'Mi sitio',
             descripcion:
-                'Consulta y actualiza la información principal.',
+                'Consulta y actualiza la informaciÃ³n principal.',
             onTap: () {},
           ),
 
@@ -462,7 +462,7 @@ class _SitioDashboardScreenState
             icono: Icons.article_rounded,
             titulo: 'Contenido',
             descripcion:
-                'Administra la descripción y la información turística.',
+                'Administra la descripciÃ³n y la informaciÃ³n turÃ­stica.',
             onTap: () {},
           ),
 
@@ -472,7 +472,7 @@ class _SitioDashboardScreenState
             icono: Icons.photo_library_rounded,
             titulo: 'Multimedia',
             descripcion:
-                'Gestiona fotografías y material visual.',
+                'Gestiona fotografÃ­as y material visual.',
             onTap: () {},
           ),
 
@@ -491,7 +491,7 @@ class _SitioDashboardScreenState
   }
 
   // =====================================================
-  // ACCIÓN RÁPIDA
+  // ACCIÃ“N RÃPIDA
   // =====================================================
 
   Widget _accionRapida({
@@ -588,7 +588,7 @@ class _SitioDashboardScreenState
     return TarjetaSeccionSitio(
       titulo: 'Estado del sitio',
       subtitulo:
-          'Información general de tu cuenta.',
+          'InformaciÃ³n general de tu cuenta.',
       icono: Icons.verified_rounded,
       child: Column(
         children: [
@@ -644,8 +644,8 @@ class _SitioDashboardScreenState
 
                       Text(
                         dashboard.activo
-                            ? 'Tu sitio está disponible en la plataforma.'
-                            : 'Tu sitio no está disponible actualmente.',
+                            ? 'Tu sitio estÃ¡ disponible en la plataforma.'
+                            : 'Tu sitio no estÃ¡ disponible actualmente.',
                         style: const TextStyle(
                           color:
                               AppColors.textSecondary,
@@ -815,7 +815,7 @@ class _SitioDashboardScreenState
   }
 
   // =====================================================
-  // ESTADO VACÍO
+  // ESTADO VACÃO
   // =====================================================
 
   Widget _estadoVacio() {
@@ -825,7 +825,7 @@ class _SitioDashboardScreenState
           AppDimensions.spacingXl,
         ),
         child: Text(
-          'No hay información disponible.',
+          'No hay informaciÃ³n disponible.',
           style: TextStyle(
             color: AppColors.textSecondary,
           ),

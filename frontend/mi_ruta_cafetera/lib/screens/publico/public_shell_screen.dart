@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../models/sitio_turistico_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 
@@ -19,9 +20,8 @@ class PublicShellScreen extends StatefulWidget {
   /// Permite decidir desde main.dart si este Shell
   /// debe mostrar o no la navegación inferior.
   ///
-  /// Por defecto es false para no modificar
-  /// comportamientos existentes hasta que el
-  /// flujo de autenticación esté conectado.
+  /// Por defecto permanece desactivada para
+  /// conservar el comportamiento público actual.
   final bool mostrarNavegacion;
 
   const PublicShellScreen({
@@ -79,24 +79,33 @@ class _PublicShellScreenState
   }
 
   // ============================================================
+  // ABRIR SITIO SELECCIONADO EN EL MAPA
+  // ============================================================
+
+  void _abrirSitioEnMapa(
+    SitioTuristicoModel sitio,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapaScreen2(
+          sitioInicial: sitio,
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
   // CONTENIDO PRINCIPAL
   // ============================================================
   //
-  // IMPORTANTE:
+  // No utilizamos IndexedStack.
   //
-  // Antes utilizábamos IndexedStack:
+  // Esto evita construir MapaScreen2 cuando el usuario
+  // todavía está viendo el Home público.
   //
-  //   Home
-  //   Mapa
-  //   Perfil
-  //
-  // Eso provocaba que MapaScreen2 también se construyera
-  // inmediatamente aunque el usuario estuviera viendo Home.
-  //
-  // MapaScreen2 ejecuta cargarDatos() en initState().
-  //
-  // Por eso ahora solamente construimos la sección
-  // que realmente está seleccionada.
+  // MapaScreen2 ejecuta su carga inicial al construirse,
+  // por lo que solamente se crea cuando corresponde.
   // ============================================================
 
   Widget _construirContenido() {
@@ -107,20 +116,18 @@ class _PublicShellScreenState
 
       case 0:
         return HomePublicoScreen(
-          onIrMapa: () {
-            _cambiarSeccion(1);
-          },
+          onIrMapa: _abrirSitioEnMapa,
         );
 
       // ========================================================
-      // MAPA
+      // MAPA GENERAL
       // ========================================================
 
       case 1:
         return const MapaScreen2();
 
       // ========================================================
-      // PERFIL
+      // PERFIL PÚBLICO
       // ========================================================
 
       case 2:
@@ -132,9 +139,7 @@ class _PublicShellScreenState
 
       default:
         return HomePublicoScreen(
-          onIrMapa: () {
-            _cambiarSeccion(1);
-          },
+          onIrMapa: _abrirSitioEnMapa,
         );
     }
   }
@@ -147,7 +152,8 @@ class _PublicShellScreenState
     return SafeArea(
       top: false,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(
+        margin:
+            const EdgeInsets.fromLTRB(
           AppDimensions.pageHorizontalSmall,
           0,
           AppDimensions.pageHorizontalSmall,
@@ -155,14 +161,16 @@ class _PublicShellScreenState
         ),
         height:
             AppDimensions.navigationBarHeight,
-        decoration: BoxDecoration(
+        decoration:
+            BoxDecoration(
           color:
               AppColors.surface,
           borderRadius:
               BorderRadius.circular(
             AppDimensions.bottomNavigationRadius,
           ),
-          border: Border.all(
+          border:
+              Border.all(
             color:
                 AppColors.border,
           ),
@@ -258,12 +266,6 @@ class _PublicShellScreenState
 
       // ========================================================
       // NAVEGACIÓN
-      // ========================================================
-      //
-      // Solo aparece cuando explícitamente la habilitamos.
-      //
-      // Esto nos permite mantener el Home público sin menú
-      // mientras el usuario todavía no ha iniciado sesión.
       // ========================================================
 
       bottomNavigationBar:
