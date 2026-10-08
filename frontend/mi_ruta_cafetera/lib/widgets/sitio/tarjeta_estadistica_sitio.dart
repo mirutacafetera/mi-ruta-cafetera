@@ -22,18 +22,25 @@ class TarjetaEstadisticaSitio extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(
-        AppDimensions.spacingLg,
+        AppDimensions.spacingMd,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(
-          AppDimensions.radiusLg,
+          AppDimensions.cardRadius,
+        ),
+        border: Border.all(
+          color: AppColors.border.withValues(
+            alpha: 0.55,
+          ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: AppColors.coffeeDark.withValues(
+              alpha: 0.07,
+            ),
+            blurRadius: AppDimensions.elevationFloating,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -43,67 +50,82 @@ class TarjetaEstadisticaSitio extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(
-                    alpha: 0.10,
-                  ),
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusMd,
                   ),
                 ),
                 child: Icon(
                   icono,
-                  color: AppColors.primary,
-                  size: 23,
+                  color: AppColors.white,
+                  size: AppDimensions.iconLg,
                 ),
               ),
               const Spacer(),
-              Icon(
-                Icons.more_horiz_rounded,
-                color: AppColors.textSecondary.withValues(
-                  alpha: 0.65,
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.cream.withValues(
+                    alpha: 0.75,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.more_horiz_rounded,
+                  color: AppColors.coffeeDark,
+                  size: AppDimensions.iconSm,
                 ),
               ),
             ],
           ),
-
           const SizedBox(
             height: AppDimensions.spacingMd,
           ),
-
           Text(
             titulo,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                ),
           ),
-
-          const SizedBox(height: 4),
-
+          const SizedBox(
+            height: AppDimensions.spacingXs,
+          ),
           Text(
             valor,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
           ),
-
-          const SizedBox(height: 3),
-
+          const SizedBox(
+            height: AppDimensions.spacingXs,
+          ),
           Text(
             descripcion,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-              height: 1.3,
-            ),
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.25,
+                ),
           ),
         ],
       ),
