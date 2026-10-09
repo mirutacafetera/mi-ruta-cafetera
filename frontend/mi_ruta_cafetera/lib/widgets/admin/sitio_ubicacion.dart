@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../theme/app_dimensions.dart';
-import 'campo_formulario_sitio.dart';
-import 'contenedor_seccion_sitio.dart';
-import 'titulo_seccion_sitio.dart';
+import '../../../theme/app_dimensions.dart';
+import 'sitio_form_field.dart';
+import 'sitio_section_card.dart';
+import 'sitio_section_title.dart';
 
 class SitioUbicacion extends StatelessWidget {
   final TextEditingController direccionController;
@@ -23,40 +23,42 @@ class SitioUbicacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ContenedorSeccionSitio(
-      contenido: Column(
+    return SitioSectionCard(
+      child: Column(
         children: [
-          const TituloSeccionSitio(
+          const SitioSectionTitle(
             icono: Icons.map_outlined,
             titulo: 'Ubicación',
             subtitulo: 'Indica dónde se encuentra el sitio',
           ),
 
-          CampoFormularioSitio(
-            controlador: direccionController,
-            etiqueta: 'Dirección',
-            icono: Icons.location_on_rounded,
+          SitioFormField(
+            controller: direccionController,
+            label: 'Dirección',
+            icon: Icons.location_on_rounded,
           ),
 
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: CampoFormularioSitio(
-                  controlador: ciudadController,
-                  etiqueta: 'Ciudad',
-                  icono: Icons.location_city_rounded,
+                child: SitioFormField(
+                  controller: ciudadController,
+                  label: 'Ciudad',
+                  icon: Icons.location_city_rounded,
                   obligatorio: true,
                 ),
               ),
+
               const SizedBox(
-                width: AppDimensions.spacingSm,
+                width: AppDimensions.spacingSm + 2,
               ),
+
               Expanded(
-                child: CampoFormularioSitio(
-                  controlador: departamentoController,
-                  etiqueta: 'Departamento',
-                  icono: Icons.map_rounded,
+                child: SitioFormField(
+                  controller: departamentoController,
+                  label: 'Departamento',
+                  icon: Icons.map_rounded,
                   obligatorio: true,
                 ),
               ),
@@ -67,26 +69,28 @@ class SitioUbicacion extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: CampoFormularioSitio(
-                  controlador: latitudController,
-                  etiqueta: 'Latitud',
-                  icono: Icons.explore_rounded,
-                  tipoTeclado: const TextInputType.numberWithOptions(
+                child: SitioFormField(
+                  controller: latitudController,
+                  label: 'Latitud',
+                  icon: Icons.explore_rounded,
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
                   obligatorio: true,
                 ),
               ),
+
               const SizedBox(
-                width: AppDimensions.spacingSm,
+                width: AppDimensions.spacingSm + 2,
               ),
+
               Expanded(
-                child: CampoFormularioSitio(
-                  controlador: longitudController,
-                  etiqueta: 'Longitud',
-                  icono: Icons.explore_outlined,
-                  tipoTeclado: const TextInputType.numberWithOptions(
+                child: SitioFormField(
+                  controller: longitudController,
+                  label: 'Longitud',
+                  icon: Icons.explore_outlined,
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),

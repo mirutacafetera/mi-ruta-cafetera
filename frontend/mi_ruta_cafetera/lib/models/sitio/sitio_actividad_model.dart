@@ -6,12 +6,12 @@ class SitioActividadModel {
   final double precio;
   final String horario;
   final String duracion;
+  final String imagenPrincipal;
+  final List<String> imagenes;
   final bool activo;
-
   final String estadoPublicacion;
   final String motivoRechazo;
   final String revisadoPor;
-
   final DateTime? revisadoAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -24,13 +24,15 @@ class SitioActividadModel {
     required this.precio,
     required this.horario,
     required this.duracion,
+    required this.imagenPrincipal,
+    required this.imagenes,
     required this.activo,
     required this.estadoPublicacion,
     required this.motivoRechazo,
     required this.revisadoPor,
-    required this.revisadoAt,
-    required this.createdAt,
-    required this.updatedAt,
+    this.revisadoAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory SitioActividadModel.fromJson(
@@ -42,11 +44,13 @@ class SitioActividadModel {
           '',
       sitio: json['sitio']?.toString() ?? '',
       nombre: json['nombre']?.toString() ?? '',
-      descripcion:
-          json['descripcion']?.toString() ?? '',
+      descripcion: json['descripcion']?.toString() ?? '',
       precio: _toDouble(json['precio']),
       horario: json['horario']?.toString() ?? '',
       duracion: json['duracion']?.toString() ?? '',
+      imagenPrincipal:
+          json['imagenPrincipal']?.toString() ?? '',
+      imagenes: _toStringList(json['imagenes']),
       activo: json['activo'] == true,
       estadoPublicacion:
           json['estadoPublicacion']?.toString() ??
@@ -55,12 +59,9 @@ class SitioActividadModel {
           json['motivoRechazo']?.toString() ?? '',
       revisadoPor:
           json['revisadoPor']?.toString() ?? '',
-      revisadoAt:
-          _toDateTime(json['revisadoAt']),
-      createdAt:
-          _toDateTime(json['createdAt']),
-      updatedAt:
-          _toDateTime(json['updatedAt']),
+      revisadoAt: _toDateTime(json['revisadoAt']),
+      createdAt: _toDateTime(json['createdAt']),
+      updatedAt: _toDateTime(json['updatedAt']),
     );
   }
 
@@ -71,6 +72,8 @@ class SitioActividadModel {
       'precio': precio,
       'horario': horario,
       'duracion': duracion,
+      'imagenPrincipal': imagenPrincipal,
+      'imagenes': imagenes,
     };
   }
 
@@ -85,13 +88,22 @@ class SitioActividadModel {
         0;
   }
 
+  static List<String> _toStringList(dynamic value) {
+    if (value is! List) {
+      return [];
+    }
+
+    return value
+        .map((item) => item.toString())
+        .where((item) => item.isNotEmpty)
+        .toList();
+  }
+
   static DateTime? _toDateTime(dynamic value) {
     if (value == null) {
       return null;
     }
 
-    return DateTime.tryParse(
-      value.toString(),
-    );
+    return DateTime.tryParse(value.toString());
   }
 }

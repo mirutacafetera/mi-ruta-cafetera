@@ -7,26 +7,23 @@ const {
   verificarSitio
 } = require('../../middlewares/authmiddleware');
 
+const { upload } = require('../../middlewares/uploadmiddleware');
+
 const {
   obtenerActividades,
   crearActividad,
   actualizarActividad,
+  subirImagenesActividad,
+  eliminarImagenActividad,
+  establecerImagenPrincipal,
   enviarActividadRevision,
   desactivarActividad
 } = require('../../controllers/sitio/actividades.controller');
-
-// ======================================================
-// OBTENER ACTIVIDADES
-// ======================================================
 
 router.get(
   '/:id',
   obtenerActividades
 );
-
-// ======================================================
-// CREAR ACTIVIDAD
-// ======================================================
 
 router.post(
   '/:id',
@@ -35,9 +32,27 @@ router.post(
   crearActividad
 );
 
-// ======================================================
-// ACTUALIZAR ACTIVIDAD
-// ======================================================
+router.post(
+  '/:id/:actividadId/imagenes',
+  verificarToken,
+  verificarSitio,
+  upload.array('imagenes', 10),
+  subirImagenesActividad
+);
+
+router.delete(
+  '/:id/:actividadId/imagenes',
+  verificarToken,
+  verificarSitio,
+  eliminarImagenActividad
+);
+
+router.put(
+  '/:id/:actividadId/imagen-principal',
+  verificarToken,
+  verificarSitio,
+  establecerImagenPrincipal
+);
 
 router.put(
   '/:id/:actividadId',
@@ -46,20 +61,12 @@ router.put(
   actualizarActividad
 );
 
-// ======================================================
-// ENVIAR ACTIVIDAD A REVISIÓN
-// ======================================================
-
 router.put(
   '/:id/:actividadId/enviar-revision',
   verificarToken,
   verificarSitio,
   enviarActividadRevision
 );
-
-// ======================================================
-// DESACTIVAR ACTIVIDAD
-// ======================================================
 
 router.put(
   '/:id/:actividadId/desactivar',
