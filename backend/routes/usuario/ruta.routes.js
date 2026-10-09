@@ -2,6 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 
+const {
+  verificarToken
+} = require('../../middlewares/authmiddleware');
+
 // ============================================================
 // CONTROLADOR CRUD DE RUTAS DEL USUARIO
 // ============================================================
@@ -17,7 +21,7 @@ const {
 );
 
 // ============================================================
-// CONTROLADOR DE CÁLCULO DE RUTAS
+// CONTROLADOR DE CALCULO DE RUTAS
 // ============================================================
 
 const {
@@ -34,27 +38,7 @@ const {
 //
 // /api/rutas/calcular
 //
-// Este endpoint debe estar definido antes de las rutas
-// dinámicas.
-//
-// Recibe:
-//
-// {
-//   "puntos": [
-//     {
-//       "latitud": 2.20,
-//       "longitud": -75.60
-//     },
-//     {
-//       "latitud": 2.21,
-//       "longitud": -75.61
-//     }
-//   ]
-// }
-//
-// Mínimo: 2 puntos.
-//
-// Puede recibir 2, 3, 4, 5 o más sitios.
+// Endpoint publico para calcular el recorrido real.
 // ============================================================
 
 router.post(
@@ -70,9 +54,7 @@ router.post(
 //
 // /api/rutas/predefinidas
 //
-// Esta ruta debe estar ANTES de /:usuarioId,
-// porque "predefinidas" podría ser interpretado
-// como un usuarioId.
+// Endpoint publico.
 // ============================================================
 
 router.get(
@@ -88,10 +70,14 @@ router.get(
 //
 // /api/rutas/:usuarioId
 //
+// Requiere autenticacion.
+// El controlador verificara que el usuario autenticado
+// sea el propietario de las rutas consultadas.
 // ============================================================
 
 router.get(
   '/:usuarioId',
+  verificarToken,
   obtenerRutas
 );
 
@@ -103,10 +89,12 @@ router.get(
 //
 // /api/rutas
 //
+// Requiere autenticacion.
 // ============================================================
 
 router.post(
   '/',
+  verificarToken,
   crearRuta
 );
 
@@ -118,10 +106,13 @@ router.post(
 //
 // /api/rutas/:id
 //
+// Requiere autenticacion.
+// El controlador verificara la propiedad de la ruta.
 // ============================================================
 
 router.put(
   '/:id',
+  verificarToken,
   actualizarRuta
 );
 
@@ -133,10 +124,13 @@ router.put(
 //
 // /api/rutas/:id
 //
+// Requiere autenticacion.
+// El controlador verificara la propiedad de la ruta.
 // ============================================================
 
 router.delete(
   '/:id',
+  verificarToken,
   eliminarRuta
 );
 

@@ -1,0 +1,76 @@
+import 'package:flutter/material.dart';
+
+import '../../../../../theme/app_colors.dart';
+import '../../../../../theme/app_dimensions.dart';
+
+class TituloSeccionSitio extends StatelessWidget {
+  final IconData icono;
+  final String titulo;
+  final String subtitulo;
+
+  const TituloSeccionSitio({
+    super.key,
+    required this.icono,
+    required this.titulo,
+    required this.subtitulo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: AppDimensions.spacingLg,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: AppDimensions.circularButtonSmall,
+            height: AppDimensions.circularButtonSmall,
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withValues(
+                alpha: 0.12,
+              ),
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
+            ),
+            child: Icon(
+              icono,
+              color: AppColors.secondary,
+              size: AppDimensions.iconMd,
+            ),
+          ),
+          const SizedBox(
+            width: AppDimensions.spacingMd,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titulo,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.secondary,
+                  ),
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingXs,
+                ),
+                Text(
+                  subtitulo,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textOnDarkSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,122 +1,83 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 
 class ApiConfig {
   ApiConfig._();
 
   // ============================================================
-  // CONFIGURACIÓN DEL SERVIDOR
+  // IP DEL COMPUTADOR EN LA RED LOCAL
   // ============================================================
 
-  // IP del computador dentro de la red Wi-Fi.
+  // Para celular físico.
   //
-  // Esta es la IP de tu PC:
-  // 192.168.100.41
+  // Si la IP del PC cambia, se puede cambiar al ejecutar mediante:
   //
-  // El Motorola debe estar conectado a la misma red Wi-Fi.
-  static const String _ipPc = '192.168.100.41';
+  // --dart-define=API_PC_IP=192.168.1.101
+  //
+  static const String _ipPc = String.fromEnvironment(
+    'API_PC_IP',
+    defaultValue: '192.168.1.101',
+  );
 
   // ============================================================
-  // URL BASE DE LA API
+  // DISPOSITIVO FÍSICO
+  // ============================================================
+
+  // Por defecto Flutter utilizará el emulador Android.
+  //
+  // Para celular físico:
+  //
+  // --dart-define=USE_PHYSICAL_DEVICE=true
+  //
+  static const bool _celular = bool.fromEnvironment(
+    'USE_PHYSICAL_DEVICE',
+    defaultValue: false,
+  );
+
+  // ============================================================
+  // URL BASE
   // ============================================================
 
   static String get baseUrl {
-    // ----------------------------------------------------------
-    // FLUTTER WEB / CHROME
-    // ----------------------------------------------------------
+    // Flutter Web
     if (kIsWeb) {
       return 'http://localhost:3000/api';
     }
 
-    // ----------------------------------------------------------
-    // ANDROID
-    // ----------------------------------------------------------
-    //
-    // Para el Motorola físico utilizamos la IP del PC.
-    //
-    // IMPORTANTE:
-    // El teléfono y el computador deben estar conectados
-    // a la misma red Wi-Fi.
-    //
-    return 'http://$_ipPc:3000/api';
+    // Celular físico conectado a la misma red del PC
+    if (_celular) {
+      return 'http://$_ipPc:3000/api';
+    }
+
+    // Emulador Android
+    return 'http://10.0.2.2:3000/api';
   }
 
   // ============================================================
-  // CHAT
-  // ============================================================
-  //
-  // Backend:
-  // POST /api/chat
-  //
+  // URL PARA CELULAR FÍSICO
   // ============================================================
 
-  static String get chatUrl {
-    return '$baseUrl/chat';
-  }
+  static String get baseUrlCelular =>
+      'http://$_ipPc:3000/api';
 
   // ============================================================
-  // SITIOS / PUNTOS DE INTERÉS
-  // ============================================================
-  //
-  // Backend:
-  // GET /api/sitios
-  //
+  // ENDPOINTS
   // ============================================================
 
-  static String get sitiosUrl {
-    return '$baseUrl/sitios';
-  }
+  static String get chatUrl =>
+      '$baseUrl/chat';
 
-  // ============================================================
-  // CATEGORÍAS
-  // ============================================================
-  //
-  // Backend:
-  // GET /api/categorias
-  //
-  // ============================================================
+  static String get sitiosUrl =>
+      '$baseUrl/sitios';
 
-  static String get categoriasUrl {
-    return '$baseUrl/categorias';
-  }
+  static String get categoriasUrl =>
+      '$baseUrl/categorias';
 
-  // ============================================================
-  // CATEGORÍAS DE SITIOS
-  // ============================================================
-  //
-  // Se conserva porque puede ser utilizada por otros módulos.
-  //
-  // Backend:
-  // GET /api/categorias-sitios
-  //
-  // ============================================================
+  static String get categoriasSitiosUrl =>
+      '$baseUrl/categorias-sitios';
 
-  static String get categoriasSitiosUrl {
-    return '$baseUrl/categorias-sitios';
-  }
+  static String get rutasUrl =>
+      '$baseUrl/rutas';
 
-  // ============================================================
-  // RUTAS
-  // ============================================================
-  //
-  // Backend:
-  // GET /api/rutas
-  //
-  // ============================================================
-
-  static String get rutasUrl {
-    return '$baseUrl/rutas';
-  }
-
-  // ============================================================
-  // CALCULAR RUTA
-  // ============================================================
-  //
-  // Backend:
-  // POST /api/rutas/calcular
-  //
-  // ============================================================
-
-  static String get calcularRutaUrl {
-    return '$rutasUrl/calcular';
-  }
+  static String get calcularRutaUrl =>
+      '$rutasUrl/calcular';
 }

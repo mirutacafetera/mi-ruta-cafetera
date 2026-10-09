@@ -118,7 +118,7 @@ Crear un archivo `.env` dentro de la carpeta `backend`:
 
 ```env
 PORT=3000
-MONGO_URI=mongodb+srv://mirutacafetera:anamaurosofia@mirutacafetera.ibteu0d.mongodb.net/?appName=MiRutaCafetera
+MONGO_URI=mongodb+srv://mirutacafetera:TU_CONTRASEÑA@mirutacafetera.ibteu0d.mongodb.net/TU_BASE_DE_DATOS?appName=TU_APP
 ```
 
 > No subir el archivo `.env` a GitHub. Se recomienda agregarlo al archivo `.gitignore`.

@@ -19,14 +19,12 @@ class AdminProximamente extends StatelessWidget {
         children: [
           const Icon(
             Icons.construction,
-            size: 60,
+            size: AppDimensions.iconLg,
             color: AppColors.textLight,
           ),
-
           const SizedBox(
-            height: AppDimensions.spacingMd + 3,
+            height: AppDimensions.spacingMd,
           ),
-
           Text(
             '$nombre\nPróximamente',
             textAlign: TextAlign.center,

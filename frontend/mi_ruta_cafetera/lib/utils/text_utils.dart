@@ -1,4 +1,4 @@
-class TextUtils {
+﻿class TextUtils {
   TextUtils._();
 
   static String normalizar(String valor) {

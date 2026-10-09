@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 
 class AdminIconoMenu extends StatelessWidget {
   final IconData icon;
@@ -19,7 +20,11 @@ class AdminIconoMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
+      leading: Icon(
+        icon,
+        color: AppColors.primary,
+        size: AppDimensions.iconMd,
+      ),
       title: Text(titulo),
       onTap: () {
         onOpcionSeleccionada(opcion);
