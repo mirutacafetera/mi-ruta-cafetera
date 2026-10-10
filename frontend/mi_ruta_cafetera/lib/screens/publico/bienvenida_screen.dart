@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../google/google_button.dart';
+import '../../models/usuario/usuario_sesion_model.dart';
 import '../../services/google_auth_service.dart';
+import '../../services/usuario/auth_usuario_service.dart';
+import '../../services/usuario/usuario_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../auth/seleccion_rol_screen.dart';
@@ -190,6 +193,57 @@ class _BienvenidaScreenState
   }
 
   // ============================================================
+  // GOOGLE → BACKEND → SESIÓN
+  // ============================================================
+  //
+  // Obtiene el idToken de Google, lo valida contra
+  // POST /api/usuarios/login-google y guarda la sesión.
+  // Devuelve true solo si todo salió bien.
+  // ============================================================
+
+  Future<bool> _autenticarConBackend() async {
+    final idToken =
+        await GoogleAuthService.instance.obtenerIdToken();
+
+    if (idToken == null || idToken.isEmpty) {
+      if (mounted) {
+        _mostrarMensaje(
+          'No se pudo obtener el token de Google.',
+        );
+      }
+      return false;
+    }
+
+    final resultado =
+        await AuthUsuarioService.iniciarSesionConGoogle(
+      idToken: idToken,
+    );
+
+    if (resultado['exito'] != true ||
+        resultado['usuario'] is! Map ||
+        resultado['token'] == null) {
+      if (mounted) {
+        _mostrarMensaje(
+          resultado['mensaje']?.toString() ??
+              'No fue posible iniciar sesión con Google.',
+        );
+      }
+      return false;
+    }
+
+    await UsuarioSesionService.instance.guardarSesion(
+      UsuarioSesionModel.fromRespuesta(
+        token: resultado['token'].toString(),
+        usuario: Map<String, dynamic>.from(
+          resultado['usuario'] as Map,
+        ),
+      ),
+    );
+
+    return true;
+  }
+
+  // ============================================================
   // GOOGLE WEB
   // ============================================================
 
@@ -234,6 +288,23 @@ class _BienvenidaScreenState
     setState(() {
       _iniciandoGoogle = true;
     });
+
+    // En Web el usuario llega por el evento; lo registramos
+    // en el servicio para poder leer su idToken.
+    GoogleAuthService.instance.registrarUsuario(usuario);
+
+    final autenticado = await _autenticarConBackend();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (!autenticado) {
+      setState(() {
+        _iniciandoGoogle = false;
+      });
+      return;
+    }
 
     _mostrarMensaje(
       'Bienvenido, ${usuario.displayName ?? usuario.email}',
@@ -291,7 +362,9 @@ class _BienvenidaScreenState
           animation,
           secondaryAnimation,
         ) {
-          return const PublicShellScreen();
+          return const PublicShellScreen(
+            mostrarNavegacion: true,
+          );
         },
         transitionsBuilder: (
           context,
@@ -345,11 +418,13 @@ class _BienvenidaScreenState
   }
 
   // ============================================================
-  // GOOGLE
+  // GOOGLE (ANDROID / IOS)
   // ============================================================
 
   Future<void> _iniciarSesionConGoogle() async {
-    if (_iniciandoGoogle) {
+    // En Web se utiliza el botón oficial de Google; el resultado
+    // llega por authenticationEvents.
+    if (kIsWeb || _iniciandoGoogle) {
       return;
     }
 
@@ -358,11 +433,6 @@ class _BienvenidaScreenState
     });
 
     try {
-      // En Web se utiliza el botón oficial de Google.
-      if (kIsWeb) {
-        return;
-      }
-
       final usuario =
           await GoogleAuthService.instance.iniciarSesion();
 
@@ -371,6 +441,20 @@ class _BienvenidaScreenState
       }
 
       if (usuario == null) {
+        setState(() {
+          _iniciandoGoogle = false;
+        });
+
+        return;
+      }
+
+      final autenticado = await _autenticarConBackend();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (!autenticado) {
         setState(() {
           _iniciandoGoogle = false;
         });

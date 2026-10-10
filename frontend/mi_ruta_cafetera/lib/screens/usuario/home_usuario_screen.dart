@@ -1,114 +1,165 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/sitio_turistico_model.dart';
-import '../../../services/favorito_service.dart';
-import '../../../services/sitio_service.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_dimensions.dart';
-import '../../../widgets/publico/sitio_card.dart';
-import '../mapa_screen_2.dart';
-import 'detalle_sitio_usuario_screen.dart';
-import 'favoritos_usuario_screen.dart';
-import 'rutas_usuario_screen.dart';
+import '../../models/categoria_model.dart';
+import '../../models/sitio_turistico_model.dart';
+import '../../models/usuario/usuario_sesion_model.dart';
+import '../../services/categoria_service.dart';
+import '../../services/favorito_service.dart';
+import '../../services/sitio_service.dart';
+import '../../services/usuario/usuario_sesion_service.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+import '../../utils/text_utils.dart';
+import '../../widgets/publico/banner_cuenta.dart';
+import '../../widgets/publico/categoria_card.dart';
+import '../../widgets/publico/home_hero.dart';
+import '../../widgets/publico/requiere_cuenta_sheet.dart';
+import '../../widgets/publico/sitio_card.dart';
+import '../usuario/detalle_sitio_usuario_screen.dart';
+import '../usuario/login_usuario_screen.dart';
+import '../usuario/registro_usuario_screen.dart';
 
-class HomeUsuarioScreen extends StatefulWidget {
-  final Map<String, dynamic> usuario;
-  final String token;
-
-  const HomeUsuarioScreen({
+/// Home de la aplicación.
+///
+/// Se usa tanto para el visitante como para el usuario autenticado.
+/// Con sesión conserva la misma identidad visual, pero cambia el
+/// carrusel (todas las imágenes), el saludo y las acciones
+/// disponibles (mapa general, favoritos persistentes).
+class HomePublicoScreen extends StatefulWidget {
+  const HomePublicoScreen({
     super.key,
-    required this.usuario,
-    required this.token,
   });
 
   @override
-  State<HomeUsuarioScreen> createState() =>
-      _HomeUsuarioScreenState();
+  State<HomePublicoScreen> createState() =>
+      _HomePublicoScreenState();
 }
 
-class _HomeUsuarioScreenState
-    extends State<HomeUsuarioScreen> {
-  final SitioService _sitioService = SitioService();
+class _HomePublicoScreenState
+    extends State<HomePublicoScreen> {
+  // ============================================================
+  // SERVICIOS
+  // ============================================================
+
+  final CategoriaService _categoriaService =
+      CategoriaService();
+
+  final SitioService _sitioService =
+      SitioService();
 
   final FavoritoService _favoritoService =
       FavoritoService.instance;
 
-  final TextEditingController _busquedaController =
-      TextEditingController();
+  // ============================================================
+  // SESIÓN Y FAVORITOS DEL USUARIO
+  // ============================================================
+  //
+  // _favoritosPorSitio: sitioId → favoritoId.
+  // Solo se llena cuando hay una sesión de usuario activa.
+  // ============================================================
 
-List<SitioTuristicoModel> _sitios = [];
-List<SitioTuristicoModel> _sitiosFiltrados = [];
+  final Map<String, String> _favoritosPorSitio = {};
 
-bool _cargandoSitios = false;
+  final Set<String> _sitiosProcesando = {};
 
-final Map<String, String> _favoritosPorSitio = {};
+  UsuarioSesionModel? get _sesion =>
+      UsuarioSesionService.instance.sesionActual.value;
 
+  // ============================================================
+  // DATOS
+  // ============================================================
 
-  String get _usuarioId =>
-      (widget.usuario['id'] ??
-              widget.usuario['_id'] ??
-              '')
-          .toString();
+  List<CategoriaModel> _categorias = [];
 
-  String get _nombreUsuario =>
-      (widget.usuario['nombre'] ?? 'Viajero').toString();
+  List<SitioTuristicoModel> _sitios = [];
+
+  // ============================================================
+  // ESTADO
+  // ============================================================
+
+  bool _cargandoCategorias = true;
+
+  bool _cargandoSitios = true;
+
+  String? _errorCategorias;
+
+  String? _errorSitios;
+
+  // ============================================================
+  // FILTRO POR CATEGORÍA
+  // ============================================================
+
+  String? _categoriaSeleccionada;
+
+  // ============================================================
+  // CICLO DE VIDA
+  // ============================================================
 
   @override
   void initState() {
     super.initState();
 
-    _cargarSitios();
+    UsuarioSesionService.instance.sesionActual
+        .addListener(_alCambiarSesion);
+
+    _cargarContenido();
     _cargarFavoritos();
   }
 
   @override
   void dispose() {
-    _busquedaController.dispose();
+    UsuarioSesionService.instance.sesionActual
+        .removeListener(_alCambiarSesion);
+
     super.dispose();
   }
 
   // ============================================================
-  // CARGAR SITIOS
+  // CAMBIO DE SESIÓN
   // ============================================================
 
-  Future<void> _cargarSitios() async {
+  void _alCambiarSesion() {
     if (!mounted) {
       return;
     }
 
     setState(() {
-      _cargandoSitios = true;
+      if (_sesion == null) {
+        _favoritosPorSitio.clear();
+      }
     });
 
-    try {
-      final sitios = await _sitioService.obtenerSitios();
+    _cargarFavoritos();
+  }
 
-      if (!mounted) {
-        return;
-      }
+  bool _esErrorDeSesion(Object error) {
+    final texto = error.toString().toLowerCase();
 
-      setState(() {
-        _sitios = sitios;
-        _sitiosFiltrados = sitios;
-        _cargandoSitios = false;
-      });
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
+    return texto.contains('expirado') ||
+        texto.contains('token no es válido') ||
+        texto.contains('no se proporcionó un token');
+  }
 
-      setState(() {
-        _cargandoSitios = false;
-      });
+  Future<void> _sesionExpirada() async {
+    await UsuarioSesionService.instance.cerrarSesion();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No fue posible cargar los sitios turísticos.',
-          ),
+    if (!mounted) {
+      return;
+    }
+
+    _mostrarMensaje(
+      'Tu sesión expiró. Inicia sesión nuevamente.',
+    );
+  }
+
+  void _mostrarMensaje(String mensaje) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(mensaje),
         ),
       );
-    }
   }
 
   // ============================================================
@@ -116,28 +167,29 @@ final Map<String, String> _favoritosPorSitio = {};
   // ============================================================
 
   Future<void> _cargarFavoritos() async {
-    if (_usuarioId.isEmpty) {
+    final sesion = _sesion;
+
+    if (sesion == null) {
       return;
     }
 
     try {
       final favoritos =
-      await _favoritoService.obtenerFavoritos(
-      _usuarioId,
-      token: widget.token,
+          await _favoritoService.obtenerFavoritos(
+        sesion.id,
+        token: sesion.token,
       );
 
-      if (!mounted) {
+      // Si la sesión cambió mientras cargaba, se descarta.
+      if (!mounted || _sesion?.id != sesion.id) {
         return;
       }
 
       final mapa = <String, String>{};
 
       for (final favorito in favoritos) {
-        final sitioId = favorito.sitio.id;
-
-        if (sitioId.isNotEmpty) {
-          mapa[sitioId] = favorito.id;
+        if (favorito.sitio.id.isNotEmpty) {
+          mapa[favorito.sitio.id] = favorito.id;
         }
       }
 
@@ -146,76 +198,52 @@ final Map<String, String> _favoritosPorSitio = {};
           ..clear()
           ..addAll(mapa);
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) {
         return;
       }
+
+      if (_esErrorDeSesion(error)) {
+        await _sesionExpirada();
+      }
+
+      debugPrint(
+        'HOME - ERROR FAVORITOS: $error',
+      );
     }
   }
 
   // ============================================================
-  // BUSCAR SITIOS
-  // ============================================================
-
-  void _buscarSitios(String texto) {
-    final consulta = _normalizarTexto(texto);
-
-    if (consulta.isEmpty) {
-      setState(() {
-        _sitiosFiltrados = _sitios;
-      });
-      return;
-    }
-
-    final resultados = _sitios.where((sitio) {
-      final nombre = _normalizarTexto(sitio.nombre);
-      final descripcion =
-          _normalizarTexto(sitio.descripcion);
-      final ciudad = _normalizarTexto(sitio.ciudad);
-      final categoria =
-          _normalizarTexto(sitio.categoriaNombre);
-
-      return nombre.contains(consulta) ||
-          descripcion.contains(consulta) ||
-          ciudad.contains(consulta) ||
-          categoria.contains(consulta);
-    }).toList();
-
-    setState(() {
-      _sitiosFiltrados = resultados;
-    });
-  }
-
-  // ============================================================
-  // FAVORITOS
+  // AGREGAR / QUITAR FAVORITO
   // ============================================================
 
   Future<void> _alternarFavorito(
     SitioTuristicoModel sitio,
   ) async {
-    if (_usuarioId.isEmpty) {
-      _mostrarMensaje(
-        'No se pudo identificar al usuario.',
-      );
+    final sesion = _sesion;
+
+    // Sin sesión se invita a crear una cuenta.
+    if (sesion == null) {
+      _requiereCuenta();
       return;
     }
 
     final sitioId = sitio.id;
 
-    if (sitioId.isEmpty) {
-      _mostrarMensaje(
-        'Este sitio no tiene un identificador válido.',
-      );
+    if (sitioId.isEmpty ||
+        _sitiosProcesando.contains(sitioId)) {
       return;
     }
+
+    _sitiosProcesando.add(sitioId);
 
     final favoritoId = _favoritosPorSitio[sitioId];
 
     try {
       if (favoritoId != null) {
         await _favoritoService.eliminarFavorito(
-        favoritoId,
-        token: widget.token,
+          favoritoId,
+          token: sesion.token,
         );
 
         if (!mounted) {
@@ -231,11 +259,11 @@ final Map<String, String> _favoritosPorSitio = {};
         );
       } else {
         final favorito =
-        await _favoritoService.agregarFavorito(
-        usuarioId: _usuarioId,
-        sitioId: sitioId,
-        token: widget.token,
-      );
+            await _favoritoService.agregarFavorito(
+          usuarioId: sesion.id,
+          sitioId: sitioId,
+          token: sesion.token,
+        );
 
         if (!mounted) {
           return;
@@ -243,8 +271,7 @@ final Map<String, String> _favoritosPorSitio = {};
 
         if (favorito != null) {
           setState(() {
-            _favoritosPorSitio[sitioId] =
-                favorito.id;
+            _favoritosPorSitio[sitioId] = favorito.id;
           });
         } else {
           await _cargarFavoritos();
@@ -254,76 +281,356 @@ final Map<String, String> _favoritosPorSitio = {};
           'Sitio agregado a favoritos.',
         );
       }
-    } catch (e) {
+    } catch (error) {
       if (!mounted) {
         return;
       }
 
-      _mostrarMensaje(
-        e.toString().replaceFirst(
-              'Exception: ',
-              '',
-            ),
+      final mensaje = error.toString().replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      // El backend responde 400 si ya estaba guardado:
+      // se sincroniza el estado local en vez de mostrar error.
+      if (mensaje.toLowerCase().contains('ya está')) {
+        await _cargarFavoritos();
+        return;
+      }
+
+      if (_esErrorDeSesion(error)) {
+        await _sesionExpirada();
+        return;
+      }
+
+      _mostrarMensaje(mensaje);
+    } finally {
+      _sitiosProcesando.remove(sitioId);
+    }
+  }
+
+  // ============================================================
+  // CARGAR CONTENIDO
+  // ============================================================
+
+  Future<void> _cargarContenido() async {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _cargandoCategorias = true;
+      _cargandoSitios = true;
+
+      _errorCategorias = null;
+      _errorSitios = null;
+    });
+
+    await Future.wait([
+      _cargarCategorias(),
+      _cargarSitios(),
+    ]);
+  }
+
+  // ============================================================
+  // CATEGORÍAS
+  // ============================================================
+
+  Future<void> _cargarCategorias() async {
+    try {
+      final categorias =
+          await _categoriaService.obtenerCategorias();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _categorias = categorias;
+        _cargandoCategorias = false;
+        _errorCategorias = null;
+      });
+
+      debugPrint(
+        'HOME - CATEGORÍAS CARGADAS: '
+        '${categorias.length}',
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _categorias = [];
+        _cargandoCategorias = false;
+        _errorCategorias =
+            'No fue posible cargar las categorías.';
+      });
+
+      debugPrint(
+        'HOME - ERROR CATEGORÍAS: $error',
       );
     }
   }
 
   // ============================================================
-  // NAVEGACIÓN
+  // SITIOS
+  // ============================================================
+
+  Future<void> _cargarSitios() async {
+    try {
+      final sitios =
+          await _sitioService.obtenerSitios();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _sitios = sitios;
+        _cargandoSitios = false;
+        _errorSitios = null;
+      });
+
+      debugPrint(
+        'HOME - SITIOS CARGADOS: '
+        '${sitios.length}',
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _sitios = [];
+        _cargandoSitios = false;
+        _errorSitios =
+            'No fue posible cargar los sitios turísticos.';
+      });
+
+      debugPrint(
+        'HOME - ERROR SITIOS: $error',
+      );
+    }
+  }
+
+  // ============================================================
+  // RECARGAR
+  // ============================================================
+
+  Future<void> _recargar() async {
+    await _cargarContenido();
+  }
+
+  // ============================================================
+  // NORMALIZAR TEXTO
+  // ============================================================
+
+  String _normalizarTexto(String texto) {
+    return TextUtils.normalizar(texto)
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ü', 'u')
+        .replaceAll('ñ', 'n')
+        .toLowerCase()
+        .trim();
+  }
+
+  // ============================================================
+  // SITIOS FILTRADOS POR CATEGORÍA
+  // ============================================================
+
+  List<SitioTuristicoModel>
+      get _sitiosFiltrados {
+    if (_categoriaSeleccionada == null) {
+      return _sitios;
+    }
+
+    final categoriaSeleccionada =
+        _normalizarTexto(
+      _categoriaSeleccionada!,
+    );
+
+    return _sitios.where((sitio) {
+      final categoriaSitio =
+          _normalizarTexto(
+        sitio.categoriaNombre,
+      );
+
+      return categoriaSitio ==
+          categoriaSeleccionada;
+    }).toList();
+  }
+
+  // ============================================================
+  // SITIOS DESTACADOS
+  //
+  // Se conservan todos los sitios devueltos
+  // por la API y los correspondientes a la
+  // categoría seleccionada.
+  // ============================================================
+
+  List<SitioTuristicoModel>
+      get _sitiosDestacados {
+    return _sitiosFiltrados;
+  }
+
+  // ============================================================
+  // SELECCIONAR CATEGORÍA
+  // ============================================================
+
+  void _seleccionarCategoria(
+    String? categoria,
+  ) {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      if (categoria == null) {
+        _categoriaSeleccionada = null;
+        return;
+      }
+
+      final nuevaCategoria =
+          _normalizarTexto(categoria);
+
+      final categoriaActual =
+          _categoriaSeleccionada == null
+              ? ''
+              : _normalizarTexto(
+                  _categoriaSeleccionada!,
+                );
+
+      if (nuevaCategoria == categoriaActual) {
+        _categoriaSeleccionada = null;
+      } else {
+        _categoriaSeleccionada = categoria;
+      }
+    });
+
+    debugPrint(
+      'HOME - CATEGORÍA SELECCIONADA: '
+      '$_categoriaSeleccionada',
+    );
+  }
+
+  // ============================================================
+  // LIMPIAR CATEGORÍA
+  // ============================================================
+
+  void _limpiarCategoria() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _categoriaSeleccionada = null;
+    });
+  }
+
+  // ============================================================
+  // LOGIN
+  // ============================================================
+
+  void _irLoginUsuario() {
+    // Con sesión activa no se vuelve a pedir el login.
+    final sesion = _sesion;
+
+    if (sesion != null) {
+      _mostrarMensaje(
+        'Ya iniciaste sesión como ${sesion.nombre}. '
+        'Tus datos están en la pestaña Perfil.',
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const LoginUsuarioScreen(),
+      ),
+    );
+  }
+
+  // ============================================================
+  // REGISTRO
+  // ============================================================
+
+  void _irRegistroUsuario() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const RegistroUsuarioScreen(),
+      ),
+    );
+  }
+
+  // ============================================================
+  // ACCIONES QUE REQUIEREN CUENTA
+  // ============================================================
+
+  void _requiereCuenta() {
+    RequiereCuentaSheet.mostrar(
+      context: context,
+      onIniciarSesion:
+          _irLoginUsuario,
+      onCrearCuenta:
+          _irRegistroUsuario,
+    );
+  }
+
+  // ============================================================
+  // ABRIR MAPA GENERAL
+  // ============================================================
+  //
+  // El mapa general con todos los sitios es exclusivo de usuarios
+  // con sesión. Un visitante recibe la invitación a iniciar sesión;
+  // un usuario autenticado lo abre en pantalla completa.
   // ============================================================
 
   void _abrirMapa() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const MapaScreen2(),
-      ),
-    );
-  }
-
-  void _abrirRutas() {
-    if (_usuarioId.isEmpty) {
-      _mostrarMensaje(
-        'No se pudo identificar al usuario.',
+    if (_sesion == null) {
+      RequiereCuentaSheet.mostrar(
+        context: context,
+        titulo: 'Explora todo el mapa',
+        mensaje:
+            'Inicia sesión para ver todos los sitios en el '
+            'mapa, filtrar por categoría y crear tus rutas.',
+        icono: Icons.map_rounded,
+        onIniciarSesion: _irLoginUsuario,
+        onCrearCuenta: _irRegistroUsuario,
       );
       return;
     }
 
-    Navigator.push(
+    Navigator.pushNamed(
       context,
-      MaterialPageRoute(
-        builder: (_) => RutasUsuarioScreen(
-        usuarioId: _usuarioId,
-        token: widget.token,
-        ),
-      ),
+      '/mapa',
     );
   }
 
-  void _abrirFavoritos() {
-    if (_usuarioId.isEmpty) {
-      _mostrarMensaje(
-        'No se pudo identificar al usuario.',
-      );
-      return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FavoritosUsuarioScreen(
-      usuarioId: _usuarioId,
-      token: widget.token,
-      ),
-      ),
-    ).then((_) {
-      _cargarFavoritos();
-    });
-  }
+  // ============================================================
+  // ABRIR DETALLE DEL SITIO
+  // ============================================================
+  //
+  // Visitante y usuario ven el mismo detalle. Desde el detalle,
+  // "Ver mapa" abre el mapa individual (solo ese sitio).
+  //
+  // * Con sesión: el corazón guarda/quita el favorito.
+  // * Sin sesión: el corazón invita a iniciar sesión.
+  // ============================================================
 
   void _abrirSitio(
     SitioTuristicoModel sitio,
   ) {
+    final conSesion = _sesion != null;
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -331,69 +638,83 @@ final Map<String, String> _favoritosPorSitio = {};
           sitio: sitio,
           imagen: _imagenSitio(sitio),
           esFavorito:
-              _favoritosPorSitio.containsKey(
-            sitio.id,
-          ),
-          onFavorite: () async {
-            await _alternarFavorito(sitio);
-          },
+              _favoritosPorSitio.containsKey(sitio.id),
+          onFavorite: conSesion
+              ? () => _favoritoDesdeDetalle(sitio)
+              : null,
+          onRequiereCuenta: _requiereCuenta,
         ),
       ),
-    ).then((_) {
-      _cargarFavoritos();
-    });
-  }
-
-  void _mostrarMensaje(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-      ),
     );
   }
 
   // ============================================================
-  // CERRAR SESIÓN
+  // FAVORITO DESDE EL DETALLE
+  // ============================================================
+  //
+  // A diferencia de _alternarFavorito, aquí los errores se
+  // propagan para que el detalle revierta el corazón.
   // ============================================================
 
-  Future<void> _cerrarSesion() async {
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            'Cerrar sesión',
-          ),
-          content: const Text(
-            '¿Deseas cerrar tu sesión?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-              child: const Text(
-                'Cancelar',
-              ),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-              child: const Text(
-                'Cerrar sesión',
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  Future<void> _favoritoDesdeDetalle(
+    SitioTuristicoModel sitio,
+  ) async {
+    final sesion = _sesion;
 
-    if (confirmar != true || !mounted) {
-      return;
+    if (sesion == null) {
+      throw Exception('Inicia sesión para usar favoritos.');
     }
 
-    Navigator.pop(context);
+    final sitioId = sitio.id;
+    final favoritoId = _favoritosPorSitio[sitioId];
+
+    try {
+      if (favoritoId != null) {
+        await _favoritoService.eliminarFavorito(
+          favoritoId,
+          token: sesion.token,
+        );
+
+        if (mounted) {
+          setState(() {
+            _favoritosPorSitio.remove(sitioId);
+          });
+        }
+      } else {
+        final favorito =
+            await _favoritoService.agregarFavorito(
+          usuarioId: sesion.id,
+          sitioId: sitioId,
+          token: sesion.token,
+        );
+
+        if (!mounted) {
+          return;
+        }
+
+        if (favorito != null) {
+          setState(() {
+            _favoritosPorSitio[sitioId] = favorito.id;
+          });
+        } else {
+          await _cargarFavoritos();
+        }
+      }
+    } catch (error) {
+      final mensaje = error.toString().toLowerCase();
+
+      // Ya estaba guardado: se sincroniza y no es un error.
+      if (mensaje.contains('ya está')) {
+        await _cargarFavoritos();
+        return;
+      }
+
+      if (_esErrorDeSesion(error)) {
+        await _sesionExpirada();
+      }
+
+      rethrow;
+    }
   }
 
   // ============================================================
@@ -401,412 +722,305 @@ final Map<String, String> _favoritosPorSitio = {};
   // ============================================================
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Mi Ruta Cafetera',
-        ),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            tooltip: 'Cerrar sesión',
-            onPressed: _cerrarSesion,
-            icon: const Icon(
-              Icons.logout,
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.wait([
-              _cargarSitios(),
-              _cargarFavoritos(),
-            ]);
-          },
-          child: SingleChildScrollView(
-            physics:
-                const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(
-              AppDimensions.spacingLg + 4,
-            ),
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.stretch,
-              children: [
-                // ==================================================
-                // BIENVENIDA
-                // ==================================================
+      backgroundColor:
+          AppColors.surfaceGreen,
+      body: RefreshIndicator(
+        onRefresh: _recargar,
+        color: AppColors.secondary,
+        child: CustomScrollView(
+          physics:
+              const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // ==================================================
+            // CARRUSEL SUPERIOR
+            // ==================================================
 
-                Container(
-                  padding: const EdgeInsets.all(
-                    AppDimensions.spacingXxl,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius:
-                        BorderRadius.circular(
-                      AppDimensions.radiusXxl,
-                    ),
-                    color: AppColors.cream,
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.coffee,
-                        size: 65,
-                        color: AppColors.secondary,
+            HomeHero(
+              onLogin:
+                  _irLoginUsuario,
+              usuarioAutenticado:
+                  _sesion != null,
+              nombre:
+                  _sesion?.nombre,
+            ),
+
+            // ==================================================
+            // CONTENIDO
+            // ==================================================
+
+            SliverToBoxAdapter(
+              child: Padding(
+                padding:
+                    const EdgeInsets.fromLTRB(
+                  AppDimensions.spacingLg + 4,
+                  AppDimensions.spacingLg + 6,
+                  AppDimensions.spacingLg + 4,
+                  AppDimensions.spacingSection + 3,
+                ),
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    // ==========================================
+                    // BANNER
+                    // ==========================================
+
+                    if (_sesion == null) ...[
+                      BannerCuenta(
+                        onLogin:
+                            _irLoginUsuario,
                       ),
+
                       const SizedBox(
                         height:
-                            AppDimensions.spacingLg - 1,
-                      ),
-                      Text(
-                        '¡Hola, $_nombreUsuario! 👋',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(
-                        height:
-                            AppDimensions.spacingSm,
-                      ),
-                      const Text(
-                        'Bienvenido a Mi Ruta Cafetera',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color:
-                              AppColors.textSecondary,
-                        ),
+                            AppDimensions.spacingSection - 2,
                       ),
                     ],
-                  ),
-                ),
 
-                const SizedBox(
-                  height:
-                      AppDimensions.spacingXxl + 1,
-                ),
+                    // ==========================================
+                    // CATEGORÍAS
+                    // ==========================================
 
-                // ==================================================
-                // BUSCADOR
-                // ==================================================
+                    _construirCategorias(),
 
-                TextField(
-                  controller: _busquedaController,
-                  onChanged: _buscarSitios,
-                  decoration: InputDecoration(
-                    hintText:
-                        '¿Qué quieres descubrir?',
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: AppColors.primary,
-                    ),
-                    suffixIcon:
-                        _busquedaController
-                                .text
-                                .isNotEmpty
-                            ? IconButton(
-                                onPressed: () {
-                                  _busquedaController
-                                      .clear();
-                                  _buscarSitios('');
-                                },
-                                icon: const Icon(
-                                  Icons.clear,
-                                ),
-                              )
-                            : null,
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                        AppDimensions.radiusMd,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(
-                  height:
-                      AppDimensions.spacingXxl + 1,
-                ),
-
-                // ==================================================
-                // OPCIONES PRINCIPALES
-                // ==================================================
-
-                const Text(
-                  'Explora',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                const SizedBox(
-                  height:
-                      AppDimensions.spacingMd + 3,
-                ),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: _opcionExplorar(
-                        icon: Icons.map_outlined,
-                        titulo: 'Mapa',
-                        onTap: _abrirMapa,
-                      ),
-                    ),
                     const SizedBox(
-                      width: AppDimensions.spacingMd,
+                      height:
+                          AppDimensions.spacingSection - 2,
                     ),
-                    Expanded(
-                      child: _opcionExplorar(
-                        icon:
-                            Icons.route_outlined,
-                        titulo: 'Rutas',
-                        onTap: _abrirRutas,
-                      ),
+
+                    // ==========================================
+                    // SITIOS
+                    // ==========================================
+
+                    _construirSitios(),
+
+                    const SizedBox(
+                      height:
+                          AppDimensions.spacingSection,
                     ),
+
+                    // ==========================================
+                    // RUTAS
+                    // ==========================================
+
+                    _construirRutas(),
+
+                    const SizedBox(
+                      height:
+                          AppDimensions.spacingSection + 3,
+                    ),
+
+                    // ==========================================
+                    // MENSAJE FINAL
+                    // ==========================================
+
+                    _construirMensajeFinal(),
                   ],
                 ),
-
-                const SizedBox(
-                  height: AppDimensions.spacingMd,
-                ),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: _opcionExplorar(
-                        icon:
-                            Icons.place_outlined,
-                        titulo: 'Sitios',
-                        onTap: _abrirMapa,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: AppDimensions.spacingMd,
-                    ),
-                    Expanded(
-                      child: _opcionExplorar(
-                        icon:
-                            Icons.favorite_border,
-                        titulo: 'Favoritos',
-                        onTap: _abrirFavoritos,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(
-                  height:
-                      AppDimensions.spacingSection - 2,
-                ),
-
-                // ==================================================
-                // SITIOS TURÍSTICOS
-                // ==================================================
-
-                const Text(
-                  'Descubre el Huila',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                const SizedBox(
-                  height:
-                      AppDimensions.spacingMd + 3,
-                ),
-
-                _construirSitios(),
-
-                const SizedBox(
-                  height:
-                      AppDimensions.spacingSection - 2,
-                ),
-
-                // ==================================================
-                // CERRAR SESIÓN
-                // ==================================================
-
-                OutlinedButton.icon(
-                  onPressed: _cerrarSesion,
-                  icon: const Icon(
-                    Icons.logout,
-                  ),
-                  label: const Text(
-                    'Cerrar sesión',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // OPCIÓN EXPLORAR
-  // ============================================================
-
-  Widget _opcionExplorar({
-    required IconData icon,
-    required String titulo,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: AppColors.cream,
-      borderRadius: BorderRadius.circular(
-        AppDimensions.radiusXl,
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.radiusXl,
-        ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical:
-                AppDimensions.spacingXl - 2,
-            horizontal:
-                AppDimensions.spacingMd,
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                size: 38,
-                color: AppColors.secondary,
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingSm,
-              ),
-              Text(
-                titulo,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // LISTADO DE SITIOS
-  // ============================================================
-
-  Widget _construirSitios() {
-    if (_cargandoSitios) {
-      return const Padding(
-        padding: EdgeInsets.all(
-          AppDimensions.spacingXxl,
-        ),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    if (_sitiosFiltrados.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(
-          AppDimensions.spacingXxl,
-        ),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusXl,
-          ),
-          border: Border.all(
-            color: AppColors.border,
-          ),
-        ),
-        child: const Column(
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 45,
-              color: AppColors.secondary,
-            ),
-            SizedBox(
-              height: AppDimensions.spacingMd,
-            ),
-            Text(
-              'No encontramos lugares',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            SizedBox(
-              height: AppDimensions.spacingSm,
-            ),
-            Text(
-              'Prueba con otro nombre, ciudad o categoría.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textSecondary,
               ),
             ),
           ],
         ),
-      );
-    }
-
-    return Column(
-      children: _sitiosFiltrados.map(
-        (sitio) {
-          return Padding(
-            padding: const EdgeInsets.only(
-              bottom: AppDimensions.spacingLg,
-            ),
-            child: SitioCard(
-              sitio: sitio,
-              imagen: _imagenSitio(sitio),
-              onFavorite: () =>
-                  _alternarFavorito(sitio),
-              onTap: () {
-                _abrirSitio(sitio);
-              },
-            ),
-          );
-        },
-      ).toList(),
+      ),
     );
   }
 
   // ============================================================
-  // IMAGEN DEL SITIO
+  // CATEGORÍAS
+  // ============================================================
+
+  Widget _construirCategorias() {
+    if (_cargandoCategorias) {
+      return _construirCargaCategorias();
+    }
+
+    if (_categorias.isEmpty) {
+      return _construirEstadoCategorias();
+    }
+
+    return Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Explora por experiencia',
+          style: TextStyle(
+            fontSize: 21,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textOnDark,
+          ),
+        ),
+
+        const SizedBox(
+          height:
+              AppDimensions.spacingMd + 3,
+        ),
+
+        SizedBox(
+          height:
+              AppDimensions.categoryCardHeight,
+          child: ListView.separated(
+            scrollDirection:
+                Axis.horizontal,
+            itemCount:
+                _categorias.length,
+            separatorBuilder:
+                (context, index) {
+              return const SizedBox(
+                width:
+                    AppDimensions.spacingMd,
+              );
+            },
+            itemBuilder:
+                (context, index) {
+              final categoria =
+                  _categorias[index];
+
+              return CategoriaCard(
+                categoria: categoria,
+                categoriaSeleccionada:
+                    _categoriaSeleccionada,
+                onTap: () {
+                  _seleccionarCategoria(
+                    categoria.nombre,
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // SITIOS
+  // ============================================================
+
+  Widget _construirSitios() {
+    final sitios =
+        _sitiosDestacados;
+
+    final hayFiltro =
+        _categoriaSeleccionada != null;
+
+    return Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Descubre lugares',
+                style: TextStyle(
+                  fontSize: 21,
+                  fontWeight:
+                      FontWeight.w800,
+                  color:
+                      AppColors.textOnDark,
+                ),
+              ),
+            ),
+
+            TextButton.icon(
+              onPressed:
+                  _abrirMapa,
+              icon:
+                  const Icon(
+                Icons.map_outlined,
+                size:
+                    AppDimensions.iconSm,
+              ),
+              label:
+                  const Text(
+                'Ver mapa',
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(
+          height:
+              AppDimensions.spacingSm,
+        ),
+
+        if (_cargandoSitios)
+          _construirCargaSitios()
+        else if (_errorSitios != null &&
+            _sitios.isEmpty)
+          _construirEstadoError()
+        else if (sitios.isEmpty)
+          _construirEstadoVacio(
+            hayFiltro: hayFiltro,
+          )
+        else
+          SizedBox(
+            height: 330,
+            child:
+                ListView.separated(
+              scrollDirection:
+                  Axis.horizontal,
+              itemCount:
+                  sitios.length,
+              separatorBuilder:
+                  (context, index) {
+                return const SizedBox(
+                  width:
+                      AppDimensions.spacingMd + 3,
+                );
+              },
+              itemBuilder:
+                  (context, index) {
+                final sitio =
+                    sitios[index];
+
+                return SitioCard(
+                  sitio: sitio,
+                  imagen:
+                      _imagenSitio(sitio),
+                  esFavorito:
+                      _favoritosPorSitio
+                          .containsKey(sitio.id),
+                  onFavorite: () {
+                    _alternarFavorito(sitio);
+                  },
+
+                  // ==================================================
+                  // IMPORTANTE:
+                  // Aquí enviamos el sitio seleccionado.
+                  // Ya no abrimos simplemente el mapa general.
+                  // ==================================================
+
+                  onTap: () {
+                    _abrirSitio(sitio);
+                  },
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // IMÁGENES DE SITIOS
   // ============================================================
 
   String _imagenSitio(
     SitioTuristicoModel sitio,
   ) {
-    final categoria = _normalizarTexto(
+    final categoria =
+        _normalizarTexto(
       sitio.categoriaNombre,
     );
 
     if (categoria.contains('cafe')) {
-      return 'assets/images/sitios/cafe.jpg';
+      return 'assets/images/sitios/cafe.jpeg';
     }
 
     if (categoria.contains('artesania')) {
@@ -848,26 +1062,548 @@ final Map<String, String> _favoritosPorSitio = {};
       return 'assets/images/sitios/miradores.jpeg';
     }
 
-    return 'assets/images/bienvenida/paisaje.jpg';
+    // Imagen existente como respaldo.
+    return 'assets/images/sitios/naturaleza.jpeg';
   }
 
-  String _normalizarTexto(String texto) {
-    return texto
-        .replaceAll('á', 'a')
-        .replaceAll('é', 'e')
-        .replaceAll('í', 'i')
-        .replaceAll('ó', 'o')
-        .replaceAll('ú', 'u')
-        .replaceAll('Á', 'A')
-        .replaceAll('É', 'E')
-        .replaceAll('Í', 'I')
-        .replaceAll('Ó', 'O')
-        .replaceAll('Ú', 'U')
-        .replaceAll('ü', 'u')
-        .replaceAll('Ü', 'U')
-        .replaceAll('ñ', 'n')
-        .replaceAll('Ñ', 'N')
-        .toLowerCase()
-        .trim();
+  // ============================================================
+  // RUTAS
+  // ============================================================
+
+  Widget _construirRutas() {
+    return Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Rutas para inspirarte',
+          style: TextStyle(
+            fontSize: 21,
+            fontWeight:
+                FontWeight.w800,
+            color:
+                AppColors.textOnDark,
+          ),
+        ),
+
+        const SizedBox(
+          height:
+              AppDimensions.spacingSm,
+        ),
+
+        _construirRutasVacias(),
+      ],
+    );
+  }
+
+  // ============================================================
+  // RUTAS VACÍAS
+  // ============================================================
+
+  Widget _construirRutasVacias() {
+    return Container(
+      width: double.infinity,
+      padding:
+          const EdgeInsets.all(
+        AppDimensions.spacingXl,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            AppColors.surface,
+        borderRadius:
+            BorderRadius.circular(
+          AppDimensions.radiusXl,
+        ),
+        border:
+            Border.all(
+          color:
+              AppColors.border,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                AppColors.black.withValues(
+              alpha: 0.04,
+            ),
+            blurRadius: 12,
+            offset:
+                const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration:
+                BoxDecoration(
+              color:
+                  AppColors.getSoftColorForCategory(
+                'naturaleza',
+              ),
+              shape:
+                  BoxShape.circle,
+            ),
+            child:
+                const Icon(
+              Icons.route_rounded,
+              color:
+                  AppColors.primary,
+              size: 29,
+            ),
+          ),
+
+          const SizedBox(
+            width:
+                AppDimensions.spacingMd,
+          ),
+
+          const Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Muy pronto',
+                  style:
+                      TextStyle(
+                    color:
+                        AppColors.primary,
+                    fontWeight:
+                        FontWeight.w800,
+                    fontSize: 15,
+                  ),
+                ),
+
+                SizedBox(
+                  height:
+                      AppDimensions.spacingXs,
+                ),
+
+                Text(
+                  'Estamos preparando rutas '
+                  'especiales para que descubras '
+                  'el Huila paso a paso.',
+                  style:
+                      TextStyle(
+                    color:
+                        AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // MENSAJE FINAL
+  // ============================================================
+
+  Widget _construirMensajeFinal() {
+    return Center(
+      child: Column(
+        children: [
+          const Icon(
+            Icons.eco_rounded,
+            color:
+                AppColors.coffeeLight,
+            size:
+                AppDimensions.iconLg + 6,
+          ),
+
+          const SizedBox(
+            height:
+                AppDimensions.spacingSm + 2,
+          ),
+
+          const Text(
+            'En cada taza hay una historia, '
+            'un paisaje y un corazón que late.',
+            textAlign:
+                TextAlign.center,
+            style: TextStyle(
+              color:
+                  AppColors.secondary,
+              fontSize: 15,
+              fontStyle:
+                  FontStyle.italic,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // CARGA DE CATEGORÍAS
+  // ============================================================
+
+  Widget _construirCargaCategorias() {
+    return Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Explora por experiencia',
+          style: TextStyle(
+            fontSize: 21,
+            fontWeight: FontWeight.w800,
+            color:
+                AppColors.textOnDark,
+          ),
+        ),
+
+        const SizedBox(
+          height:
+              AppDimensions.spacingMd,
+        ),
+
+        SizedBox(
+          height:
+              AppDimensions.categoryCardHeight,
+          child:
+              ListView.separated(
+            scrollDirection:
+                Axis.horizontal,
+            itemCount: 5,
+            separatorBuilder:
+                (context, index) {
+              return const SizedBox(
+                width:
+                    AppDimensions.spacingMd,
+              );
+            },
+            itemBuilder:
+                (context, index) {
+              return const
+                  _CategoriaSkeleton();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // CARGA DE SITIOS
+  // ============================================================
+
+  Widget _construirCargaSitios() {
+    return SizedBox(
+      height: 330,
+      child:
+          ListView.separated(
+        scrollDirection:
+            Axis.horizontal,
+        itemCount: 3,
+        separatorBuilder:
+            (context, index) {
+          return const SizedBox(
+            width:
+                AppDimensions.spacingMd + 3,
+          );
+        },
+        itemBuilder:
+            (context, index) {
+          return const
+              _SitioCardSkeleton();
+        },
+      ),
+    );
+  }
+
+  // ============================================================
+  // ERROR CATEGORÍAS
+  // ============================================================
+
+  Widget _construirEstadoCategorias() {
+    return Container(
+      width: double.infinity,
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal:
+            AppDimensions.spacingLg,
+        vertical:
+            AppDimensions.spacingMd,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            AppColors.surface,
+        borderRadius:
+            BorderRadius.circular(
+          AppDimensions.radiusLg,
+        ),
+        border:
+            Border.all(
+          color:
+              AppColors.border,
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.category_outlined,
+            color:
+                AppColors.textSecondary,
+          ),
+
+          const SizedBox(
+            width:
+                AppDimensions.spacingSm,
+          ),
+
+          Expanded(
+            child: Text(
+              _errorCategorias ??
+                  'No se pudieron cargar las categorías.',
+              style:
+                  const TextStyle(
+                color:
+                    AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+          ),
+
+          TextButton(
+            onPressed:
+                _recargar,
+            child:
+                const Text(
+              'Reintentar',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // ERROR SITIOS
+  // ============================================================
+
+  Widget _construirEstadoError() {
+    return Container(
+      width: double.infinity,
+      padding:
+          const EdgeInsets.all(
+        AppDimensions.spacingXl,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            AppColors.surface,
+        borderRadius:
+            BorderRadius.circular(
+          AppDimensions.radiusXl,
+        ),
+        border:
+            Border.all(
+          color:
+              AppColors.border,
+        ),
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.cloud_off_rounded,
+            color:
+                AppColors.textSecondary,
+            size: 38,
+          ),
+
+          const SizedBox(
+            height:
+                AppDimensions.spacingMd,
+          ),
+
+          const Text(
+            'No pudimos cargar los sitios.',
+            textAlign:
+                TextAlign.center,
+            style:
+                TextStyle(
+              fontWeight:
+                  FontWeight.bold,
+              color:
+                  AppColors.textPrimary,
+            ),
+          ),
+
+          const SizedBox(
+            height:
+                AppDimensions.spacingSm,
+          ),
+
+          Text(
+            _errorSitios ??
+                'Ocurrió un problema al obtener '
+                'los sitios turísticos.',
+            textAlign:
+                TextAlign.center,
+            style:
+                const TextStyle(
+              color:
+                  AppColors.textSecondary,
+              fontSize: 13,
+            ),
+          ),
+
+          const SizedBox(
+            height:
+                AppDimensions.spacingSm,
+          ),
+
+          TextButton(
+            onPressed:
+                _recargar,
+            child:
+                const Text(
+              'Intentar nuevamente',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // SIN RESULTADOS
+  // ============================================================
+
+  Widget _construirEstadoVacio({
+    required bool hayFiltro,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding:
+          const EdgeInsets.all(
+        AppDimensions.spacingXl,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            AppColors.surface,
+        borderRadius:
+            BorderRadius.circular(
+          AppDimensions.radiusXl,
+        ),
+        border:
+            Border.all(
+          color:
+              AppColors.border,
+        ),
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.travel_explore_rounded,
+            color:
+                AppColors.coffeeLight,
+            size: 42,
+          ),
+
+          const SizedBox(
+            height:
+                AppDimensions.spacingMd,
+          ),
+
+          Text(
+            hayFiltro
+                ? 'No encontramos lugares '
+                  'para esta categoría.'
+                : 'Todavía no hay lugares disponibles.',
+            textAlign:
+                TextAlign.center,
+            style:
+                const TextStyle(
+              color:
+                  AppColors.textSecondary,
+              fontSize: 14,
+              fontWeight:
+                  FontWeight.w600,
+            ),
+          ),
+
+          if (hayFiltro)
+            TextButton(
+              onPressed:
+                  _limpiarCategoria,
+              child:
+                  const Text(
+                'Mostrar todos',
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// SKELETON CATEGORÍA
+// =====================================================================
+
+class _CategoriaSkeleton
+    extends StatelessWidget {
+  const _CategoriaSkeleton();
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      width:
+          AppDimensions.categoryCardWidth,
+      height:
+          AppDimensions.categoryCardHeight,
+      decoration:
+          BoxDecoration(
+        color:
+            AppColors.surfaceVariant,
+        borderRadius:
+            BorderRadius.circular(
+          AppDimensions.categoryRadius,
+        ),
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// SKELETON SITIO
+// =====================================================================
+
+class _SitioCardSkeleton
+    extends StatelessWidget {
+  const _SitioCardSkeleton();
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      width:
+          AppDimensions.sitioCardWidth,
+      height: 330,
+      decoration:
+          BoxDecoration(
+        color:
+            AppColors.surfaceVariant,
+        borderRadius:
+            BorderRadius.circular(
+          AppDimensions.sitioCardRadius,
+        ),
+      ),
+    );
   }
 }

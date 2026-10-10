@@ -44,5 +44,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Configuración local de Android
+# ConfiguraciÃ³n local de Android
 /android/local.properties

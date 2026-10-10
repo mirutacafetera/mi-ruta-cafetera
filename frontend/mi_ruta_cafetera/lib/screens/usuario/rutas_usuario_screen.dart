@@ -16,10 +16,15 @@ class RutasUsuarioScreen extends StatefulWidget {
     super.key,
     required this.usuarioId,
     required this.token,
+    this.mostrarRegresar = true,
   });
 
   final String usuarioId;
   final String token;
+
+  /// En false (cuando se usa como pestaña del menú inferior)
+  /// no se muestra la flecha de regreso.
+  final bool mostrarRegresar;
 
   @override
   State<RutasUsuarioScreen> createState() =>
@@ -462,8 +467,10 @@ class _RutasUsuarioScreenState
           AppColors.background,
 
       appBar: AppBar(
-        leading:
-            const BotonRegresar(),
+        automaticallyImplyLeading: false,
+        leading: widget.mostrarRegresar
+            ? const BotonRegresar()
+            : null,
 
         title: const Text(
           'Mis rutas',

@@ -17,12 +17,18 @@ class DetalleSitioUsuarioScreen extends StatefulWidget {
     this.imagen,
     this.esFavorito = false,
     this.onFavorite,
+    this.onRequiereCuenta,
   });
 
   final SitioTuristicoModel sitio;
   final String? imagen;
   final bool esFavorito;
-  final VoidCallback? onFavorite;
+  final Future<void> Function()? onFavorite;
+
+  /// Se invoca al tocar el corazón cuando no hay sesión
+  /// (onFavorite es null). Normalmente abre la invitación a
+  /// iniciar sesión.
+  final VoidCallback? onRequiereCuenta;
 
   @override
   State<DetalleSitioUsuarioScreen> createState() =>
@@ -85,19 +91,60 @@ class _DetalleSitioUsuarioScreenState
     }
   }
 
-  void _cambiarFavorito() {
+  bool _procesandoFavorito = false;
+
+  Future<void> _cambiarFavorito() async {
+    final accion = widget.onFavorite;
+
+    if (accion == null) {
+      widget.onRequiereCuenta?.call();
+      return;
+    }
+
+    if (_procesandoFavorito) {
+      return;
+    }
+
+    final estadoAnterior = _esFavorito;
+
     setState(() {
-      _esFavorito = !_esFavorito;
+      _esFavorito = !estadoAnterior;
+      _procesandoFavorito = true;
     });
 
-    widget.onFavorite?.call();
+    try {
+      await accion();
+    } catch (e) {
+      if (!mounted) return;
+
+      // Si el servidor falló, el corazón vuelve a su estado real.
+      setState(() {
+        _esFavorito = estadoAnterior;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _procesandoFavorito = false;
+        });
+      }
+    }
   }
 
   void _verMapa() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const MapaScreen2(),
+        builder: (_) => MapaScreen2(
+          sitioInicial: widget.sitio,
+        ),
       ),
     );
   }

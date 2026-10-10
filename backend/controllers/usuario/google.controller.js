@@ -62,7 +62,7 @@ const loginWithGoogle = async (req, res) => {
     if (!usuario) {
       usuario = await Usuario.create({
         nombre: nombre || 'Usuario',
-        apellido: apellido || '',
+        apellido: apellido || 'Google',
         correo: correoNormalizado,
         password: `GOOGLE_${googleId}_${Date.now()}`,
         fotoPerfil: fotoPerfil || '',

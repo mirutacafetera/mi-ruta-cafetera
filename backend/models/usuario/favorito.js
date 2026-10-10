@@ -8,9 +8,12 @@ const favoritoSchema = new mongoose.Schema(
       required: true
     },
 
+    // El controlador (favoritos.controller.js) lee y escribe
+    // este campo como "sitio" y lo puebla con populate('sitio').
+    // Los sitios viven en el modelo SitioTuristico.
     sitio: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Sitio',
+      ref: 'SitioTuristico',
       required: true
     }
   },

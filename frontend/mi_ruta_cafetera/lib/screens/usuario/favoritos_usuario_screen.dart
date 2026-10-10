@@ -255,6 +255,7 @@ class _FavoritosUsuarioScreenState
           return SitioCard(
             sitio: sitio,
             imagen: _imagenSitio(sitio),
+            esFavorito: true,
             onFavorite: () =>
                 _eliminarFavorito(index),
             onTap: () =>
@@ -365,7 +366,7 @@ class _FavoritosUsuarioScreenState
     );
 
     if (categoria.contains('cafe')) {
-      return 'assets/images/sitios/cafe.jpg';
+      return 'assets/images/sitios/cafe.jpeg';
     }
 
     if (categoria.contains('artesania')) {

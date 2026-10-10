@@ -5,7 +5,9 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import 'recuperar_password_screen.dart';
 import 'registro_usuario_screen.dart';
-import 'home_usuario_screen.dart';
+import '../publico/public_shell_screen.dart';
+import '../../models/usuario/usuario_sesion_model.dart';
+import '../../services/usuario/usuario_sesion_service.dart';
 
 class LoginUsuarioScreen extends StatefulWidget {
   const LoginUsuarioScreen({
@@ -77,25 +79,35 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
       final usuario = resultado['usuario'];
       final token = resultado['token'];
 
-      if (usuario == null || token == null) {
+      if (usuario is! Map || token == null) {
         _mostrarMensaje(
           'El servidor no devolvió los datos de usuario',
         );
         return;
       }
 
-      // ========================================================
-      // ENTRAR AL HOME
-      // ========================================================
+      final sesion = UsuarioSesionModel.fromRespuesta(
+        token: token.toString(),
+        usuario: Map<String, dynamic>.from(usuario),
+      );
 
-      Navigator.pushReplacement(
+      await UsuarioSesionService.instance.guardarSesion(
+        sesion,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      // Con la sesión guardada, el Shell muestra el menú de 5
+      // opciones. Se limpia la pila para que "atrás" no regrese
+      // al login ni al registro.
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeUsuarioScreen(
-            usuario: usuario,
-            token: token,
-          ),
+          builder: (context) => const PublicShellScreen(),
         ),
+        (ruta) => false,
       );
     } else {
       _mostrarMensaje(

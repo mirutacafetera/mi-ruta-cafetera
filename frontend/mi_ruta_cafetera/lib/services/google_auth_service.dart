@@ -4,6 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class GoogleAuthService {
+  
+    void registrarUsuario(GoogleSignInAccount usuario) {
+    _usuarioActual = usuario;
+  }
   GoogleAuthService._();
 
   static final GoogleAuthService instance =
