@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 
-class TarjetaSeccionSitio extends StatelessWidget {
+class SeccionFormularioSitio extends StatelessWidget {
   final String titulo;
   final String subtitulo;
   final IconData icono;
-  final Widget child;
+  final List<Widget> campos;
 
-  const TarjetaSeccionSitio({
+  const SeccionFormularioSitio({
     super.key,
     required this.titulo,
     required this.subtitulo,
     required this.icono,
-    required this.child,
+    required this.campos,
   });
 
   @override
@@ -37,7 +37,7 @@ class TarjetaSeccionSitio extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: AppColors.coffeeDark.withValues(
-              alpha: 0.06,
+              alpha: 0.05,
             ),
             blurRadius: AppDimensions.elevationFloating,
             offset: const Offset(0, 3),
@@ -51,8 +51,8 @@ class TarjetaSeccionSitio extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 58,
+                height: 58,
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(
@@ -79,7 +79,7 @@ class TarjetaSeccionSitio extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context)
                           .textTheme
-                          .titleMedium
+                          .titleLarge
                           ?.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w800,
@@ -94,10 +94,10 @@ class TarjetaSeccionSitio extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context)
                           .textTheme
-                          .bodySmall
+                          .bodyMedium
                           ?.copyWith(
                             color: AppColors.textSecondary,
-                            height: 1.35,
+                            height: 1.3,
                           ),
                     ),
                   ],
@@ -108,26 +108,27 @@ class TarjetaSeccionSitio extends StatelessWidget {
           const SizedBox(
             height: AppDimensions.spacingLg,
           ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(
-              AppDimensions.spacingMd,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(
-                AppDimensions.radiusMd,
-              ),
-              border: Border.all(
-                color: AppColors.border.withValues(
-                  alpha: 0.45,
-                ),
-              ),
-            ),
-            child: child,
-          ),
+          ..._separarCampos(),
         ],
       ),
     );
+  }
+
+  List<Widget> _separarCampos() {
+    final resultado = <Widget>[];
+
+    for (int i = 0; i < campos.length; i++) {
+      resultado.add(campos[i]);
+
+      if (i < campos.length - 1) {
+        resultado.add(
+          const SizedBox(
+            height: AppDimensions.spacingMd,
+          ),
+        );
+      }
+    }
+
+    return resultado;
   }
 }

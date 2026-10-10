@@ -8,6 +8,7 @@ class NavegacionSitio extends StatelessWidget {
   final List<String> titulos;
   final List<IconData> iconos;
   final bool modoEscritorio;
+  final bool menuMovil;
   final ValueChanged<int> onSeleccionar;
   final VoidCallback onCerrarSesion;
 
@@ -17,6 +18,7 @@ class NavegacionSitio extends StatelessWidget {
     required this.titulos,
     required this.iconos,
     required this.modoEscritorio,
+    this.menuMovil = false,
     required this.onSeleccionar,
     required this.onCerrarSesion,
   });
@@ -24,49 +26,108 @@ class NavegacionSitio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (modoEscritorio) {
-      return _navegacionEscritorio();
+      return _navegacionEscritorio(context);
     }
 
     return _navegacionMovil(context);
   }
 
-  Widget _navegacionEscritorio() {
+  Widget _navegacionEscritorio(BuildContext context) {
     return Container(
-      width: 250,
-      color: AppColors.surface,
+      width: 270,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          right: BorderSide(
+            color: AppColors.border.withValues(alpha: 0.65),
+          ),
+        ),
+      ),
       child: SafeArea(
+        right: false,
         child: Column(
           children: [
-            _logo(),
+            _marca(context),
             const SizedBox(
               height: AppDimensions.spacingLg,
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingSm,
-                ),
-                itemCount: titulos.length,
-                itemBuilder: (context, index) {
-                  return _itemNavegacion(
-                    index: index,
-                  );
-                },
-              ),
+              child: _listaNavegacion(context),
             ),
-            _botonCerrarSesion(),
+            _cerrarSesion(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _logo() {
+  Widget _navegacionMovil(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          _marca(context),
+          const SizedBox(
+            height: AppDimensions.spacingLg,
+          ),
+          Expanded(
+            child: _listaNavegacion(context),
+          ),
+          _cerrarSesion(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _listaNavegacion(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingMd,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+            ),
+            child: Text(
+              'GESTIÓN DE TU SITIO',
+              style: Theme.of(context)
+                  .textTheme
+                  .labelSmall
+                  ?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.7,
+                  ),
+            ),
+          ),
+          const SizedBox(
+            height: AppDimensions.spacingSm,
+          ),
+          ...List.generate(
+            titulos.length,
+            (indice) => Padding(
+              padding: const EdgeInsets.only(
+                bottom: AppDimensions.spacingXs,
+              ),
+              child: _item(
+                context,
+                indice,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _marca(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingMd,
         AppDimensions.spacingLg,
-        AppDimensions.spacingMd,
+        AppDimensions.spacingLg,
+        AppDimensions.spacingLg,
         0,
       ),
       child: Row(
@@ -77,27 +138,43 @@ class NavegacionSitio extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(
-                AppDimensions.radiusMd,
+                AppDimensions.radiusLg,
               ),
             ),
             child: const Icon(
-              Icons.coffee_rounded,
-              color: Colors.white,
-              size: 27,
+              Icons.local_cafe_rounded,
+              color: AppColors.white,
+              size: AppDimensions.iconLg,
             ),
           ),
           const SizedBox(
             width: AppDimensions.spacingMd,
           ),
-          const Expanded(
-            child: Text(
-              'Mi Ruta\nCafetera',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                height: 1.1,
-              ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mi Ruta',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                Text(
+                  'Mágica del Café',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
             ),
           ),
         ],
@@ -105,159 +182,89 @@ class NavegacionSitio extends StatelessWidget {
     );
   }
 
-  Widget _itemNavegacion({
-    required int index,
-  }) {
-    final seleccionado = indiceActual == index;
+  Widget _item(
+    BuildContext context,
+    int indice,
+  ) {
+    final seleccionado = indiceActual == indice;
 
-    return Padding(
-      padding: const EdgeInsets.only(
-        bottom: AppDimensions.spacingXs,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(
+        AppDimensions.radiusLg,
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => onSeleccionar(index),
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusMd,
-          ),
-          child: AnimatedContainer(
-            duration: const Duration(
-              milliseconds: 180,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm,
-            ),
-            decoration: BoxDecoration(
-              color: seleccionado
-                  ? AppColors.primary.withValues(
-                      alpha: 0.10,
-                    )
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(
-                AppDimensions.radiusMd,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  iconos[index],
-                  size: 21,
-                  color: seleccionado
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                ),
-                const SizedBox(
-                  width: AppDimensions.spacingMd,
-                ),
-                Expanded(
-                  child: Text(
-                    titulos[index],
-                    style: TextStyle(
-                      color: seleccionado
-                          ? AppColors.primary
-                          : AppColors.textPrimary,
-                      fontWeight: seleccionado
-                          ? FontWeight.w800
-                          : FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+      child: InkWell(
+        onTap: () => onSeleccionar(indice),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusLg,
         ),
-      ),
-    );
-  }
-
-  Widget _botonCerrarSesion() {
-    return Padding(
-      padding: const EdgeInsets.all(
-        AppDimensions.spacingMd,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onCerrarSesion,
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusMd,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm,
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.logout_rounded,
-                  color: AppColors.textSecondary,
-                  size: 21,
-                ),
-                const SizedBox(
-                  width: AppDimensions.spacingMd,
-                ),
-                const Text(
-                  'Cerrar sesión',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navegacionMovil(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.08,
-            ),
-            blurRadius: 12,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingXs,
-            vertical: AppDimensions.spacingXs,
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm,
+          ),
+          decoration: BoxDecoration(
+            color: seleccionado
+                ? AppColors.primary.withValues(alpha: 0.11)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusLg,
+            ),
+            border: Border.all(
+              color: seleccionado
+                  ? AppColors.primary.withValues(alpha: 0.10)
+                  : Colors.transparent,
+            ),
           ),
           child: Row(
             children: [
-              Expanded(
-                child: _itemMovil(
-                  context,
-                  indice: 0,
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: seleccionado
+                      ? AppColors.primary
+                      : AppColors.surfaceGreen,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMd,
+                  ),
+                ),
+                child: Icon(
+                  iconos[indice],
+                  size: AppDimensions.iconMd,
+                  color: seleccionado
+                      ? AppColors.white
+                      : AppColors.primary,
                 ),
               ),
+              const SizedBox(
+                width: AppDimensions.spacingMd,
+              ),
               Expanded(
-                child: _itemMovil(
-                  context,
-                  indice: 1,
+                child: Text(
+                  titulos[indice],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(
+                        color: seleccionado
+                            ? AppColors.primary
+                            : AppColors.textPrimary,
+                        fontWeight: seleccionado
+                            ? FontWeight.w800
+                            : FontWeight.w600,
+                      ),
                 ),
               ),
-              Expanded(
-                child: _itemMovil(
-                  context,
-                  indice: 2,
+              if (seleccionado)
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.primary,
+                  size: AppDimensions.iconMd,
                 ),
-              ),
-              Expanded(
-                child: _itemMas(context),
-              ),
             ],
           ),
         ),
@@ -265,174 +272,63 @@ class NavegacionSitio extends StatelessWidget {
     );
   }
 
-  Widget _itemMovil(
-    BuildContext context, {
-    required int indice,
-  }) {
-    final seleccionado = indiceActual == indice;
-
-    return InkWell(
-      onTap: () => onSeleccionar(indice),
-      borderRadius: BorderRadius.circular(
-        AppDimensions.radiusMd,
+  Widget _cerrarSesion(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(
+        AppDimensions.spacingMd,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingXs,
+      child: Material(
+        color: AppColors.orangeSoft.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusLg,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              iconos[indice],
-              size: 21,
-              color: seleccionado
-                  ? AppColors.primary
-                  : AppColors.textSecondary,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              titulos[indice],
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: seleccionado
-                    ? FontWeight.w800
-                    : FontWeight.w600,
-                color: seleccionado
-                    ? AppColors.primary
-                    : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _itemMas(BuildContext context) {
-    return InkWell(
-      onTap: () => _mostrarMenu(context),
-      borderRadius: BorderRadius.circular(
-        AppDimensions.radiusMd,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingXs,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.more_horiz_rounded,
-              size: 21,
-              color: AppColors.textSecondary,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Más',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _mostrarMenu(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(
-            AppDimensions.radiusXl,
+        child: InkWell(
+          onTap: onCerrarSesion,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusLg,
           ),
-        ),
-      ),
-      builder: (context) {
-        return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(
-              AppDimensions.spacingMd,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 4,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withValues(
-                      alpha: 0.25,
+                    color: AppColors.orangeSoft,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusMd,
                     ),
-                    borderRadius: BorderRadius.circular(10),
                   ),
-                ),
-                const SizedBox(
-                  height: AppDimensions.spacingMd,
-                ),
-                const Text(
-                  'Más opciones',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(
-                  height: AppDimensions.spacingSm,
-                ),
-                for (int index = 3;
-                    index < titulos.length;
-                    index++)
-                  ListTile(
-                    leading: Icon(
-                      iconos[index],
-                      color: AppColors.primary,
-                    ),
-                    title: Text(
-                      titulos[index],
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onSeleccionar(index);
-                    },
-                  ),
-                ListTile(
-                  leading: const Icon(
+                  child: const Icon(
                     Icons.logout_rounded,
-                    color: AppColors.textSecondary,
+                    color: AppColors.coffeeDark,
+                    size: AppDimensions.iconMd,
                   ),
-                  title: const Text(
-                    'Cerrar sesión',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onCerrarSesion();
-                  },
                 ),
                 const SizedBox(
-                  height: AppDimensions.spacingSm,
+                  width: AppDimensions.spacingMd,
+                ),
+                Expanded(
+                  child: Text(
+                    'Cerrar sesión',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(
+                          color: AppColors.coffeeDark,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
                 ),
               ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

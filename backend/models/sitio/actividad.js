@@ -2,19 +2,11 @@ const mongoose = require('mongoose');
 
 const actividadSchema = new mongoose.Schema(
   {
-    // ======================================================
-    // SITIO AL QUE PERTENECE
-    // ======================================================
-
     sitio: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'SitioTuristico',
       required: true
     },
-
-    // ======================================================
-    // INFORMACIÓN DE LA ACTIVIDAD
-    // ======================================================
 
     nombre: {
       type: String,
@@ -45,18 +37,20 @@ const actividadSchema = new mongoose.Schema(
       trim: true
     },
 
-    // ======================================================
-    // ESTADO OPERATIVO
-    // ======================================================
+    imagenPrincipal: {
+      type: String,
+      default: ''
+    },
+
+    imagenes: {
+      type: [String],
+      default: []
+    },
 
     activo: {
       type: Boolean,
       default: true
     },
-
-    // ======================================================
-    // ESTADO DE PUBLICACIÓN
-    // ======================================================
 
     estadoPublicacion: {
       type: String,
@@ -69,19 +63,11 @@ const actividadSchema = new mongoose.Schema(
       default: 'borrador'
     },
 
-    // ======================================================
-    // INFORMACIÓN DE RECHAZO
-    // ======================================================
-
     motivoRechazo: {
       type: String,
       default: '',
       trim: true
     },
-
-    // ======================================================
-    // INFORMACIÓN DE LA REVISIÓN
-    // ======================================================
 
     revisadoPor: {
       type: mongoose.Schema.Types.ObjectId,

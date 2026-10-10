@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -6,10 +7,6 @@ import '../../config/api_config.dart';
 import '../../models/sitio/sitio_actividad_model.dart';
 
 class SitioActividadesService {
-  // ======================================================
-  // OBTENER ACTIVIDADES
-  // ======================================================
-
   Future<List<SitioActividadModel>> obtenerActividades({
     required String token,
     required String sitioId,
@@ -44,10 +41,6 @@ class SitioActividadesService {
 
     throw _crearError(response);
   }
-
-  // ======================================================
-  // CREAR ACTIVIDAD
-  // ======================================================
 
   Future<SitioActividadModel> crearActividad({
     required String token,
@@ -85,10 +78,6 @@ class SitioActividadesService {
 
     throw _crearError(response);
   }
-
-  // ======================================================
-  // ACTUALIZAR ACTIVIDAD
-  // ======================================================
 
   Future<SitioActividadModel> actualizarActividad({
     required String token,
@@ -128,9 +117,119 @@ class SitioActividadesService {
     throw _crearError(response);
   }
 
-  // ======================================================
-  // ENVIAR A REVISIÓN
-  // ======================================================
+  Future<SitioActividadModel> subirImagenes({
+    required String token,
+    required String sitioId,
+    required String actividadId,
+    required List<File> archivos,
+  }) async {
+    if (archivos.isEmpty) {
+      throw Exception(
+        'Debes seleccionar al menos una imagen.',
+      );
+    }
+
+    if (archivos.length > 10) {
+      throw Exception(
+        'Puedes seleccionar máximo 10 imágenes.',
+      );
+    }
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse(
+        '${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId/$actividadId/imagenes',
+      ),
+    );
+
+    request.headers['Authorization'] =
+        'Bearer $token';
+
+    for (final archivo in archivos) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'imagenes',
+          archivo.path,
+        ),
+      );
+    }
+
+    final streamedResponse = await request.send();
+    final response =
+        await http.Response.fromStream(
+      streamedResponse,
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+
+      return SitioActividadModel.fromJson(
+        Map<String, dynamic>.from(data['actividad']),
+      );
+    }
+
+    throw _crearError(response);
+  }
+
+  Future<SitioActividadModel> eliminarImagen({
+    required String token,
+    required String sitioId,
+    required String actividadId,
+    required String url,
+  }) async {
+    final response = await http.delete(
+      Uri.parse(
+        '${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId/$actividadId/imagenes',
+      ),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'url': url,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      return SitioActividadModel.fromJson(
+        Map<String, dynamic>.from(data['actividad']),
+      );
+    }
+
+    throw _crearError(response);
+  }
+
+  Future<SitioActividadModel> establecerImagenPrincipal({
+    required String token,
+    required String sitioId,
+    required String actividadId,
+    required String url,
+  }) async {
+    final response = await http.put(
+      Uri.parse(
+        '${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId/$actividadId/imagenes/principal',
+      ),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'url': url,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      return SitioActividadModel.fromJson(
+        Map<String, dynamic>.from(data['actividad']),
+      );
+    }
+
+    throw _crearError(response);
+  }
 
   Future<SitioActividadModel> enviarARevision({
     required String token,
@@ -158,10 +257,6 @@ class SitioActividadesService {
     throw _crearError(response);
   }
 
-  // ======================================================
-  // DESACTIVAR
-  // ======================================================
-
   Future<SitioActividadModel> desactivarActividad({
     required String token,
     required String sitioId,
@@ -187,10 +282,6 @@ class SitioActividadesService {
 
     throw _crearError(response);
   }
-
-  // ======================================================
-  // MANEJO DE ERRORES
-  // ======================================================
 
   Exception _crearError(http.Response response) {
     try {
