@@ -80,4 +80,12 @@ class ApiConfig {
 
   static String get calcularRutaUrl =>
       '$rutasUrl/calcular';
+
+  // Recomendaciones con IA (backend: POST /api/v1/ai/recommendations).
+  static String get recomendacionesIaUrl =>
+      '$baseUrl/v1/ai/recommendations';
+
+  // Servicio público de clima Open-Meteo (no requiere API key).
+  static const String climaUrl =
+      'https://api.open-meteo.com/v1/forecast';
 }

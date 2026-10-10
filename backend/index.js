@@ -77,6 +77,10 @@ const chatRoutes = require(
 const ayudaRoutes = require(
   './routes/usuario/ayuda.routes'
 );
+
+const aiRoutes = require(
+  './routes/usuario/ai.routes'
+);
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
@@ -218,6 +222,12 @@ app.use(
 app.use(
   '/api/ayuda',
   ayudaRoutes
+);
+
+// Recomendaciones con IA (Groq)
+app.use(
+  '/api/v1/ai',
+  aiRoutes
 );
 
 // ======================================================

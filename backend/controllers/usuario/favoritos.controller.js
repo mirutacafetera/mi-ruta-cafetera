@@ -60,7 +60,12 @@ const obtenerFavoritos = async (req, res) => {
     const favoritos = await Favorito.find({
       usuario: usuarioAutenticado
     })
-      .populate('sitio')
+      .populate({
+        path: 'sitio',
+        populate: {
+          path: 'categoria'
+        }
+      })
       .sort({ createdAt: -1 });
 
     return res.status(200).json(favoritos);
@@ -149,10 +154,16 @@ const agregarFavorito = async (req, res) => {
     await favorito.save();
 
     /*
-     * Devolvemos también el sitio completo para que
-     * Flutter pueda utilizar inmediatamente la respuesta.
+     * Devolvemos también el sitio completo,
+     * incluyendo su categoría, para que Flutter
+     * pueda utilizar inmediatamente la respuesta.
      */
-    await favorito.populate('sitio');
+    await favorito.populate({
+      path: 'sitio',
+      populate: {
+        path: 'categoria'
+      }
+    });
 
     return res.status(201).json({
       mensaje:

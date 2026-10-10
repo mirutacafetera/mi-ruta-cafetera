@@ -216,7 +216,67 @@ class AuthUsuarioService {
       };
     }
   }
+  // ============================================================
+  // INICIAR SESIÓN CON GOOGLE
+  // ============================================================
 
+  static Future<Map<String, dynamic>> iniciarSesionConGoogle({
+    required String idToken,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse(
+              '${ApiConfig.baseUrl}/usuarios/login-google',
+            ),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'idToken': idToken,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 15),
+          );
+
+      debugPrint(
+        '🔐 Login Google - Status: '
+        '${response.statusCode}',
+      );
+
+      final Map<String, dynamic> data =
+          jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'exito': true,
+          'mensaje':
+              data['mensaje'] ??
+              'Inicio de sesión con Google exitoso',
+          'token': data['token'],
+          'usuario': data['usuario'],
+        };
+      }
+
+      return {
+        'exito': false,
+        'mensaje':
+            data['mensaje'] ??
+            'No fue posible iniciar sesión con Google',
+      };
+    } catch (e) {
+      debugPrint(
+        '❌ Error en login con Google: $e',
+      );
+
+      return {
+        'exito': false,
+        'mensaje':
+            'No se pudo conectar con el servidor',
+      };
+    }
+  }
   // ============================================================
   // RECUPERAR CONTRASEÑA
   // ============================================================

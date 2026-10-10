@@ -10,12 +10,16 @@ class SitioCard extends StatefulWidget {
   final VoidCallback onTap;
   final String imagen;
 
+  /// Indica si el sitio ya está en los favoritos del usuario.
+  final bool esFavorito;
+
   const SitioCard({
     super.key,
     required this.sitio,
     required this.onFavorite,
     required this.onTap,
     required this.imagen,
+    this.esFavorito = false,
   });
 
   @override
@@ -276,18 +280,22 @@ class _SitioCardState
                 customBorder:
                     const CircleBorder(),
                 child:
-                    const SizedBox(
+                    SizedBox(
                   width:
                       AppDimensions.circularButtonSmall,
                   height:
                       AppDimensions.circularButtonSmall,
                   child:
                       Icon(
-                    Icons.favorite_border_rounded,
+                    widget.esFavorito
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
                     size:
                         AppDimensions.iconMd,
                     color:
-                        AppColors.textOnDark,
+                        widget.esFavorito
+                            ? AppColors.secondary
+                            : AppColors.textOnDark,
                   ),
                 ),
               ),

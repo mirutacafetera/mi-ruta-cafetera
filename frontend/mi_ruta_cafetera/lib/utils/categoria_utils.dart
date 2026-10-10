@@ -10,7 +10,7 @@ class CategoriaUtils {
     );
 
     if (categoria.contains('cafe')) {
-      return 'assets/images/sitios/cafe.jpg';
+      return 'assets/images/sitios/cafe.jpeg';
     }
 
     if (categoria.contains('artesania')) {

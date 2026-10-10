@@ -8,9 +8,18 @@ import '../../theme/app_dimensions.dart';
 class HomeHero extends StatefulWidget {
   final VoidCallback onLogin;
 
+  /// Con sesión iniciada el carrusel usa todas las imágenes
+  /// disponibles, saluda por el nombre y oculta el acceso al login.
+  final bool usuarioAutenticado;
+
+  /// Nombre mostrado en el saludo cuando hay sesión.
+  final String? nombre;
+
   const HomeHero({
     super.key,
     required this.onLogin,
+    this.usuarioAutenticado = false,
+    this.nombre,
   });
 
   @override
@@ -27,11 +36,16 @@ class _HomeHeroState
 
   int _paginaActual = 0;
 
+  // ------------------------------------------------------------
+  // IMÁGENES DEL VISITANTE (se conserva el carrusel original,
+  // corrigiendo la extensión real de cafe.jpeg).
+  // ------------------------------------------------------------
+
   static const List<_HeroImagen>
-      _imagenes = [
+      _imagenesPublicas = [
     _HeroImagen(
       imagen:
-          'assets/images/sitios/cafe.jpg',
+          'assets/images/sitios/cafe.jpeg',
       titulo:
           'Descubre la magia del café',
       subtitulo:
@@ -79,6 +93,135 @@ class _HomeHeroState
     ),
   ];
 
+  // ------------------------------------------------------------
+  // IMÁGENES DEL USUARIO AUTENTICADO
+  //
+  // Todas las imágenes reales de assets/images/ (las dos
+  // subcarpetas declaradas en pubspec.yaml): 5 de bienvenida
+  // y 9 de sitios.
+  // ------------------------------------------------------------
+
+  static const List<_HeroImagen>
+      _imagenesUsuario = [
+    _HeroImagen(
+      imagen:
+          'assets/images/bienvenida/paisaje.jpg',
+      titulo:
+          'Bienvenido al Huila',
+      subtitulo:
+          'Paisajes que cambian con cada curva del camino.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/bienvenida/cafe.jpg',
+      titulo:
+          'Del grano a tu taza',
+      subtitulo:
+          'Conoce el origen del café que enamora al mundo.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/bienvenida/naturaleza.jpg',
+      titulo:
+          'Naturaleza viva',
+      subtitulo:
+          'Montañas, ríos y rincones para desconectarte.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/bienvenida/cultura.jpg',
+      titulo:
+          'Cultura con raíces',
+      subtitulo:
+          'Tradiciones que se sienten en cada rincón.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/bienvenida/experiencia.jpg',
+      titulo:
+          'Vive la experiencia',
+      subtitulo:
+          'Planes pensados para recordar mucho tiempo.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/sitios/cafe.jpeg',
+      titulo:
+          'Descubre la magia del café',
+      subtitulo:
+          'Sabores, fincas y experiencias que nacen en el Huila.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/sitios/naturaleza.jpeg',
+      titulo:
+          'Naturaleza para explorar',
+      subtitulo:
+          'Senderos, montañas y paisajes para vivir el territorio.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/sitios/cultura.jpg',
+      titulo:
+          'Historias que permanecen',
+      subtitulo:
+          'Cultura, tradición y patrimonio del Huila.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/sitios/artesanias.jpg',
+      titulo:
+          'Hecho con identidad',
+      subtitulo:
+          'Artesanías y productos locales que cuentan historias.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/sitios/aventuras.jpeg',
+      titulo:
+          'Aventuras para vivir',
+      subtitulo:
+          'Experiencias diferentes para descubrir nuevos lugares.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/sitios/familiares.jpeg',
+      titulo:
+          'Experiencias para compartir',
+      subtitulo:
+          'Lugares para disfrutar en familia y con amigos.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/sitios/gastronomia.jpeg',
+      titulo:
+          'Sabores del Huila',
+      subtitulo:
+          'Gastronomía local para probar en cada parada.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/sitios/alojamiento.jpg',
+      titulo:
+          'Descansa como en casa',
+      subtitulo:
+          'Alojamientos con el encanto del campo cafetero.',
+    ),
+    _HeroImagen(
+      imagen:
+          'assets/images/sitios/miradores.jpeg',
+      titulo:
+          'Miradores inolvidables',
+      subtitulo:
+          'Vistas que valen cada paso del recorrido.',
+    ),
+  ];
+
+  List<_HeroImagen> get _imagenes =>
+      widget.usuarioAutenticado
+          ? _imagenesUsuario
+          : _imagenesPublicas;
+
   @override
   void initState() {
     super.initState();
@@ -117,6 +260,16 @@ class _HomeHeroState
         );
       },
     );
+  }
+
+  String get _saludo {
+    final nombre = widget.nombre?.trim() ?? '';
+
+    if (widget.usuarioAutenticado && nombre.isNotEmpty) {
+      return 'Hola, $nombre 👋';
+    }
+
+    return 'Hola, explorador 👋';
   }
 
   @override
@@ -297,7 +450,7 @@ class _HomeHeroState
                     MainAxisAlignment.end,
                 children: [
                   Text(
-                    'Hola, explorador 👋',
+                    _saludo,
                     style:
                         TextStyle(
                       color: AppColors
@@ -435,7 +588,9 @@ class _HomeHeroState
           ],
         ),
       ),
-      actions: [
+      actions: widget.usuarioAutenticado
+          ? const <Widget>[]
+          : [
         Padding(
           padding:
               const EdgeInsets.only(

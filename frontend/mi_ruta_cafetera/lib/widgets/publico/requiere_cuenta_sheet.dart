@@ -9,6 +9,19 @@ class RequiereCuentaSheet {
   static void mostrar({
     required BuildContext context,
     required VoidCallback onIniciarSesion,
+
+    /// Acción del botón "Crear mi cuenta".
+    /// Si no se envía, se usa onIniciarSesion (comportamiento anterior).
+    VoidCallback? onCrearCuenta,
+
+    /// Textos opcionales. Por defecto se conserva el mensaje de
+    /// favoritos.
+    String titulo = 'Guarda tus lugares favoritos',
+    String mensaje =
+        'Crea una cuenta gratuita para guardar '
+        'lugares, organizar tus rutas y disfrutar '
+        'de una experiencia personalizada.',
+    IconData icono = Icons.favorite_rounded,
   }) {
     showModalBottomSheet(
       context: context,
@@ -52,8 +65,8 @@ class RequiereCuentaSheet {
                   color: AppColors.cream,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.favorite_rounded,
+                child: Icon(
+                  icono,
                   color: AppColors.secondary,
                   size: 35,
                 ),
@@ -61,10 +74,10 @@ class RequiereCuentaSheet {
               const SizedBox(
                 height: AppDimensions.spacingMd + 6,
               ),
-              const Text(
-                'Guarda tus lugares favoritos',
+              Text(
+                titulo,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.secondary,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -73,12 +86,10 @@ class RequiereCuentaSheet {
               const SizedBox(
                 height: AppDimensions.spacingSm + 2,
               ),
-              const Text(
-                'Crea una cuenta gratuita para guardar '
-                'lugares, organizar tus rutas y disfrutar '
-                'de una experiencia personalizada.',
+              Text(
+                mensaje,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 14,
                   height: 1.5,
@@ -110,7 +121,7 @@ class RequiereCuentaSheet {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  onIniciarSesion();
+                  (onCrearCuenta ?? onIniciarSesion)();
                 },
                 child: const Text(
                   'Crear mi cuenta',

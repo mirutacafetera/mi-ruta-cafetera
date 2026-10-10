@@ -4,6 +4,7 @@ import '../../services/usuario/auth_usuario_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import 'verificar_correo_screen.dart';
+import 'login_usuario_screen.dart';
 
 class RegistroUsuarioScreen extends StatefulWidget {
   const RegistroUsuarioScreen({
@@ -379,7 +380,10 @@ class _RegistroUsuarioScreenState
                 onPressed: cargando
                     ? null
                     : () {
-                        Navigator.pop(context);
+                      Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginUsuarioScreen()),
+                  );
                       },
                 child: const Text(
                   'Ya tengo una cuenta',

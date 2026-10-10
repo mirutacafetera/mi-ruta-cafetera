@@ -214,5 +214,10 @@ ${catalogoTexto}
 // ======================================================
 
 module.exports = {
-  chatConGroq
+  chatConGroq,
+
+  // Cliente de Groq compartido: lo reutiliza el módulo de
+  // recomendaciones (ai.controller.js) para no crear una
+  // segunda integración.
+  groq
 };

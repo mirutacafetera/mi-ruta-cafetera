@@ -1,9 +1,15 @@
 ﻿import 'package:flutter/material.dart';
 
 import '../../models/categoria_model.dart';
+import '../../models/clima_model.dart';
 import '../../models/sitio_turistico_model.dart';
+import '../../models/usuario/usuario_sesion_model.dart';
 import '../../services/categoria_service.dart';
+import '../../services/clima_service.dart';
+import '../../services/favorito_service.dart';
 import '../../services/sitio_service.dart';
+import '../../services/ubicacion_service.dart';
+import '../../services/usuario/usuario_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../utils/text_utils.dart';
@@ -12,19 +18,23 @@ import '../../widgets/publico/categoria_card.dart';
 import '../../widgets/publico/home_hero.dart';
 import '../../widgets/publico/requiere_cuenta_sheet.dart';
 import '../../widgets/publico/sitio_card.dart';
+import '../../widgets/usuario/clima_card.dart';
+import '../../widgets/usuario/ia_card.dart';
+import '../../widgets/usuario/ia_recomendaciones_sheet.dart';
 import '../mapa_screen_2.dart';
+import '../usuario/detalle_sitio_usuario_screen.dart';
 import '../usuario/login_usuario_screen.dart';
+import '../usuario/registro_usuario_screen.dart';
 
+/// Home de la aplicación.
+///
+/// Se usa tanto para el visitante como para el usuario autenticado.
+/// Con sesión conserva la misma identidad visual, pero cambia el
+/// carrusel (todas las imágenes), el saludo y las acciones
+/// disponibles (mapa general, favoritos persistentes).
 class HomePublicoScreen extends StatefulWidget {
-  /// Callback utilizado por PublicShellScreen.
-  ///
-  /// Recibe el sitio exacto que el usuario seleccionó
-  /// para abrirlo en el mapa.
-  final void Function(SitioTuristicoModel sitio)? onIrMapa;
-
   const HomePublicoScreen({
     super.key,
-    this.onIrMapa,
   });
 
   @override
@@ -43,6 +53,39 @@ class _HomePublicoScreenState
 
   final SitioService _sitioService =
       SitioService();
+
+  final FavoritoService _favoritoService =
+      FavoritoService.instance;
+
+  // ============================================================
+  // SESIÓN Y FAVORITOS DEL USUARIO
+  // ============================================================
+  //
+  // _favoritosPorSitio: sitioId → favoritoId.
+  // Solo se llena cuando hay una sesión de usuario activa.
+  // ============================================================
+
+  final Map<String, String> _favoritosPorSitio = {};
+
+  final Set<String> _sitiosProcesando = {};
+
+  UsuarioSesionModel? get _sesion =>
+      UsuarioSesionService.instance.sesionActual.value;
+
+  // ============================================================
+  // CLIMA Y UBICACIÓN (solo con sesión)
+  // ============================================================
+
+  ClimaModel? _clima;
+
+  EstadoClima _estadoClima = EstadoClima.cargando;
+
+  UbicacionUsuario? _ubicacion;
+
+  String _mensajeUbicacion =
+      'Activa tu ubicación para ver el clima de tu zona.';
+
+  bool _cargandoClima = false;
 
   // ============================================================
   // DATOS
@@ -78,7 +121,324 @@ class _HomePublicoScreenState
   void initState() {
     super.initState();
 
+    UsuarioSesionService.instance.sesionActual
+        .addListener(_alCambiarSesion);
+
     _cargarContenido();
+    _cargarFavoritos();
+    _cargarClima();
+  }
+
+  @override
+  void dispose() {
+    UsuarioSesionService.instance.sesionActual
+        .removeListener(_alCambiarSesion);
+
+    super.dispose();
+  }
+
+  // ============================================================
+  // CAMBIO DE SESIÓN
+  // ============================================================
+
+  void _alCambiarSesion() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      if (_sesion == null) {
+        _favoritosPorSitio.clear();
+        _clima = null;
+        _ubicacion = null;
+      }
+    });
+
+    _cargarFavoritos();
+    _cargarClima();
+  }
+
+  // ============================================================
+  // CARGAR CLIMA
+  // ============================================================
+  //
+  // Pide la ubicación y luego consulta Open-Meteo. Ninguna falla
+  // (GPS, permisos, red) detiene el Home: solo cambia el estado
+  // de la tarjeta de clima.
+  // ============================================================
+
+  Future<void> _cargarClima() async {
+    if (_sesion == null || _cargandoClima) {
+      return;
+    }
+
+    _cargandoClima = true;
+
+    if (mounted) {
+      setState(() {
+        _estadoClima = EstadoClima.cargando;
+      });
+    }
+
+    try {
+      final resultado = await UbicacionService.obtener();
+
+      if (!mounted) {
+        return;
+      }
+
+      final ubicacion = resultado.ubicacion;
+
+      if (ubicacion == null) {
+        setState(() {
+          _ubicacion = null;
+          _clima = null;
+          _mensajeUbicacion = resultado.mensaje;
+          _estadoClima = EstadoClima.sinUbicacion;
+        });
+        return;
+      }
+
+      _ubicacion = ubicacion;
+
+      final clima = await ClimaService.obtener(
+        latitud: ubicacion.latitud,
+        longitud: ubicacion.longitud,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _clima = clima;
+        _estadoClima = EstadoClima.disponible;
+      });
+    } catch (error) {
+      debugPrint('HOME - ERROR CLIMA: $error');
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _clima = null;
+        _estadoClima = EstadoClima.error;
+      });
+    } finally {
+      _cargandoClima = false;
+    }
+  }
+
+  // ============================================================
+  // MI RUTA CAFETERA IA
+  // ============================================================
+
+  void _abrirIa() {
+    final sesion = _sesion;
+
+    if (sesion == null) {
+      _requiereCuenta();
+      return;
+    }
+
+    IaRecomendacionesSheet.mostrar(
+      context: context,
+      token: sesion.token,
+      ubicacion: _ubicacion,
+      clima: _clima,
+      onVerSitio: _abrirSitio,
+      onVerRuta: _verEnMapa,
+      onSesionExpirada: _sesionExpirada,
+    );
+  }
+
+  void _verEnMapa(SitioTuristicoModel sitio) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapaScreen2(
+          sitioInicial: sitio,
+        ),
+      ),
+    );
+  }
+
+  bool _esErrorDeSesion(Object error) {
+    final texto = error.toString().toLowerCase();
+
+    return texto.contains('expirado') ||
+        texto.contains('token no es válido') ||
+        texto.contains('no se proporcionó un token');
+  }
+
+  Future<void> _sesionExpirada() async {
+    await UsuarioSesionService.instance.cerrarSesion();
+
+    if (!mounted) {
+      return;
+    }
+
+    _mostrarMensaje(
+      'Tu sesión expiró. Inicia sesión nuevamente.',
+    );
+  }
+
+  void _mostrarMensaje(String mensaje) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(mensaje),
+        ),
+      );
+  }
+
+  // ============================================================
+  // CARGAR FAVORITOS
+  // ============================================================
+
+  Future<void> _cargarFavoritos() async {
+    final sesion = _sesion;
+
+    if (sesion == null) {
+      return;
+    }
+
+    try {
+      final favoritos =
+          await _favoritoService.obtenerFavoritos(
+        sesion.id,
+        token: sesion.token,
+      );
+
+      // Si la sesión cambió mientras cargaba, se descarta.
+      if (!mounted || _sesion?.id != sesion.id) {
+        return;
+      }
+
+      final mapa = <String, String>{};
+
+      for (final favorito in favoritos) {
+        if (favorito.sitio.id.isNotEmpty) {
+          mapa[favorito.sitio.id] = favorito.id;
+        }
+      }
+
+      setState(() {
+        _favoritosPorSitio
+          ..clear()
+          ..addAll(mapa);
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      if (_esErrorDeSesion(error)) {
+        await _sesionExpirada();
+      }
+
+      debugPrint(
+        'HOME - ERROR FAVORITOS: $error',
+      );
+    }
+  }
+
+  // ============================================================
+  // AGREGAR / QUITAR FAVORITO
+  // ============================================================
+
+  Future<void> _alternarFavorito(
+    SitioTuristicoModel sitio,
+  ) async {
+    final sesion = _sesion;
+
+    // Sin sesión se invita a crear una cuenta.
+    if (sesion == null) {
+      _requiereCuenta();
+      return;
+    }
+
+    final sitioId = sitio.id;
+
+    if (sitioId.isEmpty ||
+        _sitiosProcesando.contains(sitioId)) {
+      return;
+    }
+
+    _sitiosProcesando.add(sitioId);
+
+    final favoritoId = _favoritosPorSitio[sitioId];
+
+    try {
+      if (favoritoId != null) {
+        await _favoritoService.eliminarFavorito(
+          favoritoId,
+          token: sesion.token,
+        );
+
+        if (!mounted) {
+          return;
+        }
+
+        setState(() {
+          _favoritosPorSitio.remove(sitioId);
+        });
+
+        _mostrarMensaje(
+          'Sitio eliminado de favoritos.',
+        );
+      } else {
+        final favorito =
+            await _favoritoService.agregarFavorito(
+          usuarioId: sesion.id,
+          sitioId: sitioId,
+          token: sesion.token,
+        );
+
+        if (!mounted) {
+          return;
+        }
+
+        if (favorito != null) {
+          setState(() {
+            _favoritosPorSitio[sitioId] = favorito.id;
+          });
+        } else {
+          await _cargarFavoritos();
+        }
+
+        _mostrarMensaje(
+          'Sitio agregado a favoritos.',
+        );
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      final mensaje = error.toString().replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      // El backend responde 400 si ya estaba guardado:
+      // se sincroniza el estado local en vez de mostrar error.
+      if (mensaje.toLowerCase().contains('ya está')) {
+        await _cargarFavoritos();
+        return;
+      }
+
+      if (_esErrorDeSesion(error)) {
+        await _sesionExpirada();
+        return;
+      }
+
+      _mostrarMensaje(mensaje);
+    } finally {
+      _sitiosProcesando.remove(sitioId);
+    }
   }
 
   // ============================================================
@@ -191,7 +551,10 @@ class _HomePublicoScreenState
   // ============================================================
 
   Future<void> _recargar() async {
-    await _cargarContenido();
+    await Future.wait([
+      _cargarContenido(),
+      _cargarClima(),
+    ]);
   }
 
   // ============================================================
@@ -309,11 +672,36 @@ class _HomePublicoScreenState
   // ============================================================
 
   void _irLoginUsuario() {
+    // Con sesión activa no se vuelve a pedir el login.
+    final sesion = _sesion;
+
+    if (sesion != null) {
+      _mostrarMensaje(
+        'Ya iniciaste sesión como ${sesion.nombre}. '
+        'Tus datos están en la pestaña Perfil.',
+      );
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
             const LoginUsuarioScreen(),
+      ),
+    );
+  }
+
+  // ============================================================
+  // REGISTRO
+  // ============================================================
+
+  void _irRegistroUsuario() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const RegistroUsuarioScreen(),
       ),
     );
   }
@@ -327,14 +715,35 @@ class _HomePublicoScreenState
       context: context,
       onIniciarSesion:
           _irLoginUsuario,
+      onCrearCuenta:
+          _irRegistroUsuario,
     );
   }
 
   // ============================================================
   // ABRIR MAPA GENERAL
   // ============================================================
+  //
+  // El mapa general con todos los sitios es exclusivo de usuarios
+  // con sesión. Un visitante recibe la invitación a iniciar sesión;
+  // un usuario autenticado lo abre en pantalla completa.
+  // ============================================================
 
   void _abrirMapa() {
+    if (_sesion == null) {
+      RequiereCuentaSheet.mostrar(
+        context: context,
+        titulo: 'Explora todo el mapa',
+        mensaje:
+            'Inicia sesión para ver todos los sitios en el '
+            'mapa, filtrar por categoría y crear tus rutas.',
+        icono: Icons.map_rounded,
+        onIniciarSesion: _irLoginUsuario,
+        onCrearCuenta: _irRegistroUsuario,
+      );
+      return;
+    }
+
     Navigator.pushNamed(
       context,
       '/mapa',
@@ -342,29 +751,105 @@ class _HomePublicoScreenState
   }
 
   // ============================================================
-  // ABRIR SITIO SELECCIONADO EN EL MAPA
+  // ABRIR DETALLE DEL SITIO
+  // ============================================================
+  //
+  // Visitante y usuario ven el mismo detalle. Desde el detalle,
+  // "Ver mapa" abre el mapa individual (solo ese sitio).
+  //
+  // * Con sesión: el corazón guarda/quita el favorito.
+  // * Sin sesión: el corazón invita a iniciar sesión.
   // ============================================================
 
   void _abrirSitio(
     SitioTuristicoModel sitio,
   ) {
-    // Si el Home está dentro de PublicShellScreen,
-    // enviamos el sitio seleccionado al Shell.
-    if (widget.onIrMapa != null) {
-      widget.onIrMapa!(sitio);
-      return;
-    }
+    final conSesion = _sesion != null;
 
-    // Si HomePublicoScreen se utiliza directamente,
-    // abrimos el mapa y enviamos el sitio seleccionado.
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => MapaScreen2(
-          sitioInicial: sitio,
+        builder: (_) => DetalleSitioUsuarioScreen(
+          sitio: sitio,
+          imagen: _imagenSitio(sitio),
+          esFavorito:
+              _favoritosPorSitio.containsKey(sitio.id),
+          onFavorite: conSesion
+              ? () => _favoritoDesdeDetalle(sitio)
+              : null,
+          onRequiereCuenta: _requiereCuenta,
         ),
       ),
     );
+  }
+
+  // ============================================================
+  // FAVORITO DESDE EL DETALLE
+  // ============================================================
+  //
+  // A diferencia de _alternarFavorito, aquí los errores se
+  // propagan para que el detalle revierta el corazón.
+  // ============================================================
+
+  Future<void> _favoritoDesdeDetalle(
+    SitioTuristicoModel sitio,
+  ) async {
+    final sesion = _sesion;
+
+    if (sesion == null) {
+      throw Exception('Inicia sesión para usar favoritos.');
+    }
+
+    final sitioId = sitio.id;
+    final favoritoId = _favoritosPorSitio[sitioId];
+
+    try {
+      if (favoritoId != null) {
+        await _favoritoService.eliminarFavorito(
+          favoritoId,
+          token: sesion.token,
+        );
+
+        if (mounted) {
+          setState(() {
+            _favoritosPorSitio.remove(sitioId);
+          });
+        }
+      } else {
+        final favorito =
+            await _favoritoService.agregarFavorito(
+          usuarioId: sesion.id,
+          sitioId: sitioId,
+          token: sesion.token,
+        );
+
+        if (!mounted) {
+          return;
+        }
+
+        if (favorito != null) {
+          setState(() {
+            _favoritosPorSitio[sitioId] = favorito.id;
+          });
+        } else {
+          await _cargarFavoritos();
+        }
+      }
+    } catch (error) {
+      final mensaje = error.toString().toLowerCase();
+
+      // Ya estaba guardado: se sincroniza y no es un error.
+      if (mensaje.contains('ya está')) {
+        await _cargarFavoritos();
+        return;
+      }
+
+      if (_esErrorDeSesion(error)) {
+        await _sesionExpirada();
+      }
+
+      rethrow;
+    }
   }
 
   // ============================================================
@@ -392,6 +877,10 @@ class _HomePublicoScreenState
             HomeHero(
               onLogin:
                   _irLoginUsuario,
+              usuarioAutenticado:
+                  _sesion != null,
+              nombre:
+                  _sesion?.nombre,
             ),
 
             // ==================================================
@@ -415,10 +904,29 @@ class _HomePublicoScreenState
                     // BANNER
                     // ==========================================
 
-                    BannerCuenta(
-                      onLogin:
-                          _irLoginUsuario,
-                    ),
+                    if (_sesion == null) ...[
+                      BannerCuenta(
+                        onLogin:
+                            _irLoginUsuario,
+                      ),
+                    ] else ...[
+                      IaCard(
+                        onTap: _abrirIa,
+                      ),
+
+                      const SizedBox(
+                        height:
+                            AppDimensions.spacingMd + 4,
+                      ),
+
+                      ClimaCard(
+                        estado: _estadoClima,
+                        clima: _clima,
+                        mensajeUbicacion:
+                            _mensajeUbicacion,
+                        onReintentar: _cargarClima,
+                      ),
+                    ],
 
                     const SizedBox(
                       height:
@@ -627,8 +1135,12 @@ class _HomePublicoScreenState
                   sitio: sitio,
                   imagen:
                       _imagenSitio(sitio),
-                  onFavorite:
-                      _requiereCuenta,
+                  esFavorito:
+                      _favoritosPorSitio
+                          .containsKey(sitio.id),
+                  onFavorite: () {
+                    _alternarFavorito(sitio);
+                  },
 
                   // ==================================================
                   // IMPORTANTE:
