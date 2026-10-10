@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -8,6 +9,7 @@ import '../../widgets/sitio/navegacion_sitio.dart';
 import 'sitio_actividades_screen.dart';
 import 'sitio_contenido_screen.dart';
 import 'sitio_dashboard_screen.dart';
+import 'sitio_multimedia_screen.dart';
 import 'sitio_perfil_screen.dart';
 import 'sitio_resenas_screen.dart';
 import 'sitio_reservas_screen.dart';
@@ -26,6 +28,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     'Inicio',
     'Mi sitio',
     'Contenido',
+    'Multimedia',
     'Actividades',
     'Reservas',
     'Reseñas',
@@ -35,6 +38,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     Icons.dashboard_rounded,
     Icons.storefront_rounded,
     Icons.article_rounded,
+    Icons.photo_library_rounded,
     Icons.local_activity_rounded,
     Icons.calendar_month_rounded,
     Icons.star_rounded,
@@ -44,6 +48,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     const SitioDashboardScreen(),
     const SitioPerfilScreen(),
     const SitioContenidoScreen(),
+    const SitioMultimediaScreen(),
     const SitioActividadesScreen(),
     const SitioReservasScreen(),
     const SitioResenasScreen(),
@@ -53,6 +58,8 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     if (indice < 0 || indice >= _pantallas.length) {
       return;
     }
+
+    if (!mounted) return;
 
     setState(() {
       _indiceActual = indice;
@@ -67,16 +74,19 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
   void _abrirMenuMovil() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.surface,
       isScrollControlled: true,
-      builder: (_) {
+      builder: (menuContext) {
         return NavegacionSitio(
           indiceActual: _indiceActual,
           titulos: _titulos,
           iconos: _iconos,
           modoEscritorio: false,
           menuMovil: true,
-          onSeleccionar: _seleccionarModuloMovil,
+          onSeleccionar: (indice) {
+            _cambiarModulo(indice);
+            Navigator.of(menuContext).pop();
+          },
           onCerrarSesion: _cerrarSesion,
         );
       },
@@ -86,7 +96,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
   void _cerrarSesion() {
     showDialog<void>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
@@ -110,15 +120,16 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.of(dialogContext).pop();
 
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
+                Navigator.of(context).pushNamedAndRemoveUntil(
                   '/',
                   (route) => false,
                 );
@@ -151,10 +162,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
                     iconos: _iconos,
                     modoEscritorio: false,
                     menuMovil: true,
-                    onSeleccionar: (indice) {
-                      _cambiarModulo(indice);
-                      Navigator.of(context).pop();
-                    },
+                    onSeleccionar: _seleccionarModuloMovil,
                     onCerrarSesion: _cerrarSesion,
                   ),
                 ),
@@ -186,27 +194,9 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
                         child: Container(
                           width: double.infinity,
                           color: AppColors.background,
-                          child: SingleChildScrollView(
-                            physics: const BouncingScrollPhysics(),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: esEscritorio
-                                  ? AppDimensions.spacingXl
-                                  : AppDimensions.spacingMd,
-                              vertical: esEscritorio
-                                  ? AppDimensions.spacingXl
-                                  : AppDimensions.spacingLg,
-                            ),
-                            child: Center(
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 1500,
-                                ),
-                                child: IndexedStack(
-                                  index: _indiceActual,
-                                  children: _pantallas,
-                                ),
-                              ),
-                            ),
+                          child: IndexedStack(
+                            index: _indiceActual,
+                            children: _pantallas,
                           ),
                         ),
                       ),

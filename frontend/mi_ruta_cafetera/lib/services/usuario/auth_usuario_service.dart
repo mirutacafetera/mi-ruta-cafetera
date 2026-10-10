@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import '../../config/api_config.dart';
 
 class AuthUsuarioService {
+  AuthUsuarioService._();
+
   // ============================================================
   // REGISTRO DE USUARIO
   // ============================================================
@@ -21,9 +23,7 @@ class AuthUsuarioService {
     try {
       final response = await http
           .post(
-            Uri.parse(
-              '${ApiConfig.baseUrl}/usuarios/registrar',
-            ),
+            Uri.parse('${ApiConfig.baseUrl}/usuarios/registrar'),
             headers: {
               'Content-Type': 'application/json',
             },
@@ -36,29 +36,21 @@ class AuthUsuarioService {
               'ciudad': ciudad.trim(),
             }),
           )
-          .timeout(
-            const Duration(seconds: 10),
-          );
+          .timeout(const Duration(seconds: 10));
 
       debugPrint(
-        '📝 Registro usuario - Status: '
-        '${response.statusCode}',
-      );
-
-      debugPrint(
-        '📥 Respuesta: ${response.body}',
+        'Registro usuario - Status: ${response.statusCode}',
       );
 
       final Map<String, dynamic> data =
-          jsonDecode(response.body);
+          jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200 ||
           response.statusCode == 201) {
         return {
           'exito': true,
           'mensaje':
-              data['mensaje'] ??
-              'Registro realizado correctamente',
+              data['mensaje'] ?? 'Registro realizado correctamente',
           'usuario': data['usuario'],
         };
       }
@@ -66,18 +58,14 @@ class AuthUsuarioService {
       return {
         'exito': false,
         'mensaje':
-            data['mensaje'] ??
-            'No fue posible registrar el usuario',
+            data['mensaje'] ?? 'No fue posible registrar el usuario',
       };
     } catch (e) {
-      debugPrint(
-        '❌ Error registrando usuario: $e',
-      );
+      debugPrint('Error registrando usuario: $e');
 
       return {
         'exito': false,
-        'mensaje':
-            'No se pudo conectar con el servidor',
+        'mensaje': _mensajeErrorConexion(e),
       };
     }
   }
@@ -94,8 +82,7 @@ class AuthUsuarioService {
       final response = await http
           .post(
             Uri.parse(
-              '${ApiConfig.baseUrl}/usuarios/'
-              'verificar-correo',
+              '${ApiConfig.baseUrl}/usuarios/verificar-correo',
             ),
             headers: {
               'Content-Type': 'application/json',
@@ -105,52 +92,40 @@ class AuthUsuarioService {
               'codigo': codigo.trim(),
             }),
           )
-          .timeout(
-            const Duration(seconds: 10),
-          );
+          .timeout(const Duration(seconds: 10));
 
       debugPrint(
-        '📧 Verificación correo - Status: '
-        '${response.statusCode}',
-      );
-
-      debugPrint(
-        '📥 Respuesta: ${response.body}',
+        'Verificación correo - Status: ${response.statusCode}',
       );
 
       final Map<String, dynamic> data =
-          jsonDecode(response.body);
+          jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
         return {
           'exito': true,
           'mensaje':
-              data['mensaje'] ??
-              'Correo verificado correctamente',
+              data['mensaje'] ?? 'Correo verificado correctamente',
         };
       }
 
       return {
         'exito': false,
         'mensaje':
-            data['mensaje'] ??
-            'No fue posible verificar el correo',
+            data['mensaje'] ?? 'No fue posible verificar el correo',
       };
     } catch (e) {
-      debugPrint(
-        '❌ Error verificando correo: $e',
-      );
+      debugPrint('Error verificando correo: $e');
 
       return {
         'exito': false,
-        'mensaje':
-            'No se pudo conectar con el servidor',
+        'mensaje': _mensajeErrorConexion(e),
       };
     }
   }
 
   // ============================================================
-  // INICIAR SESIÓN
+  // INICIAR SESIÓN CON CORREO Y CONTRASEÑA
   // ============================================================
 
   static Future<Map<String, dynamic>> iniciarSesion({
@@ -160,9 +135,7 @@ class AuthUsuarioService {
     try {
       final response = await http
           .post(
-            Uri.parse(
-              '${ApiConfig.baseUrl}/usuarios/login',
-            ),
+            Uri.parse('${ApiConfig.baseUrl}/usuarios/login'),
             headers: {
               'Content-Type': 'application/json',
             },
@@ -171,28 +144,21 @@ class AuthUsuarioService {
               'password': password,
             }),
           )
-          .timeout(
-            const Duration(seconds: 10),
-          );
+          .timeout(const Duration(seconds: 10));
 
       debugPrint(
-        '🔐 Login usuario - Status: '
-        '${response.statusCode}',
-      );
-
-      debugPrint(
-        '📥 Respuesta: ${response.body}',
+        'Login usuario - Status: ${response.statusCode}',
       );
 
       final Map<String, dynamic> data =
-          jsonDecode(response.body);
+          jsonDecode(response.body) as Map<String, dynamic>;
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 &&
+          data['token'] != null &&
+          data['usuario'] != null) {
         return {
           'exito': true,
-          'mensaje':
-              data['mensaje'] ??
-              'Inicio de sesión exitoso',
+          'mensaje': data['mensaje'] ?? 'Inicio de sesión exitoso',
           'token': data['token'],
           'usuario': data['usuario'],
         };
@@ -200,22 +166,18 @@ class AuthUsuarioService {
 
       return {
         'exito': false,
-        'mensaje':
-            data['mensaje'] ??
-            'No fue posible iniciar sesión',
+        'mensaje': data['mensaje'] ?? 'No fue posible iniciar sesión',
       };
     } catch (e) {
-      debugPrint(
-        '❌ Error en login de usuario: $e',
-      );
+      debugPrint('Error en login de usuario: $e');
 
       return {
         'exito': false,
-        'mensaje':
-            'No se pudo conectar con el servidor',
+        'mensaje': _mensajeErrorConexion(e),
       };
     }
   }
+
   // ============================================================
   // INICIAR SESIÓN CON GOOGLE
   // ============================================================
@@ -223,12 +185,17 @@ class AuthUsuarioService {
   static Future<Map<String, dynamic>> iniciarSesionConGoogle({
     required String idToken,
   }) async {
+    if (idToken.trim().isEmpty) {
+      return {
+        'exito': false,
+        'mensaje': 'Google no proporcionó un token válido.',
+      };
+    }
+
     try {
       final response = await http
           .post(
-            Uri.parse(
-              '${ApiConfig.baseUrl}/usuarios/login-google',
-            ),
+            Uri.parse('${ApiConfig.baseUrl}/usuarios/login-google'),
             headers: {
               'Content-Type': 'application/json',
             },
@@ -236,47 +203,47 @@ class AuthUsuarioService {
               'idToken': idToken,
             }),
           )
-          .timeout(
-            const Duration(seconds: 15),
-          );
+          .timeout(const Duration(seconds: 15));
 
       debugPrint(
-        '🔐 Login Google - Status: '
-        '${response.statusCode}',
+        'Login Google - Status: ${response.statusCode}',
       );
 
       final Map<String, dynamic> data =
-          jsonDecode(response.body);
+          jsonDecode(response.body) as Map<String, dynamic>;
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 &&
+          data['token'] != null &&
+          data['usuario'] != null) {
         return {
           'exito': true,
           'mensaje':
-              data['mensaje'] ??
-              'Inicio de sesión con Google exitoso',
+              data['mensaje'] ?? 'Inicio de sesión con Google exitoso',
           'token': data['token'],
           'usuario': data['usuario'],
         };
       }
 
-      return {
-        'exito': false,
-        'mensaje':
-            data['mensaje'] ??
-            'No fue posible iniciar sesión con Google',
-      };
-    } catch (e) {
       debugPrint(
-        '❌ Error en login con Google: $e',
+        'Login Google rechazado: '
+        '${data['mensaje'] ?? 'Error desconocido'}',
       );
 
       return {
         'exito': false,
         'mensaje':
-            'No se pudo conectar con el servidor',
+            data['mensaje'] ?? 'No fue posible iniciar sesión con Google',
+      };
+    } catch (e) {
+      debugPrint('Error en login con Google: $e');
+
+      return {
+        'exito': false,
+        'mensaje': _mensajeErrorConexion(e),
       };
     }
   }
+
   // ============================================================
   // RECUPERAR CONTRASEÑA
   // ============================================================
@@ -288,8 +255,7 @@ class AuthUsuarioService {
       final response = await http
           .post(
             Uri.parse(
-              '${ApiConfig.baseUrl}/usuarios/'
-              'recuperar-password',
+              '${ApiConfig.baseUrl}/usuarios/recuperar-password',
             ),
             headers: {
               'Content-Type': 'application/json',
@@ -298,46 +264,33 @@ class AuthUsuarioService {
               'correo': correo.trim(),
             }),
           )
-          .timeout(
-            const Duration(seconds: 10),
-          );
+          .timeout(const Duration(seconds: 10));
 
       debugPrint(
-        '📧 Recuperar contraseña - Status: '
-        '${response.statusCode}',
-      );
-
-      debugPrint(
-        '📥 Respuesta: ${response.body}',
+        'Recuperar contraseña - Status: ${response.statusCode}',
       );
 
       final Map<String, dynamic> data =
-          jsonDecode(response.body);
+          jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
         return {
           'exito': true,
           'mensaje':
-              data['mensaje'] ??
-              'Código enviado correctamente',
+              data['mensaje'] ?? 'Código enviado correctamente',
         };
       }
 
       return {
         'exito': false,
-        'mensaje':
-            data['mensaje'] ??
-            'No fue posible enviar el código',
+        'mensaje': data['mensaje'] ?? 'No fue posible enviar el código',
       };
     } catch (e) {
-      debugPrint(
-        '❌ Error recuperando contraseña: $e',
-      );
+      debugPrint('Error recuperando contraseña: $e');
 
       return {
         'exito': false,
-        'mensaje':
-            'No se pudo conectar con el servidor',
+        'mensaje': _mensajeErrorConexion(e),
       };
     }
   }
@@ -346,8 +299,7 @@ class AuthUsuarioService {
   // VERIFICAR CÓDIGO DE RECUPERACIÓN
   // ============================================================
 
-  static Future<Map<String, dynamic>>
-      verificarCodigoRecuperacion({
+  static Future<Map<String, dynamic>> verificarCodigoRecuperacion({
     required String correo,
     required String codigo,
   }) async {
@@ -366,48 +318,33 @@ class AuthUsuarioService {
               'codigo': codigo.trim(),
             }),
           )
-          .timeout(
-            const Duration(seconds: 10),
-          );
+          .timeout(const Duration(seconds: 10));
 
       debugPrint(
-        '🔢 Verificar código - Status: '
-        '${response.statusCode}',
-      );
-
-      debugPrint(
-        '📥 Respuesta: ${response.body}',
+        'Verificar código - Status: ${response.statusCode}',
       );
 
       final Map<String, dynamic> data =
-          jsonDecode(response.body);
+          jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
         return {
           'exito': true,
-          'mensaje':
-              data['mensaje'] ??
-              'Código correcto',
-          'tokenRecuperacion':
-              data['tokenRecuperacion'],
+          'mensaje': data['mensaje'] ?? 'Código correcto',
+          'tokenRecuperacion': data['tokenRecuperacion'],
         };
       }
 
       return {
         'exito': false,
-        'mensaje':
-            data['mensaje'] ??
-            'Código incorrecto',
+        'mensaje': data['mensaje'] ?? 'Código incorrecto',
       };
     } catch (e) {
-      debugPrint(
-        '❌ Error verificando código: $e',
-      );
+      debugPrint('Error verificando código: $e');
 
       return {
         'exito': false,
-        'mensaje':
-            'No se pudo conectar con el servidor',
+        'mensaje': _mensajeErrorConexion(e),
       };
     }
   }
@@ -416,8 +353,7 @@ class AuthUsuarioService {
   // RESTABLECER CONTRASEÑA
   // ============================================================
 
-  static Future<Map<String, dynamic>>
-      restablecerPassword({
+  static Future<Map<String, dynamic>> restablecerPassword({
     required String tokenRecuperacion,
     required String nuevaPassword,
   }) async {
@@ -425,8 +361,7 @@ class AuthUsuarioService {
       final response = await http
           .post(
             Uri.parse(
-              '${ApiConfig.baseUrl}/usuarios/'
-              'restablecer-password',
+              '${ApiConfig.baseUrl}/usuarios/restablecer-password',
             ),
             headers: {
               'Content-Type': 'application/json',
@@ -436,47 +371,57 @@ class AuthUsuarioService {
               'nuevaPassword': nuevaPassword,
             }),
           )
-          .timeout(
-            const Duration(seconds: 10),
-          );
+          .timeout(const Duration(seconds: 10));
 
       debugPrint(
-        '🔑 Restablecer contraseña - Status: '
-        '${response.statusCode}',
-      );
-
-      debugPrint(
-        '📥 Respuesta: ${response.body}',
+        'Restablecer contraseña - Status: ${response.statusCode}',
       );
 
       final Map<String, dynamic> data =
-          jsonDecode(response.body);
+          jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
         return {
           'exito': true,
           'mensaje':
-              data['mensaje'] ??
-              'Contraseña actualizada correctamente',
+              data['mensaje'] ?? 'Contraseña actualizada correctamente',
         };
       }
 
       return {
         'exito': false,
         'mensaje':
-            data['mensaje'] ??
-            'No fue posible cambiar la contraseña',
+            data['mensaje'] ?? 'No fue posible cambiar la contraseña',
       };
     } catch (e) {
-      debugPrint(
-        '❌ Error restableciendo contraseña: $e',
-      );
+      debugPrint('Error restableciendo contraseña: $e');
 
       return {
         'exito': false,
-        'mensaje':
-            'No se pudo conectar con el servidor',
+        'mensaje': _mensajeErrorConexion(e),
       };
     }
+  }
+
+  // ============================================================
+  // MENSAJES DE ERROR
+  // ============================================================
+
+  static String _mensajeErrorConexion(Object error) {
+    if (error is http.ClientException) {
+      return 'No se pudo conectar con el servidor. '
+          'Verifica que el backend esté funcionando.';
+    }
+
+    if (error is FormatException) {
+      return 'El servidor devolvió una respuesta no válida.';
+    }
+
+    if (error is Exception) {
+      return 'Ocurrió un problema durante la solicitud. '
+          'Inténtalo nuevamente.';
+    }
+
+    return 'No se pudo completar la operación.';
   }
 }

@@ -67,6 +67,8 @@
   /// Chips y etiquetas.
   static const double chipRadius = 50.0;
 
+  static const double radiusFull = 999.0;
+
   /// Barra de búsqueda.
   static const double searchRadius = 18.0;
 
