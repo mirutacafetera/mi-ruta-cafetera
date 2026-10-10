@@ -8,7 +8,7 @@ class TarjetaActividadSitio extends StatelessWidget {
   final SitioActividadModel actividad;
   final VoidCallback onEditar;
   final VoidCallback onEnviarRevision;
-  final VoidCallback onDesactivar;
+  final VoidCallback onEliminar;
   final bool guardando;
 
   const TarjetaActividadSitio({
@@ -16,7 +16,7 @@ class TarjetaActividadSitio extends StatelessWidget {
     required this.actividad,
     required this.onEditar,
     required this.onEnviarRevision,
-    required this.onDesactivar,
+    required this.onEliminar,
     required this.guardando,
   });
 
@@ -37,12 +37,10 @@ class TarjetaActividadSitio extends StatelessWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
@@ -62,6 +60,7 @@ class TarjetaActividadSitio extends StatelessWidget {
               ),
             ],
           ),
+
           if (actividad.descripcion.isNotEmpty) ...[
             const SizedBox(
               height: AppDimensions.spacingSm,
@@ -74,9 +73,11 @@ class TarjetaActividadSitio extends StatelessWidget {
               ),
             ),
           ],
+
           const SizedBox(
             height: AppDimensions.spacingMd,
           ),
+
           Wrap(
             spacing: AppDimensions.spacingLg,
             runSpacing: AppDimensions.spacingSm,
@@ -98,9 +99,9 @@ class TarjetaActividadSitio extends StatelessWidget {
                 ),
             ],
           ),
+
           if (actividad.motivoRechazo.isNotEmpty &&
-              actividad.estadoPublicacion ==
-                  'rechazado') ...[
+              actividad.estadoPublicacion == 'rechazado') ...[
             const SizedBox(
               height: AppDimensions.spacingMd,
             ),
@@ -127,47 +128,49 @@ class TarjetaActividadSitio extends StatelessWidget {
               ),
             ),
           ],
+
           const SizedBox(
             height: AppDimensions.spacingLg,
           ),
+
           Wrap(
             spacing: AppDimensions.spacingSm,
             runSpacing: AppDimensions.spacingSm,
             children: [
               OutlinedButton.icon(
-                onPressed:
-                    guardando ? null : onEditar,
+                onPressed: guardando ? null : onEditar,
                 icon: const Icon(
                   Icons.edit_rounded,
                   size: 18,
                 ),
                 label: const Text('Editar'),
               ),
-              if (actividad.estadoPublicacion ==
-                  'borrador')
+
+              if (actividad.estadoPublicacion == 'borrador')
                 ElevatedButton.icon(
-                  onPressed: guardando
-                      ? null
-                      : onEnviarRevision,
+                  onPressed:
+                      guardando ? null : onEnviarRevision,
                   icon: const Icon(
                     Icons.send_rounded,
                     size: 18,
                   ),
-                  label: const Text(
-                    'Enviar a revisión',
+                  label: const Text('Enviar a revisión'),
+                ),
+
+              TextButton.icon(
+                onPressed: guardando ? null : onEliminar,
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 18,
+                  color: AppColors.error,
+                ),
+                label: const Text(
+                  'Eliminar',
+                  style: TextStyle(
+                    color: AppColors.error,
                   ),
                 ),
-              if (actividad.activo)
-                TextButton.icon(
-                  onPressed: guardando
-                      ? null
-                      : onDesactivar,
-                  icon: const Icon(
-                    Icons.visibility_off_outlined,
-                    size: 18,
-                  ),
-                  label: const Text('Desactivar'),
-                ),
+              ),
             ],
           ),
         ],

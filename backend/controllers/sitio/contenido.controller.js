@@ -1,3 +1,4 @@
+
 const Contenido = require('../../models/sitio/contenido');
 
 // ======================================================
@@ -83,15 +84,36 @@ const crearContenido = async (req, res) => {
       audioGuias,
     } = req.body;
 
-    if (!titulo || titulo.trim().length < 2) {
+    if (
+      typeof titulo !== 'string' ||
+      titulo.trim().length < 2
+    ) {
       return res.status(400).json({
         mensaje: 'El título debe tener al menos 2 caracteres',
       });
     }
 
-    if (!descripcion || descripcion.trim().length < 10) {
+    if (
+      typeof descripcion !== 'string' ||
+      descripcion.trim().length < 10
+    ) {
       return res.status(400).json({
         mensaje: 'La descripción debe tener al menos 10 caracteres',
+      });
+    }
+
+    if (imagenes !== undefined && !Array.isArray(imagenes)) {
+      return res.status(400).json({
+        mensaje: 'Las imágenes deben enviarse como una lista',
+      });
+    }
+
+    if (
+      audioGuias !== undefined &&
+      !Array.isArray(audioGuias)
+    ) {
+      return res.status(400).json({
+        mensaje: 'Las audio-guías deben enviarse como una lista',
       });
     }
 
@@ -99,9 +121,12 @@ const crearContenido = async (req, res) => {
       sitio: req.usuario.sitioId,
       titulo: titulo.trim(),
       descripcion: descripcion.trim(),
-      imagenPrincipal: imagenPrincipal || '',
-      imagenes: Array.isArray(imagenes) ? imagenes : [],
-      audioGuias: Array.isArray(audioGuias) ? audioGuias : [],
+      imagenPrincipal:
+        typeof imagenPrincipal === 'string'
+          ? imagenPrincipal.trim()
+          : '',
+      imagenes: imagenes || [],
+      audioGuias: audioGuias || [],
       estadoPublicacion: 'borrador',
       activo: true,
     });
@@ -135,8 +160,9 @@ const actualizarContenido = async (req, res) => {
     }
 
     if (
+      !req.usuario?.sitioId ||
       contenido.sitio.toString() !==
-      req.usuario.sitioId.toString()
+        req.usuario.sitioId.toString()
     ) {
       return res.status(403).json({
         mensaje: 'No tienes permiso para modificar este contenido',
@@ -159,7 +185,10 @@ const actualizarContenido = async (req, res) => {
     } = req.body;
 
     if (titulo !== undefined) {
-      if (titulo.trim().length < 2) {
+      if (
+        typeof titulo !== 'string' ||
+        titulo.trim().length < 2
+      ) {
         return res.status(400).json({
           mensaje: 'El título debe tener al menos 2 caracteres',
         });
@@ -169,7 +198,10 @@ const actualizarContenido = async (req, res) => {
     }
 
     if (descripcion !== undefined) {
-      if (descripcion.trim().length < 10) {
+      if (
+        typeof descripcion !== 'string' ||
+        descripcion.trim().length < 10
+      ) {
         return res.status(400).json({
           mensaje:
             'La descripción debe tener al menos 10 caracteres',
@@ -180,7 +212,13 @@ const actualizarContenido = async (req, res) => {
     }
 
     if (imagenPrincipal !== undefined) {
-      contenido.imagenPrincipal = imagenPrincipal;
+      if (typeof imagenPrincipal !== 'string') {
+        return res.status(400).json({
+          mensaje: 'La imagen principal debe ser una URL válida',
+        });
+      }
+
+      contenido.imagenPrincipal = imagenPrincipal.trim();
     }
 
     if (imagenes !== undefined) {
@@ -203,8 +241,8 @@ const actualizarContenido = async (req, res) => {
       contenido.audioGuias = audioGuias;
     }
 
-    // Si un contenido aprobado o rechazado se modifica,
-    // vuelve a borrador para revisión.
+    // Los contenidos aprobados o rechazados vuelven a borrador
+    // cuando se modifican.
     if (
       contenido.estadoPublicacion === 'aprobado' ||
       contenido.estadoPublicacion === 'rechazado'
@@ -246,8 +284,9 @@ const enviarContenidoRevision = async (req, res) => {
     }
 
     if (
+      !req.usuario?.sitioId ||
       contenido.sitio.toString() !==
-      req.usuario.sitioId.toString()
+        req.usuario.sitioId.toString()
     ) {
       return res.status(403).json({
         mensaje: 'No tienes permiso para modificar este contenido',
@@ -260,7 +299,10 @@ const enviarContenidoRevision = async (req, res) => {
       });
     }
 
-    if (!contenido.titulo || contenido.titulo.trim().length < 2) {
+    if (
+      !contenido.titulo ||
+      contenido.titulo.trim().length < 2
+    ) {
       return res.status(400).json({
         mensaje: 'El contenido necesita un título válido',
       });
@@ -299,11 +341,8 @@ const enviarContenidoRevision = async (req, res) => {
   }
 };
 
-// ======================================================
-// DESACTIVAR CONTENIDO
-// ======================================================
 
-const desactivarContenido = async (req, res) => {
+const eliminarContenido = async (req, res) => {
   try {
     const contenido = await Contenido.findById(req.params.id);
 
@@ -314,68 +353,33 @@ const desactivarContenido = async (req, res) => {
     }
 
     if (
+      !req.usuario?.sitioId ||
       contenido.sitio.toString() !==
-      req.usuario.sitioId.toString()
+        req.usuario.sitioId.toString()
     ) {
       return res.status(403).json({
-        mensaje: 'No tienes permiso para modificar este contenido',
+        mensaje: 'No tienes permiso para eliminar este contenido',
       });
     }
 
-    contenido.activo = false;
+    if (contenido.estadoPublicacion === 'pendiente_revision') {
+      return res.status(400).json({
+        mensaje:
+          'No puedes eliminar el contenido mientras está pendiente de revisión',
+      });
+    }
 
-    await contenido.save();
+    await Contenido.findByIdAndDelete(contenido._id);
 
     return res.status(200).json({
-      mensaje: 'Contenido desactivado correctamente',
-      contenido,
+      mensaje: 'Contenido eliminado correctamente',
+      id: contenido._id,
     });
   } catch (error) {
-    console.error('Error al desactivar contenido:', error);
+    console.error('Error al eliminar contenido:', error);
 
     return res.status(500).json({
-      mensaje: 'Error al desactivar el contenido',
-      error: error.message,
-    });
-  }
-};
-
-// ======================================================
-// ACTIVAR CONTENIDO
-// ======================================================
-
-const activarContenido = async (req, res) => {
-  try {
-    const contenido = await Contenido.findById(req.params.id);
-
-    if (!contenido) {
-      return res.status(404).json({
-        mensaje: 'Contenido no encontrado',
-      });
-    }
-
-    if (
-      contenido.sitio.toString() !==
-      req.usuario.sitioId.toString()
-    ) {
-      return res.status(403).json({
-        mensaje: 'No tienes permiso para modificar este contenido',
-      });
-    }
-
-    contenido.activo = true;
-
-    await contenido.save();
-
-    return res.status(200).json({
-      mensaje: 'Contenido activado correctamente',
-      contenido,
-    });
-  } catch (error) {
-    console.error('Error al activar contenido:', error);
-
-    return res.status(500).json({
-      mensaje: 'Error al activar el contenido',
+      mensaje: 'Error al eliminar el contenido',
       error: error.message,
     });
   }
@@ -396,8 +400,9 @@ const subirImagenesContenido = async (req, res) => {
     }
 
     if (
+      !req.usuario?.sitioId ||
       contenido.sitio.toString() !==
-      req.usuario.sitioId.toString()
+        req.usuario.sitioId.toString()
     ) {
       return res.status(403).json({
         mensaje: 'No tienes permiso para modificar este contenido',
@@ -411,21 +416,27 @@ const subirImagenesContenido = async (req, res) => {
       });
     }
 
-    const archivoPrincipal =
-      req.files?.imagenPrincipal?.[0];
-
+    const archivoPrincipal = req.files?.imagenPrincipal?.[0];
     const archivosGaleria = req.files?.imagenes || [];
 
-    if (
-      !archivoPrincipal &&
-      archivosGaleria.length === 0
-    ) {
+    if (!archivoPrincipal && archivosGaleria.length === 0) {
       return res.status(400).json({
         mensaje: 'Debes seleccionar al menos una imagen',
       });
     }
 
     if (archivoPrincipal) {
+      if (
+        typeof archivoPrincipal.path !== 'string' ||
+        archivoPrincipal.path.trim().length === 0
+      ) {
+        return res.status(500).json({
+          mensaje:
+            'Cloudinary no devolvió la URL de la imagen principal',
+        });
+      }
+
+      // Reemplaza la imagen principal anterior.
       contenido.imagenPrincipal = archivoPrincipal.path;
     }
 
@@ -434,11 +445,25 @@ const subirImagenesContenido = async (req, res) => {
         (archivo) => archivo.path,
       );
 
+      if (
+        nuevasImagenes.some(
+          (url) =>
+            typeof url !== 'string' ||
+            url.trim().length === 0,
+        )
+      ) {
+        return res.status(500).json({
+          mensaje:
+            'No se pudieron obtener todas las URL de las imágenes',
+        });
+      }
+
+      // Las imágenes nuevas se agregan a la galería existente.
       contenido.imagenes.push(...nuevasImagenes);
     }
 
-    // Si un contenido aprobado o rechazado recibe nuevas
-    // imágenes, vuelve a borrador para revisión.
+    // Los contenidos aprobados o rechazados vuelven a borrador
+    // cuando se modifican sus imágenes.
     if (
       contenido.estadoPublicacion === 'aprobado' ||
       contenido.estadoPublicacion === 'rechazado'
@@ -479,7 +504,6 @@ module.exports = {
   crearContenido,
   actualizarContenido,
   enviarContenidoRevision,
-  desactivarContenido,
-  activarContenido,
   subirImagenesContenido,
+  eliminarContenido,
 };

@@ -1,5 +1,9 @@
 const Actividad = require('../../models/sitio/actividad');
 
+
+const cloudinary = require('../../config/cloudinary');
+
+
 const obtenerActividades = async (req, res) => {
   try {
     const actividades = await Actividad.find({
@@ -401,52 +405,93 @@ const enviarActividadRevision = async (req, res) => {
   }
 };
 
-const desactivarActividad = async (req, res) => {
+const eliminarActividad = async (req, res) => {
   try {
-    const actividad = await Actividad.findOneAndUpdate(
-      {
-        _id: req.params.actividadId,
-        sitio: req.usuario.sitioId
-      },
-      {
-        activo: false
-      },
-      {
-        new: true
-      }
-    );
+    const actividad = await Actividad.findOne({
+      _id: req.params.actividadId,
+      sitio: req.usuario.sitioId
+    });
 
     if (!actividad) {
       return res.status(404).json({
-        mensaje:
-          'Actividad no encontrada o no pertenece a este sitio'
+        mensaje: 'Actividad no encontrada o no pertenece a este sitio'
       });
     }
 
-    res.status(200).json({
-      mensaje: 'Actividad desactivada correctamente',
-      actividad
+    // Recopilar las URL de las imágenes guardadas.
+    const urls = [
+      actividad.imagenPrincipal,
+      ...(Array.isArray(actividad.imagenes) ? actividad.imagenes : [])
+    ].filter(Boolean);
+
+    // Eliminar primero el registro de MongoDB.
+    await Actividad.deleteOne({ _id: actividad._id });
+
+    // Eliminar de Cloudinary únicamente imágenes de nuestra carpeta.
+    for (const url of urls) {
+      try {
+        const parsedUrl = new URL(url);
+
+        if (
+          parsedUrl.hostname !== 'res.cloudinary.com' ||
+          !parsedUrl.pathname.includes('/image/upload/')
+        ) {
+          continue;
+        }
+
+        const partePublicId = parsedUrl.pathname.split('/image/upload/')[1];
+        const partes = partePublicId.split('/');
+
+        // Retirar la versión de Cloudinary (por ejemplo, v1791578746).
+        if (/^v\d+$/.test(partes[0])) {
+          partes.shift();
+        }
+
+        const archivo = partes.pop();
+        if (!archivo) continue;
+
+        const nombreSinExtension = archivo.replace(/\.[^.]+$/, '');
+        const publicId = [
+          ...partes,
+          nombreSinExtension
+        ].join('/');
+
+        if (!publicId.startsWith('mi-ruta-cafetera/sitios/')) {
+          continue;
+        }
+
+        await cloudinary.uploader.destroy(publicId, {
+          resource_type: 'image'
+        });
+      } catch (errorImagen) {
+        console.error(
+          'No fue posible eliminar una imagen de Cloudinary:',
+          errorImagen.message
+        );
+      }
+    }
+
+    return res.status(200).json({
+      mensaje: 'Actividad eliminada correctamente.'
     });
   } catch (error) {
-    console.error(
-      '❌ Error al desactivar actividad:',
-      error
-    );
+    console.error('Error al eliminar actividad:', error);
 
-    res.status(500).json({
-      mensaje: 'Error al desactivar actividad',
+    return res.status(500).json({
+      mensaje: 'Error al eliminar la actividad.',
       error: error.message
     });
   }
 };
 
+
 module.exports = {
   obtenerActividades,
   crearActividad,
   actualizarActividad,
+  eliminarActividad,
   subirImagenesActividad,
   eliminarImagenActividad,
   establecerImagenPrincipal,
   enviarActividadRevision,
-  desactivarActividad
 };

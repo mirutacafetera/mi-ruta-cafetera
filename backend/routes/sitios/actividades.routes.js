@@ -17,7 +17,7 @@ const {
   eliminarImagenActividad,
   establecerImagenPrincipal,
   enviarActividadRevision,
-  desactivarActividad
+  eliminarActividad
 } = require('../../controllers/sitio/actividades.controller');
 
 router.get(
@@ -68,11 +68,11 @@ router.put(
   enviarActividadRevision
 );
 
-router.put(
-  '/:id/:actividadId/desactivar',
+router.delete(
+  '/:id/:actividadId',
   verificarToken,
   verificarSitio,
-  desactivarActividad
+  eliminarActividad
 );
 
 module.exports = router;

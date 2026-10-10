@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../models/sitio/sitio_contenido_model.dart';
@@ -8,14 +9,14 @@ class TarjetaContenidoSitio extends StatelessWidget {
   final SitioContenidoModel contenido;
   final VoidCallback onEditar;
   final VoidCallback onEnviarRevision;
-  final VoidCallback onCambiarEstado;
+  final VoidCallback onEliminar;
 
   const TarjetaContenidoSitio({
     super.key,
     required this.contenido,
     required this.onEditar,
     required this.onEnviarRevision,
-    required this.onCambiarEstado,
+    required this.onEliminar,
   });
 
   @override
@@ -211,17 +212,14 @@ class TarjetaContenidoSitio extends StatelessWidget {
         texto = 'Aprobado';
         icono = Icons.check_circle_outline;
         break;
-
       case 'pendiente_revision':
         texto = 'Pendiente de revisión';
         icono = Icons.hourglass_top_outlined;
         break;
-
       case 'rechazado':
         texto = 'Rechazado';
         icono = Icons.cancel_outlined;
         break;
-
       default:
         texto = 'Borrador';
         icono = Icons.edit_note_outlined;
@@ -270,13 +268,10 @@ class TarjetaContenidoSitio extends StatelessWidget {
     switch (estado) {
       case 'aprobado':
         return AppColors.primary;
-
       case 'pendiente_revision':
         return AppColors.orangeSoft;
-
       case 'rechazado':
         return AppColors.error;
-
       default:
         return AppColors.coffeeDark;
     }
@@ -299,14 +294,12 @@ class TarjetaContenidoSitio extends StatelessWidget {
         if (contenido.imagenes.isNotEmpty)
           _construirChipRecurso(
             icono: Icons.photo_library_outlined,
-            texto:
-                '${contenido.imagenes.length} imágenes',
+            texto: '${contenido.imagenes.length} imágenes',
           ),
         if (contenido.audioGuias.isNotEmpty)
           _construirChipRecurso(
             icono: Icons.headphones_outlined,
-            texto:
-                '${contenido.audioGuias.length} audio-guías',
+            texto: '${contenido.audioGuias.length} audio-guías',
           ),
       ],
     );
@@ -378,8 +371,7 @@ class TarjetaContenidoSitio extends StatelessWidget {
         ),
       ),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(
             Icons.info_outline,
@@ -390,8 +382,7 @@ class TarjetaContenidoSitio extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              'Motivo del rechazo: '
-              '${contenido.motivoRechazo}',
+              'Motivo del rechazo: ${contenido.motivoRechazo}',
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 height: 1.4,
@@ -409,22 +400,18 @@ class TarjetaContenidoSitio extends StatelessWidget {
 
   Widget _construirAcciones() {
     final pendienteRevision =
-        contenido.estadoPublicacion ==
-            'pendiente_revision';
+        contenido.estadoPublicacion == 'pendiente_revision';
 
     return Wrap(
       spacing: AppDimensions.spacingSm,
       runSpacing: AppDimensions.spacingSm,
       children: [
         OutlinedButton.icon(
-          onPressed:
-              pendienteRevision ? null : onEditar,
+          onPressed: pendienteRevision ? null : onEditar,
           icon: const Icon(
             Icons.edit_outlined,
           ),
-          label: const Text(
-            'Editar',
-          ),
+          label: const Text('Editar'),
         ),
         if (!pendienteRevision)
           ElevatedButton.icon(
@@ -432,21 +419,16 @@ class TarjetaContenidoSitio extends StatelessWidget {
             icon: const Icon(
               Icons.send_outlined,
             ),
-            label: const Text(
-              'Enviar a revisión',
-            ),
+            label: const Text('Enviar a revisión'),
           ),
         OutlinedButton.icon(
-          onPressed: onCambiarEstado,
-          icon: Icon(
-            contenido.activo
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
+          onPressed: onEliminar,
+          icon: const Icon(
+            Icons.delete_outline,
           ),
-          label: Text(
-            contenido.activo
-                ? 'Desactivar'
-                : 'Activar',
+          label: const Text('Eliminar'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.error,
           ),
         ),
       ],
