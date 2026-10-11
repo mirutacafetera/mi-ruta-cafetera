@@ -31,13 +31,11 @@ class SitioUbicacion extends StatelessWidget {
             titulo: 'Ubicación',
             subtitulo: 'Indica dónde se encuentra el sitio',
           ),
-
           CampoFormularioSitio(
             controlador: direccionController,
             etiqueta: 'Dirección',
             icono: Icons.location_on_rounded,
           ),
-
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -62,7 +60,6 @@ class SitioUbicacion extends StatelessWidget {
               ),
             ],
           ),
-
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

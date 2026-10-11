@@ -1,13 +1,11 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
-class AdminSitioConsultas {
-  // ============================================================
-  // OBTENER SITIOS TURÍSTICOS
-  // ============================================================
+import '../../../models/admin/sitio_admin_model.dart';
 
-  static Future<List<dynamic>> obtenerSitios(
+class AdminSitioConsultas {
+  // Obtener todos los sitios turísticos
+  static Future<List<SitioAdminModel>> obtenerSitios(
     String baseUrl,
   ) async {
     final response = await http.get(
@@ -18,7 +16,14 @@ class AdminSitioConsultas {
       final data = jsonDecode(response.body);
 
       if (data is List) {
-        return data;
+        return data
+            .whereType<Map>()
+            .map(
+              (item) => SitioAdminModel.fromJson(
+                Map<String, dynamic>.from(item),
+              ),
+            )
+            .toList();
       }
 
       throw Exception(
@@ -32,10 +37,7 @@ class AdminSitioConsultas {
     );
   }
 
-  // ============================================================
-  // OBTENER CATEGORÍAS
-  // ============================================================
-
+  // Obtener las categorías de los sitios turísticos
   static Future<List<dynamic>> obtenerCategorias(
     String baseUrl,
   ) async {
@@ -46,27 +48,9 @@ class AdminSitioConsultas {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      // ----------------------------------------------------------
-      // Respuesta directa:
-      // [
-      //   {...},
-      //   {...}
-      // ]
-      // ----------------------------------------------------------
-
       if (data is List) {
         return data;
       }
-
-      // ----------------------------------------------------------
-      // Respuesta envuelta:
-      // {
-      //   "categorias": [
-      //     {...},
-      //     {...}
-      //   ]
-      // }
-      // ----------------------------------------------------------
 
       if (data is Map<String, dynamic>) {
         final categorias = data['categorias'];
@@ -77,8 +61,8 @@ class AdminSitioConsultas {
       }
 
       throw Exception(
-        'La respuesta del servidor no tiene el formato '
-        'esperado para categorías.',
+        'La respuesta del servidor no tiene el formato esperado '
+        'para categorías.',
       );
     }
 
@@ -88,11 +72,8 @@ class AdminSitioConsultas {
     );
   }
 
-  // ============================================================
-  // OBTENER UN SITIO TURÍSTICO
-  // ============================================================
-
-  static Future<Map<String, dynamic>> obtenerSitio(
+  // Obtener un sitio turístico por su ID
+  static Future<SitioAdminModel> obtenerSitio(
     String baseUrl,
     String id,
   ) async {
@@ -104,7 +85,15 @@ class AdminSitioConsultas {
       final data = jsonDecode(response.body);
 
       if (data is Map<String, dynamic>) {
-        return data;
+        final sitioData = data['sitio'];
+
+        if (sitioData is Map) {
+          return SitioAdminModel.fromJson(
+            Map<String, dynamic>.from(sitioData),
+          );
+        }
+
+        return SitioAdminModel.fromJson(data);
       }
 
       throw Exception(

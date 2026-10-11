@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
+import '../../../models/admin/cuenta_sitio_model.dart';
+
 class AdminSitioCrud {
   AdminSitioCrud._();
 
@@ -15,20 +17,14 @@ class AdminSitioCrud {
     required String baseUrl,
     String? tokenAdmin,
 
-    // ----------------------------------------------------------
     // CUENTA DEL SITIO
-    // ----------------------------------------------------------
-
     required String nombreCuenta,
     required String apellidoCuenta,
     required String correo,
     required String password,
     String telefonoCuenta = '',
 
-    // ----------------------------------------------------------
     // INFORMACIÓN DEL SITIO
-    // ----------------------------------------------------------
-
     required String nombre,
     required String descripcion,
     required String categoria,
@@ -39,28 +35,19 @@ class AdminSitioCrud {
     required double longitud,
     List<String> etiquetas = const [],
     bool activo = true,
-
     String telefono = '',
     String correos = '',
     String sitioWeb = '',
 
-    // ----------------------------------------------------------
     // IMAGEN PRINCIPAL
-    // ----------------------------------------------------------
-
     required Uint8List imagenBytes,
     String nombreImagen = 'imagen.jpg',
 
-    // ----------------------------------------------------------
     // INFORMACIÓN TURÍSTICA
-    // ----------------------------------------------------------
-
     String horario = '',
     double precioDesde = 0,
   }) async {
-    // ==========================================================
     // VALIDAR TOKEN
-    // ==========================================================
 
     final token = tokenAdmin?.trim() ?? '';
 
@@ -71,9 +58,7 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
     // VALIDAR IMAGEN
-    // ==========================================================
 
     if (imagenBytes.isEmpty) {
       throw Exception(
@@ -81,9 +66,7 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
     // CREAR PETICIÓN MULTIPART
-    // ==========================================================
 
     final request = http.MultipartRequest(
       'POST',
@@ -95,9 +78,7 @@ class AdminSitioCrud {
       'Authorization': 'Bearer $token',
     });
 
-    // ==========================================================
     // CAMPOS DEL SITIO
-    // ==========================================================
 
     request.fields.addAll({
       'nombre': nombre,
@@ -117,19 +98,7 @@ class AdminSitioCrud {
       'precioDesde': precioDesde.toString(),
     });
 
-    // ==========================================================
     // IMAGEN PRINCIPAL
-    // ==========================================================
-    //
-    // IMPORTANTE:
-    // Indicamos explícitamente que la imagen enviada es JPEG.
-    //
-    // Esto evita que el backend reciba el archivo como:
-    // application/octet-stream
-    //
-    // El backend espera:
-    // image/jpeg
-    // ==========================================================
 
     request.files.add(
       http.MultipartFile.fromBytes(
@@ -140,9 +109,7 @@ class AdminSitioCrud {
       ),
     );
 
-    // ==========================================================
     // ENVIAR PETICIÓN
-    // ==========================================================
 
     final streamedResponse = await request.send().timeout(
       const Duration(seconds: 30),
@@ -152,9 +119,7 @@ class AdminSitioCrud {
       streamedResponse,
     );
 
-    // ==========================================================
-    // VALIDAR RESPUESTA
-    // ==========================================================
+    // VALIDAR RESPUESTA DEL SITIO
 
     if (response.statusCode != 201) {
       throw Exception(
@@ -163,9 +128,7 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
-    // DECODIFICAR RESPUESTA
-    // ==========================================================
+    // DECODIFICAR RESPUESTA DEL SITIO
 
     final dataSitio = jsonDecode(response.body);
 
@@ -176,9 +139,7 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
     // OBTENER SITIO CREADO
-    // ==========================================================
 
     final sitioCreado = dataSitio['sitio'];
 
@@ -188,12 +149,9 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
     // OBTENER ID DEL SITIO
-    // ==========================================================
 
-    final sitioId =
-        sitioCreado['_id']?.toString() ?? '';
+    final sitioId = sitioCreado['_id']?.toString() ?? '';
 
     if (sitioId.isEmpty) {
       throw Exception(
@@ -201,9 +159,9 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
+    // ============================================================
     // CREAR CUENTA DEL SITIO
-    // ==========================================================
+    // ============================================================
 
     final responseCuenta = await http
         .post(
@@ -228,9 +186,7 @@ class AdminSitioCrud {
           const Duration(seconds: 15),
         );
 
-    // ==========================================================
-    // VALIDAR CUENTA
-    // ==========================================================
+    // VALIDAR RESPUESTA DE LA CUENTA
 
     if (responseCuenta.statusCode != 201) {
       String mensaje =
@@ -252,6 +208,8 @@ class AdminSitioCrud {
       );
     }
 
+    // DECODIFICAR RESPUESTA DE LA CUENTA
+
     final dataCuenta = jsonDecode(
       responseCuenta.body,
     );
@@ -263,13 +221,30 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
+    // ============================================================
+    // INTEGRACIÓN DE CuentaSitioModel
+    // ============================================================
+
+    final cuentaRespuesta = dataCuenta['cuenta'];
+
+    if (cuentaRespuesta is! Map) {
+      throw Exception(
+        'El sitio fue creado, pero el servidor no devolvió '
+        'los datos de la cuenta.',
+      );
+    }
+
+    final cuentaModel = CuentaSitioModel.fromJson({
+      'cuenta': Map<String, dynamic>.from(cuentaRespuesta),
+    });
+
+    // ============================================================
     // RESULTADO
-    // ==========================================================
+    // ============================================================
 
     return {
       'sitio': sitioCreado,
-      'cuenta': dataCuenta['cuenta'],
+      'cuenta': cuentaModel.toJson(),
     };
   }
 
@@ -280,45 +255,26 @@ class AdminSitioCrud {
   static Future<void> actualizarSitio({
     required String baseUrl,
     String? tokenAdmin,
-
     required String id,
-
     required String nombre,
     required String descripcion,
     required String categoria,
-
     String direccion = '',
     String ciudad = 'Garzón',
     String departamento = 'Huila',
-
     required double latitud,
     required double longitud,
-
     List<String> etiquetas = const [],
-
     bool activo = true,
-
     String telefono = '',
     String correos = '',
     String sitioWeb = '',
-
-    // ----------------------------------------------------------
-    // IMAGEN PRINCIPAL
-    // ----------------------------------------------------------
-
     Uint8List? imagenBytes,
     String nombreImagen = 'imagen.jpg',
-
-    // ----------------------------------------------------------
-    // INFORMACIÓN TURÍSTICA
-    // ----------------------------------------------------------
-
     String horario = '',
     double precioDesde = 0,
   }) async {
-    // ==========================================================
     // VALIDAR TOKEN
-    // ==========================================================
 
     final token = tokenAdmin?.trim() ?? '';
 
@@ -329,9 +285,7 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
     // CREAR PETICIÓN MULTIPART
-    // ==========================================================
 
     final request = http.MultipartRequest(
       'PUT',
@@ -343,9 +297,7 @@ class AdminSitioCrud {
       'Authorization': 'Bearer $token',
     });
 
-    // ==========================================================
     // CAMPOS DEL SITIO
-    // ==========================================================
 
     request.fields.addAll({
       'nombre': nombre,
@@ -365,9 +317,7 @@ class AdminSitioCrud {
       'precioDesde': precioDesde.toString(),
     });
 
-    // ==========================================================
     // NUEVA IMAGEN PRINCIPAL
-    // ==========================================================
 
     if (imagenBytes != null &&
         imagenBytes.isNotEmpty) {
@@ -381,9 +331,7 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
     // ENVIAR PETICIÓN
-    // ==========================================================
 
     final streamedResponse = await request.send().timeout(
       const Duration(seconds: 30),
@@ -393,9 +341,7 @@ class AdminSitioCrud {
       streamedResponse,
     );
 
-    // ==========================================================
     // VALIDAR RESPUESTA
-    // ==========================================================
 
     if (response.statusCode < 200 ||
         response.statusCode >= 300) {
@@ -415,9 +361,7 @@ class AdminSitioCrud {
     required String id,
     String? tokenAdmin,
   }) async {
-    // ==========================================================
     // VALIDAR TOKEN
-    // ==========================================================
 
     final token = tokenAdmin?.trim() ?? '';
 
@@ -428,9 +372,7 @@ class AdminSitioCrud {
       );
     }
 
-    // ==========================================================
-    // ELIMINAR
-    // ==========================================================
+    // ELIMINAR SITIO
 
     final response = await http
         .delete(
@@ -444,9 +386,7 @@ class AdminSitioCrud {
           const Duration(seconds: 15),
         );
 
-    // ==========================================================
     // VALIDAR RESPUESTA
-    // ==========================================================
 
     if (response.statusCode < 200 ||
         response.statusCode >= 300) {

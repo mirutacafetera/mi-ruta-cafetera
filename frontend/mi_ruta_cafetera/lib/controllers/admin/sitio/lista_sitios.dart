@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../models/admin/sitio_admin_model.dart';
 import '../../../services/admin/sitio/servicio_admin_sitio.dart';
 
 class ListaSitios extends ChangeNotifier {
-  List<Map<String, dynamic>> sitios = [];
+  List<SitioAdminModel> sitios = [];
   List<Map<String, dynamic>> categorias = [];
 
   bool cargando = true;
@@ -14,24 +15,16 @@ class ListaSitios extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final datosSitios =
-          await ServicioAdminSitio.obtenerSitios();
+      final datosSitios = await ServicioAdminSitio.obtenerSitios();
 
       final datosCategorias =
           await ServicioAdminSitio.obtenerCategorias();
 
-      sitios = datosSitios
-          .whereType<Map>()
-          .map(
-            (e) => Map<String, dynamic>.from(e),
-          )
-          .toList();
+      sitios = datosSitios;
 
       categorias = datosCategorias
           .whereType<Map>()
-          .map(
-            (e) => Map<String, dynamic>.from(e),
-          )
+          .map((e) => Map<String, dynamic>.from(e))
           .toList();
     } finally {
       cargando = false;
@@ -49,7 +42,7 @@ class ListaSitios extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Map<String, dynamic>> get sitiosFiltrados {
+  List<SitioAdminModel> get sitiosFiltrados {
     final texto = busqueda.trim().toLowerCase();
 
     if (texto.isEmpty) {
@@ -57,17 +50,10 @@ class ListaSitios extends ChangeNotifier {
     }
 
     return sitios.where((sitio) {
-      final nombre =
-          '${sitio['nombre'] ?? ''}'.toLowerCase();
-
-      final ciudad =
-          '${sitio['ciudad'] ?? ''}'.toLowerCase();
-
-      final direccion =
-          '${sitio['direccion'] ?? ''}'.toLowerCase();
-
-      final categoria =
-          obtenerCategoria(sitio).toLowerCase();
+      final nombre = sitio.nombre.toLowerCase();
+      final ciudad = sitio.ciudad.toLowerCase();
+      final direccion = sitio.direccion.toLowerCase();
+      final categoria = obtenerCategoria(sitio).toLowerCase();
 
       return nombre.contains(texto) ||
           ciudad.contains(texto) ||
@@ -81,75 +67,50 @@ class ListaSitios extends ChangeNotifier {
     await cargarDatos();
   }
 
-  String? obtenerId(Map<String, dynamic> sitio) {
-    final id = sitio['_id'] ?? sitio['id'];
-
-    if (id == null) {
-      return null;
-    }
-
-    if (id is Map) {
-      return id[r'$oid']?.toString();
-    }
-
-    return id.toString();
+  String? obtenerId(SitioAdminModel sitio) {
+    return sitio.id.isEmpty ? null : sitio.id;
   }
 
-  String obtenerCategoria(Map<String, dynamic> sitio) {
-    final categoria = sitio['categoria'];
-
-    if (categoria == null) {
+  String obtenerCategoria(SitioAdminModel sitio) {
+    if (sitio.categoria == null) {
       return 'Sin categoría';
     }
 
-    if (categoria is String) {
-      final encontrada = categorias.where(
-        (item) => item['_id']?.toString() == categoria,
-      );
-
-      return encontrada.isNotEmpty
-          ? '${encontrada.first['nombre'] ?? 'Sin categoría'}'
-          : categoria;
+    if (sitio.categoria!.nombre.isNotEmpty) {
+      return sitio.categoria!.nombre;
     }
 
-    if (categoria is Map) {
-      return '${categoria['nombre'] ?? categoria['name'] ?? 'Sin categoría'}';
-    }
+    final categoriaId = sitio.categoria!.id;
 
-    return categoria.toString();
-  }
+    final encontrada = categorias.where((item) {
+      final id = item['_id'] ?? item['id'];
 
-  bool estaActivo(Map<String, dynamic> sitio) {
-    final activo = sitio['activo'];
-
-    if (activo is bool) {
-      return activo;
-    }
-
-    final texto = activo?.toString().toLowerCase().trim();
-
-    return texto != 'false' &&
-        texto != 'inactivo' &&
-        texto != 'inactiva';
-  }
-
-  String? obtenerImagen(Map<String, dynamic> sitio) {
-    final imagen = sitio['imagen'];
-
-    if (imagen != null &&
-        imagen.toString().trim().isNotEmpty) {
-      return imagen.toString();
-    }
-
-    final imagenes = sitio['imagenes'];
-
-    if (imagenes is List && imagenes.isNotEmpty) {
-      final primera = imagenes.first;
-
-      if (primera != null &&
-          primera.toString().trim().isNotEmpty) {
-        return primera.toString();
+      if (id is Map) {
+        return id[r'$oid']?.toString() == categoriaId;
       }
+
+      return id?.toString() == categoriaId;
+    });
+
+    if (encontrada.isNotEmpty) {
+      return '${encontrada.first['nombre'] ?? 'Sin categoría'}';
+    }
+
+    return 'Sin categoría';
+  }
+
+  bool estaActivo(SitioAdminModel sitio) {
+    return sitio.activo;
+  }
+
+  String? obtenerImagen(SitioAdminModel sitio) {
+    if (sitio.imagen.trim().isNotEmpty) {
+      return sitio.imagen;
+    }
+
+    if (sitio.imagenes.isNotEmpty &&
+        sitio.imagenes.first.trim().isNotEmpty) {
+      return sitio.imagenes.first;
     }
 
     return null;

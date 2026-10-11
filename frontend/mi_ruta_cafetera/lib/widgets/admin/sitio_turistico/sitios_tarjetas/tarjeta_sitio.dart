@@ -74,7 +74,6 @@ class TarjetaSitio extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // ==================================================
             // IMAGEN / ICONO DE CATEGORÍA
             // ==================================================
@@ -90,10 +89,8 @@ class TarjetaSitio extends StatelessWidget {
 
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   // ==============================================
                   // NOMBRE + MENÚ
                   // ==============================================
@@ -112,7 +109,6 @@ class TarjetaSitio extends StatelessWidget {
                           ),
                         ),
                       ),
-
                       PopupMenuButton<String>(
                         icon: const Icon(
                           Icons.more_vert,
@@ -173,31 +169,21 @@ class TarjetaSitio extends StatelessWidget {
                     spacing: AppDimensions.spacingXs,
                     runSpacing: AppDimensions.spacingXs,
                     children: [
-
-                      // ------------------------------------------
                       // CATEGORÍA
-                      // ------------------------------------------
-
                       EtiquetaSitio(
                         texto: categoria,
                         icono: iconoCategoria,
                         esCategoria: true,
                       ),
 
-                      // ------------------------------------------
                       // CIUDAD
-                      // ------------------------------------------
-
                       if (ciudad.isNotEmpty)
                         EtiquetaSitio(
                           texto: ciudad,
                           icono: Icons.location_city_outlined,
                         ),
 
-                      // ------------------------------------------
                       // ESTADO
-                      // ------------------------------------------
-
                       EtiquetaSitio.estado(
                         activo: activo,
                       ),

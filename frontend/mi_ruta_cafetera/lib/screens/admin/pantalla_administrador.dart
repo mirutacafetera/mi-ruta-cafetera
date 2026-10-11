@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
@@ -11,6 +12,7 @@ import '../../widgets/admin/admin_proximamente.dart';
 import 'admin_inicio.dart';
 import 'cuenta/admin_cuenta.dart';
 import 'admin_inicio_sesion.dart';
+import 'categoria/pantalla_categoria.dart';
 
 import '../mapa_screen_2.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
@@ -135,9 +137,7 @@ class _PantallaAdministradorState
         );
 
       case 'categorias':
-        return const AdminProximamente(
-          nombre: 'Categorías',
-        );
+        return const PantallaCategoria();
 
       case 'contenido':
         return const AdminProximamente(
