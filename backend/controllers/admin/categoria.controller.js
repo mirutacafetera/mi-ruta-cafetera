@@ -1,8 +1,13 @@
+
 const mongoose = require('mongoose');
 
 const Categoria = require(
   '../../models/admin/categoria.js'
 );
+
+// ============================================================
+// OBTENER TODAS LAS CATEGORÍAS ACTIVAS
+// ============================================================
 
 const obtenerCategorias = async (req, res) => {
   try {
@@ -10,19 +15,20 @@ const obtenerCategorias = async (req, res) => {
       .find({ estado: true })
       .sort({ nombre: 1 });
 
-    res.status(200).json(categorias);
+    return res.status(200).json(categorias);
   } catch (error) {
-    console.error(
-      'Error al obtener categorías:',
-      error
-    );
+    console.error('Error al obtener categorías:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       mensaje: 'Error al obtener las categorías',
       error: error.message
     });
   }
 };
+
+// ============================================================
+// OBTENER UNA CATEGORÍA
+// ============================================================
 
 const obtenerCategoria = async (req, res) => {
   try {
@@ -42,27 +48,24 @@ const obtenerCategoria = async (req, res) => {
       });
     }
 
-    res.status(200).json(categoria);
+    return res.status(200).json(categoria);
   } catch (error) {
-    console.error(
-      'Error al obtener categoría:',
-      error
-    );
+    console.error('Error al obtener categoría:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       mensaje: 'Error al obtener la categoría',
       error: error.message
     });
   }
 };
 
+// ============================================================
+// CREAR CATEGORÍA
+// ============================================================
+
 const crearCategoria = async (req, res) => {
   try {
-    const {
-      nombre,
-      descripcion,
-      icono
-    } = req.body;
+    const { nombre, descripcion, icono } = req.body;
 
     if (!nombre || !nombre.trim()) {
       return res.status(400).json({
@@ -70,10 +73,9 @@ const crearCategoria = async (req, res) => {
       });
     }
 
-    const categoriaExistente =
-      await Categoria.findOne({
-        nombre: nombre.trim()
-      });
+    const categoriaExistente = await Categoria.findOne({
+      nombre: nombre.trim()
+    });
 
     if (categoriaExistente) {
       return res.status(400).json({
@@ -87,25 +89,25 @@ const crearCategoria = async (req, res) => {
       icono: icono || 'location_on'
     });
 
-    const categoriaGuardada =
-      await categoria.save();
+    const categoriaGuardada = await categoria.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       mensaje: 'Categoría creada correctamente',
       categoria: categoriaGuardada
     });
   } catch (error) {
-    console.error(
-      'Error al crear categoría:',
-      error
-    );
+    console.error('Error al crear categoría:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       mensaje: 'Error al crear la categoría',
       error: error.message
     });
   }
 };
+
+// ============================================================
+// ACTUALIZAR CATEGORÍA
+// ============================================================
 
 const actualizarCategoria = async (req, res) => {
   try {
@@ -117,15 +119,14 @@ const actualizarCategoria = async (req, res) => {
       });
     }
 
-    const categoria =
-      await Categoria.findByIdAndUpdate(
-        id,
-        req.body,
-        {
-          new: true,
-          runValidators: true
-        }
-      );
+    const categoria = await Categoria.findByIdAndUpdate(
+      id,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     if (!categoria) {
       return res.status(404).json({
@@ -133,22 +134,23 @@ const actualizarCategoria = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       mensaje: 'Categoría actualizada correctamente',
       categoria
     });
   } catch (error) {
-    console.error(
-      'Error al actualizar categoría:',
-      error
-    );
+    console.error('Error al actualizar categoría:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       mensaje: 'Error al actualizar la categoría',
       error: error.message
     });
   }
 };
+
+// ============================================================
+// ELIMINAR CATEGORÍA DEFINITIVAMENTE
+// ============================================================
 
 const eliminarCategoria = async (req, res) => {
   try {
@@ -160,16 +162,7 @@ const eliminarCategoria = async (req, res) => {
       });
     }
 
-    const categoria =
-      await Categoria.findByIdAndUpdate(
-        id,
-        {
-          estado: false
-        },
-        {
-          new: true
-        }
-      );
+    const categoria = await Categoria.findByIdAndDelete(id);
 
     if (!categoria) {
       return res.status(404).json({
@@ -177,22 +170,23 @@ const eliminarCategoria = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      mensaje: 'Categoría desactivada correctamente',
+    return res.status(200).json({
+      mensaje: 'Categoría eliminada correctamente',
       categoria
     });
   } catch (error) {
-    console.error(
-      'Error al eliminar categoría:',
-      error
-    );
+    console.error('Error al eliminar categoría:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       mensaje: 'Error al eliminar la categoría',
       error: error.message
     });
   }
 };
+
+// ============================================================
+// EXPORTACIONES
+// ============================================================
 
 module.exports = {
   obtenerCategorias,

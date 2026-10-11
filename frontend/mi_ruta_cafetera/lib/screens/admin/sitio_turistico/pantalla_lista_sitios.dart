@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/sitio/lista_sitios.dart';
+import '../../../models/admin/sitio_admin_model.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../widgets/admin/sitio_turistico/barra_busqueda.dart';
@@ -14,7 +15,8 @@ class PantallaListaSitios extends StatefulWidget {
   const PantallaListaSitios({super.key});
 
   @override
-  State<PantallaListaSitios> createState() => _PantallaListaSitiosState();
+  State<PantallaListaSitios> createState() =>
+      _PantallaListaSitiosState();
 }
 
 class _PantallaListaSitiosState extends State<PantallaListaSitios> {
@@ -46,7 +48,9 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (contextModal) {
-        return FormularioSitio(categorias: controlador.categorias);
+        return FormularioSitio(
+          categorias: controlador.categorias,
+        );
       },
     );
 
@@ -65,7 +69,7 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
   // EDITAR SITIO
   // ============================================================
 
-  Future<void> _editarSitio(Map<String, dynamic> sitio) async {
+  Future<void> _editarSitio(SitioAdminModel sitio) async {
     final resultado = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -73,7 +77,7 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
       backgroundColor: Colors.transparent,
       builder: (contextModal) {
         return FormularioSitio(
-          sitio: sitio,
+          sitio: sitio.toJson(),
           categorias: controlador.categorias,
         );
       },
@@ -94,15 +98,19 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
   // ELIMINAR SITIO
   // ============================================================
 
-  Future<void> _eliminarSitio(Map<String, dynamic> sitio) async {
+  Future<void> _eliminarSitio(SitioAdminModel sitio) async {
     final id = controlador.obtenerId(sitio);
 
     if (id == null || id.isEmpty) {
-      _mostrarMensaje('No se encontró el ID del sitio.', error: true);
+      _mostrarMensaje(
+        'No se encontró el ID del sitio.',
+        error: true,
+      );
       return;
     }
 
-    final nombre = (sitio['nombre'] ?? 'este sitio').toString();
+    final nombre =
+        sitio.nombre.isEmpty ? 'este sitio' : sitio.nombre;
 
     final confirmar = await showDialog<bool>(
       context: context,
@@ -132,9 +140,7 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
       },
     );
 
-    if (confirmar != true) {
-      return;
-    }
+    if (confirmar != true) return;
 
     try {
       await controlador.eliminarSitio(id);
@@ -145,7 +151,10 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
     } catch (e) {
       if (!mounted) return;
 
-      _mostrarMensaje('Error al eliminar el sitio: $e', error: true);
+      _mostrarMensaje(
+        'Error al eliminar el sitio: $e',
+        error: true,
+      );
     }
   }
 
@@ -159,9 +168,12 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
       ..showSnackBar(
         SnackBar(
           content: Text(mensaje),
-          backgroundColor: error ? AppColors.error : AppColors.success,
+          backgroundColor:
+              error ? AppColors.error : AppColors.success,
           behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(AppDimensions.spacingMd),
+          margin: const EdgeInsets.all(
+            AppDimensions.spacingMd,
+          ),
         ),
       );
   }
@@ -185,17 +197,18 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
           onActualizar: controlador.cargarDatos,
           onNuevo: _crearSitio,
         ),
-
         BarraBusqueda(
           valor: controlador.busqueda,
-          textoAyuda: 'Buscar por nombre, ciudad, dirección o categoría...',
+          textoAyuda:
+              'Buscar por nombre, ciudad, dirección o categoría...',
           onChanged: controlador.buscar,
           onLimpiar: controlador.limpiarBusqueda,
         ),
-
         Expanded(
           child: controlador.cargando
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
               : _contenido(sitios),
         ),
       ],
@@ -206,7 +219,7 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
   // CONTENIDO
   // ============================================================
 
-  Widget _contenido(List<Map<String, dynamic>> sitios) {
+  Widget _contenido(List<SitioAdminModel> sitios) {
     if (sitios.isEmpty) {
       return InformacionSitios(
         buscando: controlador.busqueda.isNotEmpty,
@@ -228,7 +241,7 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
           final sitio = sitios[index];
 
           return TarjetaSitio(
-            sitio: sitio,
+            sitio: sitio.toJson(),
             categoria: controlador.obtenerCategoria(sitio),
             activo: controlador.estaActivo(sitio),
             imagen: controlador.obtenerImagen(sitio),
