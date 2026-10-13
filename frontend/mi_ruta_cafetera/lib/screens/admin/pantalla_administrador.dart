@@ -13,9 +13,13 @@ import 'admin_inicio.dart';
 import 'cuenta/admin_cuenta.dart';
 import 'admin_inicio_sesion.dart';
 import 'categoria/pantalla_categoria.dart';
+import 'reporte/pantalla_reporte_admin.dart';
+import 'reserva/pantalla_reserva_admin.dart';
+import 'resena/pantalla_resenas_admin.dart';
 
 import '../mapa_screen_2.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
+import 'usuario/pantalla_usuarios_admin.dart';
 
 class PantallaAdministrador extends StatefulWidget {
   final String nombre;
@@ -145,24 +149,16 @@ class _PantallaAdministradorState
         );
 
       case 'resenas':
-        return const AdminProximamente(
-          nombre: 'Reseñas',
-        );
+        return const PantallaResenasAdmin();
 
       case 'reservas':
-        return const AdminProximamente(
-          nombre: 'Reservas',
-        );
+        return const PantallaReservaAdmin();
 
       case 'reportes':
-        return const AdminProximamente(
-          nombre: 'Reportes',
-        );
+        return const PantallaReporteAdmin();
 
       case 'usuarios':
-        return const AdminProximamente(
-          nombre: 'Usuarios',
-        );
+        return const PantallaUsuariosAdmin();
 
       default:
         return _inicio();

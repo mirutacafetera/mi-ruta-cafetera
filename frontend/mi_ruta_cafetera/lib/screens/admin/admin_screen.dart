@@ -11,6 +11,8 @@ import '../../widgets/admin/admin_proximamente.dart';
 import '../../screens/mapa_screen_2.dart';
 import '../../screens/admin/admin_sitio_list_screen.dart';
 
+import '../../screens/admin/usuario/pantalla_usuarios_admin.dart';
+
 class AdminScreen extends StatefulWidget {
   final String nombre;
   final String email;
@@ -58,13 +60,11 @@ class _AdminScreenState extends State<AdminScreen> {
         foregroundColor: AppColors.white,
         elevation: AppDimensions.elevationNone,
       ),
-
       drawer: AdminMenuLateral(
         nombre: widget.nombre,
         email: widget.email,
         onOpcionSeleccionada: _cambiarOpcion,
       ),
-
       body: _crearContenido(),
     );
   }
@@ -136,8 +136,7 @@ class _AdminScreenState extends State<AdminScreen> {
         return _sitios();
 
       case 'actividades':
-       return const AdminActividadesScreen();
-
+        return const AdminActividadesScreen();
 
       case 'categorias':
         return const AdminProximamente(nombre: 'Categorías');
@@ -155,7 +154,7 @@ class _AdminScreenState extends State<AdminScreen> {
         return const AdminProximamente(nombre: 'Reportes');
 
       case 'usuarios':
-        return const AdminProximamente(nombre: 'Usuarios');
+        return const PantallaUsuariosAdmin();
 
       case 'perfil':
         return AdminPerfil(nombre: widget.nombre, email: widget.email);

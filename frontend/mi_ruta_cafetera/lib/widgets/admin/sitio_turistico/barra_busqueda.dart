@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_colors.dart';
@@ -8,6 +9,7 @@ class BarraBusqueda extends StatelessWidget {
   final String textoAyuda;
   final ValueChanged<String> onChanged;
   final VoidCallback onLimpiar;
+  final TextEditingController? controller;
 
   const BarraBusqueda({
     super.key,
@@ -15,6 +17,7 @@ class BarraBusqueda extends StatelessWidget {
     required this.textoAyuda,
     required this.onChanged,
     required this.onLimpiar,
+    this.controller,
   });
 
   @override
@@ -27,6 +30,7 @@ class BarraBusqueda extends StatelessWidget {
         AppDimensions.spacingMd,
       ),
       child: TextField(
+        controller: controller,
         onChanged: onChanged,
         decoration: InputDecoration(
           hintText: textoAyuda,
@@ -36,6 +40,7 @@ class BarraBusqueda extends StatelessWidget {
           ),
           suffixIcon: valor.isNotEmpty
               ? IconButton(
+                  tooltip: 'Limpiar búsqueda',
                   onPressed: onLimpiar,
                   icon: const Icon(
                     Icons.clear,
