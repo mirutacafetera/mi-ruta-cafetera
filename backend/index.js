@@ -124,6 +124,11 @@ const adminAyudaRoutes = require(
 const adminActividadesRoutes = require(
   './routes/admin/actividades.routes'
 );
+
+const moderacionContenidoRoutes = require(
+  './routes/admin/moderacionContenido.routes'
+);
+
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
@@ -308,6 +313,11 @@ app.use(
   adminActividadesRoutes
 );
 
+app.use(
+  '/api/admin/moderacion-contenidos',
+  moderacionContenidoRoutes
+);
+
 // ======================================================
 // SUBRUTAS DE SITIOS TURÍSTICOS
 // ======================================================
@@ -417,100 +427,57 @@ app.use(
 );
 
 // ======================================================
-// MONGODB
+// CONFIGURACIÓN DEL SERVIDOR Y MONGODB
 // ======================================================
 
-const PORT =
-  process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 const MONGO_URI =
   process.env.MONGO_URI ||
   'mongodb://127.0.0.1:27017/mirutacafetera';
 
 // ======================================================
-// CONEXIÓN A MONGODB
+// CONEXIÓN A MONGODB E INICIO DEL SERVIDOR
 // ======================================================
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log(
-      '=========================================='
-    );
+const iniciarServidor = async () => {
+  try {
+    await mongoose.connect(MONGO_URI);
 
-    console.log(
-      '✅ MongoDB conectado correctamente'
-    );
+    console.log('==========================================');
+    console.log('✅ MongoDB conectado correctamente');
+    console.log(`📦 Base de datos: ${mongoose.connection.name}`);
+    console.log('==========================================');
 
-    console.log(
-      `📦 Base de datos: ${
-        mongoose.connection.name
-      }`
-    );
+    const servidor = app.listen(PORT, '0.0.0.0', () => {
+      console.log('==========================================');
+      console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
+      console.log(`🏠 API local: http://localhost:${PORT}`);
+      console.log(`📱 API para emulador: http://10.0.2.2:${PORT}`);
+      console.log(`❤️ Health check: http://localhost:${PORT}/api/health`);
+      console.log('🔐 Login administrador: /api/admin/administradores');
+      console.log('📋 Actividades: /api/admin/actividades');
+      console.log('📝 Moderación: /api/admin/moderacion-contenidos');
+      console.log('==========================================');
+    });
 
-    console.log(
-      '=========================================='
-    );
+    servidor.on('error', (error) => {
+      console.error('❌ Error al iniciar el servidor:', error.message);
 
-    // --------------------------------------------------
-    // INICIAR SERVIDOR
-    // --------------------------------------------------
-
-    app.listen(
-      PORT,
-      () => {
-        console.log(
-          `🚀 Servidor funcionando en http://localhost:${PORT}`
-        );
-
-        console.log(
-          '📍 API de sitios: /api/sitiosturisticos'
-        );
-
-        console.log(
-          '📂 API de categorías: /api/categorias-sitios'
-        );
-
-        console.log(
-          '👨‍💼 API admin sitios: /api/admin/sitios'
-        );
-
-        console.log(
-          '🔐 API autenticación admin: /api/admin/administradores'
-        );
-
-        console.log(
-          '🔐 API cuentas sitios: /api/admin/authsitio'
-        );
-
-        console.log(
-          '❤️ Health check: /api/health'
-        );
-
-        console.log(
-          '=========================================='
-        );
+      if (error.code === 'EADDRINUSE') {
+        console.error(`⚠️ El puerto ${PORT} ya está ocupado.`);
       }
-    );
-  })
-  .catch(
-    (error) => {
-      console.error(
-        '=========================================='
-      );
 
-      console.error(
-        '❌ ERROR AL CONECTAR CON MONGODB'
-      );
+      process.exitCode = 1;
+    });
+  } catch (error) {
+    console.error('==========================================');
+    console.error('❌ ERROR AL CONECTAR CON MONGODB');
+    console.error(error.message);
+    console.error('==========================================');
 
-      console.error(
-        error.message
-      );
+    process.exitCode = 1;
+  }
+};
 
-      console.error(
-        '=========================================='
-      );
-
-      process.exit(1);
-    }
-  );
+iniciarServidor();

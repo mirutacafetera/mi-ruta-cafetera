@@ -4,12 +4,15 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 
 import '../../widgets/admin/admin_menu_lateral.dart';
-import '../../screens/admin/admin_inicio.dart';
-import '../../screens/admin/admin_perfil.dart';
-import '../../screens/admin/admin_actividades_screen.dart';
 import '../../widgets/admin/admin_proximamente.dart';
-import '../../screens/mapa_screen_2.dart';
-import '../../screens/admin/admin_sitio_list_screen.dart';
+
+import 'admin_inicio.dart';
+import 'admin_perfil.dart';
+import 'admin_actividades_screen.dart';
+import 'admin_contenidos_screen.dart';
+import 'admin_sitio_list_screen.dart';
+
+import '../mapa_screen_2.dart';
 
 class AdminScreen extends StatefulWidget {
   final String nombre;
@@ -25,24 +28,139 @@ class _AdminScreenState extends State<AdminScreen> {
   String _opcionSeleccionada = 'inicio';
 
   // ============================================================
-  // CAMBIAR OPCIÓN
+  // NORMALIZAR IDENTIFICADORES DEL MENÚ
+  // ============================================================
+
+  String _normalizarOpcion(String opcion) {
+    switch (opcion.trim().toLowerCase()) {
+      case 'inicio':
+      case 'home':
+        return 'inicio';
+
+      case 'estadistica':
+      case 'estadisticas':
+        return 'estadisticas';
+
+      case 'sitio':
+      case 'sitios':
+      case 'sitios_turisticos':
+        return 'sitios';
+
+      case 'actividad':
+      case 'actividades':
+      case 'actividad_pendiente':
+      case 'actividades_pendientes':
+        return 'actividades';
+
+      case 'categoria':
+      case 'categorias':
+        return 'categorias';
+
+      case 'contenido':
+      case 'contenidos':
+      case 'moderacion':
+      case 'moderacion_contenidos':
+      case 'moderacion-contenidos':
+        return 'contenido';
+
+      case 'resena':
+      case 'resenas':
+        return 'resenas';
+
+      case 'reserva':
+      case 'reservas':
+        return 'reservas';
+
+      case 'reporte':
+      case 'reportes':
+        return 'reportes';
+
+      case 'usuario':
+      case 'usuarios':
+        return 'usuarios';
+
+      case 'perfil':
+      case 'mi_cuenta':
+        return 'perfil';
+
+      case 'logout':
+      case 'cerrar_sesion':
+        return 'logout';
+
+      default:
+        return 'inicio';
+    }
+  }
+
+  // ============================================================
+  // CAMBIAR OPCIÓN DEL MENÚ
   // ============================================================
 
   void _cambiarOpcion(String opcion) {
+    if (!mounted) return;
+
+    final opcionNormalizada = _normalizarOpcion(opcion);
+
+    if (opcionNormalizada == 'logout') {
+      _mostrarConfirmacionCerrarSesion();
+      return;
+    }
+
     setState(() {
-      _opcionSeleccionada = opcion;
+      _opcionSeleccionada = opcionNormalizada;
     });
   }
 
   // ============================================================
-  // ABRIR MAPA
+  // CONFIRMAR CIERRE DE SESIÓN
+  // ============================================================
+
+  Future<void> _mostrarConfirmacionCerrarSesion() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Cerrar sesión'),
+          content: const Text('¿Deseas cerrar la sesión de administrador?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text('Cerrar sesión'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted || confirmar != true) return;
+
+    // La sesión se limpia y la navegación se realiza en el flujo
+    // de autenticación correspondiente.
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Debes cerrar la sesión desde el flujo de autenticación.',
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // ABRIR MAPA TURÍSTICO
   // ============================================================
 
   void _abrirMapa() {
-    Navigator.push(
+    Navigator.of(
       context,
-      MaterialPageRoute(builder: (context) => const MapaScreen2()),
-    );
+    ).push(MaterialPageRoute<void>(builder: (_) => const MapaScreen2()));
   }
 
   // ============================================================
@@ -58,19 +176,17 @@ class _AdminScreenState extends State<AdminScreen> {
         foregroundColor: AppColors.white,
         elevation: AppDimensions.elevationNone,
       ),
-
       drawer: AdminMenuLateral(
         nombre: widget.nombre,
         email: widget.email,
         onOpcionSeleccionada: _cambiarOpcion,
       ),
-
       body: _crearContenido(),
     );
   }
 
   // ============================================================
-  // TÍTULO
+  // TÍTULO DE LA PANTALLA
   // ============================================================
 
   String _tituloPantalla() {
@@ -91,7 +207,7 @@ class _AdminScreenState extends State<AdminScreen> {
         return 'Categorías';
 
       case 'contenido':
-        return 'Contenido';
+        return 'Moderación de contenidos';
 
       case 'resenas':
         return 'Reseñas';
@@ -114,36 +230,31 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   // ============================================================
-  // CONTENIDO
+  // CONTENIDO SEGÚN LA OPCIÓN SELECCIONADA
   // ============================================================
 
   Widget _crearContenido() {
     switch (_opcionSeleccionada) {
       case 'inicio':
-        return AdminInicio(
-          nombre: widget.nombre,
-          email: widget.email,
-          onAbrirMapa: _abrirMapa,
-          onGestionarSitios: () {
-            _cambiarOpcion('sitios');
-          },
-        );
-
-      case 'estadisticas':
-        return const AdminProximamente(nombre: 'Estadísticas');
+        return _inicio();
 
       case 'sitios':
         return _sitios();
 
       case 'actividades':
-       return const AdminActividadesScreen();
+        return const AdminActividadesScreen();
 
+      case 'contenido':
+        return const AdminContenidosScreen();
+
+      case 'perfil':
+        return AdminPerfil(nombre: widget.nombre, email: widget.email);
+
+      case 'estadisticas':
+        return const AdminProximamente(nombre: 'Estadísticas');
 
       case 'categorias':
         return const AdminProximamente(nombre: 'Categorías');
-
-      case 'contenido':
-        return const AdminProximamente(nombre: 'Contenido');
 
       case 'resenas':
         return const AdminProximamente(nombre: 'Reseñas');
@@ -157,19 +268,13 @@ class _AdminScreenState extends State<AdminScreen> {
       case 'usuarios':
         return const AdminProximamente(nombre: 'Usuarios');
 
-      case 'perfil':
-        return AdminPerfil(nombre: widget.nombre, email: widget.email);
-
-      case 'logout':
-        return _inicio();
-
       default:
         return _inicio();
     }
   }
 
   // ============================================================
-  // INICIO
+  // INICIO DEL PANEL
   // ============================================================
 
   Widget _inicio() {
@@ -184,7 +289,7 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   // ============================================================
-  // SITIOS TURÍSTICOS
+  // GESTIÓN DE SITIOS TURÍSTICOS
   // ============================================================
 
   Widget _sitios() {

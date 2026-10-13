@@ -4,23 +4,51 @@ const Actividad = require('../../models/sitio/actividad');
 const cloudinary = require('../../config/cloudinary');
 
 
+
+
 const obtenerActividades = async (req, res) => {
   try {
     const actividades = await Actividad.find({
       sitio: req.params.id,
-      activo: true
+      activo: true,
+      estadoPublicacion: 'aprobado',
     }).sort({ createdAt: -1 });
 
-    res.status(200).json(actividades);
+    return res.status(200).json(actividades);
   } catch (error) {
-    console.error('❌ Error al obtener actividades:', error);
+    console.error('Error al obtener actividades públicas:', error);
 
-    res.status(500).json({
-      mensaje: 'Error al obtener actividades',
-      error: error.message
+    return res.status(500).json({
+      mensaje: 'No fue posible obtener las actividades.',
     });
   }
 };
+
+const obtenerActividadesPropietario = async (req, res) => {
+  try {
+    const sitioId = String(req.usuario.sitioId || '');
+    const sitioSolicitado = String(req.params.id || '');
+
+    if (!sitioId || sitioId !== sitioSolicitado) {
+      return res.status(403).json({
+        mensaje: 'No tienes permisos para consultar las actividades de este sitio.',
+      });
+    }
+
+    const actividades = await Actividad.find({
+      sitio: sitioId,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json(actividades);
+  } catch (error) {
+    console.error('Error al obtener actividades del propietario:', error);
+
+    return res.status(500).json({
+      mensaje: 'No fue posible obtener las actividades del sitio.',
+    });
+  }
+};
+
 
 const crearActividad = async (req, res) => {
   try {
@@ -487,6 +515,7 @@ const eliminarActividad = async (req, res) => {
 
 module.exports = {
   obtenerActividades,
+  obtenerActividadesPropietario,
   crearActividad,
   actualizarActividad,
   eliminarActividad,
