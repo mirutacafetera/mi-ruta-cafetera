@@ -13,8 +13,10 @@ import 'admin_inicio.dart';
 import 'admin_inicio_sesion.dart';
 import 'admin_actividades_screen.dart';
 import 'admin_contenidos_screen.dart';
+import 'categoria/pantalla_categoria.dart';
 import 'cuenta/admin_cuenta.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
+
 import '../mapa_screen_2.dart';
 
 class PantallaAdministrador extends StatefulWidget {
@@ -140,14 +142,12 @@ class _PantallaAdministradorState
           controller: cuentaAdminController,
         );
 
+      case 'categorias':
+        return const PantallaCategoria();
+
       case 'estadisticas':
         return const AdminProximamente(
           nombre: 'Estadísticas',
-        );
-
-      case 'categorias':
-        return const AdminProximamente(
-          nombre: 'Categorías',
         );
 
       case 'resenas':
