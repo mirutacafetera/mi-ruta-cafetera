@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
-
 import '../../widgets/admin/admin_menu_lateral.dart';
 import '../../widgets/admin/admin_proximamente.dart';
 
@@ -20,7 +19,11 @@ class AdminScreen extends StatefulWidget {
   final String nombre;
   final String email;
 
-  const AdminScreen({super.key, required this.nombre, required this.email});
+  const AdminScreen({
+    super.key,
+    required this.nombre,
+    required this.email,
+  });
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -123,7 +126,9 @@ class _AdminScreenState extends State<AdminScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Cerrar sesión'),
-          content: const Text('¿Deseas cerrar la sesión de administrador?'),
+          content: const Text(
+            '¿Deseas cerrar la sesión de administrador?',
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -160,9 +165,11 @@ class _AdminScreenState extends State<AdminScreen> {
   // ============================================================
 
   void _abrirMapa() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const MapaScreen2()));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const MapaScreen2(),
+      ),
+    );
   }
 
   // ============================================================
@@ -245,30 +252,40 @@ class _AdminScreenState extends State<AdminScreen> {
 
       case 'actividades':
         return const AdminActividadesScreen();
-<<<<<<< HEAD
-=======
 
       case 'contenido':
         return const AdminContenidosScreen();
 
       case 'perfil':
-        return AdminPerfil(nombre: widget.nombre, email: widget.email);
+        return AdminPerfil(
+          nombre: widget.nombre,
+          email: widget.email,
+        );
 
       case 'estadisticas':
-        return const AdminProximamente(nombre: 'Estadísticas');
->>>>>>> origin/main
+        return const AdminProximamente(
+          nombre: 'Estadísticas',
+        );
 
       case 'categorias':
-        return const AdminProximamente(nombre: 'Categorías');
+        return const AdminProximamente(
+          nombre: 'Categorías',
+        );
 
       case 'resenas':
-        return const AdminProximamente(nombre: 'Reseñas');
+        return const AdminProximamente(
+          nombre: 'Reseñas',
+        );
 
       case 'reservas':
-        return const AdminProximamente(nombre: 'Reservas');
+        return const AdminProximamente(
+          nombre: 'Reservas',
+        );
 
       case 'reportes':
-        return const AdminProximamente(nombre: 'Reportes');
+        return const AdminProximamente(
+          nombre: 'Reportes',
+        );
 
       case 'usuarios':
         return const PantallaUsuariosAdmin();
