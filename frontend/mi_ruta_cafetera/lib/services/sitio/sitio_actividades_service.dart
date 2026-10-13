@@ -9,7 +9,40 @@ import '../../models/sitio/sitio_actividad_model.dart';
 
 class SitioActividadesService {
   // ============================================================
-  // OBTENER ACTIVIDADES
+  // OBTENER ACTIVIDADES PUBLICADAS (ACCESO PÚBLICO)
+  // ============================================================
+
+  Future<List<SitioActividadModel>> obtenerActividadesPublicas({
+    required String sitioId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId'),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('No fue posible cargar las actividades.');
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (data is! List) {
+      throw Exception('La respuesta de actividades no es válida.');
+    }
+
+    return data
+        .map(
+          (item) =>
+              SitioActividadModel.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .where(
+          (actividad) =>
+              actividad.activo && actividad.estadoPublicacion == 'aprobado',
+        )
+        .toList();
+  }
+
+  // ============================================================
+  // OBTENER ACTIVIDADES DEL PROPIETARIO
   // ============================================================
 
   Future<List<SitioActividadModel>> obtenerActividades({
@@ -18,7 +51,7 @@ class SitioActividadesService {
   }) async {
     final response = await http.get(
       Uri.parse(
-        '${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId',
+        '${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId/propietario',
       ),
       headers: _crearHeaders(token),
     );
@@ -27,16 +60,13 @@ class SitioActividadesService {
       final data = jsonDecode(response.body);
 
       if (data is! List) {
-        throw Exception(
-          'La respuesta de actividades no tiene un formato válido.',
-        );
+        throw Exception('La respuesta de actividades no es válida.');
       }
 
       return data
           .map(
-            (item) => SitioActividadModel.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) =>
+                SitioActividadModel.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList();
     }
@@ -58,9 +88,7 @@ class SitioActividadesService {
     required String duracion,
   }) async {
     final response = await http.post(
-      Uri.parse(
-        '${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId',
-      ),
+      Uri.parse('${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId'),
       headers: _crearHeaders(token),
       body: jsonEncode({
         'nombre': nombre,
@@ -132,15 +160,11 @@ class SitioActividadesService {
     required List<XFile> archivos,
   }) async {
     if (archivos.isEmpty) {
-      throw Exception(
-        'Debes seleccionar al menos una imagen.',
-      );
+      throw Exception('Debes seleccionar al menos una imagen.');
     }
 
     if (archivos.length > 10) {
-      throw Exception(
-        'Puedes seleccionar máximo 10 imágenes por carga.',
-      );
+      throw Exception('Puedes seleccionar máximo 10 imágenes por carga.');
     }
 
     final request = http.MultipartRequest(
@@ -162,11 +186,9 @@ class SitioActividadesService {
       }
 
       final nombre = archivo.name.toLowerCase();
-
       final MediaType tipo;
 
-      if (nombre.endsWith('.jpg') ||
-          nombre.endsWith('.jpeg')) {
+      if (nombre.endsWith('.jpg') || nombre.endsWith('.jpeg')) {
         tipo = MediaType('image', 'jpeg');
       } else if (nombre.endsWith('.png')) {
         tipo = MediaType('image', 'png');
@@ -190,10 +212,7 @@ class SitioActividadesService {
     }
 
     final streamedResponse = await request.send();
-
-    final response = await http.Response.fromStream(
-      streamedResponse,
-    );
+    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -207,7 +226,7 @@ class SitioActividadesService {
   }
 
   // ============================================================
-  // ELIMINAR UNA IMAGEN DE LA ACTIVIDAD
+  // ELIMINAR UNA IMAGEN
   // ============================================================
 
   Future<SitioActividadModel> eliminarImagen({
@@ -221,9 +240,7 @@ class SitioActividadesService {
         '${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId/$actividadId/imagenes',
       ),
       headers: _crearHeaders(token),
-      body: jsonEncode({
-        'url': url,
-      }),
+      body: jsonEncode({'url': url}),
     );
 
     if (response.statusCode == 200) {
@@ -252,9 +269,7 @@ class SitioActividadesService {
         '${ApiConfig.baseUrl}/sitiosturisticos/actividades/$sitioId/$actividadId/imagen-principal',
       ),
       headers: _crearHeaders(token),
-      body: jsonEncode({
-        'url': url,
-      }),
+      body: jsonEncode({'url': url}),
     );
 
     if (response.statusCode == 200) {
@@ -296,7 +311,7 @@ class SitioActividadesService {
   }
 
   // ============================================================
-  // ELIMINAR ACTIVIDAD PERMANENTEMENTE
+  // ELIMINAR ACTIVIDAD
   // ============================================================
 
   Future<void> eliminarActividad({
@@ -311,8 +326,7 @@ class SitioActividadesService {
       headers: _crearHeaders(token),
     );
 
-    if (response.statusCode == 200 ||
-        response.statusCode == 204) {
+    if (response.statusCode == 200 || response.statusCode == 204) {
       return;
     }
 

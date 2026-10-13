@@ -10,12 +10,14 @@ import '../../widgets/admin/admin_menu_lateral.dart';
 import '../../widgets/admin/admin_proximamente.dart';
 
 import 'admin_inicio.dart';
-import 'cuenta/admin_cuenta.dart';
 import 'admin_inicio_sesion.dart';
+import 'admin_actividades_screen.dart';
+import 'admin_contenidos_screen.dart';
 import 'categoria/pantalla_categoria.dart';
+import 'cuenta/admin_cuenta.dart';
+import 'sitio_turistico/pantalla_lista_sitios.dart';
 
 import '../mapa_screen_2.dart';
-import 'sitio_turistico/pantalla_lista_sitios.dart';
 
 class PantallaAdministrador extends StatefulWidget {
   final String nombre;
@@ -52,6 +54,8 @@ class _PantallaAdministradorState
   Future<void> _cargarCuenta() async {
     await AdminServicioAutenticacion.cargarToken();
 
+    if (!mounted) return;
+
     final idAdministrador =
         AdminServicioAutenticacion.idAdministrador;
 
@@ -72,9 +76,7 @@ class _PantallaAdministradorState
   Future<void> _cerrarSesion() async {
     await AdminServicioAutenticacion.cerrarSesion();
 
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
 
     Navigator.pushAndRemoveUntil(
       context,
@@ -123,25 +125,29 @@ class _PantallaAdministradorState
 
   Widget _contenido() {
     switch (controlador.opcion) {
+      case 'inicio':
+        return _inicio();
+
       case 'sitios':
         return const PantallaListaSitios();
+
+      case 'actividades':
+        return const AdminActividadesScreen();
+
+      case 'contenido':
+        return const AdminContenidosScreen();
 
       case 'perfil':
         return AdminCuenta(
           controller: cuentaAdminController,
         );
 
-      case 'estadisticas':
-        return const AdminProximamente(
-          nombre: 'Estadísticas',
-        );
-
       case 'categorias':
         return const PantallaCategoria();
 
-      case 'contenido':
+      case 'estadisticas':
         return const AdminProximamente(
-          nombre: 'Contenido',
+          nombre: 'Estadísticas',
         );
 
       case 'resenas':

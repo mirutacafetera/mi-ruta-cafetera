@@ -8,37 +8,54 @@ class SeccionContenidoSitio extends StatelessWidget {
   const SeccionContenidoSitio({
     super.key,
     required this.contenidos,
+    this.onReproducirAudioguia,
   });
 
   final List<ContenidoModel> contenidos;
 
+  /// Se conectará con el reproductor flotante.
+  final ValueChanged<ContenidoModel>? onReproducirAudioguia;
+
   @override
   Widget build(BuildContext context) {
-    if (contenidos.isEmpty) {
+    final contenidosVisibles = contenidos
+        .where((contenido) => contenido.activo)
+        .toList();
+
+    if (contenidosVisibles.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Experiencias del sitio',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w800,
-              ),
-        ),
-
-        const SizedBox(
-          height: AppDimensions.spacingMd,
-        ),
-
-        ...contenidos.map(
-          (contenido) => _ContenidoCard(
-            contenido: contenido,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Historias y experiencias',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
           ),
-        ),
-      ],
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(
+            'Descubre las historias que hacen especial este lugar.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+          ),
+          const SizedBox(height: AppDimensions.spacingMd),
+          ...contenidosVisibles.map(
+            (contenido) => _ContenidoCard(
+              contenido: contenido,
+              onReproducirAudioguia: onReproducirAudioguia,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -46,18 +63,31 @@ class SeccionContenidoSitio extends StatelessWidget {
 class _ContenidoCard extends StatelessWidget {
   const _ContenidoCard({
     required this.contenido,
+    required this.onReproducirAudioguia,
   });
 
   final ContenidoModel contenido;
+  final ValueChanged<ContenidoModel>? onReproducirAudioguia;
 
   @override
   Widget build(BuildContext context) {
-    final tieneImagen =
-        contenido.imagenPrincipal.trim().isNotEmpty;
+    final theme = Theme.of(context);
+
+    final imagenPrincipal = contenido.imagenPrincipal.trim();
+
+    final tieneImagen = imagenPrincipal.isNotEmpty;
+
+    final tieneAudioguia = contenido.audioGuias.any(
+      (audio) => audio.url.trim().isNotEmpty,
+    );
+
+    final cantidadImagenes = contenido.imagenes
+        .where((imagen) => imagen.trim().isNotEmpty)
+        .length;
 
     return Container(
       margin: const EdgeInsets.only(
-        bottom: AppDimensions.spacingMd,
+        bottom: AppDimensions.spacingLg,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -76,7 +106,6 @@ class _ContenidoCard extends StatelessWidget {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -84,24 +113,32 @@ class _ContenidoCard extends StatelessWidget {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: Image.network(
-                contenido.imagenPrincipal,
+                imagenPrincipal,
+                width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (
-                  context,
-                  error,
-                  stackTrace,
-                ) {
-                  return Container(
-                    color: AppColors.surfaceVariant,
-                    child: const Center(
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        color: AppColors.textSecondary,
-                        size: 40,
-                      ),
+                errorBuilder: (_, _, _) => Container(
+                  color: AppColors.surfaceVariant,
+                  child: const Center(
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      color: AppColors.textSecondary,
+                      size: 40,
                     ),
-                  );
-                },
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
+              width: double.infinity,
+              height: 120,
+              color: AppColors.surfaceVariant,
+              child: const Center(
+                child: Icon(
+                  Icons.auto_stories_outlined,
+                  color: AppColors.secondary,
+                  size: 42,
+                ),
               ),
             ),
 
@@ -110,82 +147,89 @@ class _ContenidoCard extends StatelessWidget {
               AppDimensions.spacingMd,
             ),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   contenido.titulo,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
 
-                if (contenido.descripcion
-                    .trim()
-                    .isNotEmpty) ...[
-                  const SizedBox(
-                    height: AppDimensions.spacingSm,
-                  ),
-
+                if (contenido.descripcion.trim().isNotEmpty) ...[
+                  const SizedBox(height: AppDimensions.spacingSm),
                   Text(
                     contenido.descripcion,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(
-                          color: AppColors.textSecondary,
-                          height: 1.45,
-                        ),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.45,
+                    ),
                   ),
                 ],
 
-                if (contenido.imagenes.isNotEmpty) ...[
-                  const SizedBox(
-                    height: AppDimensions.spacingSm,
-                  ),
-
-                  Text(
-                    '${contenido.imagenes.length} imágenes en la galería',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                  ),
-                ],
-
-                if (contenido.audioGuias.isNotEmpty) ...[
-                  const SizedBox(
-                    height: AppDimensions.spacingSm,
-                  ),
-
+                if (cantidadImagenes > 0) ...[
+                  const SizedBox(height: AppDimensions.spacingMd),
                   Row(
                     children: [
                       const Icon(
-                        Icons.headphones_outlined,
+                        Icons.photo_library_outlined,
                         size: 18,
                         color: AppColors.secondary,
                       ),
-
                       const SizedBox(
                         width: AppDimensions.spacingXs,
                       ),
-
                       Text(
-                        '${contenido.audioGuias.length} audioguía(s)',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                        '$cantidadImagenes imágenes adicionales',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
+                  ),
+                ],
+
+                if (tieneAudioguia) ...[
+                  const SizedBox(height: AppDimensions.spacingMd),
+                  Container(
+                    padding: const EdgeInsets.all(
+                      AppDimensions.spacingSm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceVariant,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMd,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.headphones,
+                          color: AppColors.primary,
+                          size: 28,
+                        ),
+                        const SizedBox(
+                          width: AppDimensions.spacingSm,
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Escucha esta historia',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        IconButton.filled(
+                          tooltip: 'Escuchar historia',
+                          onPressed: onReproducirAudioguia == null
+                              ? null
+                              : () => onReproducirAudioguia!(contenido),
+                          icon: const Icon(Icons.play_arrow),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ],

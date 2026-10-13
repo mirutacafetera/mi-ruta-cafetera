@@ -1,25 +1,36 @@
+
 const express = require('express');
 
 const router = express.Router();
 
 const {
   verificarToken,
-  verificarSitio
+  verificarSitio,
 } = require('../../middlewares/authmiddleware');
 
 const { upload } = require('../../middlewares/uploadmiddleware');
 
 const {
   obtenerActividades,
+  obtenerActividadesPropietario,
   crearActividad,
   actualizarActividad,
   subirImagenesActividad,
   eliminarImagenActividad,
   establecerImagenPrincipal,
   enviarActividadRevision,
-  eliminarActividad
+  eliminarActividad,
 } = require('../../controllers/sitio/actividades.controller');
 
+// Consulta privada: todas las actividades del propietario.
+router.get(
+  '/:id/propietario',
+  verificarToken,
+  verificarSitio,
+  obtenerActividadesPropietario
+);
+
+// Consulta pública: solo actividades aprobadas y activas.
 router.get(
   '/:id',
   obtenerActividades
