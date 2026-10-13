@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
 import '../../controllers/admin/cuenta/cuenta_admin_controlador.dart';
 import '../../services/admin/admin_servicio_autenticacion.dart';
@@ -8,18 +6,19 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_menu_lateral.dart';
 import '../../widgets/admin/admin_proximamente.dart';
-
+import '../mapa_screen_2.dart';
 import 'admin_inicio.dart';
-import 'cuenta/admin_cuenta.dart';
 import 'admin_inicio_sesion.dart';
+import 'admin_actividades_screen.dart';
+import 'admin_contenidos_screen.dart';
 import 'categoria/pantalla_categoria.dart';
+import 'cuenta/admin_cuenta.dart';
 import 'reporte/pantalla_reporte_admin.dart';
 import 'reserva/pantalla_reserva_admin.dart';
 import 'resena/pantalla_resenas_admin.dart';
-
-import '../mapa_screen_2.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
 import 'usuario/pantalla_usuarios_admin.dart';
+
 
 class PantallaAdministrador extends StatefulWidget {
   final String nombre;
@@ -56,6 +55,8 @@ class _PantallaAdministradorState
   Future<void> _cargarCuenta() async {
     await AdminServicioAutenticacion.cargarToken();
 
+    if (!mounted) return;
+
     final idAdministrador =
         AdminServicioAutenticacion.idAdministrador;
 
@@ -76,9 +77,7 @@ class _PantallaAdministradorState
   Future<void> _cerrarSesion() async {
     await AdminServicioAutenticacion.cerrarSesion();
 
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
 
     Navigator.pushAndRemoveUntil(
       context,
@@ -127,25 +126,29 @@ class _PantallaAdministradorState
 
   Widget _contenido() {
     switch (controlador.opcion) {
+      case 'inicio':
+        return _inicio();
+
       case 'sitios':
         return const PantallaListaSitios();
+
+      case 'actividades':
+        return const AdminActividadesScreen();
+
+      case 'contenido':
+        return const AdminContenidosScreen();
 
       case 'perfil':
         return AdminCuenta(
           controller: cuentaAdminController,
         );
 
-      case 'estadisticas':
-        return const AdminProximamente(
-          nombre: 'Estadísticas',
-        );
-
       case 'categorias':
         return const PantallaCategoria();
 
-      case 'contenido':
+      case 'estadisticas':
         return const AdminProximamente(
-          nombre: 'Contenido',
+          nombre: 'Estadísticas',
         );
 
       case 'resenas':
