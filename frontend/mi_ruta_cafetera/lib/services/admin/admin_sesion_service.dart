@@ -6,120 +6,136 @@ class AdminSesionService {
   AdminSesionService._();
 
   static const String _claveSesion = 'admin_sesion';
+  static const String _claveTokenAdmin = 'token_admin';
+  static const String _claveIdAdministrador = 'id_admin';
 
-  // ============================================================
-  // GUARDAR SESIÓN
-  // ============================================================
-
+  /// Guarda una sesión completa de administrador.
   static Future<void> guardarSesion(
     Map<String, dynamic> sesion,
   ) async {
-    final preferencias =
-        await SharedPreferences.getInstance();
+    final preferencias = await SharedPreferences.getInstance();
 
     await preferencias.setString(
       _claveSesion,
       jsonEncode(sesion),
     );
+
+    final token = sesion['token'];
+
+    if (token != null && token.toString().trim().isNotEmpty) {
+      await preferencias.setString(
+        _claveTokenAdmin,
+        token.toString().trim(),
+      );
+    }
+
+    final administrador = sesion['administrador'];
+
+    if (administrador is Map) {
+      final id = administrador['_id'] ??
+          administrador['id'] ??
+          administrador['idAdministrador'];
+
+      if (id != null && id.toString().trim().isNotEmpty) {
+        await preferencias.setString(
+          _claveIdAdministrador,
+          id.toString().trim(),
+        );
+      }
+    }
   }
 
-  // ============================================================
-  // OBTENER SESIÓN
-  // ============================================================
-
+  /// Recupera la sesión completa, si existe.
   static Future<Map<String, dynamic>?> obtenerSesion() async {
-    final preferencias =
-        await SharedPreferences.getInstance();
+    final preferencias = await SharedPreferences.getInstance();
+    final datos = preferencias.getString(_claveSesion);
 
-    final datos =
-        preferencias.getString(_claveSesion);
-
-    if (datos == null || datos.isEmpty) {
+    if (datos == null || datos.trim().isEmpty) {
       return null;
     }
 
     try {
       final json = jsonDecode(datos);
 
-      if (json is Map<String, dynamic>) {
-        return json;
+      if (json is Map) {
+        return Map<String, dynamic>.from(json);
       }
 
       return null;
     } catch (_) {
-      await cerrarSesion();
+      await preferencias.remove(_claveSesion);
       return null;
     }
   }
 
-  // ============================================================
-  // OBTENER TOKEN
-  // ============================================================
-
+  /// Recupera el token utilizado por el inicio de sesión real.
+  ///
+  /// Primero consulta `token_admin`, que es la clave que guarda
+  /// AdminServicioAutenticacion. Después intenta la sesión anterior.
   static Future<String?> obtenerToken() async {
-    final sesion = await obtenerSesion();
+    final preferencias = await SharedPreferences.getInstance();
 
-    final token = sesion?['token'];
+    final tokenAdmin = preferencias.getString(_claveTokenAdmin);
 
-    if (token == null || token.toString().trim().isEmpty) {
-      return null;
+    if (tokenAdmin != null && tokenAdmin.trim().isNotEmpty) {
+      return tokenAdmin.trim();
     }
 
-    return token.toString();
-  }
-
-  // ============================================================
-  // OBTENER DATOS DEL ADMINISTRADOR
-  // ============================================================
-
-  static Future<Map<String, dynamic>?> obtenerAdministrador() async {
     final sesion = await obtenerSesion();
+    final tokenAnterior = sesion?['token'];
 
-    final administrador =
-        sesion?['administrador'];
-
-    if (administrador is Map<String, dynamic>) {
-      return administrador;
+    if (tokenAnterior != null &&
+        tokenAnterior.toString().trim().isNotEmpty) {
+      return tokenAnterior.toString().trim();
     }
 
     return null;
   }
 
-  // ============================================================
-  // COMPROBAR SESIÓN
-  // ============================================================
-
-  static Future<bool> haySesionActiva() async {
+  /// Recupera los datos del administrador de la sesión guardada.
+  static Future<Map<String, dynamic>?> obtenerAdministrador() async {
     final sesion = await obtenerSesion();
+    final administrador = sesion?['administrador'];
 
-    if (sesion == null) {
-      return false;
+    if (administrador is Map) {
+      return Map<String, dynamic>.from(administrador);
     }
 
-    final token = sesion['token'];
-    final administrador = sesion['administrador'];
-
-    if (token == null ||
-        token.toString().trim().isEmpty) {
-      return false;
-    }
-
-    if (administrador is! Map<String, dynamic>) {
-      return false;
-    }
-
-    return administrador['activo'] == true &&
-        administrador['rol'] == 'admin';
+    return null;
   }
 
-  // ============================================================
-  // CERRAR SESIÓN
-  // ============================================================
+  /// Comprueba si existe una sesión con token e información del administrador.
+  static Future<bool> haySesionActiva() async {
+    final token = await obtenerToken();
 
+    if (token == null || token.trim().isEmpty) {
+      return false;
+    }
+
+    final administrador = await obtenerAdministrador();
+
+    if (administrador == null) {
+      // El inicio de sesión actual también guarda el ID por separado.
+      final preferencias = await SharedPreferences.getInstance();
+      final idAdministrador =
+          preferencias.getString(_claveIdAdministrador);
+
+      return idAdministrador != null &&
+          idAdministrador.trim().isNotEmpty;
+    }
+
+    final rol = administrador['rol']?.toString().toLowerCase();
+    final activo = administrador['activo'];
+
+    return rol == 'admin' && activo != false;
+  }
+
+  /// Elimina los datos de sesión guardados por este servicio.
   static Future<void> cerrarSesion() async {
-    final preferencias =
-        await SharedPreferences.getInstance();
+    final preferencias = await SharedPreferences.getInstance();
 
     await preferencias.remove(_claveSesion);
+    await preferencias.remove(_claveTokenAdmin);
+    await preferencias.remove(_claveIdAdministrador);
   }
 }

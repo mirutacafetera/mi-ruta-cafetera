@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class ControladorPantallaAdministrador extends ChangeNotifier {
@@ -10,6 +11,9 @@ class ControladorPantallaAdministrador extends ChangeNotifier {
 
   String get titulo {
     switch (opcion) {
+      case 'inicio':
+        return 'Panel de administración';
+
       case 'estadisticas':
         return 'Estadísticas';
 
@@ -19,8 +23,11 @@ class ControladorPantallaAdministrador extends ChangeNotifier {
       case 'categorias':
         return 'Categorías';
 
+      case 'actividades':
+        return 'Moderación de actividades';
+
       case 'contenido':
-        return 'Contenido';
+        return 'Moderación de contenidos';
 
       case 'resenas':
         return 'Reseñas';

@@ -52,6 +52,12 @@ class AdminMenuLateral extends StatelessWidget {
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
           AdminIconoMenu(
+            icon: Icons.event_available,
+            titulo: 'Actividades',
+            opcion: 'actividades',
+            onOpcionSeleccionada: onOpcionSeleccionada,
+          ),
+          AdminIconoMenu(
             icon: Icons.article,
             titulo: 'Contenido',
             opcion: 'contenido',

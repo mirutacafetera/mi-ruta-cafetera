@@ -1,4 +1,5 @@
-import 'dart:io';
+
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,7 +14,9 @@ typedef GuardarActividadCallback = Future<void> Function({
   required double precio,
   required String horario,
   required String duracion,
-  required List<File> imagenes,
+  required List<XFile> imagenes,
+  required List<String> imagenesEliminar,
+  required String imagenPrincipalUrl,
 });
 
 class FormularioActividadSitio extends StatefulWidget {
@@ -40,9 +43,13 @@ class _FormularioActividadSitioState
   late final TextEditingController _duracionController;
 
   final ImagePicker _imagePicker = ImagePicker();
+  final List<XFile> _imagenesSeleccionadas = [];
+  final Map<String, Future<Uint8List>> _bytesImagenes = {};
+  final List<String> _imagenesExistentes = [];
+  final List<String> _imagenesEliminar = [];
 
-  final List<File> _imagenesSeleccionadas = [];
-
+  String _imagenPrincipalUrl = '';
+  String? _imagenPrincipalNueva;
   bool _guardando = false;
 
   bool get _esEdicion => widget.actividad != null;
@@ -53,27 +60,32 @@ class _FormularioActividadSitioState
 
     final actividad = widget.actividad;
 
-    _nombreController = TextEditingController(
-      text: actividad?.nombre ?? '',
-    );
-
-    _descripcionController = TextEditingController(
-      text: actividad?.descripcion ?? '',
-    );
-
+    _nombreController =
+        TextEditingController(text: actividad?.nombre ?? '');
+    _descripcionController =
+        TextEditingController(text: actividad?.descripcion ?? '');
     _precioController = TextEditingController(
       text: actividad != null && actividad.precio > 0
           ? actividad.precio.toStringAsFixed(0)
           : '',
     );
+    _horarioController =
+        TextEditingController(text: actividad?.horario ?? '');
+    _duracionController =
+        TextEditingController(text: actividad?.duracion ?? '');
 
-    _horarioController = TextEditingController(
-      text: actividad?.horario ?? '',
-    );
+    if (actividad != null) {
+      _imagenPrincipalUrl = actividad.imagenPrincipal;
 
-    _duracionController = TextEditingController(
-      text: actividad?.duracion ?? '',
-    );
+      _imagenesExistentes.addAll([
+        if (actividad.imagenPrincipal.isNotEmpty)
+          actividad.imagenPrincipal,
+        ...actividad.imagenes.where(
+          (url) =>
+              url.isNotEmpty && url != actividad.imagenPrincipal,
+        ),
+      ]);
+    }
   }
 
   @override
@@ -89,74 +101,111 @@ class _FormularioActividadSitioState
   Future<void> _seleccionarImagenes() async {
     if (_guardando) return;
 
-    final disponibles =
-        10 - _imagenesSeleccionadas.length;
+    final totalActual =
+        _imagenesExistentes.length - _imagenesEliminar.length +
+        _imagenesSeleccionadas.length;
+    final disponibles = 10 - totalActual;
 
     if (disponibles <= 0) {
-      _mostrarError(
-        'Una actividad puede tener máximo 10 imágenes.',
-      );
+      _mostrarError('Una actividad puede tener máximo 10 imágenes.');
       return;
     }
 
-    final seleccionadas =
-        await _imagePicker.pickMultiImage(
-      imageQuality: 85,
-    );
-
-    if (!mounted || seleccionadas.isEmpty) {
-      return;
-    }
-
-    final nuevas = seleccionadas
-        .take(disponibles)
-        .map((imagen) => File(imagen.path))
-        .toList();
-
-    setState(() {
-      _imagenesSeleccionadas.addAll(nuevas);
-    });
-
-    if (seleccionadas.length > disponibles) {
-      _mostrarError(
-        'Solo puedes agregar $disponibles imagen(es) más.',
+    try {
+      final seleccionadas = await _imagePicker.pickMultiImage(
+        imageQuality: 85,
       );
+
+      if (!mounted || seleccionadas.isEmpty) return;
+
+      final existentes = _imagenesSeleccionadas
+          .map((imagen) => imagen.path)
+          .toSet();
+
+      final nuevas = seleccionadas
+          .where((imagen) => !existentes.contains(imagen.path))
+          .take(disponibles)
+          .toList();
+
+      setState(() {
+        _imagenesSeleccionadas.addAll(nuevas);
+        for (final imagen in nuevas) {
+          _bytesImagenes[imagen.path] = imagen.readAsBytes();
+        }
+
+        _imagenPrincipalNueva ??=
+            nuevas.isNotEmpty ? nuevas.first.path : null;
+      });
+
+      if (seleccionadas.length > nuevas.length) {
+        _mostrarError(
+          'Se agregaron ${nuevas.length} imagen(es). '
+          'El máximo es 10 por actividad.',
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      _mostrarError('No fue posible seleccionar las imágenes: $error');
     }
   }
 
-  void _eliminarImagenSeleccionada(int index) {
+  void _quitarImagenExistente(String url) {
     if (_guardando) return;
 
     setState(() {
-      _imagenesSeleccionadas.removeAt(index);
+      if (!_imagenesEliminar.contains(url)) {
+        _imagenesEliminar.add(url);
+      }
+
+      if (_imagenPrincipalUrl == url) {
+        _imagenPrincipalUrl = '';
+      }
+    });
+  }
+
+  void _restaurarImagenExistente(String url) {
+    setState(() {
+      _imagenesEliminar.remove(url);
+      if (_imagenPrincipalUrl.isEmpty) {
+        _imagenPrincipalUrl = url;
+      }
+    });
+  }
+
+  void _quitarImagenNueva(XFile imagen) {
+    if (_guardando) return;
+
+    setState(() {
+      _imagenesSeleccionadas.remove(imagen);
+      _bytesImagenes.remove(imagen.path);
+
+      if (_imagenPrincipalNueva == imagen.path) {
+        _imagenPrincipalNueva = _imagenesSeleccionadas.isNotEmpty
+            ? _imagenesSeleccionadas.first.path
+            : null;
+      }
     });
   }
 
   Future<void> _guardar() async {
-    final nombre = _nombreController.text.trim();
+    if (_guardando) return;
 
+    final nombre = _nombreController.text.trim();
     if (nombre.isEmpty) {
-      _mostrarError(
-        'El nombre de la actividad es obligatorio.',
-      );
+      _mostrarError('El nombre de la actividad es obligatorio.');
       return;
     }
 
     final precioTexto =
         _precioController.text.trim().replaceAll(',', '.');
-
     final precio = double.tryParse(precioTexto) ?? 0;
 
     if (precio < 0) {
-      _mostrarError(
-        'El precio no puede ser negativo.',
-      );
+      _mostrarError('El precio no puede ser negativo.');
       return;
     }
 
-    setState(() {
-      _guardando = true;
-    });
+    setState(() => _guardando = true);
 
     try {
       await widget.onGuardar(
@@ -165,208 +214,222 @@ class _FormularioActividadSitioState
         precio: precio,
         horario: _horarioController.text.trim(),
         duracion: _duracionController.text.trim(),
-        imagenes: List<File>.from(
-          _imagenesSeleccionadas,
-        ),
+        imagenes: List<XFile>.from(_imagenesSeleccionadas),
+        imagenesEliminar: List<String>.from(_imagenesEliminar),
+        imagenPrincipalUrl: _imagenPrincipalUrl,
       );
 
       if (!mounted) return;
-
       Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
-
-      setState(() {
-        _guardando = false;
-      });
-
-      _mostrarError(
-        error.toString().replaceFirst(
-              'Exception: ',
-              '',
-            ),
-      );
+      setState(() => _guardando = false);
+      _mostrarError(error.toString().replaceFirst('Exception: ', ''));
     }
   }
 
   void _mostrarError(String mensaje) {
     if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(mensaje),
+          backgroundColor: AppColors.error,
+        ),
+      );
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        backgroundColor: AppColors.error,
-      ),
+  Widget _vistaNueva(XFile imagen) {
+    final bytes = _bytesImagenes.putIfAbsent(
+      imagen.path,
+      () => imagen.readAsBytes(),
+    );
+
+    return FutureBuilder<Uint8List>(
+      future: bytes,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.primary,
+            ),
+          );
+        }
+
+        return Image.memory(
+          snapshot.data!,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => const Icon(
+            Icons.broken_image_outlined,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _miniatura({
+    required Widget imagen,
+    required bool principal,
+    required VoidCallback alTocarPrincipal,
+    required VoidCallback alQuitar,
+  }) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+          child: imagen,
+        ),
+        Positioned(
+          left: 4,
+          bottom: 4,
+          child: Material(
+            color: principal ? AppColors.primary : Colors.black54,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+            child: InkWell(
+              onTap: _guardando ? null : alTocarPrincipal,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 7,
+                  vertical: 5,
+                ),
+                child: Text(
+                  principal ? 'Principal' : 'Hacer principal',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          right: 3,
+          top: 3,
+          child: IconButton(
+            onPressed: _guardando ? null : alQuitar,
+            tooltip: 'Quitar imagen',
+            constraints: const BoxConstraints(
+              minWidth: 32,
+              minHeight: 32,
+            ),
+            padding: EdgeInsets.zero,
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.black54,
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.close, size: 18),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _construirSeccionImagenes() {
+    final existentesVisibles = _imagenesExistentes
+        .where((url) => !_imagenesEliminar.contains(url))
+        .toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceGreen,
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusMd,
-                ),
+        Text(
+          'Imágenes de la actividad',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
               ),
-              child: const Icon(
-                Icons.photo_library_outlined,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(
-              width: AppDimensions.spacingMd,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Imágenes de la actividad',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                        ),
-                  ),
-                  const SizedBox(
-                    height: AppDimensions.spacingXs,
-                  ),
-                  Text(
-                    'Puedes seleccionar hasta 10 imágenes. '
-                    'La primera será la principal.',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
-        const SizedBox(
-          height: AppDimensions.spacingMd,
+        const SizedBox(height: AppDimensions.spacingXs),
+        Text(
+          'Máximo 10 imágenes. Pulsa “Hacer principal” '
+          'para elegir la imagen de portada.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
         ),
+        const SizedBox(height: AppDimensions.spacingMd),
         OutlinedButton.icon(
-          onPressed:
-              _guardando ? null : _seleccionarImagenes,
-          icon: const Icon(
-            Icons.add_photo_alternate_outlined,
-          ),
-          label: const Text(
-            'Seleccionar imágenes',
-          ),
+          onPressed: _guardando ? null : _seleccionarImagenes,
+          icon: const Icon(Icons.add_photo_alternate_outlined),
+          label: const Text('Seleccionar imágenes'),
         ),
-        if (_imagenesSeleccionadas.isNotEmpty) ...[
-          const SizedBox(
-            height: AppDimensions.spacingMd,
-          ),
+        if (existentesVisibles.isNotEmpty ||
+            _imagenesSeleccionadas.isNotEmpty) ...[
+          const SizedBox(height: AppDimensions.spacingMd),
           GridView.builder(
             shrinkWrap: true,
-            physics:
-                const NeverScrollableScrollPhysics(),
-            itemCount: _imagenesSeleccionadas.length,
-            gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount:
+                existentesVisibles.length + _imagenesSeleccionadas.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing:
-                  AppDimensions.spacingSm,
-              mainAxisSpacing:
-                  AppDimensions.spacingSm,
-              childAspectRatio: 1,
+              crossAxisSpacing: AppDimensions.spacingSm,
+              mainAxisSpacing: AppDimensions.spacingSm,
             ),
             itemBuilder: (context, index) {
-              final imagen =
-                  _imagenesSeleccionadas[index];
+              if (index < existentesVisibles.length) {
+                final url = existentesVisibles[index];
+                return _miniatura(
+                  imagen: Image.network(
+                    url,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const Center(
+                      child: Icon(Icons.broken_image_outlined),
+                    ),
+                  ),
+                  principal: _imagenPrincipalUrl == url,
+                  alTocarPrincipal: () {
+                    setState(() {
+                      _imagenPrincipalUrl = url;
+                      _imagenPrincipalNueva = null;
+                    });
+                  },
+                  alQuitar: () => _quitarImagenExistente(url),
+                );
+              }
 
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(
-                      AppDimensions.radiusMd,
-                    ),
-                    child: Image.file(
-                      imagen,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    top: AppDimensions.spacingXs,
-                    right: AppDimensions.spacingXs,
-                    child: Material(
-                      color: Colors.black54,
-                      borderRadius:
-                          BorderRadius.circular(
-                        AppDimensions.radiusPill,
-                      ),
-                      child: InkWell(
-                        onTap: _guardando
-                            ? null
-                            : () =>
-                                _eliminarImagenSeleccionada(
-                                  index,
-                                ),
-                        borderRadius:
-                            BorderRadius.circular(
-                          AppDimensions.radiusPill,
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (index == 0)
-                    Positioned(
-                      left: AppDimensions.spacingXs,
-                      bottom: AppDimensions.spacingXs,
-                      child: Container(
-                        padding:
-                            const EdgeInsets.symmetric(
-                          horizontal:
-                              AppDimensions.spacingSm,
-                          vertical:
-                              AppDimensions.spacingXs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius:
-                              BorderRadius.circular(
-                            AppDimensions.radiusPill,
-                          ),
-                        ),
-                        child: const Text(
-                          'Principal',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+              final imagen =
+                  _imagenesSeleccionadas[index - existentesVisibles.length];
+
+              return _miniatura(
+                imagen: _vistaNueva(imagen),
+                principal: _imagenPrincipalNueva == imagen.path &&
+                    _imagenPrincipalUrl.isEmpty,
+                alTocarPrincipal: () {
+                  setState(() {
+                    _imagenPrincipalNueva = imagen.path;
+                    _imagenPrincipalUrl = '';
+                  });
+                },
+                alQuitar: () => _quitarImagenNueva(imagen),
               );
             },
+          ),
+        ],
+        if (_imagenesEliminar.isNotEmpty) ...[
+          const SizedBox(height: AppDimensions.spacingMd),
+          Text(
+            '${_imagenesEliminar.length} imagen(es) se eliminarán al guardar.',
+            style: TextStyle(color: AppColors.error),
+          ),
+          Wrap(
+            spacing: 8,
+            children: _imagenesEliminar
+                .map(
+                  (url) => ActionChip(
+                    label: const Text('Restaurar imagen'),
+                    onPressed: _guardando
+                        ? null
+                        : () => _restaurarImagenExistente(url),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ],
@@ -376,48 +439,27 @@ class _FormularioActividadSitioState
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      insetPadding: const EdgeInsets.all(
-        AppDimensions.spacingLg,
-      ),
+      insetPadding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           maxWidth: 600,
           maxHeight: 800,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(
-            AppDimensions.spacingLg,
-          ),
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceGreen,
-                      borderRadius:
-                          BorderRadius.circular(
-                        AppDimensions.radiusMd,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.local_activity_outlined,
-                      color: AppColors.primary,
-                    ),
+                  const Icon(
+                    Icons.local_activity_outlined,
+                    color: AppColors.primary,
                   ),
-                  const SizedBox(
-                    width: AppDimensions.spacingMd,
-                  ),
+                  const SizedBox(width: AppDimensions.spacingMd),
                   Expanded(
                     child: Text(
-                      _esEdicion
-                          ? 'Editar actividad'
-                          : 'Nueva actividad',
+                      _esEdicion ? 'Editar actividad' : 'Nueva actividad',
                       style: const TextStyle(
                         fontSize: 21,
                         fontWeight: FontWeight.w700,
@@ -427,190 +469,79 @@ class _FormularioActividadSitioState
                   IconButton(
                     onPressed: _guardando
                         ? null
-                        : () =>
-                            Navigator.of(context).pop(),
+                        : () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
                   ),
                 ],
               ),
-              const SizedBox(
-                height: AppDimensions.spacingLg,
-              ),
+              const SizedBox(height: AppDimensions.spacingLg),
               Flexible(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      TextField(
-                        controller:
-                            _nombreController,
-                        enabled: !_guardando,
-                        textInputAction:
-                            TextInputAction.next,
-                        decoration: InputDecoration(
-                          labelText: 'Nombre',
-                          hintText:
-                              'Ej. Tour de café especial',
-                          prefixIcon: const Icon(
-                            Icons.title_outlined,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(
-                              AppDimensions.radiusMd,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: AppDimensions.spacingMd,
-                      ),
-                      TextField(
-                        controller:
-                            _descripcionController,
-                        enabled: !_guardando,
-                        maxLines: 4,
-                        textInputAction:
-                            TextInputAction.next,
-                        decoration: InputDecoration(
-                          labelText: 'Descripción',
-                          hintText:
-                              'Describe la experiencia...',
-                          alignLabelWithHint: true,
-                          prefixIcon: const Padding(
-                            padding: EdgeInsets.only(
-                              bottom: 48,
-                            ),
-                            child: Icon(
-                              Icons.description_outlined,
-                            ),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(
-                              AppDimensions.radiusMd,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: AppDimensions.spacingMd,
-                      ),
-                      TextField(
-                        controller:
-                            _precioController,
-                        enabled: !_guardando,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: 'Precio',
-                          prefixText: r'$ ',
-                          prefixIcon: const Icon(
-                            Icons.attach_money_rounded,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(
-                              AppDimensions.radiusMd,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: AppDimensions.spacingMd,
-                      ),
-                      TextField(
-                        controller:
-                            _horarioController,
-                        enabled: !_guardando,
-                        decoration: InputDecoration(
-                          labelText: 'Horario',
-                          hintText:
-                              'Ej. 8:00 a. m. - 4:00 p. m.',
-                          prefixIcon: const Icon(
-                            Icons.schedule_outlined,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(
-                              AppDimensions.radiusMd,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: AppDimensions.spacingMd,
-                      ),
-                      TextField(
-                        controller:
-                            _duracionController,
-                        enabled: !_guardando,
-                        decoration: InputDecoration(
-                          labelText: 'Duración',
-                          hintText: 'Ej. 2 horas',
-                          prefixIcon: const Icon(
-                            Icons.timer_outlined,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(
-                              AppDimensions.radiusMd,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: AppDimensions.spacingLg,
-                      ),
+                      _campo(_nombreController, 'Nombre'),
+                      _campo(_descripcionController, 'Descripción',
+                          maxLines: 4),
+                      _campo(_precioController, 'Precio'),
+                      _campo(_horarioController, 'Horario'),
+                      _campo(_duracionController, 'Duración'),
+                      const SizedBox(height: AppDimensions.spacingLg),
                       _construirSeccionImagenes(),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(
-                height: AppDimensions.spacingLg,
-              ),
+              const SizedBox(height: AppDimensions.spacingLg),
               Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
                     onPressed: _guardando
                         ? null
-                        : () =>
-                            Navigator.of(context).pop(),
+                        : () => Navigator.of(context).pop(),
                     child: const Text('Cancelar'),
                   ),
-                  const SizedBox(
-                    width: AppDimensions.spacingSm,
-                  ),
+                  const SizedBox(width: AppDimensions.spacingSm),
                   ElevatedButton.icon(
-                    onPressed:
-                        _guardando ? null : _guardar,
+                    onPressed: _guardando ? null : _guardar,
                     icon: _guardando
                         ? const SizedBox(
-                            width:
-                                AppDimensions.iconSm,
-                            height:
-                                AppDimensions.iconSm,
-                            child:
-                                CircularProgressIndicator(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
                               strokeWidth: 2,
                             ),
                           )
-                        : const Icon(
-                            Icons.save_outlined,
-                          ),
-                    label: Text(
-                      _guardando
-                          ? 'Guardando...'
-                          : 'Guardar',
-                    ),
+                        : const Icon(Icons.save_outlined),
+                    label: Text(_guardando ? 'Guardando...' : 'Guardar'),
                   ),
                 ],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _campo(
+    TextEditingController controller,
+    String etiqueta, {
+    int maxLines = 1,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+      child: TextField(
+        controller: controller,
+        enabled: !_guardando,
+        maxLines: maxLines,
+        keyboardType: etiqueta == 'Precio'
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.text,
+        decoration: InputDecoration(
+          labelText: etiqueta,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           ),
         ),
       ),

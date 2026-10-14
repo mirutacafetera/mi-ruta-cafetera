@@ -56,8 +56,9 @@ const contenidoSchema = new mongoose.Schema(
   }
 );
 
-const Contenido =
-  mongoose.models.Contenido ||
-  mongoose.model('Contenido', contenidoSchema);
 
-module.exports = Contenido;
+const ContenidoAdmin =
+  mongoose.models.ContenidoAdmin ||
+  mongoose.model('ContenidoAdmin', contenidoSchema);
+
+module.exports = ContenidoAdmin;

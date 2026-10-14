@@ -18,7 +18,7 @@ publish_to: 'none'
 # In iOS, build-name is used as CFBundleShortVersionString while build-number
 # is used as CFBundleVersion.
 # Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/CoreFoundationKeys.html
+# https://developer.apple.com/library/archive/documentation/General/Reference/General/CoreFoundationKeys.html
 
 version: 1.0.0+1
 
@@ -28,8 +28,8 @@ environment:
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
 # consider running `flutter pub upgrade --major-versions`. Alternatively,
-# dependencies can be manually updated by changing the version numbers below to
-# the latest version available on pub.dev.
+# dependencies can be manually updated by changing the version numbers below
+# to the latest version available on pub.dev.
 
 dependencies:
   flutter:
@@ -49,16 +49,18 @@ dependencies:
   google_sign_in: ^7.2.0
   google_sign_in_web: ^1.1.3
   device_info_plus: ^13.3.0
+  file_picker: ^13.1.0
+  just_audio: ^0.10.6
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package
-  # is activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules.
+  # encourage good coding practices. The lint set provided by this package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating lint rules.
 
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
@@ -71,8 +73,8 @@ dev_dependencies:
 
 flutter:
 
-  # The following line ensures that the Material Icons font is
-  # included with the application.
+  # The following line ensures that the Material Icons font
+  # is included with the application.
   # Use with the Material Icons class for iOS style icons.
   uses-material-design: true
 
@@ -82,8 +84,8 @@ flutter:
     - assets/images/bienvenida/
     - assets/images/sitios/
 
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section, see:
+  # To add custom fonts to your application, add a fonts section
+  # in this `flutter` section, see:
   # fonts:
   #   - family: Schyler
   #     fonts:
@@ -93,7 +95,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies, see:
   # https://flutter.dev/to/asset-from-package
-
 
 # Configuración para generar el ícono de la aplicación
 flutter_launcher_icons:

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_colors.dart';
@@ -9,6 +10,7 @@ class EncabezadoLista extends StatelessWidget {
   final String textoNuevo;
   final int cantidad;
   final bool cargando;
+  final bool mostrarBotonNuevo;
   final VoidCallback onActualizar;
   final VoidCallback onNuevo;
 
@@ -19,6 +21,7 @@ class EncabezadoLista extends StatelessWidget {
     required this.textoNuevo,
     required this.cantidad,
     required this.cargando,
+    this.mostrarBotonNuevo = true,
     required this.onActualizar,
     required this.onNuevo,
   });
@@ -40,15 +43,22 @@ class EncabezadoLista extends StatelessWidget {
               children: [
                 Text(
                   titulo,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(
+                  height: AppDimensions.spacingXs,
+                ),
                 Text(
                   '$cantidad $descripcion',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -62,12 +72,19 @@ class EncabezadoLista extends StatelessWidget {
               size: AppDimensions.iconMd,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          FilledButton.icon(
-            onPressed: onNuevo,
-            icon: const Icon(Icons.add, size: AppDimensions.iconMd),
-            label: Text(textoNuevo),
-          ),
+          if (mostrarBotonNuevo) ...[
+            const SizedBox(
+              width: AppDimensions.spacingXs,
+            ),
+            FilledButton.icon(
+              onPressed: onNuevo,
+              icon: const Icon(
+                Icons.add,
+                size: AppDimensions.iconMd,
+              ),
+              label: Text(textoNuevo),
+            ),
+          ],
         ],
       ),
     );

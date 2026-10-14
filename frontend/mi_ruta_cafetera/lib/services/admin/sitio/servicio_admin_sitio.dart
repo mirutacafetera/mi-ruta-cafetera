@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
+import '../../../config/api_config.dart';
+import '../../../models/admin/sitio_admin_model.dart';
 import '../admin_servicio_autenticacion.dart';
 import 'admin_sitio_consultas.dart';
 import 'admin_sitio_crud.dart';
-
-import '../../../config/api_config.dart';
 
 class ServicioAdminSitio {
   static String get baseUrl {
@@ -15,7 +15,7 @@ class ServicioAdminSitio {
   // CONSULTAS
   // ============================================================
 
-  static Future<List<dynamic>> obtenerSitios() {
+  static Future<List<SitioAdminModel>> obtenerSitios() {
     return AdminSitioConsultas.obtenerSitios(baseUrl);
   }
 
@@ -23,13 +23,8 @@ class ServicioAdminSitio {
     return AdminSitioConsultas.obtenerCategorias(baseUrl);
   }
 
-  static Future<Map<String, dynamic>> obtenerSitio(
-    String id,
-  ) {
-    return AdminSitioConsultas.obtenerSitio(
-      baseUrl,
-      id,
-    );
+  static Future<SitioAdminModel> obtenerSitio(String id) {
+    return AdminSitioConsultas.obtenerSitio(baseUrl, id);
   }
 
   // ============================================================
@@ -37,73 +32,48 @@ class ServicioAdminSitio {
   // ============================================================
 
   static Future<Map<String, dynamic>> crearSitio({
-    // ----------------------------------------------------------
     // CUENTA DEL SITIO
-    // ----------------------------------------------------------
-
     required String nombreCuenta,
     required String apellidoCuenta,
     required String correo,
     required String password,
     String telefonoCuenta = '',
 
-    // ----------------------------------------------------------
     // INFORMACIÓN DEL SITIO
-    // ----------------------------------------------------------
-
     required String nombre,
     required String descripcion,
     required String categoria,
-
     String direccion = '',
     String ciudad = 'Garzón',
     String departamento = 'Huila',
-
     required double latitud,
     required double longitud,
-
     List<String> etiquetas = const [],
-
     bool activo = true,
-
     String telefono = '',
     String correos = '',
     String sitioWeb = '',
 
-    // ----------------------------------------------------------
     // IMAGEN PRINCIPAL
-    // ----------------------------------------------------------
-
     required Uint8List imagenBytes,
     String nombreImagen = 'imagen.jpg',
 
-    // ----------------------------------------------------------
     // INFORMACIÓN TURÍSTICA
-    // ----------------------------------------------------------
-
     String horario = '',
     double precioDesde = 0,
   }) {
     return AdminSitioCrud.crearSitio(
-      // Configuración
       baseUrl: baseUrl,
-      tokenAdmin:
-          AdminServicioAutenticacion.tokenAdmin,
+      tokenAdmin: AdminServicioAutenticacion.tokenAdmin,
 
-      // --------------------------------------------------------
       // CUENTA
-      // --------------------------------------------------------
-
       nombreCuenta: nombreCuenta,
       apellidoCuenta: apellidoCuenta,
       correo: correo,
       password: password,
       telefonoCuenta: telefonoCuenta,
 
-      // --------------------------------------------------------
       // SITIO
-      // --------------------------------------------------------
-
       nombre: nombre,
       descripcion: descripcion,
       categoria: categoria,
@@ -118,17 +88,11 @@ class ServicioAdminSitio {
       correos: correos,
       sitioWeb: sitioWeb,
 
-      // --------------------------------------------------------
       // IMAGEN PRINCIPAL
-      // --------------------------------------------------------
-
       imagenBytes: imagenBytes,
       nombreImagen: nombreImagen,
 
-      // --------------------------------------------------------
       // INFORMACIÓN TURÍSTICA
-      // --------------------------------------------------------
-
       horario: horario,
       precioDesde: precioDesde,
     );
@@ -141,55 +105,35 @@ class ServicioAdminSitio {
   static Future<void> actualizarSitio({
     required String id,
 
-    // ----------------------------------------------------------
     // INFORMACIÓN DEL SITIO
-    // ----------------------------------------------------------
-
     required String nombre,
     required String descripcion,
     required String categoria,
-
     String direccion = '',
     String ciudad = 'Garzón',
     String departamento = 'Huila',
-
     required double latitud,
     required double longitud,
-
     List<String> etiquetas = const [],
-
     bool activo = true,
-
     String telefono = '',
     String correos = '',
     String sitioWeb = '',
 
-    // ----------------------------------------------------------
     // IMAGEN PRINCIPAL
-    // ----------------------------------------------------------
-
     Uint8List? imagenBytes,
     String nombreImagen = 'imagen.jpg',
 
-    // ----------------------------------------------------------
     // INFORMACIÓN TURÍSTICA
-    // ----------------------------------------------------------
-
     String horario = '',
     double precioDesde = 0,
   }) {
     return AdminSitioCrud.actualizarSitio(
-      // Configuración
       baseUrl: baseUrl,
-      tokenAdmin:
-          AdminServicioAutenticacion.tokenAdmin,
-
+      tokenAdmin: AdminServicioAutenticacion.tokenAdmin,
       id: id,
 
-      // --------------------------------------------------------
       // SITIO
-      // --------------------------------------------------------
-
       nombre: nombre,
       descripcion: descripcion,
       categoria: categoria,
@@ -204,17 +148,11 @@ class ServicioAdminSitio {
       correos: correos,
       sitioWeb: sitioWeb,
 
-      // --------------------------------------------------------
       // IMAGEN PRINCIPAL
-      // --------------------------------------------------------
-
       imagenBytes: imagenBytes,
       nombreImagen: nombreImagen,
 
-      // --------------------------------------------------------
       // INFORMACIÓN TURÍSTICA
-      // --------------------------------------------------------
-
       horario: horario,
       precioDesde: precioDesde,
     );
@@ -224,14 +162,11 @@ class ServicioAdminSitio {
   // ELIMINAR SITIO TURÍSTICO
   // ============================================================
 
-  static Future<void> eliminarSitio(
-    String id,
-  ) {
+  static Future<void> eliminarSitio(String id) {
     return AdminSitioCrud.eliminarSitio(
       baseUrl: baseUrl,
       id: id,
-      tokenAdmin:
-          AdminServicioAutenticacion.tokenAdmin,
+      tokenAdmin: AdminServicioAutenticacion.tokenAdmin,
     );
   }
 }
