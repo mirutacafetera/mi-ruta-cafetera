@@ -1,6 +1,5 @@
 
 import 'package:flutter/material.dart';
-
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../models/categoria_model.dart';
@@ -10,23 +9,14 @@ import '../../../widgets/admin/categoria/selector_iconos_categoria.dart';
 import '../../../widgets/admin/sitio_turistico/barra_busqueda.dart';
 import 'pantalla_sitios_categoria.dart' as sitios_categoria;
 
-// ============================================================
-// COLORES
-// ============================================================
-
-const Color verdeEncabezado = Color(0xFF174B38);
-const Color fondoCrema = Color(0xFFF4F0E7);
-const Color naranjaAccion = Color(0xFFFF781F);
-const Color verdeEstado = Color(0xFF248342);
-const Color fondoEstado = Color(0xFFE6F4E8);
-const Color blancoTarjeta = Color(0xFFFFFEFC);
-const Color colorTextoSuave = Color(0xFF7D867E);
-const Color fondoContador = Color(0xFFECE4D6);
-const Color colorContador = Color(0xFF76583A);
-
-// ============================================================
-// ICONOS Y COLORES DE CATEGORÍAS
-// ============================================================
+const verdeEncabezado = Color(0xFF174B38);
+const fondoCrema = Color(0xFFF4F0E7);
+const naranjaAccion = Color(0xFFFF781F);
+const verdeEstado = Color(0xFF248342);
+const blancoTarjeta = Color(0xFFFFFEFC);
+const colorTextoSuave = Color(0xFF7D867E);
+const fondoContador = Color(0xFFECE4D6);
+const colorContador = Color(0xFF76583A);
 
 const Map<String, IconData> iconosCategoria = {
   'coffee_rounded': Icons.coffee_rounded,
@@ -74,39 +64,21 @@ const Map<String, Color> coloresIconosCategoria = {
   'eco_rounded': Color(0xFF4E9568),
 };
 
-IconData obtenerIconoCategoria(CategoriaModel categoria) {
-  final icono = categoria.icono.trim().toLowerCase();
-
-  if (icono.isNotEmpty &&
-      icono != 'location_on' &&
-      icono != 'location' &&
-      icono != 'place' &&
-      iconosCategoria.containsKey(icono)) {
-    return iconosCategoria[icono]!;
+IconData obtenerIconoCategoria(CategoriaModel c) {
+  final i = c.icono.trim().toLowerCase();
+  if (i.isNotEmpty && !['location_on', 'location', 'place'].contains(i) && iconosCategoria.containsKey(i)) {
+    return iconosCategoria[i]!;
   }
-
-  return AppColors.getIconForCategory(
-    categoria.nombre.trim().toLowerCase(),
-  );
+  return AppColors.getIconForCategory(c.nombre.trim().toLowerCase());
 }
 
-Color obtenerColorCategoria(CategoriaModel categoria) {
-  final icono = categoria.icono.trim().toLowerCase();
-
-  if (icono.isNotEmpty &&
-      icono != 'location_on' &&
-      icono != 'location' &&
-      icono != 'place' &&
-      coloresIconosCategoria.containsKey(icono)) {
-    return coloresIconosCategoria[icono]!;
+Color obtenerColorCategoria(CategoriaModel c) {
+  final i = c.icono.trim().toLowerCase();
+  if (i.isNotEmpty && !['location_on', 'location', 'place'].contains(i) && coloresIconosCategoria.containsKey(i)) {
+    return coloresIconosCategoria[i]!;
   }
-
-  return AppColors.getIconColorForCategory(categoria.nombre);
+  return AppColors.getIconColorForCategory(c.nombre);
 }
-
-// ============================================================
-// PANTALLA DE CATEGORÍAS
-// ============================================================
 
 class PantallaCategoria extends StatefulWidget {
   const PantallaCategoria({super.key});
@@ -118,6 +90,7 @@ class PantallaCategoria extends StatefulWidget {
 class _PantallaCategoriaState extends State<PantallaCategoria> {
   late final CategoriaController controller;
   String busqueda = '';
+  bool _actualizandoLista = false;
 
   @override
   void initState() {
@@ -133,14 +106,21 @@ class _PantallaCategoriaState extends State<PantallaCategoria> {
 
   void mostrarMensaje(String texto, {bool error = false}) {
     if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(texto),
+      backgroundColor: error ? AppColors.error : verdeEncabezado,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(texto),
-        backgroundColor: error ? AppColors.error : verdeEncabezado,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  Future<void> actualizarPantalla() async {
+    if (_actualizandoLista || controller.cargando) return;
+    setState(() => _actualizandoLista = true);
+    try {
+      await controller.cargarDatos();
+    } finally {
+      if (mounted) setState(() => _actualizandoLista = false);
+    }
   }
 
   Future<void> abrirFormulario([CategoriaModel? categoria]) async {
@@ -152,57 +132,42 @@ class _PantallaCategoriaState extends State<PantallaCategoria> {
         controller: controller,
       ),
     );
-
     if (resultado == true && mounted) {
-      mostrarMensaje(
-        categoria == null
-            ? 'Categoría creada correctamente'
-            : 'Categoría actualizada correctamente',
-      );
+      mostrarMensaje(categoria == null
+          ? 'Categoría creada correctamente'
+          : 'Categoría actualizada correctamente');
     }
   }
 
   Future<void> eliminarCategoria(CategoriaModel categoria) async {
     final confirmar = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         backgroundColor: blancoTarjeta,
         title: const Text('Eliminar categoría'),
         content: Text(
-          '¿Deseas eliminar definitivamente '
-          '"${categoria.nombre}"?\n\n'
-          'Esta acción no se puede deshacer.',
+          '¿Deseas eliminar definitivamente "${categoria.nombre}"?\n\nEsta acción no se puede deshacer.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            onPressed: () => Navigator.pop(dialogContext, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Eliminar'),
           ),
         ],
       ),
     );
-
     if (confirmar != true || !mounted) return;
-
     try {
       await controller.eliminarCategoria(categoria.id);
-
-      if (mounted) {
-        mostrarMensaje('Categoría eliminada correctamente');
-      }
+      if (mounted) mostrarMensaje('Categoría eliminada correctamente');
     } catch (e) {
       if (mounted) {
-        mostrarMensaje(
-          controller.error ?? 'No se pudo eliminar: $e',
-          error: true,
-        );
+        mostrarMensaje(controller.error ?? 'No se pudo eliminar: $e', error: true);
       }
     }
   }
@@ -213,28 +178,21 @@ class _PantallaCategoriaState extends State<PantallaCategoria> {
       animation: controller,
       builder: (context, _) {
         final categorias = controller.categoriasFiltradas;
+        final cargando = _actualizandoLista || controller.cargando;
 
         return Scaffold(
           backgroundColor: fondoCrema,
-
-          // La AppBar del panel se conserva; no se duplica aquí.
-
-          floatingActionButton: FloatingActionButton(
+          floatingActionButton: cargando ? null : FloatingActionButton(
             heroTag: 'fab_nueva_categoria',
-            onPressed: controller.guardando
-                ? null
-                : () => abrirFormulario(),
             backgroundColor: naranjaAccion,
             foregroundColor: Colors.white,
-            elevation: AppDimensions.spacingSm,
-            shape: const CircleBorder(),
+            onPressed: controller.guardando ? null : () => abrirFormulario(),
             tooltip: 'Nueva categoría',
             child: const Icon(Icons.add_rounded, size: 30),
           ),
-
           body: RefreshIndicator(
             color: verdeEncabezado,
-            onRefresh: controller.cargarDatos,
+            onRefresh: actualizarPantalla,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(
@@ -244,51 +202,17 @@ class _PantallaCategoriaState extends State<PantallaCategoria> {
                 110,
               ),
               children: [
-                // ENCABEZADO SIN CUADRO
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingSm,
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.eco_rounded,
-                        color: verdeEncabezado,
-                        size: 30,
-                      ),
-                      const SizedBox(
-                        width: AppDimensions.spacingMd,
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Explora tu ruta cafetera',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 19,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Administra los lugares por tipo de experiencia',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.eco_rounded, color: verdeEncabezado, size: 30),
+                  title: Text('Explora tu ruta cafetera', style: TextStyle(
+                    color: AppColors.textPrimary, fontSize: 19, fontWeight: FontWeight.w800,
+                  )),
+                  subtitle: Text('Administra los lugares por tipo de experiencia', style: TextStyle(
+                    color: AppColors.textSecondary, fontSize: 11,
+                  )),
                 ),
-
-                const SizedBox(height: AppDimensions.spacingLg),
-
-                // CONTADOR EN PASTILLA BEIGE
+                const SizedBox(height: 16),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
@@ -298,163 +222,88 @@ class _PantallaCategoriaState extends State<PantallaCategoria> {
                     ),
                     decoration: BoxDecoration(
                       color: fondoContador,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.chipRadius,
-                      ),
+                      borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.place_rounded,
-                          color: colorContador,
-                          size: 18,
-                        ),
-                        const SizedBox(
-                          width: AppDimensions.spacingSm,
-                        ),
-                        Text(
-                          '${controller.sitios.length} sitios turísticos',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.place_rounded, color: colorContador, size: 18),
+                      const SizedBox(width: 8),
+                      Text('${controller.sitios.length} sitios turísticos', style: TextStyle(
+                        color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 12,
+                      )),
+                    ]),
                   ),
                 ),
-
-                const SizedBox(height: AppDimensions.spacingLg),
-
-                // BÚSQUEDA
+                const SizedBox(height: 20),
                 BarraBusqueda(
                   valor: busqueda,
                   textoAyuda: 'Buscar categoría...',
-                  onChanged: (valor) {
-                    setState(() => busqueda = valor);
-                    controller.buscar(valor);
+                  onChanged: (v) {
+                    setState(() => busqueda = v);
+                    controller.buscar(v);
                   },
                   onLimpiar: () {
                     setState(() => busqueda = '');
                     controller.buscar('');
                   },
                 ),
-
-                const SizedBox(height: AppDimensions.spacingXl),
-
-                // LISTADO Y ACTUALIZACIÓN
-                Row(
-                  children: [
+                const SizedBox(height: 24),
+                if (cargando)
+                  SizedBox(
+                    height: MediaQuery.sizeOf(context).height * 0.75,
+                    child: const ColoredBox(
+                      color: fondoCrema,
+                      child: Center(child: CircularProgressIndicator(
+                        color: verdeEncabezado,
+                        strokeWidth: 3,
+                      )),
+                    ),
+                  )
+                else ...[
+                  Row(children: [
                     Container(
-                      width: 4,
-                      height: 25,
+                      width: 4, height: 25,
                       decoration: BoxDecoration(
                         color: naranjaAccion,
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.chipRadius,
-                        ),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tipos de experiencia',
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          Text(
-                            '${categorias.length} disponibles',
-                            style: TextStyle(
-                              color: colorTextoSuave,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Tipos de experiencia', style: TextStyle(
+                          color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w800,
+                        )),
+                        Text('${categorias.length} disponibles', style: const TextStyle(
+                          color: colorTextoSuave, fontSize: 11,
+                        )),
+                      ],
+                    )),
+                    IconButton(
+                      tooltip: 'Actualizar categorías',
+                      onPressed: actualizarPantalla,
+                      icon: const Icon(Icons.refresh_rounded, color: verdeEncabezado),
                     ),
-                    Material(
-                      color: blancoTarjeta,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusMd,
+                  ]),
+                  const SizedBox(height: 16),
+                  if (controller.error != null && controller.categorias.isEmpty)
+                    EstadoCategoria(mensaje: controller.error!, error: true, icono: Icons.error_outline_rounded)
+                  else if (categorias.isEmpty)
+                    const EstadoCategoria(mensaje: 'No se encontraron categorías.', icono: Icons.category_outlined)
+                  else
+                    ...categorias.map((c) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _TarjetaCategoria(
+                        categoria: c,
+                        cantidad: controller.contarSitios(c),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(
+                          builder: (_) => sitios_categoria.PantallaSitiosCategoria(categoria: c),
+                        )),
+                        onEditar: () => abrirFormulario(c),
+                        onEliminar: () => eliminarCategoria(c),
                       ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusMd,
-                        ),
-                        onTap: controller.cargando
-                            ? null
-                            : controller.cargarDatos,
-                        child: SizedBox(
-                          width: AppDimensions.buttonHeight,
-                          height: AppDimensions.buttonHeight,
-                          child: Icon(
-                            Icons.refresh_rounded,
-                            color: verdeEncabezado,
-                            size: AppDimensions.iconMd,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: AppDimensions.spacingLg),
-
-                if (controller.cargando && controller.categorias.isEmpty)
-                  const EstadoCategoria(
-                    mensaje: 'Cargando categorías...',
-                    cargando: true,
-                  )
-                else if (controller.error != null &&
-                    controller.categorias.isEmpty)
-                  EstadoCategoria(
-                    mensaje: controller.error!,
-                    error: true,
-                    icono: Icons.error_outline_rounded,
-                  )
-                else if (categorias.isEmpty)
-                  const EstadoCategoria(
-                    mensaje: 'No se encontraron categorías.',
-                    icono: Icons.category_outlined,
-                  )
-                else
-                  ...categorias.map(
-                    (categoria) => Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: AppDimensions.spacingMd,
-                      ),
-                      child: _TarjetaCategoriaVisual(
-                        nombre: categoria.nombre,
-                        descripcion: categoria.descripcion,
-                        cantidadSitios:
-                            controller.contarSitios(categoria),
-                        activa: categoria.estado,
-                        icono: obtenerIconoCategoria(categoria),
-                        color: obtenerColorCategoria(categoria),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  sitios_categoria.PantallaSitiosCategoria(
-                                categoria: categoria,
-                              ),
-                            ),
-                          );
-                        },
-                        onEditar: () => abrirFormulario(categoria),
-                        onEliminar: () => eliminarCategoria(categoria),
-                      ),
-                    ),
-                  ),
+                    )),
+                ],
               ],
             ),
           ),
@@ -464,28 +313,14 @@ class _PantallaCategoriaState extends State<PantallaCategoria> {
   }
 }
 
-// ============================================================
-// TARJETA VISUAL DE CATEGORÍA
-// ============================================================
+class _TarjetaCategoria extends StatelessWidget {
+  final CategoriaModel categoria;
+  final int cantidad;
+  final VoidCallback onTap, onEditar, onEliminar;
 
-class _TarjetaCategoriaVisual extends StatelessWidget {
-  final String nombre;
-  final String descripcion;
-  final int cantidadSitios;
-  final bool activa;
-  final IconData icono;
-  final Color color;
-  final VoidCallback onTap;
-  final VoidCallback onEditar;
-  final VoidCallback onEliminar;
-
-  const _TarjetaCategoriaVisual({
-    required this.nombre,
-    required this.descripcion,
-    required this.cantidadSitios,
-    required this.activa,
-    required this.icono,
-    required this.color,
+  const _TarjetaCategoria({
+    required this.categoria,
+    required this.cantidad,
     required this.onTap,
     required this.onEditar,
     required this.onEliminar,
@@ -493,214 +328,74 @@ class _TarjetaCategoriaVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorSuave = color.withValues(alpha: 0.13);
-
+    final color = obtenerColorCategoria(categoria);
     return Container(
       decoration: BoxDecoration(
         color: blancoTarjeta,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.radiusLg,
-        ),
-        border: Border.all(
-          color: const Color(0xFFECE5DA),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF614D34).withValues(alpha: 0.07),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+        border: Border.all(color: const Color(0xFFECE5DA)),
+        boxShadow: [BoxShadow(
+          color: const Color(0xFF614D34).withValues(alpha: 0.07),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        )],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.radiusLg,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusLg,
-          ),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
           child: Padding(
-            padding: const EdgeInsets.all(
-              AppDimensions.spacingMd,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 58,
-                  height: 58,
-                  decoration: BoxDecoration(
-                    color: colorSuave,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: color.withValues(alpha: 0.12),
-                    ),
-                  ),
-                  child: Icon(icono, size: 29, color: color),
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            child: Row(children: [
+              Container(
+                width: 54, height: 54,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.13),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: AppDimensions.spacingMd),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        nombre,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          height: 1.25,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        descripcion.trim().isEmpty
-                            ? 'Explora esta categoría'
-                            : descripcion,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(
-                        height: AppDimensions.spacingSm,
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingSm,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorSuave,
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.chipRadius,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.place_rounded,
-                              size: 13,
-                              color: color,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              '$cantidadSitios '
-                              '${cantidadSitios == 1 ? 'sitio' : 'sitios'}',
-                              style: TextStyle(
-                                color: color,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingSm,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: activa
-                            ? fondoEstado
-                            : const Color(0xFFFCE8E6),
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.chipRadius,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: activa
-                                  ? verdeEstado
-                                  : AppColors.error,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            activa ? 'Activa' : 'Inactiva',
-                            style: TextStyle(
-                              color: activa
-                                  ? verdeEstado
-                                  : AppColors.error,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    PopupMenuButton<String>(
-                      tooltip: 'Opciones',
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        Icons.more_vert_rounded,
-                        color: AppColors.textSecondary,
-                        size: AppDimensions.iconMd,
-                      ),
-                      onSelected: (opcion) {
-                        if (opcion == 'editar') {
-                          onEditar();
-                        } else if (opcion == 'eliminar') {
-                          onEliminar();
-                        }
-                      },
-                      itemBuilder: (_) => const [
-                        PopupMenuItem(
-                          value: 'editar',
-                          child: Row(
-                            children: [
-                              Icon(Icons.edit_outlined, size: 19),
-                              SizedBox(width: 10),
-                              Text('Editar'),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'eliminar',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.delete_outline_rounded,
-                                color: Colors.red,
-                                size: 19,
-                              ),
-                              SizedBox(width: 10),
-                              Text('Eliminar'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: colorTextoSuave,
-                  size: AppDimensions.iconMd,
-                ),
-              ],
-            ),
+                child: Icon(obtenerIconoCategoria(categoria), size: 28, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(categoria.nombre, maxLines: 2, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 4),
+                  Text(categoria.descripcion.trim().isEmpty ? 'Explora esta categoría' : categoria.descripcion,
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+                  const SizedBox(height: 8),
+                  Text('$cantidad ${cantidad == 1 ? 'sitio' : 'sitios'}',
+                    style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 6),
+                  Text(categoria.estado ? 'Activa' : 'Inactiva',
+                    style: TextStyle(
+                      color: categoria.estado ? verdeEstado : AppColors.error,
+                      fontSize: 10, fontWeight: FontWeight.w800,
+                    )),
+                ],
+              )),
+              PopupMenuButton<String>(
+                tooltip: 'Opciones',
+                onSelected: (v) {
+                  if (v == 'editar') onEditar();
+                  if (v == 'eliminar') onEliminar();
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'editar', child: Row(children: [
+                    Icon(Icons.edit_outlined, size: 19), SizedBox(width: 8), Text('Editar'),
+                  ])),
+                  PopupMenuItem(value: 'eliminar', child: Row(children: [
+                    Icon(Icons.delete_outline_rounded, color: Colors.red, size: 19),
+                    SizedBox(width: 8), Text('Eliminar'),
+                  ])),
+                ],
+              ),
+              const Icon(Icons.chevron_right_rounded, color: colorTextoSuave),
+            ]),
           ),
         ),
       ),
@@ -708,52 +403,31 @@ class _TarjetaCategoriaVisual extends StatelessWidget {
   }
 }
 
-// ============================================================
-// FORMULARIO DE CATEGORÍA
-// ============================================================
-
 class FormularioCategoria extends StatefulWidget {
   final CategoriaModel? categoria;
   final CategoriaController controller;
 
-  const FormularioCategoria({
-    super.key,
-    this.categoria,
-    required this.controller,
-  });
+  const FormularioCategoria({super.key, this.categoria, required this.controller});
 
   @override
-  State<FormularioCategoria> createState() =>
-      _FormularioCategoriaState();
+  State<FormularioCategoria> createState() => _FormularioCategoriaState();
 }
 
 class _FormularioCategoriaState extends State<FormularioCategoria> {
   final formKey = GlobalKey<FormState>();
-
-  late final TextEditingController nombre;
-  late final TextEditingController descripcion;
+  late final TextEditingController nombre, descripcion;
   late String icono;
   late bool activo;
-
   bool guardando = false;
   String? error;
 
   @override
   void initState() {
     super.initState();
-
-    nombre = TextEditingController(
-      text: widget.categoria?.nombre ?? '',
-    );
-    descripcion = TextEditingController(
-      text: widget.categoria?.descripcion ?? '',
-    );
-
+    nombre = TextEditingController(text: widget.categoria?.nombre ?? '');
+    descripcion = TextEditingController(text: widget.categoria?.descripcion ?? '');
     final guardado = widget.categoria?.icono;
-    icono = iconosCategoria.containsKey(guardado)
-        ? guardado!
-        : 'location_on';
-
+    icono = iconosCategoria.containsKey(guardado) ? guardado! : 'location_on';
     activo = widget.categoria?.estado ?? true;
   }
 
@@ -766,12 +440,7 @@ class _FormularioCategoriaState extends State<FormularioCategoria> {
 
   Future<void> guardar() async {
     if (guardando || !formKey.currentState!.validate()) return;
-
-    setState(() {
-      guardando = true;
-      error = null;
-    });
-
+    setState(() { guardando = true; error = null; });
     try {
       await widget.controller.guardarCategoria(
         id: widget.categoria?.id,
@@ -780,11 +449,9 @@ class _FormularioCategoriaState extends State<FormularioCategoria> {
         icono: icono,
         estado: activo,
       );
-
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-
       setState(() {
         guardando = false;
         error = widget.controller.error ?? 'No se pudo guardar: $e';
@@ -796,110 +463,71 @@ class _FormularioCategoriaState extends State<FormularioCategoria> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: blancoTarjeta,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
-          AppDimensions.radiusXl,
-        ),
-      ),
-      title: Text(
-        widget.categoria == null
-            ? 'Nueva categoría'
-            : 'Editar categoría',
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXl)),
+      title: Text(widget.categoria == null ? 'Nueva categoría' : 'Editar categoría',
+        style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w800)),
       content: SizedBox(
         width: 360,
         child: SingleChildScrollView(
           child: Form(
             key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: nombre,
-                  enabled: !guardando,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    prefixIcon: Icon(Icons.category_outlined),
-                  ),
-                  validator: (valor) =>
-                      valor == null || valor.trim().isEmpty
-                          ? 'Escribe el nombre'
-                          : null,
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              TextFormField(
+                controller: nombre,
+                enabled: !guardando,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(labelText: 'Nombre', prefixIcon: Icon(Icons.category_outlined)),
+                validator: (v) => v == null || v.trim().isEmpty ? 'Escribe el nombre' : null,
+              ),
+              const SizedBox(height: AppDimensions.spacingLg),
+              TextFormField(
+                controller: descripcion,
+                enabled: !guardando,
+                textCapitalization: TextCapitalization.sentences,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción',
+                  prefixIcon: Icon(Icons.description_outlined),
+                  alignLabelWithHint: true,
                 ),
-                const SizedBox(height: AppDimensions.spacingLg),
-                TextFormField(
-                  controller: descripcion,
-                  enabled: !guardando,
-                  textCapitalization: TextCapitalization.sentences,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Descripción',
-                    prefixIcon: Icon(Icons.description_outlined),
-                    alignLabelWithHint: true,
-                  ),
+              ),
+              const SizedBox(height: AppDimensions.spacingLg),
+              SelectorIconosCategoria(
+                iconos: iconosCategoria,
+                colores: coloresIconosCategoria,
+                seleccionado: icono,
+                habilitado: !guardando,
+                onSeleccionar: (v) => setState(() => icono = v),
+              ),
+              if (widget.categoria != null)
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Categoría activa'),
+                  value: activo,
+                  onChanged: guardando ? null : (v) => setState(() => activo = v),
                 ),
-                const SizedBox(height: AppDimensions.spacingLg),
-                SelectorIconosCategoria(
-                  iconos: iconosCategoria,
-                  colores: coloresIconosCategoria,
-                  seleccionado: icono,
-                  habilitado: !guardando,
-                  onSeleccionar: (valor) {
-                    setState(() => icono = valor);
-                  },
-                ),
-                if (widget.categoria != null)
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Categoría activa'),
-                    value: activo,
-                    onChanged: guardando
-                        ? null
-                        : (valor) => setState(() => activo = valor),
-                  ),
-                if (error != null) ...[
-                  const SizedBox(height: AppDimensions.spacingMd),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      error!,
-                      style: const TextStyle(
-                        color: AppColors.error,
-                      ),
-                    ),
-                  ),
-                ],
+              if (error != null) ...[
+                const SizedBox(height: AppDimensions.spacingMd),
+                Align(alignment: Alignment.centerLeft,
+                  child: Text(error!, style: const TextStyle(color: AppColors.error))),
               ],
-            ),
+            ]),
           ),
         ),
       ),
       actions: [
         TextButton(
-          onPressed: guardando
-              ? null
-              : () => Navigator.pop(context, false),
+          onPressed: guardando ? null : () => Navigator.pop(context, false),
           child: const Text('Cancelar'),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: verdeEncabezado,
-            foregroundColor: Colors.white,
-          ),
+          style: FilledButton.styleFrom(backgroundColor: verdeEncabezado, foregroundColor: Colors.white),
           onPressed: guardando ? null : guardar,
           child: guardando
               ? const SizedBox(
                   width: AppDimensions.iconSm,
                   height: AppDimensions.iconSm,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
               : const Text('Guardar'),
         ),

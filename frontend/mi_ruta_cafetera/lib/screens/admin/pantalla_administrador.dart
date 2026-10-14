@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
 import '../../controllers/admin/cuenta/cuenta_admin_controlador.dart';
 import '../../services/admin/admin_servicio_autenticacion.dart';
@@ -8,16 +6,19 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_menu_lateral.dart';
 import '../../widgets/admin/admin_proximamente.dart';
-
+import '../mapa_screen_2.dart';
 import 'admin_inicio.dart';
 import 'admin_inicio_sesion.dart';
 import 'admin_actividades_screen.dart';
 import 'admin_contenidos_screen.dart';
 import 'categoria/pantalla_categoria.dart';
 import 'cuenta/admin_cuenta.dart';
+import 'reporte/pantalla_reporte_admin.dart';
+import 'reserva/pantalla_reserva_admin.dart';
+import 'resena/pantalla_resenas_admin.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
+import 'usuario/pantalla_usuarios_admin.dart';
 
-import '../mapa_screen_2.dart';
 
 class PantallaAdministrador extends StatefulWidget {
   final String nombre;
@@ -151,24 +152,16 @@ class _PantallaAdministradorState
         );
 
       case 'resenas':
-        return const AdminProximamente(
-          nombre: 'Reseñas',
-        );
+        return const PantallaResenasAdmin();
 
       case 'reservas':
-        return const AdminProximamente(
-          nombre: 'Reservas',
-        );
+        return const PantallaReservaAdmin();
 
       case 'reportes':
-        return const AdminProximamente(
-          nombre: 'Reportes',
-        );
+        return const PantallaReporteAdmin();
 
       case 'usuarios':
-        return const AdminProximamente(
-          nombre: 'Usuarios',
-        );
+        return const PantallaUsuariosAdmin();
 
       default:
         return _inicio();

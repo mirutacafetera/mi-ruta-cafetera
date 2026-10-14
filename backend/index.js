@@ -88,6 +88,9 @@ const ayudaRoutes = require(
 const aiRoutes = require(
   './routes/usuario/ai.routes'
 );
+
+const reservasAdminRoutes = require(
+  './routes/admin/reservas.routes');
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
@@ -229,6 +232,10 @@ app.use(
 app.use(
   '/api/chat',
   chatRoutes
+);
+
+app.use('/api/admin/reservas',
+   reservasAdminRoutes
 );
 
 app.use(
