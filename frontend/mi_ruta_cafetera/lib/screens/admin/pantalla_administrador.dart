@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
 import '../../controllers/admin/cuenta/cuenta_admin_controlador.dart';
 import '../../services/admin/admin_servicio_autenticacion.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_menu_lateral.dart';
-import '../../widgets/admin/admin_proximamente.dart';
 import '../mapa_screen_2.dart';
 import 'admin_inicio.dart';
 import 'admin_inicio_sesion.dart';
@@ -14,6 +14,8 @@ import 'admin_contenidos_screen.dart';
 import 'admin_productos_screen.dart';
 import 'categoria/pantalla_categoria.dart';
 import 'cuenta/admin_cuenta.dart';
+import 'cuenta_sitio/pantalla_cuenta_sitio.dart';
+import 'estadistica/pantalla_estadistica.dart';
 import 'reporte/pantalla_reporte_admin.dart';
 import 'reserva/pantalla_reserva_admin.dart';
 import 'resena/pantalla_resenas_admin.dart';
@@ -31,7 +33,8 @@ class PantallaAdministrador extends StatefulWidget {
   });
 
   @override
-  State<PantallaAdministrador> createState() => _PantallaAdministradorState();
+  State<PantallaAdministrador> createState() =>
+      _PantallaAdministradorState();
 }
 
 class _PantallaAdministradorState extends State<PantallaAdministrador> {
@@ -42,7 +45,8 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   void initState() {
     super.initState();
 
-    controlador = ControladorPantallaAdministrador()..addListener(_actualizar);
+    controlador = ControladorPantallaAdministrador()
+      ..addListener(_actualizar);
 
     cuentaAdminController = CuentaAdminController();
 
@@ -54,7 +58,8 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
     if (!mounted) return;
 
-    final idAdministrador = AdminServicioAutenticacion.idAdministrador;
+    final idAdministrador =
+        AdminServicioAutenticacion.idAdministrador;
 
     if (idAdministrador != null && idAdministrador.isNotEmpty) {
       await cuentaAdminController.cargarCuenta(idAdministrador);
@@ -74,7 +79,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const AdminInicioSesion()),
+      MaterialPageRoute(
+        builder: (_) => const AdminInicioSesion(),
+      ),
       (route) => false,
     );
   }
@@ -91,7 +98,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   void _abrirMapa() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const MapaScreen2()),
+      MaterialPageRoute(
+        builder: (_) => const MapaScreen2(),
+      ),
     );
   }
 
@@ -131,13 +140,20 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
         return const AdminContenidosScreen();
 
       case 'perfil':
-        return AdminCuenta(controller: cuentaAdminController);
+        return AdminCuenta(
+          controller: cuentaAdminController,
+        );
 
       case 'categorias':
         return const PantallaCategoria();
 
+      case 'cuentasitio':
+        return PantallaCuentasSitio(
+          token: AdminServicioAutenticacion.tokenAdmin ?? '',
+        );
+
       case 'estadisticas':
-        return const AdminProximamente(nombre: 'Estadísticas');
+        return const PantallaEstadistica();
 
       case 'resenas':
         return const PantallaResenasAdmin();
@@ -172,7 +188,6 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     controlador.removeListener(_actualizar);
     controlador.dispose();
     cuentaAdminController.dispose();
-
     super.dispose();
   }
 }

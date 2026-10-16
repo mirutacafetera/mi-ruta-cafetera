@@ -21,87 +21,133 @@ class AdminMenuLateral extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: AppColors.background,
+      elevation: 8,
       child: Column(
         children: [
-          AdminEncabezadoMenu(nombre: nombre, email: email),
-          AdminIconoMenu(
-            icon: Icons.dashboard,
-            titulo: 'Inicio',
-            opcion: 'inicio',
-            onOpcionSeleccionada: onOpcionSeleccionada,
+          AdminEncabezadoMenu(
+            nombre: nombre,
+            email: email,
           ),
-          AdminIconoMenu(
-            icon: Icons.bar_chart,
-            titulo: 'Estadísticas',
-            opcion: 'estadisticas',
-            onOpcionSeleccionada: onOpcionSeleccionada,
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingSm,
+              ),
+              children: [
+                _construirOpcion(
+                  icono: Icons.dashboard_rounded,
+                  titulo: 'Inicio',
+                  opcion: 'inicio',
+                ),
+                _construirOpcion(
+                  icono: Icons.bar_chart_rounded,
+                  titulo: 'Estadísticas',
+                  opcion: 'estadisticas',
+                ),
+                _construirOpcion(
+                  icono: Icons.location_on_rounded,
+                  titulo: 'Sitios turísticos',
+                  opcion: 'sitios',
+                ),
+                _construirOpcion(
+                  icono: Icons.manage_accounts_rounded,
+                  titulo: 'Cuentas de sitios',
+                  opcion: 'cuentasitio',
+                ),
+                _construirOpcion(
+                  icono: Icons.category_rounded,
+                  titulo: 'Categorías',
+                  opcion: 'categorias',
+                ),
+                _construirOpcion(
+                  icono: Icons.event_available_rounded,
+                  titulo: 'Actividades',
+                  opcion: 'actividades',
+                ),
+                _construirOpcion(
+                  icono: Icons.inventory_2_rounded,
+                  titulo: 'Productos',
+                  opcion: 'productos',
+                ),
+                _construirOpcion(
+                  icono: Icons.article_rounded,
+                  titulo: 'Contenido',
+                  opcion: 'contenido',
+                ),
+                _construirOpcion(
+                  icono: Icons.star_rounded,
+                  titulo: 'Reseñas',
+                  opcion: 'resenas',
+                ),
+                _construirOpcion(
+                  icono: Icons.calendar_month_rounded,
+                  titulo: 'Reservas',
+                  opcion: 'reservas',
+                ),
+                _construirOpcion(
+                  icono: Icons.campaign_rounded,
+                  titulo: 'Reportes',
+                  opcion: 'reportes',
+                ),
+                _construirOpcion(
+                  icono: Icons.people_alt_rounded,
+                  titulo: 'Usuarios',
+                  opcion: 'usuarios',
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingMd,
+                  ),
+                  child: Divider(
+                    color: AppColors.divider,
+                    thickness: 1,
+                  ),
+                ),
+                _construirOpcion(
+                  icono: Icons.person_rounded,
+                  titulo: 'Mi cuenta',
+                  opcion: 'perfil',
+                ),
+              ],
+            ),
           ),
-          AdminIconoMenu(
-            icon: Icons.location_on,
-            titulo: 'Sitios turísticos',
-            opcion: 'sitios',
-            onOpcionSeleccionada: onOpcionSeleccionada,
+          SafeArea(
+            top: false,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingSm,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                border: Border(
+                  top: BorderSide(
+                    color: AppColors.divider.withValues(
+                      alpha: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+              child: AdminCerrarSesion(
+                onOpcionSeleccionada: onOpcionSeleccionada,
+              ),
+            ),
           ),
-          AdminIconoMenu(
-            icon: Icons.category,
-            titulo: 'Categorías',
-            opcion: 'categorias',
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          AdminIconoMenu(
-            icon: Icons.event_available,
-            titulo: 'Actividades',
-            opcion: 'actividades',
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          AdminIconoMenu(
-            icon: Icons.inventory_2_rounded,
-            titulo: 'Productos',
-            opcion: 'productos',
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          AdminIconoMenu(
-            icon: Icons.article,
-            titulo: 'Contenido',
-            opcion: 'contenido',
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          AdminIconoMenu(
-            icon: Icons.star,
-            titulo: 'Reseñas',
-            opcion: 'resenas',
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          AdminIconoMenu(
-            icon: Icons.calendar_month,
-            titulo: 'Reservas',
-            opcion: 'reservas',
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          AdminIconoMenu(
-            icon: Icons.report,
-            titulo: 'Reportes',
-            opcion: 'reportes',
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          AdminIconoMenu(
-            icon: Icons.people,
-            titulo: 'Usuarios',
-            opcion: 'usuarios',
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          const Divider(color: AppColors.divider),
-          AdminIconoMenu(
-            icon: Icons.person,
-            titulo: 'Mi cuenta',
-            opcion: 'perfil',
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          const Spacer(),
-          AdminCerrarSesion(onOpcionSeleccionada: onOpcionSeleccionada),
-          const SizedBox(height: AppDimensions.spacingMd),
         ],
       ),
+    );
+  }
+
+  Widget _construirOpcion({
+    required IconData icono,
+    required String titulo,
+    required String opcion,
+  }) {
+    return AdminIconoMenu(
+      icon: icono,
+      titulo: titulo,
+      opcion: opcion,
+      onOpcionSeleccionada: onOpcionSeleccionada,
     );
   }
 }

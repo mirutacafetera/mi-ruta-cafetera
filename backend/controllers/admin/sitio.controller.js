@@ -109,8 +109,6 @@ const crearSitio = async (req, res) => {
       precioDesde
     } = req.body;
 
-    // IMAGEN PRINCIPAL OBLIGATORIA
-
     if (!req.file) {
       return res.status(400).json({
         mensaje: 'La imagen principal es obligatoria.'
@@ -118,8 +116,6 @@ const crearSitio = async (req, res) => {
     }
 
     const imagenPrincipal = req.file.path;
-
-    // CREAR SITIO
 
     const sitio = new SitioTuristico({
       nombre,
@@ -248,8 +244,6 @@ const actualizarSitio = async (req, res) => {
       precioDesde
     } = req.body;
 
-    // DATOS BÁSICOS
-
     if (nombre !== undefined) {
       sitio.nombre = nombre;
     }
@@ -270,8 +264,6 @@ const actualizarSitio = async (req, res) => {
       sitio.departamento = departamento;
     }
 
-    // UBICACIÓN
-
     if (latitud !== undefined) {
       sitio.latitud = convertirNumero(latitud);
     }
@@ -280,25 +272,17 @@ const actualizarSitio = async (req, res) => {
       sitio.longitud = convertirNumero(longitud);
     }
 
-    // CATEGORÍA
-
     if (categoria !== undefined) {
       sitio.categoria = categoria;
     }
-
-    // ETIQUETAS
 
     if (etiquetas !== undefined) {
       sitio.etiquetas = convertirArray(etiquetas);
     }
 
-    // ESTADO
-
     if (activo !== undefined) {
       sitio.activo = convertirBooleano(activo);
     }
-
-    // CONTACTO
 
     if (telefono !== undefined) {
       sitio.telefono = telefono;
@@ -312,8 +296,6 @@ const actualizarSitio = async (req, res) => {
       sitio.sitioWeb = sitioWeb;
     }
 
-    // INFORMACIÓN TURÍSTICA
-
     if (horario !== undefined) {
       sitio.horario = horario;
     }
@@ -322,13 +304,9 @@ const actualizarSitio = async (req, res) => {
       sitio.precioDesde = convertirNumero(precioDesde);
     }
 
-    // NUEVA IMAGEN PRINCIPAL
-
     if (req.file) {
       sitio.imagen = req.file.path;
     }
-
-    // GUARDAR CAMBIOS
 
     await sitio.save();
 
@@ -357,8 +335,6 @@ const eliminarSitio = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // BUSCAR EL SITIO
-
     const sitio = await SitioTuristico.findById(id);
 
     if (!sitio) {
@@ -367,17 +343,11 @@ const eliminarSitio = async (req, res) => {
       });
     }
 
-    // ELIMINAR LA CUENTA ASOCIADA
-
     const resultadoCuenta = await CuentaSitio.deleteMany({
       sitioId: sitio._id
     });
 
-    // ELIMINAR EL SITIO TURÍSTICO
-
     await SitioTuristico.findByIdAndDelete(sitio._id);
-
-    // RESPUESTA
 
     return res.status(200).json({
       mensaje:
@@ -399,6 +369,166 @@ const eliminarSitio = async (req, res) => {
 };
 
 // ============================================================
+// OBTENER TODAS LAS CUENTAS DE SITIOS
+// ============================================================
+
+const obtenerCuentas = async (req, res) => {
+  try {
+    const cuentas = await CuentaSitio.find()
+      .select('-password')
+      .sort({ nombre: 1 })
+      .lean();
+
+    return res.status(200).json({
+      cuentas: cuentas.map((cuenta) => ({
+        id: cuenta._id.toString(),
+        sitioId: cuenta.sitioId.toString(),
+        nombre: cuenta.nombre,
+        apellido: cuenta.apellido,
+        correo: cuenta.correo,
+        telefono: cuenta.telefono || '',
+        activo: cuenta.activo
+      }))
+    });
+  } catch (error) {
+    console.error(
+      'Error al obtener las cuentas de sitios:',
+      error
+    );
+
+    return res.status(500).json({
+      mensaje: 'Error al consultar las cuentas de sitios.'
+    });
+  }
+};
+
+// ============================================================
+// ACTUALIZAR CUENTA DE SITIO
+// ============================================================
+
+const actualizarCuenta = async (req, res) => {
+  try {
+    const { cuentaId } = req.params;
+    const { nombre, apellido, correo, telefono } = req.body;
+
+    if (
+      typeof nombre !== 'string' ||
+      !nombre.trim() ||
+      typeof apellido !== 'string' ||
+      !apellido.trim() ||
+      typeof correo !== 'string' ||
+      !correo.trim()
+    ) {
+      return res.status(400).json({
+        mensaje: 'Nombre, apellido y correo son obligatorios.'
+      });
+    }
+
+    const cuenta = await CuentaSitio.findById(cuentaId);
+
+    if (!cuenta) {
+      return res.status(404).json({
+        mensaje: 'Cuenta de sitio no encontrada.'
+      });
+    }
+
+    const correoNormalizado = correo.trim().toLowerCase();
+
+    const correoExistente = await CuentaSitio.findOne({
+      correo: correoNormalizado,
+      _id: { $ne: cuenta._id }
+    });
+
+    if (correoExistente) {
+      return res.status(409).json({
+        mensaje: 'El correo ya está registrado en otra cuenta.'
+      });
+    }
+
+    cuenta.nombre = nombre.trim();
+    cuenta.apellido = apellido.trim();
+    cuenta.correo = correoNormalizado;
+    cuenta.telefono =
+      typeof telefono === 'string' ? telefono.trim() : '';
+
+    await cuenta.save();
+
+    return res.status(200).json({
+      mensaje: 'Cuenta actualizada correctamente.',
+      cuenta: {
+        id: cuenta._id.toString(),
+        sitioId: cuenta.sitioId.toString(),
+        nombre: cuenta.nombre,
+        apellido: cuenta.apellido,
+        correo: cuenta.correo,
+        telefono: cuenta.telefono || '',
+        activo: cuenta.activo
+      }
+    });
+  } catch (error) {
+    console.error(
+      'Error al actualizar la cuenta:',
+      error
+    );
+
+    return res.status(500).json({
+      mensaje: 'Error al actualizar la cuenta.'
+    });
+  }
+};
+
+// ============================================================
+// CAMBIAR ESTADO DE CUENTA
+// ============================================================
+
+const cambiarEstadoCuenta = async (req, res) => {
+  try {
+    const { cuentaId } = req.params;
+    const { activo } = req.body;
+
+    if (typeof activo !== 'boolean') {
+      return res.status(400).json({
+        mensaje: 'El estado debe ser verdadero o falso.'
+      });
+    }
+
+    const cuenta = await CuentaSitio.findById(cuentaId);
+
+    if (!cuenta) {
+      return res.status(404).json({
+        mensaje: 'Cuenta de sitio no encontrada.'
+      });
+    }
+
+    cuenta.activo = activo;
+
+    await cuenta.save();
+
+    return res.status(200).json({
+      mensaje: 'Estado de la cuenta actualizado correctamente.',
+      cuenta: {
+        id: cuenta._id.toString(),
+        sitioId: cuenta.sitioId.toString(),
+        nombre: cuenta.nombre,
+        apellido: cuenta.apellido,
+        correo: cuenta.correo,
+        telefono: cuenta.telefono || '',
+        activo: cuenta.activo
+      }
+    });
+  } catch (error) {
+    console.error(
+      'Error al cambiar el estado de la cuenta:',
+      error
+    );
+
+    return res.status(500).json({
+      mensaje: 'Error al cambiar el estado de la cuenta.'
+    });
+  }
+};
+
+// ============================================================
 // EXPORTAR CONTROLADORES
 // ============================================================
 
@@ -407,5 +537,8 @@ module.exports = {
   obtenerSitios,
   obtenerSitio,
   actualizarSitio,
-  eliminarSitio
+  eliminarSitio,
+  obtenerCuentas,
+  actualizarCuenta,
+  cambiarEstadoCuenta
 };
