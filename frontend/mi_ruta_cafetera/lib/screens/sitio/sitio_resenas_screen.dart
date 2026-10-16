@@ -238,7 +238,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
 
   Widget _filtros(bool esEscritorio) {
     final orden = DropdownButtonFormField<String>(
-      value: _orden,
+      initialValue: _orden,
       decoration: const InputDecoration(
         labelText: 'Ordenar por',
         border: OutlineInputBorder(),
@@ -264,7 +264,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
     );
 
     final calificacion = DropdownButtonFormField<int?>(
-      value: _calificacionSeleccionada,
+      initialValue: _calificacionSeleccionada,
       decoration: const InputDecoration(
         labelText: 'Calificación',
         border: OutlineInputBorder(),

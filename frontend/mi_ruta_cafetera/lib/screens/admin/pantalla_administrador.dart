@@ -11,6 +11,7 @@ import 'admin_inicio.dart';
 import 'admin_inicio_sesion.dart';
 import 'admin_actividades_screen.dart';
 import 'admin_contenidos_screen.dart';
+import 'admin_productos_screen.dart';
 import 'categoria/pantalla_categoria.dart';
 import 'cuenta/admin_cuenta.dart';
 import 'reporte/pantalla_reporte_admin.dart';
@@ -18,7 +19,6 @@ import 'reserva/pantalla_reserva_admin.dart';
 import 'resena/pantalla_resenas_admin.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
 import 'usuario/pantalla_usuarios_admin.dart';
-
 
 class PantallaAdministrador extends StatefulWidget {
   final String nombre;
@@ -31,12 +31,10 @@ class PantallaAdministrador extends StatefulWidget {
   });
 
   @override
-  State<PantallaAdministrador> createState() =>
-      _PantallaAdministradorState();
+  State<PantallaAdministrador> createState() => _PantallaAdministradorState();
 }
 
-class _PantallaAdministradorState
-    extends State<PantallaAdministrador> {
+class _PantallaAdministradorState extends State<PantallaAdministrador> {
   late final ControladorPantallaAdministrador controlador;
   late final CuentaAdminController cuentaAdminController;
 
@@ -44,8 +42,7 @@ class _PantallaAdministradorState
   void initState() {
     super.initState();
 
-    controlador = ControladorPantallaAdministrador()
-      ..addListener(_actualizar);
+    controlador = ControladorPantallaAdministrador()..addListener(_actualizar);
 
     cuentaAdminController = CuentaAdminController();
 
@@ -57,14 +54,10 @@ class _PantallaAdministradorState
 
     if (!mounted) return;
 
-    final idAdministrador =
-        AdminServicioAutenticacion.idAdministrador;
+    final idAdministrador = AdminServicioAutenticacion.idAdministrador;
 
-    if (idAdministrador != null &&
-        idAdministrador.isNotEmpty) {
-      await cuentaAdminController.cargarCuenta(
-        idAdministrador,
-      );
+    if (idAdministrador != null && idAdministrador.isNotEmpty) {
+      await cuentaAdminController.cargarCuenta(idAdministrador);
     }
   }
 
@@ -81,9 +74,7 @@ class _PantallaAdministradorState
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (_) => const AdminInicioSesion(),
-      ),
+      MaterialPageRoute(builder: (_) => const AdminInicioSesion()),
       (route) => false,
     );
   }
@@ -100,9 +91,7 @@ class _PantallaAdministradorState
   void _abrirMapa() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const MapaScreen2(),
-      ),
+      MaterialPageRoute(builder: (_) => const MapaScreen2()),
     );
   }
 
@@ -135,21 +124,20 @@ class _PantallaAdministradorState
       case 'actividades':
         return const AdminActividadesScreen();
 
+      case 'productos':
+        return const AdminProductosScreen();
+
       case 'contenido':
         return const AdminContenidosScreen();
 
       case 'perfil':
-        return AdminCuenta(
-          controller: cuentaAdminController,
-        );
+        return AdminCuenta(controller: cuentaAdminController);
 
       case 'categorias':
         return const PantallaCategoria();
 
       case 'estadisticas':
-        return const AdminProximamente(
-          nombre: 'Estadísticas',
-        );
+        return const AdminProximamente(nombre: 'Estadísticas');
 
       case 'resenas':
         return const PantallaResenasAdmin();

@@ -8,6 +8,7 @@ import '../../widgets/admin/admin_proximamente.dart';
 import 'admin_inicio.dart';
 import 'admin_perfil.dart';
 import 'admin_actividades_screen.dart';
+import 'admin_productos_screen.dart';
 import 'admin_contenidos_screen.dart';
 import 'admin_sitio_list_screen.dart';
 
@@ -19,11 +20,7 @@ class AdminScreen extends StatefulWidget {
   final String nombre;
   final String email;
 
-  const AdminScreen({
-    super.key,
-    required this.nombre,
-    required this.email,
-  });
+  const AdminScreen({super.key, required this.nombre, required this.email});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -56,6 +53,13 @@ class _AdminScreenState extends State<AdminScreen> {
       case 'actividad_pendiente':
       case 'actividades_pendientes':
         return 'actividades';
+
+      case 'producto':
+      case 'productos':
+      case 'producto_pendiente':
+      case 'productos_pendientes':
+      case 'productos-pendientes':
+        return 'productos';
 
       case 'categoria':
       case 'categorias':
@@ -126,9 +130,7 @@ class _AdminScreenState extends State<AdminScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Cerrar sesión'),
-          content: const Text(
-            '¿Deseas cerrar la sesión de administrador?',
-          ),
+          content: const Text('¿Deseas cerrar la sesión de administrador?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -165,11 +167,9 @@ class _AdminScreenState extends State<AdminScreen> {
   // ============================================================
 
   void _abrirMapa() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const MapaScreen2(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const MapaScreen2()));
   }
 
   // ============================================================
@@ -212,6 +212,9 @@ class _AdminScreenState extends State<AdminScreen> {
       case 'actividades':
         return 'Actividades pendientes';
 
+      case 'productos':
+        return 'Productos pendientes';
+
       case 'categorias':
         return 'Categorías';
 
@@ -253,39 +256,29 @@ class _AdminScreenState extends State<AdminScreen> {
       case 'actividades':
         return const AdminActividadesScreen();
 
+      case 'productos':
+        return const AdminProductosScreen();
+
       case 'contenido':
         return const AdminContenidosScreen();
 
       case 'perfil':
-        return AdminPerfil(
-          nombre: widget.nombre,
-          email: widget.email,
-        );
+        return AdminPerfil(nombre: widget.nombre, email: widget.email);
 
       case 'estadisticas':
-        return const AdminProximamente(
-          nombre: 'Estadísticas',
-        );
+        return const AdminProximamente(nombre: 'Estadísticas');
 
       case 'categorias':
-        return const AdminProximamente(
-          nombre: 'Categorías',
-        );
+        return const AdminProximamente(nombre: 'Categorías');
 
       case 'resenas':
-        return const AdminProximamente(
-          nombre: 'Reseñas',
-        );
+        return const AdminProximamente(nombre: 'Reseñas');
 
       case 'reservas':
-        return const AdminProximamente(
-          nombre: 'Reservas',
-        );
+        return const AdminProximamente(nombre: 'Reservas');
 
       case 'reportes':
-        return const AdminProximamente(
-          nombre: 'Reportes',
-        );
+        return const AdminProximamente(nombre: 'Reportes');
 
       case 'usuarios':
         return const PantallaUsuariosAdmin();

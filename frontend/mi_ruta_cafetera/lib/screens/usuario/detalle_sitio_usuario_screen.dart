@@ -15,6 +15,7 @@ import 'detalle_sitio/detalle_actividades.dart';
 import 'detalle_sitio/detalle_galeria.dart';
 import 'detalle_sitio/detalle_sitio_audio.dart';
 import 'detalle_sitio/detalle_sitio_acciones.dart';
+import 'detalle_sitio/detalle_productos.dart';
 import 'detalle_sitio/reproductor_historia/reproductor_historia_flotante.dart';
 import 'detalle_sitio/seccion_resenas_sitio.dart';
 
@@ -53,6 +54,8 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
   bool _cargandoActividades = true;
   bool _procesandoFavorito = false;
 
+  String? _errorContenido;
+
   @override
   void initState() {
     super.initState();
@@ -65,12 +68,21 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
   }
 
   Future<void> _cargarContenido() async {
+    setState(() {
+      _cargandoContenido = true;
+      _errorContenido = null;
+    });
+
     try {
-      final id = widget.sitio.id.trim();
+      final sitioId = widget.sitio.id.trim();
 
-      if (id.isEmpty) return;
+      if (sitioId.isEmpty) {
+        throw Exception('No se pudo identificar el sitio turístico.');
+      }
 
-      final resultado = await _contenidoService.obtenerContenidosPorSitio(id);
+      final resultado = await _contenidoService.obtenerContenidosPorSitio(
+        sitioId,
+      );
 
       if (!mounted) return;
 
@@ -80,6 +92,12 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
     } catch (e, stackTrace) {
       debugPrint('Error al cargar contenido del sitio: $e');
       debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+
+      setState(() {
+        _errorContenido = e.toString().replaceFirst('Exception: ', '');
+      });
     } finally {
       if (mounted) {
         setState(() {
@@ -91,12 +109,12 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
 
   Future<void> _cargarActividades() async {
     try {
-      final id = widget.sitio.id.trim();
+      final sitioId = widget.sitio.id.trim();
 
-      if (id.isEmpty) return;
+      if (sitioId.isEmpty) return;
 
       final resultado = await _actividadesService.obtenerActividadesPublicas(
-        sitioId: id,
+        sitioId: sitioId,
       );
 
       if (!mounted) return;
@@ -170,6 +188,95 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
     return _audioController.cerrar();
   }
 
+  Widget _construirSeccionContenido() {
+    if (_cargandoContenido) {
+      return const Padding(
+        padding: EdgeInsets.all(AppDimensions.spacingXxl),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_errorContenido != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.pageHorizontal,
+          vertical: AppDimensions.spacingLg,
+        ),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.cloud_off_outlined,
+                  color: AppColors.primary,
+                  size: 36,
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                const Text(
+                  'No pudimos cargar el contenido.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                Text(_errorContenido!, textAlign: TextAlign.center),
+                const SizedBox(height: AppDimensions.spacingSm),
+                OutlinedButton.icon(
+                  onPressed: _cargarContenido,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Intentar de nuevo'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_contenidos.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.pageHorizontal,
+          vertical: AppDimensions.spacingLg,
+        ),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.auto_stories_outlined,
+                  color: AppColors.primary,
+                  size: 36,
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                const Text(
+                  'Todavía no hay historias publicadas.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                Text(
+                  'Pronto podrás descubrir más sobre '
+                  '${widget.sitio.nombre}.',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg),
+      child: SeccionContenidoSitio(
+        contenidos: _contenidos,
+        onReproducirAudioguia: _reproducirAudioguia,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final imagenContenido = _contenidos
@@ -232,7 +339,6 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
                 sitio: widget.sitio,
                 imagenPrincipal: imagenPrincipal,
               ),
-
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.pageHorizontal,
@@ -251,17 +357,13 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
                             )
                             .toList(),
                       ),
-
                     const SizedBox(height: AppDimensions.spacingMd),
-
                     DetalleUbicacion(
                       sitio: widget.sitio,
                       onVerMapa: () =>
                           DetalleSitioAcciones.verMapa(context, widget.sitio),
                     ),
-
                     const SizedBox(height: AppDimensions.spacingMd),
-
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
@@ -271,9 +373,7 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
                         label: const Text('Agregar a mi ruta'),
                       ),
                     ),
-
                     const SizedBox(height: AppDimensions.spacingSm),
-
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
@@ -286,7 +386,6 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
                         label: const Text('Ver detalles de ubicación'),
                       ),
                     ),
-
                     const SizedBox(height: AppDimensions.spacingSection),
                   ],
                 ),
@@ -300,23 +399,58 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
                     DetalleSitioAcciones.mostrarActividad(context, actividad),
               ),
 
-              // Contenidos y audioguías.
-              if (_cargandoContenido)
-                const Padding(
-                  padding: EdgeInsets.all(AppDimensions.spacingXxl),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+              // Productos publicados del establecimiento.
+              DetalleProductos(
+                key: ValueKey('productos_${widget.sitio.id}'),
+                sitioId: widget.sitio.id,
+              ),
 
-              if (!_cargandoContenido && _contenidos.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.spacingLg,
-                  ),
-                  child: SeccionContenidoSitio(
-                    contenidos: _contenidos,
-                    onReproducirAudioguia: _reproducirAudioguia,
-                  ),
+              // Sección fija de historias, contenido y audioguías.
+              Padding(
+                padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.pageHorizontal,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.auto_stories_outlined,
+                            color: AppColors.primary,
+                            size: 26,
+                          ),
+                          SizedBox(width: AppDimensions.spacingSm),
+                          Expanded(
+                            child: Text(
+                              'Historias y contenido del sitio',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingSm),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.pageHorizontal,
+                      ),
+                      child: Text(
+                        'Descubre las historias, tradiciones y '
+                        'experiencias de este lugar.',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                    _construirSeccionContenido(),
+                  ],
                 ),
+              ),
 
               // Galería de fotografías.
               DetalleGaleria(
@@ -324,7 +458,7 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
                 cargando: _cargandoContenido || _cargandoActividades,
               ),
 
-              // Reseñas y calificaciones conectadas al servicio.
+              // Reseñas y calificaciones.
               SeccionResenasSitio(
                 key: ValueKey('resenas_${widget.sitio.id}'),
                 sitioId: widget.sitio.id,

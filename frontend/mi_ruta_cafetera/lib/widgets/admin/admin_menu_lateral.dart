@@ -23,10 +23,7 @@ class AdminMenuLateral extends StatelessWidget {
     return Drawer(
       child: Column(
         children: [
-          AdminEncabezadoMenu(
-            nombre: nombre,
-            email: email,
-          ),
+          AdminEncabezadoMenu(nombre: nombre, email: email),
           AdminIconoMenu(
             icon: Icons.dashboard,
             titulo: 'Inicio',
@@ -55,6 +52,12 @@ class AdminMenuLateral extends StatelessWidget {
             icon: Icons.event_available,
             titulo: 'Actividades',
             opcion: 'actividades',
+            onOpcionSeleccionada: onOpcionSeleccionada,
+          ),
+          AdminIconoMenu(
+            icon: Icons.inventory_2_rounded,
+            titulo: 'Productos',
+            opcion: 'productos',
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
           AdminIconoMenu(
@@ -87,9 +90,7 @@ class AdminMenuLateral extends StatelessWidget {
             opcion: 'usuarios',
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
-          const Divider(
-            color: AppColors.divider,
-          ),
+          const Divider(color: AppColors.divider),
           AdminIconoMenu(
             icon: Icons.person,
             titulo: 'Mi cuenta',
@@ -97,12 +98,8 @@ class AdminMenuLateral extends StatelessWidget {
             onOpcionSeleccionada: onOpcionSeleccionada,
           ),
           const Spacer(),
-          AdminCerrarSesion(
-            onOpcionSeleccionada: onOpcionSeleccionada,
-          ),
-          const SizedBox(
-            height: AppDimensions.spacingMd,
-          ),
+          AdminCerrarSesion(onOpcionSeleccionada: onOpcionSeleccionada),
+          const SizedBox(height: AppDimensions.spacingMd),
         ],
       ),
     );
