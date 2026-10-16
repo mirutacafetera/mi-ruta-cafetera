@@ -66,6 +66,11 @@ class AdminMenuLateral extends StatelessWidget {
                   opcion: 'actividades',
                 ),
                 _construirOpcion(
+                  icono: Icons.inventory_2_rounded,
+                  titulo: 'Productos',
+                  opcion: 'productos',
+                ),
+                _construirOpcion(
                   icono: Icons.article_rounded,
                   titulo: 'Contenido',
                   opcion: 'contenido',
@@ -80,13 +85,11 @@ class AdminMenuLateral extends StatelessWidget {
                   titulo: 'Reservas',
                   opcion: 'reservas',
                 ),
-
                 _construirOpcion(
-                   icono: Icons.campaign_rounded,
+                  icono: Icons.campaign_rounded,
                   titulo: 'Reportes',
                   opcion: 'reportes',
                 ),
-
                 _construirOpcion(
                   icono: Icons.people_alt_rounded,
                   titulo: 'Usuarios',
@@ -112,15 +115,16 @@ class AdminMenuLateral extends StatelessWidget {
           SafeArea(
             top: false,
             child: Container(
-              padding: const EdgeInsets.only(
-                top: AppDimensions.spacingSm,
-                bottom: AppDimensions.spacingSm,
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingSm,
               ),
               decoration: BoxDecoration(
                 color: AppColors.background,
                 border: Border(
                   top: BorderSide(
-                    color: AppColors.divider.withValues(alpha: 0.5),
+                    color: AppColors.divider.withValues(
+                      alpha: 0.5,
+                    ),
                   ),
                 ),
               ),

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
@@ -12,6 +11,7 @@ import 'admin_inicio.dart';
 import 'admin_inicio_sesion.dart';
 import 'admin_actividades_screen.dart';
 import 'admin_contenidos_screen.dart';
+import 'admin_productos_screen.dart';
 import 'categoria/pantalla_categoria.dart';
 import 'cuenta/admin_cuenta.dart';
 import 'cuenta_sitio/pantalla_cuenta_sitio.dart';
@@ -67,7 +67,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   }
 
   void _actualizar() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _cerrarSesion() async {
@@ -130,6 +132,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
       case 'actividades':
         return const AdminActividadesScreen();
+
+      case 'productos':
+        return const AdminProductosScreen();
 
       case 'contenido':
         return const AdminContenidosScreen();

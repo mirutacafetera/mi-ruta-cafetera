@@ -73,8 +73,7 @@ class TarjetaCuentaSitio extends StatelessWidget {
                           width: 76,
                           height: 76,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              _iconoSitio(),
+                          errorBuilder: (_, _, _) => _iconoSitio(),
                         )
                       : _iconoSitio(),
                 ),
@@ -83,8 +82,7 @@ class TarjetaCuentaSitio extends StatelessWidget {
                 ),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         sitio.nombre,
@@ -118,8 +116,7 @@ class TarjetaCuentaSitio extends StatelessWidget {
                           color: colorEstado.withValues(
                             alpha: 0.12,
                           ),
-                          borderRadius:
-                              BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           textoEstado,

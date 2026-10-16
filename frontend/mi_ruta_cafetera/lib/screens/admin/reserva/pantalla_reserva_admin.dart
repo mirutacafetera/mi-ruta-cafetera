@@ -89,10 +89,11 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
                       estado: estado,
                     );
 
-                    if (!context.mounted) return;
+                    if (!mounted || !context.mounted) return;
 
                     if (exito) {
                       Navigator.pop(context);
+                      if (!mounted) return;
                       ScaffoldMessenger.of(this.context).showSnackBar(
                         const SnackBar(
                           content: Text('Estado actualizado correctamente'),

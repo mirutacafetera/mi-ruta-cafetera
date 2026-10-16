@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -11,6 +10,7 @@ import 'sitio_contenido_screen.dart';
 import 'sitio_dashboard_screen.dart';
 import 'sitio_multimedia_screen.dart';
 import 'sitio_perfil_screen.dart';
+import 'sitio_productos_screen.dart';
 import 'sitio_resenas_screen.dart';
 import 'sitio_reservas_screen.dart';
 
@@ -30,6 +30,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     'Contenido',
     'Multimedia',
     'Actividades',
+    'Productos',
     'Reservas',
     'Reseñas',
   ];
@@ -40,6 +41,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     Icons.article_rounded,
     Icons.photo_library_rounded,
     Icons.local_activity_rounded,
+    Icons.inventory_2_rounded,
     Icons.calendar_month_rounded,
     Icons.star_rounded,
   ];
@@ -50,6 +52,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     const SitioContenidoScreen(),
     const SitioMultimediaScreen(),
     const SitioActividadesScreen(),
+    const SitioProductosScreen(),
     const SitioReservasScreen(),
     const SitioResenasScreen(),
   ];
@@ -100,9 +103,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
         return AlertDialog(
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              AppDimensions.radiusXl,
-            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
           ),
           title: const Text(
             'Cerrar sesión',
@@ -113,10 +114,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
           ),
           content: const Text(
             '¿Deseas cerrar la sesión de tu cuenta de sitio?',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              height: 1.4,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, height: 1.4),
           ),
           actions: [
             TextButton(
@@ -129,10 +127,9 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
               onPressed: () {
                 Navigator.of(dialogContext).pop();
 
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/',
-                  (route) => false,
-                );
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/', (route) => false);
               },
               child: const Text('Cerrar sesión'),
             ),

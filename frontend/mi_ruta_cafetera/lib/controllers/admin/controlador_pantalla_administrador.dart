@@ -26,6 +26,9 @@ class ControladorPantallaAdministrador extends ChangeNotifier {
       case 'actividades':
         return 'Moderación de actividades';
 
+      case 'productos':
+        return 'Productos pendientes';
+
       case 'contenido':
         return 'Moderación de contenidos';
 

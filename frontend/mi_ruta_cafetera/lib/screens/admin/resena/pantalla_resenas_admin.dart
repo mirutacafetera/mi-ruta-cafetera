@@ -73,7 +73,7 @@ class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
     );
   }
 
-  Future<void> _cambiarEstado(resena) async {
+  Future<void> _cambiarEstado(dynamic resena) async {
     final resultado = await _controller.cambiarEstado(resena);
 
     if (!mounted) return;
