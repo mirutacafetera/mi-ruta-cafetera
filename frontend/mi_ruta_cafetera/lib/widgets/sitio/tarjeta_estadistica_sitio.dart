@@ -17,30 +17,56 @@ class TarjetaEstadisticaSitio extends StatelessWidget {
     required this.icono,
   });
 
+  Color get _colorIcono {
+    switch (titulo.toLowerCase()) {
+      case 'visitas':
+        return AppColors.sitioPrimary;
+      case 'reservas':
+        return AppColors.sitioInfo;
+      case 'reseñas':
+        return AppColors.sitioWarning;
+      case 'actividades':
+        return AppColors.sitioSuccess;
+      default:
+        return AppColors.sitioPrimary;
+    }
+  }
+
+  Color get _colorFondoIcono {
+    switch (titulo.toLowerCase()) {
+      case 'visitas':
+        return AppColors.sitioSurfaceGreen;
+      case 'reservas':
+        return AppColors.sitioInfoSoft;
+      case 'reseñas':
+        return AppColors.sitioWarningSoft;
+      case 'actividades':
+        return AppColors.sitioSuccessSoft;
+      default:
+        return AppColors.sitioSurfaceGreen;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(
-        AppDimensions.spacingMd,
+        AppDimensions.sitioStatCardPadding,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.sitioSurface,
         borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
+          AppDimensions.sitioStatCardRadius,
         ),
         border: Border.all(
-          color: AppColors.border.withValues(
-            alpha: 0.55,
-          ),
+          color: AppColors.sitioBorder.withValues(alpha: 0.75),
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: AppColors.coffeeDark.withValues(
-              alpha: 0.07,
-            ),
-            blurRadius: AppDimensions.elevationFloating,
-            offset: const Offset(0, 3),
+            color: AppColors.sitioCardShadow,
+            blurRadius: 12,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -50,82 +76,66 @@ class TarjetaEstadisticaSitio extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: AppDimensions.sitioStatIconSize + 20,
+                height: AppDimensions.sitioStatIconSize + 20,
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusMd,
-                  ),
+                  color: _colorFondoIcono,
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icono,
-                  color: AppColors.white,
-                  size: AppDimensions.iconLg,
+                  color: _colorIcono,
+                  size: AppDimensions.sitioStatIconSize,
                 ),
               ),
               const Spacer(),
               Container(
-                width: 32,
-                height: 32,
+                width: 7,
+                height: 7,
                 decoration: BoxDecoration(
-                  color: AppColors.cream.withValues(
-                    alpha: 0.75,
-                  ),
+                  color: _colorIcono,
                   shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.more_horiz_rounded,
-                  color: AppColors.coffeeDark,
-                  size: AppDimensions.iconSm,
                 ),
               ),
             ],
           ),
-          const SizedBox(
-            height: AppDimensions.spacingMd,
-          ),
+          const SizedBox(height: 12),
           Text(
             titulo,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w700,
-                ),
+            style: const TextStyle(
+              color: AppColors.sitioTextSecondary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          const SizedBox(
-            height: AppDimensions.spacingXs,
-          ),
-          Text(
-            valor,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(
-                  color: AppColors.textPrimary,
+          const SizedBox(height: 3),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                valor,
+                style: const TextStyle(
+                  color: AppColors.sitioTextPrimary,
+                  fontSize: 29,
                   fontWeight: FontWeight.w800,
+                  height: 1.1,
                 ),
+              ),
+            ),
           ),
-          const SizedBox(
-            height: AppDimensions.spacingXs,
-          ),
+          const SizedBox(height: 5),
           Text(
             descripcion,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.25,
-                ),
+            style: const TextStyle(
+              color: AppColors.sitioTextSecondary,
+              fontSize: 11,
+              height: 1.3,
+            ),
           ),
         ],
       ),

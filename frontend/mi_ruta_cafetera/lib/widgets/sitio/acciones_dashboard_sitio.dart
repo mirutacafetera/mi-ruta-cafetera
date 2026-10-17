@@ -26,30 +26,47 @@ class AccionesDashboardSitio extends StatelessWidget {
             titulo: 'Mi sitio',
             descripcion:
                 'Consulta y actualiza la información principal.',
+            colorIcono: AppColors.sitioPrimary,
+            fondoIcono: AppColors.sitioSurfaceGreen,
           ),
-          const Divider(height: 1),
+          _separador(),
           _accion(
             icono: Icons.article_rounded,
             titulo: 'Contenido',
             descripcion:
                 'Administra la descripción y la información turística.',
+            colorIcono: AppColors.sitioInfo,
+            fondoIcono: AppColors.sitioInfoSoft,
           ),
-          const Divider(height: 1),
+          _separador(),
           _accion(
             icono: Icons.photo_library_rounded,
             titulo: 'Multimedia',
             descripcion:
                 'Gestiona fotografías y material visual.',
+            colorIcono: AppColors.sitioWarning,
+            fondoIcono: AppColors.sitioWarningSoft,
           ),
-          const Divider(height: 1),
+          _separador(),
           _accion(
             icono: Icons.local_activity_rounded,
             titulo: 'Actividades',
             descripcion:
                 'Agrega y administra las actividades de tu sitio.',
+            colorIcono: AppColors.sitioSuccess,
+            fondoIcono: AppColors.sitioSuccessSoft,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _separador() {
+    return const Divider(
+      height: 1,
+      thickness: 1,
+      color: AppColors.sitioDivider,
+      indent: 58,
     );
   }
 
@@ -57,31 +74,33 @@ class AccionesDashboardSitio extends StatelessWidget {
     required IconData icono,
     required String titulo,
     required String descripcion,
+    required Color colorIcono,
+    required Color fondoIcono,
   }) {
     return InkWell(
       onTap: () {},
       borderRadius: BorderRadius.circular(
-        AppDimensions.radiusMd,
+        AppDimensions.sitioPanelCardRadius,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingMd,
+          vertical: AppDimensions.sitioPanelCardGap,
+          horizontal: 2,
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusMd,
-                ),
+                color: fondoIcono,
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icono,
-                color: AppColors.white,
-                size: AppDimensions.iconMd,
+                color: colorIcono,
+                size: AppDimensions.sitioActionIconSize + 2,
               ),
             ),
             const SizedBox(
@@ -89,48 +108,44 @@ class AccionesDashboardSitio extends StatelessWidget {
             ),
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     titulo,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.sitioTextPrimary,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(
-                    height: AppDimensions.spacingXs,
-                  ),
+                  const SizedBox(height: 4),
                   Text(
                     descripcion,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                      height: 1.3,
+                      color: AppColors.sitioTextSecondary,
+                      fontSize: 12,
+                      height: 1.35,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(
-              width: AppDimensions.spacingSm,
-            ),
+            const SizedBox(width: 8),
             Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.cream.withValues(
-                  alpha: 0.75,
-                ),
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(
+                color: AppColors.sitioSurfaceSoft,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: AppColors.coffeeDark,
-                size: AppDimensions.iconSm,
+                color: AppColors.sitioPrimary,
+                size: 13,
               ),
             ),
           ],

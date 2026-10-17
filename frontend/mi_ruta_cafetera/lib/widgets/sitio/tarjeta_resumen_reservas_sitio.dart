@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -17,78 +18,98 @@ class TarjetaResumenReservasSitio extends StatelessWidget {
     required this.descripcion,
   });
 
+  Color get _colorIcono {
+    switch (titulo.toLowerCase()) {
+      case 'pendientes':
+        return AppColors.sitioWarning;
+      case 'confirmadas':
+        return AppColors.sitioSuccess;
+      default:
+        return AppColors.sitioPrimary;
+    }
+  }
+
+  Color get _fondoIcono {
+    switch (titulo.toLowerCase()) {
+      case 'pendientes':
+        return AppColors.sitioWarningSoft;
+      case 'confirmadas':
+        return AppColors.sitioSuccessSoft;
+      default:
+        return AppColors.sitioSurfaceGreen;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(
-        AppDimensions.spacingLg,
+        AppDimensions.sitioStatCardPadding,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.sitioSurface,
         borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
+          AppDimensions.sitioStatCardRadius,
         ),
         border: Border.all(
-          color: AppColors.border,
+          color: AppColors.sitioBorder,
         ),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.sitioCardShadow,
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: AppDimensions.sitioHeaderIconSize,
+            height: AppDimensions.sitioHeaderIconSize,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(
-                alpha: 0.10,
-              ),
-              borderRadius: BorderRadius.circular(
-                AppDimensions.radiusMd,
-              ),
+              color: _fondoIcono,
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               icono,
-              color: AppColors.primary,
-              size: AppDimensions.iconSm,
+              color: _colorIcono,
+              size: AppDimensions.sitioStatIconSize,
             ),
           ),
           const SizedBox(
-            width: AppDimensions.spacingMd,
+            width: AppDimensions.sitioPanelCardGap,
           ),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   titulo,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        color: AppColors.textSecondary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.sitioTextSecondary,
                         fontWeight: FontWeight.w600,
+                        height: 1.3,
                       ),
                 ),
-                const SizedBox(
-                  height: AppDimensions.spacingXs,
-                ),
+                const SizedBox(height: 5),
                 Text(
                   valor,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(
-                        color: AppColors.textPrimary,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: AppColors.sitioTextPrimary,
                         fontWeight: FontWeight.w800,
                       ),
                 ),
+                const SizedBox(height: 3),
                 Text(
                   descripcion,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        color: AppColors.textSecondary,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.sitioTextSecondary,
+                        height: 1.35,
                       ),
                 ),
               ],

@@ -14,8 +14,7 @@ class SitioResenasScreen extends StatefulWidget {
   const SitioResenasScreen({super.key});
 
   @override
-  State<SitioResenasScreen> createState() =>
-      _SitioResenasScreenState();
+  State<SitioResenasScreen> createState() => _SitioResenasScreenState();
 }
 
 class _SitioResenasScreenState extends State<SitioResenasScreen> {
@@ -115,50 +114,109 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
     final ancho = MediaQuery.sizeOf(context).width;
     final esEscritorio = ancho >= 900;
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(
-        horizontal: esEscritorio
-            ? AppDimensions.pageHorizontal
-            : AppDimensions.pageHorizontalSmall,
-        vertical: AppDimensions.spacingLg,
-      ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1400),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _encabezado(context),
-              const SizedBox(height: AppDimensions.spacingLg),
-              _resumen(esEscritorio),
-              const SizedBox(height: AppDimensions.sectionGap),
-              _seccion(esEscritorio),
-            ],
+    return Container(
+      color: AppColors.sitioBackground,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(
+          horizontal: esEscritorio
+              ? AppDimensions.sitioPagePadding
+              : AppDimensions.sitioPagePaddingCompact,
+          vertical: AppDimensions.sitioSectionGapCompact,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _encabezado(context, ancho),
+                const SizedBox(
+                  height: AppDimensions.sitioSectionGap,
+                ),
+                _resumen(esEscritorio),
+                const SizedBox(
+                  height: AppDimensions.sitioSectionGap,
+                ),
+                _seccion(esEscritorio),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _encabezado(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Reseñas',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w800,
-              ),
+  Widget _encabezado(BuildContext context, double ancho) {
+    final compacto = ancho < 420;
+
+    return Container(
+      padding: EdgeInsets.all(
+        compacto ? AppDimensions.sitioPanelCardPadding : 22,
+      ),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppColors.sitioPrimaryDark,
+            AppColors.sitioPrimary,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Text(
-          'Consulta las opiniones que los visitantes han dejado sobre tu sitio turístico.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioPanelCardRadius,
         ),
-      ],
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.sitioCardShadow,
+            blurRadius: 14,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: compacto ? 48 : 56,
+            height: compacto ? 48 : 56,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.18),
+              ),
+            ),
+            child: const Icon(
+              Icons.rate_review_rounded,
+              color: AppColors.sitioTextOnPrimary,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Reseñas de visitantes',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppColors.sitioTextOnPrimary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: compacto ? 18 : 22,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Conoce las experiencias de quienes visitan tu sitio.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.86),
+                        height: 1.4,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -178,7 +236,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
       ),
       TarjetaResumenResenasSitio(
         icono: Icons.thumb_up_alt_rounded,
-        titulo: 'Valoraciones',
+        titulo: 'Valoraciones positivas',
         valor: '$_positivas',
         descripcion: 'Calificaciones de 4 o 5 estrellas',
       ),
@@ -186,10 +244,13 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
 
     if (esEscritorio) {
       return Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (int i = 0; i < tarjetas.length; i++) ...[
             if (i > 0)
-              const SizedBox(width: AppDimensions.spacingMd),
+              const SizedBox(
+                width: AppDimensions.sitioPanelCardGap,
+              ),
             Expanded(child: tarjetas[i]),
           ],
         ],
@@ -200,7 +261,9 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
       children: [
         for (int i = 0; i < tarjetas.length; i++) ...[
           if (i > 0)
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(
+              height: AppDimensions.sitioPanelCardGap,
+            ),
           tarjetas[i],
         ],
       ],
@@ -211,17 +274,23 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
     return TarjetaSeccionSitio(
       titulo: 'Opiniones de los visitantes',
       subtitulo:
-          'Consulta las experiencias y comentarios que han compartido tus visitantes.',
-      icono: Icons.rate_review_rounded,
+          'Consulta los comentarios y filtra las reseñas por calificación.',
+      icono: Icons.forum_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _filtros(esEscritorio),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(
+            height: AppDimensions.sitioSectionGapCompact,
+          ),
           if (_cargando)
             const Padding(
-              padding: EdgeInsets.all(AppDimensions.spacingXl),
-              child: Center(child: CircularProgressIndicator()),
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.sitioPrimary,
+                ),
+              ),
             )
           else if (_error != null)
             _estadoError()
@@ -239,14 +308,10 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
   Widget _filtros(bool esEscritorio) {
     final orden = DropdownButtonFormField<String>(
       initialValue: _orden,
-      decoration: const InputDecoration(
-        labelText: 'Ordenar por',
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingSm,
-        ),
-      ),
+      isExpanded: true,
+      decoration: _decoracionFiltro('Ordenar por'),
+      dropdownColor: AppColors.sitioSurface,
+      iconEnabledColor: AppColors.sitioPrimary,
       items: const [
         DropdownMenuItem(
           value: 'recientes',
@@ -265,14 +330,10 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
 
     final calificacion = DropdownButtonFormField<int?>(
       initialValue: _calificacionSeleccionada,
-      decoration: const InputDecoration(
-        labelText: 'Calificación',
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingSm,
-        ),
-      ),
+      isExpanded: true,
+      decoration: _decoracionFiltro('Calificación'),
+      dropdownColor: AppColors.sitioSurface,
+      iconEnabledColor: AppColors.sitioPrimary,
       items: const [
         DropdownMenuItem<int?>(
           value: null,
@@ -304,18 +365,25 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
       },
     );
 
+    final actualizar = IconButton(
+      tooltip: 'Actualizar reseñas',
+      onPressed: _cargando ? null : _cargarResenas,
+      style: IconButton.styleFrom(
+        backgroundColor: AppColors.sitioSurfaceGreen,
+        foregroundColor: AppColors.sitioPrimary,
+        minimumSize: const Size(48, 48),
+      ),
+      icon: const Icon(Icons.refresh_rounded),
+    );
+
     if (esEscritorio) {
       return Row(
         children: [
           Expanded(child: orden),
-          const SizedBox(width: AppDimensions.spacingMd),
+          const SizedBox(width: AppDimensions.sitioPanelCardGap),
           Expanded(child: calificacion),
-          const SizedBox(width: AppDimensions.spacingMd),
-          IconButton(
-            tooltip: 'Actualizar reseñas',
-            onPressed: _cargando ? null : _cargarResenas,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
+          const SizedBox(width: AppDimensions.sitioPanelCardGap),
+          actualizar,
         ],
       );
     }
@@ -324,12 +392,16 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         orden,
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: AppDimensions.sitioFormFieldGap),
         calificacion,
+        const SizedBox(height: 8),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton.icon(
             onPressed: _cargando ? null : _cargarResenas,
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.sitioPrimary,
+            ),
             icon: const Icon(Icons.refresh_rounded),
             label: const Text('Actualizar reseñas'),
           ),
@@ -338,21 +410,72 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
     );
   }
 
+  InputDecoration _decoracionFiltro(String etiqueta) {
+    return InputDecoration(
+      labelText: etiqueta,
+      labelStyle: const TextStyle(
+        color: AppColors.sitioTextSecondary,
+      ),
+      filled: true,
+      fillColor: AppColors.sitioSurfaceSoft,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 15,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioFormRadius,
+        ),
+        borderSide: const BorderSide(
+          color: AppColors.sitioBorder,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioFormRadius,
+        ),
+        borderSide: const BorderSide(
+          color: AppColors.sitioBorder,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioFormRadius,
+        ),
+        borderSide: const BorderSide(
+          color: AppColors.sitioPrimary,
+          width: 1.5,
+        ),
+      ),
+    );
+  }
+
   Widget _tarjetaResena(SitioResenaModel resena) {
     final nombre = resena.nombreUsuario.trim().isEmpty
         ? 'Visitante'
         : resena.nombreUsuario.trim();
 
+    final comentario = resena.comentario.trim();
+
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(
-        bottom: AppDimensions.spacingMd,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(
+        AppDimensions.sitioPanelCardPadding,
       ),
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.sitioSurface,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioPanelCardRadius,
+        ),
+        border: Border.all(color: AppColors.sitioBorder),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.sitioCardShadow,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,41 +487,81 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
                 fotoPerfil: resena.fotoPerfil,
                 nombre: nombre,
                 radio: 24,
-                colorFondo: AppColors.surfaceGreen,
-                colorIcono: AppColors.primary,
+                colorFondo: AppColors.sitioSurfaceGreen,
+                colorIcono: AppColors.sitioPrimary,
               ),
-              const SizedBox(width: AppDimensions.spacingMd),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       nombre,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppColors.textPrimary,
+                            color: AppColors.sitioTextPrimary,
                             fontWeight: FontWeight.w800,
                           ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      _formatearFecha(resena.creadaEn),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_today_rounded,
+                          size: 13,
+                          color: AppColors.sitioTextSecondary,
+                        ),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            _formatearFecha(resena.creadaEn),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.sitioTextSecondary,
+                                    ),
                           ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              Text(
-                '${resena.calificacion}/5',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w800,
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.sitioWarningSoft,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.sitioStatusRadius,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: AppColors.sitioWarning,
+                      size: 16,
                     ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${resena.calificacion}/5',
+                      style: const TextStyle(
+                        color: AppColors.sitioWarning,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: 14),
           Row(
             children: List.generate(
               5,
@@ -406,20 +569,28 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
                 indice < resena.calificacion
                     ? Icons.star_rounded
                     : Icons.star_outline_rounded,
-                color: AppColors.primary,
-                size: AppDimensions.iconSm,
+                color: AppColors.sitioAccent,
+                size: 21,
               ),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
-          Text(
-            resena.comentario.trim().isEmpty
-                ? 'Sin comentario escrito.'
-                : resena.comentario,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textPrimary,
-                  height: 1.5,
-                ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.sitioSurfaceSoft,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              comentario.isEmpty
+                  ? 'Este visitante no dejó un comentario escrito.'
+                  : comentario,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.sitioTextPrimary,
+                    height: 1.55,
+                  ),
+            ),
           ),
         ],
       ),
@@ -429,32 +600,59 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
   Widget _estadoError() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(
+        AppDimensions.sitioPanelCardPadding,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.sitioErrorSoft,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioPanelCardRadius,
+        ),
+        border: Border.all(
+          color: AppColors.sitioError.withValues(alpha: 0.25),
+        ),
       ),
       child: Column(
         children: [
-          const Icon(Icons.cloud_off_rounded, size: 40),
-          const SizedBox(height: AppDimensions.spacingMd),
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: AppColors.sitioSurface,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Icon(
+              Icons.cloud_off_rounded,
+              size: 30,
+              color: AppColors.sitioError,
+            ),
+          ),
+          const SizedBox(height: 14),
           Text(
             'No pudimos cargar las reseñas',
+            textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: AppColors.sitioTextPrimary,
                   fontWeight: FontWeight.w800,
                 ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: 8),
           SelectableText(
             _error!,
             textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.sitioTextSecondary,
+              height: 1.4,
+            ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: _cargarResenas,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.sitioPrimary,
+              foregroundColor: AppColors.sitioTextOnPrimary,
+              minimumSize: const Size(0, 46),
+            ),
             icon: const Icon(Icons.refresh_rounded),
             label: const Text('Intentar de nuevo'),
           ),
@@ -465,20 +663,50 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
 
   Widget _sinResultados() {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 12),
       child: Column(
         children: [
-          const Icon(Icons.filter_alt_off_rounded, size: 40),
-          const SizedBox(height: AppDimensions.spacingMd),
-          const Text(
-            'No hay reseñas con esa calificación.',
-            textAlign: TextAlign.center,
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.sitioSurfaceGreen,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(
+              Icons.filter_alt_off_rounded,
+              size: 30,
+              color: AppColors.sitioPrimary,
+            ),
           ),
-          TextButton(
+          const SizedBox(height: 14),
+          Text(
+            'No hay reseñas con esa calificación',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppColors.sitioTextPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Prueba con otra calificación o consulta todas las opiniones.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.sitioTextSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextButton.icon(
             onPressed: () {
               setState(() => _calificacionSeleccionada = null);
             },
-            child: const Text('Mostrar todas'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.sitioPrimary,
+            ),
+            icon: const Icon(Icons.filter_alt_off_rounded),
+            label: const Text('Mostrar todas'),
           ),
         ],
       ),
