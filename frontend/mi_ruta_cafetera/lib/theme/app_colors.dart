@@ -5,6 +5,45 @@ import 'package:flutter/material.dart';
 abstract class AppColors {
   AppColors._();
 
+  
+  // =====================================================
+  // IDENTIDAD VISUAL EXCLUSIVA DEL PANEL DE SITIO
+  // Aplicable únicamente a las pantallas de gestión del sitio.
+  // No reemplaza los colores globales de la aplicación.
+  // =====================================================
+
+  // Colores principales del panel
+  static const Color sitioPrimary = Color(0xFF214F3D);
+  static const Color sitioPrimaryDark = Color(0xFF163A2C);
+  static const Color sitioAccent = Color(0xFFBD8B43);
+
+  // Fondos y superficies
+  static const Color sitioBackground = Color(0xFFF5F0E6);
+  static const Color sitioSurface = Color(0xFFFFFFFF);
+  static const Color sitioSurfaceSoft = Color(0xFFFAF7F0);
+  static const Color sitioSurfaceGreen = Color(0xFFE8F0E9);
+
+  // Textos
+  static const Color sitioTextPrimary = Color(0xFF292D29);
+  static const Color sitioTextSecondary = Color(0xFF6C746D);
+  static const Color sitioTextOnPrimary = Color(0xFFFFFFFF);
+
+  // Bordes y sombras
+  static const Color sitioBorder = Color(0xFFDED5C8);
+  static const Color sitioDivider = Color(0xFFEAE3D8);
+  static const Color sitioCardShadow = Color(0x12000000);
+
+  // Estados del panel
+  static const Color sitioSuccess = Color(0xFF347653);
+  static const Color sitioSuccessSoft = Color(0xFFE4F1E7);
+  static const Color sitioInfo = Color(0xFF397A9B);
+  static const Color sitioInfoSoft = Color(0xFFE5F0F5);
+  static const Color sitioWarning = Color(0xFF98651E);
+  static const Color sitioWarningSoft = Color(0xFFFFF0D8);
+  static const Color sitioError = Color(0xFFB7433C);
+  static const Color sitioErrorSoft = Color(0xFFF9E8E5);
+
+
   // IDENTIDAD PRINCIPAL
   static const Color primary = Color(0xFF174B35);
   static const Color primaryDark = Color(0xFF0B2F21);

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -77,8 +78,13 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
   void _abrirMenuMovil() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.sitioSurface,
       isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppDimensions.sitioPanelCardRadius),
+        ),
+      ),
       builder: (menuContext) {
         return NavegacionSitio(
           indiceActual: _indiceActual,
@@ -101,35 +107,56 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: AppColors.sitioSurface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+            borderRadius: BorderRadius.circular(
+              AppDimensions.sitioPanelCardRadius,
+            ),
           ),
           title: const Text(
             'Cerrar sesión',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: AppColors.sitioTextPrimary,
               fontWeight: FontWeight.w800,
             ),
           ),
           content: const Text(
             '¿Deseas cerrar la sesión de tu cuenta de sitio?',
-            style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+            style: TextStyle(
+              color: AppColors.sitioTextSecondary,
+              height: 1.5,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
-              child: const Text('Cancelar'),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: AppColors.sitioTextSecondary,
+                ),
+              ),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.sitioPrimary,
+                foregroundColor: AppColors.sitioTextOnPrimary,
+                minimumSize: const Size(0, AppDimensions.sitioButtonHeight),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMd,
+                  ),
+                ),
+              ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
 
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/', (route) => false);
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/',
+                  (route) => false,
+                );
               },
               child: const Text('Cerrar sesión'),
             ),
@@ -147,11 +174,11 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
         final esEscritorio = ancho >= 900;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.sitioBackground,
           drawer: esEscritorio
               ? null
               : Drawer(
-                  backgroundColor: AppColors.surface,
+                  backgroundColor: AppColors.sitioSurface,
                   width: ancho < 400 ? ancho * 0.86 : 330,
                   child: NavegacionSitio(
                     indiceActual: _indiceActual,
@@ -188,9 +215,8 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
                         onCerrarSesion: _cerrarSesion,
                       ),
                       Expanded(
-                        child: Container(
-                          width: double.infinity,
-                          color: AppColors.background,
+                        child: ColoredBox(
+                          color: AppColors.sitioBackground,
                           child: IndexedStack(
                             index: _indiceActual,
                             children: _pantallas,

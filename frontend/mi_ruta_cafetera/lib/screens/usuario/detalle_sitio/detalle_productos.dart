@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../models/sitio/sitio_producto_model.dart';
@@ -6,7 +7,10 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 
 class DetalleProductos extends StatefulWidget {
-  const DetalleProductos({super.key, required this.sitioId});
+  const DetalleProductos({
+    super.key,
+    required this.sitioId,
+  });
 
   final String sitioId;
 
@@ -77,6 +81,14 @@ class _DetalleProductosState extends State<DetalleProductos> {
     }
   }
 
+  void _abrirDetalle(SitioProductoModel producto) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => _DetalleProductoScreen(producto: producto),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -118,7 +130,10 @@ class _DetalleProductosState extends State<DetalleProductos> {
           const SizedBox(height: AppDimensions.spacingSm),
           const Text(
             'Descubre los productos que ofrece este establecimiento.',
-            style: TextStyle(fontSize: 14),
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           if (_cargando)
@@ -175,72 +190,90 @@ class _DetalleProductosState extends State<DetalleProductos> {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: AppColors.divider),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 135,
-              width: double.infinity,
-              child: imagen.isEmpty
-                  ? _imagenAlternativa()
-                  : Image.network(
-                      imagen,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => _imagenAlternativa(),
-                    ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      producto.categoria,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+        child: InkWell(
+          onTap: () => _abrirDetalle(producto),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 135,
+                width: double.infinity,
+                child: imagen.isEmpty
+                    ? _imagenAlternativa()
+                    : Image.network(
+                        imagen,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => _imagenAlternativa(),
                       ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      producto.nombre,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        producto.categoria,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Expanded(
-                      child: Text(
-                        producto.descripcion.trim().isEmpty
-                            ? 'Producto del establecimiento.'
-                            : producto.descripcion.trim(),
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Text(
+                        producto.nombre,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '\$ ${producto.precio.toStringAsFixed(0)} COP',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Expanded(
+                        child: Text(
+                          producto.descripcion.trim().isEmpty
+                              ? 'Producto del establecimiento.'
+                              : producto.descripcion.trim(),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '\$ ${producto.precio.toStringAsFixed(0)} COP',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: AppColors.primary,
+                            size: 18,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -292,6 +325,323 @@ class _DetalleProductosState extends State<DetalleProductos> {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _DetalleProductoScreen extends StatefulWidget {
+  const _DetalleProductoScreen({
+    required this.producto,
+  });
+
+  final SitioProductoModel producto;
+
+  @override
+  State<_DetalleProductoScreen> createState() =>
+      _DetalleProductoScreenState();
+}
+
+class _DetalleProductoScreenState extends State<_DetalleProductoScreen> {
+  final PageController _pageController = PageController();
+
+  int _indiceActual = 0;
+
+  List<String> get _imagenes {
+    final resultado = <String>[];
+    final principal = widget.producto.imagenPrincipal.trim();
+
+    if (principal.isNotEmpty) {
+      resultado.add(principal);
+    }
+
+    for (final imagen in widget.producto.imagenes) {
+      final url = imagen.trim();
+
+      if (url.isNotEmpty && !resultado.contains(url)) {
+        resultado.add(url);
+      }
+    }
+
+    return resultado;
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final producto = widget.producto;
+    final imagenes = _imagenes;
+    final categoria = producto.categoria.trim();
+
+    return Scaffold(
+      backgroundColor: AppColors.sitioBackground,
+      appBar: AppBar(
+        backgroundColor: AppColors.sitioPrimaryDark,
+        foregroundColor: Colors.white,
+        title: const Text('Detalle del producto'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (imagenes.isNotEmpty)
+              _carrusel(imagenes)
+            else
+              AspectRatio(
+                aspectRatio: 4 / 3,
+                child: _imagenAlternativaDetalle(),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(
+                AppDimensions.pageHorizontal,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (categoria.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.sitioSurfaceGreen,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: AppColors.sitioPrimary.withValues(
+                            alpha: 0.22,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.local_cafe_outlined,
+                            size: 16,
+                            color: AppColors.sitioPrimary,
+                          ),
+                          const SizedBox(width: 7),
+                          Text(
+                            categoria,
+                            style: const TextStyle(
+                              color: AppColors.sitioPrimary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingMd),
+                  ],
+                  Text(
+                    producto.nombre,
+                    style: const TextStyle(
+                      color: AppColors.sitioTextPrimary,
+                      fontSize: 27,
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingMd),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(
+                      AppDimensions.spacingLg,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.sitioSurface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.sitioBorder,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.sell_outlined,
+                              color: AppColors.sitioAccent,
+                              size: 22,
+                            ),
+                            SizedBox(width: AppDimensions.spacingSm),
+                            Text(
+                              'Precio',
+                              style: TextStyle(
+                                color: AppColors.sitioTextSecondary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXs),
+                        Text(
+                          '\$ ${producto.precio.toStringAsFixed(0)} COP',
+                          style: const TextStyle(
+                            color: AppColors.sitioPrimary,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXl),
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.description_outlined,
+                        color: AppColors.sitioPrimary,
+                        size: 23,
+                      ),
+                      SizedBox(width: AppDimensions.spacingSm),
+                      Expanded(
+                        child: Text(
+                          'Descripción del producto',
+                          style: TextStyle(
+                            color: AppColors.sitioPrimary,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  Text(
+                    producto.descripcion.trim().isEmpty
+                        ? 'No hay una descripción adicional disponible.'
+                        : producto.descripcion.trim(),
+                    style: const TextStyle(
+                      color: AppColors.sitioTextSecondary,
+                      fontSize: 15,
+                      height: 1.7,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXl),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _carrusel(List<String> imagenes) {
+    return Column(
+      children: [
+        AspectRatio(
+          aspectRatio: 4 / 3,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                itemCount: imagenes.length,
+                onPageChanged: (index) {
+                  setState(() => _indiceActual = index);
+                },
+                itemBuilder: (context, index) {
+                  return Image.network(
+                    imagenes[index],
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => _imagenAlternativaDetalle(),
+                  );
+                },
+              ),
+              if (imagenes.length > 1)
+                Positioned(
+                  right: 14,
+                  bottom: 14,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.68),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${_indiceActual + 1} / ${imagenes.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (imagenes.length > 1)
+          SizedBox(
+            height: 88,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.pageHorizontal,
+                vertical: 10,
+              ),
+              scrollDirection: Axis.horizontal,
+              itemCount: imagenes.length,
+              separatorBuilder: (_, _) =>
+                  const SizedBox(width: AppDimensions.spacingSm),
+              itemBuilder: (context, index) {
+                final seleccionada = _indiceActual == index;
+
+                return GestureDetector(
+                  onTap: () {
+                    _pageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                  child: Container(
+                    width: 76,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: seleccionada
+                            ? AppColors.sitioPrimary
+                            : AppColors.sitioBorder,
+                        width: seleccionada ? 3 : 1,
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.network(
+                      imagenes[index],
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => _imagenAlternativaDetalle(),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _imagenAlternativaDetalle() {
+    return Container(
+      color: AppColors.sitioSurfaceGreen,
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.inventory_2_outlined,
+        color: AppColors.sitioPrimary,
+        size: 48,
       ),
     );
   }
