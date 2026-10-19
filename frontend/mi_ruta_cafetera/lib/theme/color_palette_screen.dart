@@ -34,7 +34,7 @@ class ColorPaletteScreen extends StatelessWidget {
                 // ==================================================
 
                 const Text(
-                  'Mi Ruta Mágica del Café',
+                  'Mi Ruta CAfetera',
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,

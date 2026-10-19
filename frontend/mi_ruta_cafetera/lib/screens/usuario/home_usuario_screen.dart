@@ -141,7 +141,7 @@ class _HomePublicoScreenState
   }
 
   Future<void> _sesionExpirada() async {
-    await UsuarioSesionService.instance.cerrarSesion();
+    await UsuarioSesionService.instance.cerrarSesionCompleta();
 
     if (!mounted) {
       return;

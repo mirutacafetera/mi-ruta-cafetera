@@ -10,9 +10,7 @@ import '../../models/usuario/usuario_sesion_model.dart';
 import '../../services/usuario/usuario_sesion_service.dart';
 
 class LoginUsuarioScreen extends StatefulWidget {
-  const LoginUsuarioScreen({
-    super.key,
-  });
+  const LoginUsuarioScreen({super.key});
 
   @override
   State<LoginUsuarioScreen> createState() => _LoginUsuarioScreenState();
@@ -23,11 +21,9 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
   // CONTROLADORES
   // ============================================================
 
-  final TextEditingController correoController =
-      TextEditingController();
+  final TextEditingController correoController = TextEditingController();
 
-  final TextEditingController passwordController =
-      TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   // ============================================================
   // VARIABLES
@@ -45,16 +41,12 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
     final password = passwordController.text;
 
     if (correo.isEmpty) {
-      _mostrarMensaje(
-        'Ingresa tu correo electrónico',
-      );
+      _mostrarMensaje('Ingresa tu correo electrónico');
       return;
     }
 
     if (password.isEmpty) {
-      _mostrarMensaje(
-        'Ingresa tu contraseña',
-      );
+      _mostrarMensaje('Ingresa tu contraseña');
       return;
     }
 
@@ -80,9 +72,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
       final token = resultado['token'];
 
       if (usuario is! Map || token == null) {
-        _mostrarMensaje(
-          'El servidor no devolvió los datos de usuario',
-        );
+        _mostrarMensaje('El servidor no devolvió los datos de usuario');
         return;
       }
 
@@ -91,9 +81,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
         usuario: Map<String, dynamic>.from(usuario),
       );
 
-      await UsuarioSesionService.instance.guardarSesion(
-        sesion,
-      );
+      await UsuarioSesionService.instance.guardarSesion(sesion);
 
       if (!mounted) {
         return;
@@ -104,16 +92,11 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
       // al login ni al registro.
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (context) => const PublicShellScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => const PublicShellScreen()),
         (ruta) => false,
       );
     } else {
-      _mostrarMensaje(
-        resultado['mensaje'] ??
-            'No fue posible iniciar sesión',
-      );
+      _mostrarMensaje(resultado['mensaje'] ?? 'No fue posible iniciar sesión');
     }
   }
 
@@ -122,11 +105,9 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
   // ============================================================
 
   void _mostrarMensaje(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   // ============================================================
@@ -146,157 +127,222 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // El fondo ocupa siempre la pantalla completa (no se encoge ni se
+    // reescala cuando aparece el teclado).
+    final altoPantalla = MediaQuery.sizeOf(context).height;
+
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(
-              AppDimensions.spacingXxl,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ==================================================
+          // FONDO (assets/img/fondo-i-sesion.png)
+          // ==================================================
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: altoPantalla,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/img/fondo-i-sesion.png',
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.medium,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const ColoredBox(color: AppColors.primaryDark);
+                  },
+                ),
+
+                // Capa verde oscuro para que el formulario destaque
+                // sin ocultar la imagen.
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        AppColors.primaryDark.withValues(alpha: 0.55),
+                        AppColors.primaryDark.withValues(alpha: 0.78),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 420,
+          ),
+
+          SafeArea(child: _construirFormulario()),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirFormulario() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppDimensions.spacingXxl),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Container(
+            padding: const EdgeInsets.all(AppDimensions.spacingXl),
+            decoration: BoxDecoration(
+              color: AppColors.cream.withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
+              border: Border.all(
+                color: AppColors.white.withValues(alpha: 0.35),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // ==================================================
-                  // ICONO
-                  // ==================================================
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // ==================================================
+                // ICONO
+                // ==================================================
+                const Icon(
+                  Icons.local_cafe,
+                  size: 80,
+                  color: AppColors.secondary,
+                ),
 
-                  const Icon(
-                    Icons.local_cafe,
-                    size: 80,
-                    color: AppColors.secondary,
+                const SizedBox(height: AppDimensions.spacingLg + 4),
+
+                // ==================================================
+                // TÍTULO
+                // ==================================================
+                const Text(
+                  'Mi Ruta Cafetera',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
+                ),
 
-                  const SizedBox(
-                    height: AppDimensions.spacingLg + 4,
+                const SizedBox(height: AppDimensions.spacingSm),
+
+                const Text(
+                  'Descubre Huila, sus paisajes '
+                  'y la magia del café',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
                   ),
+                ),
 
-                  // ==================================================
-                  // TÍTULO
-                  // ==================================================
+                const SizedBox(height: AppDimensions.spacingXl + 15),
 
-                  const Text(
-                    'Mi Ruta Cafetera',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+                // ==================================================
+                // CORREO
+                // ==================================================
+                TextField(
+                  controller: correoController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'Correo electrónico',
+                    hintText: 'Ingresa tu correo',
+                    prefixIcon: Icon(Icons.email_outlined),
+                    border: OutlineInputBorder(),
                   ),
+                ),
 
-                  const SizedBox(
-                    height: AppDimensions.spacingSm,
-                  ),
+                const SizedBox(height: AppDimensions.spacingLg + 2),
 
-                  const Text(
-                    'Descubre Huila, sus paisajes '
-                    'y la magia del café',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: AppDimensions.spacingXl + 15,
-                  ),
-
-                  // ==================================================
-                  // CORREO
-                  // ==================================================
-
-                  TextField(
-                    controller: correoController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Correo electrónico',
-                      hintText: 'Ingresa tu correo',
-                      prefixIcon: Icon(
-                        Icons.email_outlined,
+                // ==================================================
+                // CONTRASEÑA
+                // ==================================================
+                TextField(
+                  controller: passwordController,
+                  obscureText: ocultarPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    hintText: 'Ingresa tu contraseña',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        ocultarPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                      border: OutlineInputBorder(),
+                      onPressed: () {
+                        setState(() {
+                          ocultarPassword = !ocultarPassword;
+                        });
+                      },
                     ),
+                    border: const OutlineInputBorder(),
                   ),
+                ),
 
-                  const SizedBox(
-                    height: AppDimensions.spacingLg + 2,
+                const SizedBox(height: AppDimensions.spacingXl + 5),
+
+                // ==================================================
+                // BOTÓN INICIAR SESIÓN
+                // ==================================================
+                SizedBox(
+                  width: double.infinity,
+                  height: AppDimensions.buttonHeightLarge,
+                  child: ElevatedButton(
+                    onPressed: cargando ? null : _iniciarSesion,
+                    child: cargando
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text(
+                            'Iniciar sesión',
+                            style: TextStyle(fontSize: 16),
+                          ),
                   ),
+                ),
 
-                  // ==================================================
-                  // CONTRASEÑA
-                  // ==================================================
+                const SizedBox(height: AppDimensions.spacingMd),
 
-                  TextField(
-                    controller: passwordController,
-                    obscureText: ocultarPassword,
-                    decoration: InputDecoration(
-                      labelText: 'Contraseña',
-                      hintText: 'Ingresa tu contraseña',
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          ocultarPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            ocultarPassword =
-                                !ocultarPassword;
-                          });
-                        },
-                      ),
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: AppDimensions.spacingXl + 5,
-                  ),
-
-                  // ==================================================
-                  // BOTÓN INICIAR SESIÓN
-                  // ==================================================
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: AppDimensions.buttonHeightLarge,
-                    child: ElevatedButton(
-                      onPressed:
-                          cargando ? null : _iniciarSesion,
-                      child: cargando
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              'Iniciar sesión',
-                              style: TextStyle(
-                                fontSize: 16,
-                              ),
+                // ==================================================
+                // RECUPERAR CONTRASEÑA
+                // ==================================================
+                TextButton(
+                  onPressed: cargando
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const RecuperarPasswordScreen(),
                             ),
-                    ),
+                          );
+                        },
+                  child: const Text('¿Olvidaste tu contraseña?'),
+                ),
+
+                const SizedBox(height: AppDimensions.spacingXs + 1),
+
+                const Divider(),
+
+                const SizedBox(height: AppDimensions.spacingSm + 2),
+
+                // ==================================================
+                // REGISTRO
+                // ==================================================
+                const Text(
+                  '¿Aún no tienes una cuenta?',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
                   ),
+                ),
 
-                  const SizedBox(
-                    height: AppDimensions.spacingMd,
-                  ),
+                const SizedBox(height: AppDimensions.spacingXs + 1),
 
-                  // ==================================================
-                  // RECUPERAR CONTRASEÑA
-                  // ==================================================
-
-                  TextButton(
+                SizedBox(
+                  width: double.infinity,
+                  height: AppDimensions.buttonHeight,
+                  child: OutlinedButton(
                     onPressed: cargando
                         ? null
                         : () {
@@ -304,66 +350,17 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    const RecuperarPasswordScreen(),
+                                    const RegistroUsuarioScreen(),
                               ),
                             );
                           },
                     child: const Text(
-                      '¿Olvidaste tu contraseña?',
+                      'Crear una cuenta',
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
-
-                  const SizedBox(
-                    height: AppDimensions.spacingXs + 1,
-                  ),
-
-                  const Divider(),
-
-                  const SizedBox(
-                    height: AppDimensions.spacingSm + 2,
-                  ),
-
-                  // ==================================================
-                  // REGISTRO
-                  // ==================================================
-
-                  const Text(
-                    '¿Aún no tienes una cuenta?',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: AppDimensions.spacingXs + 1,
-                  ),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: AppDimensions.buttonHeight,
-                    child: OutlinedButton(
-                      onPressed: cargando
-                          ? null
-                          : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const RegistroUsuarioScreen(),
-                                ),
-                              );
-                            },
-                      child: const Text(
-                        'Crear una cuenta',
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

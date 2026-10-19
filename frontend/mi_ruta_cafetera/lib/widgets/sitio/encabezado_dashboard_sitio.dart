@@ -127,7 +127,7 @@ class EncabezadoDashboardSitio extends StatelessWidget {
                   'Gestiona tu experiencia turística, '
                   'mantén tu información actualizada y '
                   'conecta con los visitantes de '
-                  'Mi Ruta Mágica del Café.',
+                  'Mi Ruta Cafetera',
                   style: Theme.of(context)
                       .textTheme
                       .bodyLarge

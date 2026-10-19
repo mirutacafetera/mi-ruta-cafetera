@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/usuario/usuario_sesion_model.dart';
+import '../google_auth_service.dart';
 
 class UsuarioSesionService {
   UsuarioSesionService._();
@@ -102,6 +103,27 @@ class UsuarioSesionService {
     await preferencias.remove(_claveSesion);
 
     sesionActual.value = null;
+  }
+
+  // ============================================================
+  // CERRAR SESIÓN COMPLETA
+  // ============================================================
+  //
+  // Punto único para el cierre de sesión iniciado por la persona
+  // (o por un token vencido): borra la sesión guardada y en
+  // memoria, y también cierra la sesión de Google Sign-In para
+  // que no quede una cuenta "pegada" en el dispositivo.
+  // No elimina la cuenta ni datos del servidor.
+  // ============================================================
+
+  Future<void> cerrarSesionCompleta() async {
+    await cerrarSesion();
+
+    try {
+      await GoogleAuthService.instance.cerrarSesion();
+    } catch (_) {
+      // Si no había sesión de Google, se ignora.
+    }
   }
 
   // ============================================================

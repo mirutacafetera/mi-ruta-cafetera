@@ -1,3 +1,4 @@
+import '../usuario/avatar_cafetero_model.dart';
 
 class SitioResenaModel {
   final String id;
@@ -10,6 +11,9 @@ class SitioResenaModel {
   final DateTime? creadaEn;
   final String? fotoPerfil;
 
+  // Avatar cafetero de quien escribió la reseña (si lo configuró).
+  final AvatarCafeteroModel? avatar;
+
   const SitioResenaModel({
     required this.id,
     required this.sitioId,
@@ -20,6 +24,7 @@ class SitioResenaModel {
     this.activo = true,
     this.creadaEn,
     this.fotoPerfil,
+    this.avatar,
   });
 
   factory SitioResenaModel.fromJson(Map<String, dynamic> json) {
@@ -60,6 +65,7 @@ class SitioResenaModel {
           ? null
           : DateTime.tryParse(fechaRaw.toString()),
       fotoPerfil: foto == null || foto.isEmpty ? null : foto,
+      avatar: AvatarCafeteroModel.desdeDinamico(usuario['avatar']),
     );
   }
 

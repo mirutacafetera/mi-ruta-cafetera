@@ -1,10 +1,12 @@
 const jwt = require('jsonwebtoken');
 
+const Usuario = require('../models/usuario/usuario');
+
 // =====================================================
 // VERIFICAR TOKEN JWT
 // =====================================================
 
-const verificarToken = (req, res, next) => {
+const verificarToken = async (req, res, next) => {
   try {
     // -------------------------------------------------
     // OBTENER HEADER AUTHORIZATION
@@ -60,6 +62,40 @@ const verificarToken = (req, res, next) => {
       correo: decoded.correo,
       rol: decoded.rol
    };
+
+    // -------------------------------------------------
+    // CUENTAS DE USUARIO: DEBEN SEGUIR EXISTIENDO
+    // -------------------------------------------------
+    //
+    // Un token emitido antes de eliminar la cuenta deja de ser
+    // válido. Los tokens de administrador y de sitio no se ven
+    // afectados.
+
+    if (decoded.rol === 'usuario') {
+      let cuenta;
+
+      try {
+        cuenta = await Usuario
+          .findById(decoded.id)
+          .select('_id eliminadoAt')
+          .lean();
+      } catch (errorBusqueda) {
+        console.error(
+          'Error al comprobar la cuenta del token:',
+          errorBusqueda
+        );
+
+        return res.status(500).json({
+          mensaje: 'No se pudo verificar tu sesión'
+        });
+      }
+
+      if (!cuenta || cuenta.eliminadoAt) {
+        return res.status(401).json({
+          mensaje: 'Tu cuenta ya no existe o fue eliminada'
+        });
+      }
+    }
 
     // -------------------------------------------------
     // CONTINUAR

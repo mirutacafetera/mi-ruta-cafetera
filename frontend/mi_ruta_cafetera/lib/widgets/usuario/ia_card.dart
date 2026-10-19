@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import 'icono_ia.dart';
 
 /// Tarjeta de entrada a "Mi Ruta Cafetera IA".
 ///
@@ -10,10 +11,7 @@ import '../../theme/app_dimensions.dart';
 class IaCard extends StatelessWidget {
   final VoidCallback onTap;
 
-  const IaCard({
-    super.key,
-    required this.onTap,
-  });
+  const IaCard({super.key, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -21,30 +19,19 @@ class IaCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.radiusXxl,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXxl),
         child: Container(
-          padding: const EdgeInsets.all(
-            AppDimensions.spacingXl + 2,
-          ),
+          padding: const EdgeInsets.all(AppDimensions.spacingXl + 2),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                AppColors.secondary,
-                AppColors.coffeeLight,
-              ],
+              colors: [AppColors.secondary, AppColors.coffeeLight],
             ),
-            borderRadius: BorderRadius.circular(
-              AppDimensions.radiusXxl,
-            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusXxl),
             boxShadow: [
               BoxShadow(
-                color: AppColors.secondary.withValues(
-                  alpha: 0.20,
-                ),
+                color: AppColors.secondary.withValues(alpha: 0.20),
                 blurRadius: 18,
                 offset: const Offset(0, 7),
               ),
@@ -54,19 +41,14 @@ class IaCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Row(
                       children: [
-                        Icon(
-                          Icons.auto_awesome_rounded,
-                          color: AppColors.white,
-                          size: AppDimensions.iconMd,
+                        IconoIa(
+                          size: AppDimensions.iconLg + AppDimensions.spacingXs,
                         ),
-                        SizedBox(
-                          width: AppDimensions.spacingSm,
-                        ),
+                        SizedBox(width: AppDimensions.spacingSm),
                         Expanded(
                           child: Text(
                             'Mi Ruta Cafetera IA',
@@ -79,41 +61,30 @@ class IaCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(
-                      height: AppDimensions.spacingSm,
-                    ),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     Text(
                       'Te recomiendo lugares y experiencias '
                       'reales del Huila según tu ubicación, '
                       'la hora y el clima.',
                       style: TextStyle(
-                        color: AppColors.white.withValues(
-                          alpha: 0.88,
-                        ),
+                        color: AppColors.white.withValues(alpha: 0.88),
                         fontSize: 13,
                         height: 1.45,
                       ),
                     ),
-                    const SizedBox(
-                      height: AppDimensions.spacingMd + 4,
-                    ),
+                    const SizedBox(height: AppDimensions.spacingMd + 4),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal:
-                            AppDimensions.spacingMd + 2,
+                        horizontal: AppDimensions.spacingMd + 2,
                         vertical: AppDimensions.spacingSm + 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.white.withValues(
-                          alpha: 0.16,
-                        ),
+                        color: AppColors.white.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.radiusPill,
                         ),
                         border: Border.all(
-                          color: AppColors.white.withValues(
-                            alpha: 0.70,
-                          ),
+                          color: AppColors.white.withValues(alpha: 0.70),
                         ),
                       ),
                       child: const Row(
@@ -124,9 +95,7 @@ class IaCard extends StatelessWidget {
                             color: AppColors.white,
                             size: AppDimensions.iconSm,
                           ),
-                          SizedBox(
-                            width: AppDimensions.spacingSm,
-                          ),
+                          SizedBox(width: AppDimensions.spacingSm),
                           Text(
                             'Recomiéndame algo',
                             style: TextStyle(

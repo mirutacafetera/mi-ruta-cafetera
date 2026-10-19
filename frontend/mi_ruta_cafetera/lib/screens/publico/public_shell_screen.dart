@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../models/usuario/usuario_sesion_model.dart';
 import '../../services/usuario/usuario_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../widgets/usuario/boton_ia_flotante.dart';
 import '../mapa_screen_2.dart';
 import '../usuario/favoritos_usuario_screen.dart';
 import '../usuario/rutas_usuario_screen.dart';
@@ -38,12 +40,10 @@ class PublicShellScreen extends StatefulWidget {
   });
 
   @override
-  State<PublicShellScreen> createState() =>
-      _PublicShellScreenState();
+  State<PublicShellScreen> createState() => _PublicShellScreenState();
 }
 
-class _PublicShellScreenState
-    extends State<PublicShellScreen> {
+class _PublicShellScreenState extends State<PublicShellScreen> {
   static const int _totalSecciones = 5;
 
   static const int _indiceMapa = 1;
@@ -60,8 +60,7 @@ class _PublicShellScreenState
 
   /// Las demás secciones se reconstruyen cada vez que se entra
   /// en ellas para reflejar cambios (por ejemplo favoritos).
-  final List<int> _versiones =
-      List<int>.filled(_totalSecciones, 0);
+  final List<int> _versiones = List<int>.filled(_totalSecciones, 0);
 
   UsuarioSesionModel? get _sesion =>
       UsuarioSesionService.instance.sesionActual.value;
@@ -74,21 +73,16 @@ class _PublicShellScreenState
   void initState() {
     super.initState();
 
-    _indiceActual = widget.initialIndex.clamp(
-      0,
-      _totalSecciones - 1,
-    );
+    _indiceActual = widget.initialIndex.clamp(0, _totalSecciones - 1);
 
     _mapaCreado = _indiceActual == _indiceMapa;
 
-    UsuarioSesionService.instance.sesionActual
-        .addListener(_alCambiarSesion);
+    UsuarioSesionService.instance.sesionActual.addListener(_alCambiarSesion);
   }
 
   @override
   void dispose() {
-    UsuarioSesionService.instance.sesionActual
-        .removeListener(_alCambiarSesion);
+    UsuarioSesionService.instance.sesionActual.removeListener(_alCambiarSesion);
 
     super.dispose();
   }
@@ -106,6 +100,8 @@ class _PublicShellScreenState
       return;
     }
 
+    final sinSesion = _sesion == null;
+
     setState(() {
       _indiceActual = 0;
       _mapaCreado = false;
@@ -114,6 +110,78 @@ class _PublicShellScreenState
         _versiones[i]++;
       }
     });
+
+    if (sinSesion) {
+      // Cierre de sesión: se descartan las pantallas privadas que
+      // pudieran estar apiladas encima (detalle, rutas, perfil...)
+      // para que "atrás" nunca las muestre de nuevo.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+
+        final navegador = Navigator.of(context);
+
+        if (navegador.canPop()) {
+          navegador.popUntil((ruta) => ruta.isFirst);
+        }
+      });
+    }
+  }
+
+  // ============================================================
+  // BOTÓN ATRÁS Y SALIDA
+  // ============================================================
+  //
+  // Política única de la app (Android físico/gestos y navegador):
+  //
+  // * Con sesión y en Mapa/Favoritos/Rutas/Perfil: atrás vuelve
+  //   al Inicio.
+  // * En el Inicio (con o sin sesión): pide confirmar la salida.
+  //
+  // Solo se ejecuta cuando el Shell es la ruta visible; los
+  // diálogos, hojas y pantallas apiladas se cierran con normalidad.
+  // ============================================================
+
+  bool _permitirSalida = false;
+
+  Future<void> _manejarAtras() async {
+    if (_sesion != null && _indiceActual != 0) {
+      _cambiarSeccion(0);
+      return;
+    }
+
+    final salir = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Salir'),
+          content: const Text('¿Deseas salir de Mi Ruta Cafetera?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Salir'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (salir != true || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _permitirSalida = true;
+    });
+
+    // En Android cierra la app. En Web retrocede fuera de la app
+    // en el historial del navegador (no se puede cerrar la pestaña).
+    await SystemNavigator.pop();
   }
 
   // ============================================================
@@ -143,22 +211,15 @@ class _PublicShellScreenState
   // CONTENIDO
   // ============================================================
 
-  Widget _construirSeccion(
-    int indice,
-    UsuarioSesionModel sesion,
-  ) {
-    final llave = ValueKey<String>(
-      'seccion-$indice-${_versiones[indice]}',
-    );
+  Widget _construirSeccion(int indice, UsuarioSesionModel sesion) {
+    final llave = ValueKey<String>('seccion-$indice-${_versiones[indice]}');
 
     switch (indice) {
       case 0:
         return HomePublicoScreen(key: llave);
 
       case 1:
-        return _mapaCreado
-            ? const MapaScreen2()
-            : const SizedBox.shrink();
+        return _mapaCreado ? const MapaScreen2() : const SizedBox.shrink();
 
       case 2:
         return FavoritosUsuarioScreen(
@@ -208,9 +269,7 @@ class _PublicShellScreenState
           borderRadius: BorderRadius.circular(
             AppDimensions.bottomNavigationRadius,
           ),
-          border: Border.all(
-            color: AppColors.border,
-          ),
+          border: Border.all(color: AppColors.border),
           boxShadow: const [
             BoxShadow(
               color: AppColors.cardShadow,
@@ -239,11 +298,61 @@ class _PublicShellScreenState
   }
 
   // ============================================================
+  // BOTÓN FLOTANTE DE IA
+  // ============================================================
+  //
+  // Un único botón (BotonIaFlotante) sobre Mapa, Favoritos y Rutas.
+  // No aparece en Inicio (ya tiene su tarjeta de IA) ni en Perfil.
+  // La persona puede arrastrarlo donde quiera dentro del cuerpo
+  // (queda por encima del menú inferior); su posición se recuerda.
+  // La primera vez aparece a la izquierda en el Mapa (a la derecha
+  // están sus controles) y a la derecha en las demás. Se oculta con
+  // el teclado.
+  // ============================================================
+
+  static const int _indiceFavoritos = 2;
+  static const int _indiceRutas = 3;
+
+  Widget _construirBotonIa() {
+    final admiteBoton =
+        _indiceActual == _indiceMapa ||
+        _indiceActual == _indiceFavoritos ||
+        _indiceActual == _indiceRutas;
+
+    final tecladoVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+
+    if (!admiteBoton || tecladoVisible) {
+      // IMPORTANTE: debe ser un hijo POSICIONADO. Un hijo sin
+      // posición (como un SizedBox.shrink suelto) hace que el Stack
+      // tome su tamaño (cero) y las pestañas quedarían con 0x0.
+      return const Positioned(left: 0, top: 0, child: SizedBox.shrink());
+    }
+
+    // Ocupa toda el área del cuerpo para poder moverse libremente;
+    // las zonas vacías dejan pasar los toques al contenido.
+    return Positioned.fill(
+      child: BotonIaFlotante(inicioIzquierda: _indiceActual == _indiceMapa),
+    );
+  }
+
+  // ============================================================
   // BUILD
   // ============================================================
 
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      canPop: _permitirSalida,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          _manejarAtras();
+        }
+      },
+      child: _construirPantalla(),
+    );
+  }
+
+  Widget _construirPantalla() {
     final sesion = _sesion;
 
     // ----------------------------------------------------------
@@ -263,14 +372,27 @@ class _PublicShellScreenState
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: IndexedStack(
-        index: _indiceActual,
+      body: Stack(
+        fit: StackFit.expand,
         children: [
+          // Cada sección ocupa siempre todo el cuerpo. Solo se
+          // muestra la activa; el mapa se conserva oculto para no
+          // volver a cargarlo.
           for (var i = 0; i < _totalSecciones; i++)
             if (i == _indiceActual || i == _indiceMapa)
-              _construirSeccion(i, sesion)
-            else
-              const SizedBox.shrink(),
+              Positioned.fill(
+                // Clave fija por sección: evita que Flutter mezcle
+                // pantallas al cambiar de pestaña y reconstruya el mapa.
+                key: ValueKey<String>('pestana-$i'),
+                child: Offstage(
+                  offstage: i != _indiceActual,
+                  child: TickerMode(
+                    enabled: i == _indiceActual,
+                    child: _construirSeccion(i, sesion),
+                  ),
+                ),
+              ),
+          _construirBotonIa(),
         ],
       ),
       bottomNavigationBar: _construirNavegacion(),
@@ -311,9 +433,7 @@ class _ItemNavegacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = seleccionado
-        ? AppColors.primary
-        : AppColors.textSecondary;
+    final color = seleccionado ? AppColors.primary : AppColors.textSecondary;
 
     return Material(
       color: Colors.transparent,
@@ -338,13 +458,9 @@ class _ItemNavegacion extends StatelessWidget {
                 height: AppDimensions.iconLg + 8,
                 decoration: BoxDecoration(
                   color: seleccionado
-                      ? AppColors.getSoftColorForCategory(
-                          'naturaleza',
-                        )
+                      ? AppColors.getSoftColorForCategory('naturaleza')
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusMd,
-                  ),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                 ),
                 child: Icon(
                   icono,
@@ -352,9 +468,7 @@ class _ItemNavegacion extends StatelessWidget {
                   color: color,
                 ),
               ),
-              const SizedBox(
-                height: AppDimensions.spacingXs,
-              ),
+              const SizedBox(height: AppDimensions.spacingXs),
               Text(
                 etiqueta,
                 maxLines: 1,
@@ -362,9 +476,7 @@ class _ItemNavegacion extends StatelessWidget {
                 style: TextStyle(
                   color: color,
                   fontSize: 11,
-                  fontWeight: seleccionado
-                      ? FontWeight.w700
-                      : FontWeight.w500,
+                  fontWeight: seleccionado ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
             ],

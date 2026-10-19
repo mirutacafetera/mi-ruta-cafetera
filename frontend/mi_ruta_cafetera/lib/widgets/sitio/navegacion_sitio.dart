@@ -165,7 +165,7 @@ class NavegacionSitio extends StatelessWidget {
                       ),
                 ),
                 Text(
-                  'Mágica del Café',
+                  'Cafetera',
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall

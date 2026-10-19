@@ -362,6 +362,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
             children: [
               SitioAvatarPerfil(
                 fotoPerfil: resena.fotoPerfil,
+                avatar: resena.avatar,
                 nombre: nombre,
                 radio: 24,
                 colorFondo: AppColors.surfaceGreen,

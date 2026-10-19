@@ -16,64 +16,10 @@ class MapaCategorias extends StatelessWidget {
     required this.onCategoriaSeleccionada,
   });
 
+  // Los iconos salen del mapeo central (AppColors), igual que en
+  // el resto de la aplicación.
   IconData _obtenerIcono(CategoriaModel categoria) {
-    final nombre = _normalizar(categoria.nombre);
-
-    if (nombre.contains('cafe') ||
-        nombre.contains('experiencias cafeteras')) {
-      return Icons.coffee_outlined;
-    }
-
-    if (nombre.contains('naturaleza') ||
-        nombre.contains('ecoturismo')) {
-      return Icons.forest_outlined;
-    }
-
-    if (nombre.contains('miradores') ||
-        nombre.contains('paisajes')) {
-      return Icons.landscape_outlined;
-    }
-
-    if (nombre.contains('gastronomia')) {
-      return Icons.restaurant_outlined;
-    }
-
-    if (nombre.contains('cultura') ||
-        nombre.contains('historia')) {
-      return Icons.account_balance_outlined;
-    }
-
-    if (nombre.contains('artesanias') ||
-        nombre.contains('productos locales')) {
-      return Icons.storefront_outlined;
-    }
-
-    if (nombre.contains('aventuras')) {
-      return Icons.hiking_outlined;
-    }
-
-    if (nombre.contains('alojamiento')) {
-      return Icons.hotel_outlined;
-    }
-
-    if (nombre.contains('experiencias familiares')) {
-      return Icons.family_restroom_outlined;
-    }
-
-    return Icons.category_outlined;
-  }
-
-  String _normalizar(String texto) {
-    return texto
-        .toLowerCase()
-        .trim()
-        .replaceAll('á', 'a')
-        .replaceAll('é', 'e')
-        .replaceAll('í', 'i')
-        .replaceAll('ó', 'o')
-        .replaceAll('ú', 'u')
-        .replaceAll('ü', 'u')
-        .replaceAll('ñ', 'n');
+    return AppColors.getIconForCategory(categoria.nombre);
   }
 
   @override
