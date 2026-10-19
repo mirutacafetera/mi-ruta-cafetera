@@ -1,9 +1,11 @@
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../models/sitio/sitio_contenido_model.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import 'audio_guia_borrador.dart';
 
 class SeccionAudioguias extends StatefulWidget {
@@ -26,8 +28,7 @@ class SeccionAudioguias extends StatefulWidget {
   });
 
   @override
-  State<SeccionAudioguias> createState() =>
-      _SeccionAudioguiasState();
+  State<SeccionAudioguias> createState() => _SeccionAudioguiasState();
 }
 
 class _SeccionAudioguiasState extends State<SeccionAudioguias> {
@@ -41,18 +42,26 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
   }
 
   Future<void> _seleccionarAudio() async {
+    if (widget.deshabilitado) return;
+
     try {
       final archivos = await FilePicker.pickFiles(
         type: FileType.audio,
       );
 
-      if (archivos.isEmpty) return;
+      if (!mounted || archivos.isEmpty) return;
 
       final archivo = archivos.first;
 
       const extensionesPermitidas = {
-        'mp3', 'wav', 'm4a', 'aac',
-        'ogg', 'oga', 'opus', 'webm',
+        'mp3',
+        'wav',
+        'm4a',
+        'aac',
+        'ogg',
+        'oga',
+        'opus',
+        'webm',
       };
 
       if (!extensionesPermitidas.contains(
@@ -101,6 +110,8 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
   }
 
   void _eliminarAudioNuevo(int index) {
+    if (widget.deshabilitado) return;
+
     final audios = List<AudioGuiaBorrador>.from(
       widget.audiosNuevos,
     );
@@ -113,6 +124,7 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
     try {
       if (_audioActual == audio.id && _player.playing) {
         await _player.pause();
+        if (mounted) setState(() {});
         return;
       }
 
@@ -120,12 +132,16 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
 
       await _player.setUrl(audio.url);
       await _player.play();
+
+      if (mounted) setState(() {});
     } catch (_) {
       _mensaje('No fue posible reproducir esta audioguía.');
     }
   }
 
   void _marcarParaEliminar(String id) {
+    if (widget.deshabilitado) return;
+
     final eliminados = Set<String>.from(
       widget.audiosAEliminar,
     );
@@ -140,9 +156,18 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
   void _mensaje(String texto) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(texto)),
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(texto),
+          backgroundColor: AppColors.sitioPrimary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
   }
 
   @override
@@ -155,32 +180,65 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(
+        AppDimensions.sitioPanelCardPadding,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.15),
+        color: AppColors.sitioSurface,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioPanelCardRadius,
         ),
+        border: Border.all(
+          color: AppColors.sitioBorder,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.sitioCardShadow,
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.headphones_rounded,
-                color: AppColors.primary,
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.sitioSurfaceGreen,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: const Icon(
+                  Icons.headphones_rounded,
+                  color: AppColors.sitioPrimary,
+                  size: 23,
+                ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Audioguías',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Audioguías',
+                      style: TextStyle(
+                        color: AppColors.sitioTextPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(height: 3),
+                    Text(
+                      'Historias para escuchar',
+                      style: TextStyle(
+                        color: AppColors.sitioTextSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               IconButton(
@@ -188,44 +246,60 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
                 onPressed: widget.deshabilitado
                     ? null
                     : _seleccionarAudio,
-                icon: const Icon(Icons.add_circle),
-                color: AppColors.secondary,
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.sitioPrimary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.sitioDivider,
+                ),
+                icon: const Icon(Icons.add_rounded),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Agrega relatos de audio para enriquecer '
-            'la experiencia del visitante.',
+          const SizedBox(height: 12),
+          const Text(
+            'Añade relatos y explicaciones de audio para enriquecer '
+            'la experiencia de quienes visiten tu sitio.',
             style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 13,
+              color: AppColors.sitioTextSecondary,
+              fontSize: 12,
+              height: 1.5,
             ),
           ),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: 18),
           if (audiosVisibles.isEmpty && widget.audiosNuevos.isEmpty)
             _estadoVacio(),
-
           ...audiosVisibles.map(_tarjetaExistente),
-
           ...widget.audiosNuevos.indexed.map(
             (entrada) => _tarjetaNueva(
               entrada.$1,
               entrada.$2,
             ),
           ),
-
           if (!widget.deshabilitado) ...[
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _seleccionarAudio,
-              icon: const Icon(Icons.audio_file_outlined),
-              label: const Text('Agregar archivo de audio'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                side: BorderSide(color: AppColors.primary),
-                minimumSize: const Size(double.infinity, 46),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _seleccionarAudio,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.sitioPrimary,
+                  side: const BorderSide(
+                    color: AppColors.sitioBorder,
+                  ),
+                  minimumSize: const Size(0, 46),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+                icon: const Icon(
+                  Icons.audio_file_outlined,
+                  size: 19,
+                ),
+                label: const Text('Agregar archivo de audio'),
               ),
             ),
           ],
@@ -237,26 +311,42 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
   Widget _estadoVacio() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 24,
       ),
-      child: Column(
+      decoration: BoxDecoration(
+        color: AppColors.sitioSurfaceSoft,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.sitioBorder,
+        ),
+      ),
+      child: const Column(
         children: [
           Icon(
             Icons.graphic_eq_rounded,
-            size: 34,
-            color: AppColors.primary.withValues(alpha: 0.65),
+            size: 36,
+            color: AppColors.sitioPrimary,
           ),
-          const SizedBox(height: 8),
-          const Text('Todavía no hay audioguías'),
-          const SizedBox(height: 4),
+          SizedBox(height: 10),
           Text(
-            'Puedes agregar una para este contenido.',
+            'Todavía no hay audioguías',
+            textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey.shade600,
+              color: AppColors.sitioTextPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 5),
+          Text(
+            'Agrega una narración para acompañar este contenido.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.sitioTextSecondary,
               fontSize: 12,
+              height: 1.4,
             ),
           ),
         ],
@@ -270,30 +360,59 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.sitioSurfaceSoft,
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.15),
+          color: AppColors.sitioBorder,
         ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.audio_file,
-                color: AppColors.primary,
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.sitioSurfaceGreen,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.audio_file_rounded,
+                  color: AppColors.sitioPrimary,
+                ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  audio.archivo.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Audio nuevo',
+                        style: TextStyle(
+                          color: AppColors.sitioPrimary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        audio.archivo.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.sitioTextPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -302,36 +421,33 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
                 onPressed: widget.deshabilitado
                     ? null
                     : () => _eliminarAudioNuevo(index),
-                icon: const Icon(Icons.close),
+                style: IconButton.styleFrom(
+                  foregroundColor: AppColors.sitioError,
+                ),
+                icon: const Icon(Icons.delete_outline_rounded),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          TextFormField(
+          const SizedBox(height: 14),
+          _campoAudio(
             key: ValueKey('titulo_audio_$index'),
-            initialValue: audio.titulo,
-            enabled: !widget.deshabilitado,
-            decoration: const InputDecoration(
-              labelText: 'Título de la audioguía',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
+            valorInicial: audio.titulo,
+            etiqueta: 'Título de la audioguía',
+            pista: 'Ej. Historia de la finca',
+            icono: Icons.title_rounded,
             onChanged: (valor) => _actualizarAudio(
               index,
               titulo: valor,
             ),
           ),
-          const SizedBox(height: 10),
-          TextFormField(
+          const SizedBox(height: 12),
+          _campoAudio(
             key: ValueKey('descripcion_audio_$index'),
-            initialValue: audio.descripcion,
-            enabled: !widget.deshabilitado,
+            valorInicial: audio.descripcion,
+            etiqueta: 'Descripción (opcional)',
+            pista: '¿Qué escuchará el visitante?',
+            icono: Icons.notes_rounded,
             maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Descripción (opcional)',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
             onChanged: (valor) => _actualizarAudio(
               index,
               descripcion: valor,
@@ -342,50 +458,195 @@ class _SeccionAudioguiasState extends State<SeccionAudioguias> {
     );
   }
 
+  Widget _campoAudio({
+    required Key key,
+    required String valorInicial,
+    required String etiqueta,
+    required String pista,
+    required IconData icono,
+    required ValueChanged<String> onChanged,
+    int maxLines = 1,
+  }) {
+    return TextFormField(
+      key: key,
+      initialValue: valorInicial,
+      enabled: !widget.deshabilitado,
+      maxLines: maxLines,
+      style: const TextStyle(
+        color: AppColors.sitioTextPrimary,
+        fontSize: 13,
+      ),
+      decoration: InputDecoration(
+        labelText: etiqueta,
+        hintText: pista,
+        prefixIcon: maxLines == 1
+            ? Icon(
+                icono,
+                color: AppColors.sitioPrimary,
+                size: 19,
+              )
+            : null,
+        filled: true,
+        fillColor: AppColors.sitioSurface,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 13,
+          vertical: 14,
+        ),
+        labelStyle: const TextStyle(
+          color: AppColors.sitioTextSecondary,
+          fontSize: 12,
+        ),
+        hintStyle: const TextStyle(
+          color: AppColors.sitioTextSecondary,
+          fontSize: 12,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: AppColors.sitioBorder,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: AppColors.sitioPrimary,
+            width: 1.5,
+          ),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: AppColors.sitioDivider,
+          ),
+        ),
+      ),
+      onChanged: onChanged,
+    );
+  }
+
   Widget _tarjetaExistente(SitioAudioGuiaModel audio) {
-    final reproduciendo =
-        _audioActual == audio.id && _player.playing;
+    final reproduciendo = _audioActual == audio.id && _player.playing;
+    final marcada = widget.audiosAEliminar.contains(audio.id);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.sitioSurface,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppColors.sitioBorder,
+        ),
       ),
-      child: ListTile(
-        leading: IconButton(
-          tooltip: reproduciendo ? 'Pausar' : 'Reproducir',
-          onPressed: () => _reproducir(audio),
-          icon: Icon(
-            reproduciendo
-                ? Icons.pause_circle_filled
-                : Icons.play_circle_fill,
-            size: 34,
-            color: AppColors.primary,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: reproduciendo
+                  ? AppColors.sitioPrimary
+                  : AppColors.sitioSurfaceGreen,
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: IconButton(
+              tooltip: reproduciendo ? 'Pausar' : 'Reproducir',
+              onPressed: widget.deshabilitado
+                  ? null
+                  : () => _reproducir(audio),
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                reproduciendo
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+                size: 25,
+                color: reproduciendo
+                    ? Colors.white
+                    : AppColors.sitioPrimary,
+              ),
+            ),
           ),
-        ),
-        title: Text(
-          audio.titulo,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: audio.descripcion.isEmpty
-            ? null
-            : Text(
-                audio.descripcion,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-        trailing: widget.deshabilitado
-            ? null
-            : IconButton(
-                tooltip: 'Marcar para eliminar',
-                onPressed: () => _marcarParaEliminar(audio.id),
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.red,
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  audio.titulo,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.sitioTextPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
+                if (audio.descripcion.isNotEmpty) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    audio.descripcion,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.sitioTextSecondary,
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+                if (reproduciendo) ...[
+                  const SizedBox(height: 7),
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.volume_up_rounded,
+                        size: 14,
+                        color: AppColors.sitioSuccess,
+                      ),
+                      SizedBox(width: 5),
+                      Text(
+                        'Reproduciendo',
+                        style: TextStyle(
+                          color: AppColors.sitioSuccess,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (marcada) ...[
+                  const SizedBox(height: 7),
+                  const Text(
+                    'Se eliminará al guardar',
+                    style: TextStyle(
+                      color: AppColors.sitioError,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (!widget.deshabilitado)
+            IconButton(
+              tooltip: marcada ? 'Restaurar audioguía' : 'Marcar para eliminar',
+              onPressed: () => _marcarParaEliminar(audio.id),
+              style: IconButton.styleFrom(
+                foregroundColor: marcada
+                    ? AppColors.sitioSuccess
+                    : AppColors.sitioError,
               ),
+              icon: Icon(
+                marcada
+                    ? Icons.undo_rounded
+                    : Icons.delete_outline_rounded,
+              ),
+            ),
+        ],
       ),
     );
   }

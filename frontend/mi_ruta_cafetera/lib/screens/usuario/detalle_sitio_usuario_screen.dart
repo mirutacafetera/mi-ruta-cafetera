@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../models/contenido_model.dart';
@@ -15,6 +16,7 @@ import 'detalle_sitio/detalle_actividades.dart';
 import 'detalle_sitio/detalle_galeria.dart';
 import 'detalle_sitio/detalle_sitio_audio.dart';
 import 'detalle_sitio/detalle_sitio_acciones.dart';
+import 'detalle_sitio/detalle_productos.dart';
 import 'detalle_sitio/reproductor_historia/reproductor_historia_flotante.dart';
 import 'detalle_sitio/seccion_resenas_sitio.dart';
 
@@ -39,9 +41,12 @@ class DetalleSitioUsuarioScreen extends StatefulWidget {
       _DetalleSitioUsuarioScreenState();
 }
 
-class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
+class _DetalleSitioUsuarioScreenState
+    extends State<DetalleSitioUsuarioScreen> {
   final ContenidoService _contenidoService = ContenidoService.instance;
-  final SitioActividadesService _actividadesService = SitioActividadesService();
+
+  final SitioActividadesService _actividadesService =
+      SitioActividadesService();
 
   late final DetalleSitioAudio _audioController;
   late bool _esFavorito;
@@ -52,6 +57,8 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
   bool _cargandoContenido = true;
   bool _cargandoActividades = true;
   bool _procesandoFavorito = false;
+
+  String? _errorContenido;
 
   @override
   void initState() {
@@ -65,12 +72,21 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
   }
 
   Future<void> _cargarContenido() async {
+    setState(() {
+      _cargandoContenido = true;
+      _errorContenido = null;
+    });
+
     try {
-      final id = widget.sitio.id.trim();
+      final sitioId = widget.sitio.id.trim();
 
-      if (id.isEmpty) return;
+      if (sitioId.isEmpty) {
+        throw Exception('No se pudo identificar el sitio turístico.');
+      }
 
-      final resultado = await _contenidoService.obtenerContenidosPorSitio(id);
+      final resultado = await _contenidoService.obtenerContenidosPorSitio(
+        sitioId,
+      );
 
       if (!mounted) return;
 
@@ -80,6 +96,12 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
     } catch (e, stackTrace) {
       debugPrint('Error al cargar contenido del sitio: $e');
       debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+
+      setState(() {
+        _errorContenido = e.toString().replaceFirst('Exception: ', '');
+      });
     } finally {
       if (mounted) {
         setState(() {
@@ -91,12 +113,12 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
 
   Future<void> _cargarActividades() async {
     try {
-      final id = widget.sitio.id.trim();
+      final sitioId = widget.sitio.id.trim();
 
-      if (id.isEmpty) return;
+      if (sitioId.isEmpty) return;
 
       final resultado = await _actividadesService.obtenerActividadesPublicas(
-        sitioId: id,
+        sitioId: sitioId,
       );
 
       if (!mounted) return;
@@ -143,7 +165,11 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -161,7 +187,11 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
       );
     }
   }
@@ -170,19 +200,320 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
     return _audioController.cerrar();
   }
 
+  Widget _construirSeccionContenido() {
+    if (_cargandoContenido) {
+      return const Padding(
+        padding: EdgeInsets.all(AppDimensions.spacingXxl),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_errorContenido != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.pageHorizontal,
+          vertical: AppDimensions.spacingLg,
+        ),
+        child: _tarjetaEstado(
+          icono: Icons.cloud_off_outlined,
+          titulo: 'No pudimos cargar el contenido',
+          descripcion: _errorContenido!,
+          accion: OutlinedButton.icon(
+            onPressed: _cargarContenido,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Intentar de nuevo'),
+          ),
+        ),
+      );
+    }
+
+    if (_contenidos.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.pageHorizontal,
+          vertical: AppDimensions.spacingLg,
+        ),
+        child: _tarjetaEstado(
+          icono: Icons.auto_stories_outlined,
+          titulo: 'Próximamente habrá nuevas historias',
+          descripcion:
+              'Estamos preparando más contenido para que descubras '
+              'las tradiciones y experiencias de ${widget.sitio.nombre}.',
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: AppDimensions.spacingLg,
+      ),
+      child: SeccionContenidoSitio(
+        contenidos: _contenidos,
+        onReproducirAudioguia: _reproducirAudioguia,
+      ),
+    );
+  }
+
+  Widget _tarjetaEstado({
+    required IconData icono,
+    required String titulo,
+    required String descripcion,
+    Widget? accion,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.divider,
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.divider,
+              ),
+            ),
+            child: Icon(
+              icono,
+              size: 28,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingMd),
+          Text(
+            titulo,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Text(
+            descripcion,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              height: 1.5,
+            ),
+          ),
+          if (accion != null) ...[
+            const SizedBox(height: AppDimensions.spacingMd),
+            accion,
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _construirEtiquetas() {
+    final etiquetas = widget.sitio.etiquetas
+        .map((etiqueta) => etiqueta.trim())
+        .where((etiqueta) => etiqueta.isNotEmpty)
+        .toList();
+
+    if (etiquetas.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: AppDimensions.spacingLg,
+        bottom: AppDimensions.spacingSm,
+      ),
+      child: Wrap(
+        spacing: AppDimensions.spacingSm,
+        runSpacing: AppDimensions.spacingSm,
+        children: etiquetas.map((etiqueta) {
+          return Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 13,
+              vertical: 8,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: AppColors.divider,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.eco_outlined,
+                  size: 15,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  etiqueta,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _construirAcciones() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: 52,
+          child: FilledButton.icon(
+            onPressed: () =>
+                DetalleSitioAcciones.agregarRuta(context),
+            icon: const Icon(Icons.route_rounded),
+            label: const Text('Agregar a mi ruta'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 1,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingLg,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingSm),
+        SizedBox(
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              DetalleSitioAcciones.mostrarDetalleMapa(
+                context,
+                widget.sitio,
+              );
+            },
+            icon: const Icon(Icons.location_on_outlined),
+            label: const Text('Ver detalles de ubicación'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: BorderSide(
+                color: AppColors.primary.withValues(alpha: 0.55),
+                width: 1.3,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingLg,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _construirEncabezadoSeccion({
+    required IconData icono,
+    required String titulo,
+    required String descripcion,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: AppColors.divider,
+              ),
+            ),
+            child: Icon(
+              icono,
+              color: AppColors.primary,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titulo,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  descripcion,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final imagenContenido = _contenidos
         .where((contenido) => contenido.activo)
         .map((contenido) => contenido.imagenPrincipal.trim())
-        .firstWhere((url) => url.isNotEmpty, orElse: () => '');
+        .firstWhere(
+          (url) => url.isNotEmpty,
+          orElse: () => '',
+        );
 
     final imagenPrincipal = imagenContenido.isNotEmpty
         ? imagenContenido
         : widget.imagen;
 
     final imagenes = <String>{
-      if (widget.imagen?.trim().isNotEmpty == true) widget.imagen!.trim(),
+      if (widget.imagen?.trim().isNotEmpty == true)
+        widget.imagen!.trim(),
       ..._contenidos
           .map((contenido) => contenido.imagenPrincipal.trim())
           .where((url) => url.isNotEmpty),
@@ -204,6 +535,7 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
       appBar: AppBar(
         leading: const BotonRegresar(),
         title: const Text('Detalle del sitio'),
+        centerTitle: false,
         actions: [
           IconButton(
             onPressed: _procesandoFavorito ? null : _cambiarFavorito,
@@ -214,13 +546,20 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
                 ? const SizedBox(
                     width: AppDimensions.iconMd,
                     height: AppDimensions.iconMd,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
                   )
                 : Icon(
-                    _esFavorito ? Icons.favorite : Icons.favorite_border,
-                    color: _esFavorito ? AppColors.error : AppColors.primary,
+                    _esFavorito
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    color: _esFavorito
+                        ? AppColors.error
+                        : AppColors.primary,
                   ),
           ),
+          const SizedBox(width: AppDimensions.spacingSm),
         ],
       ),
       body: SafeArea(
@@ -233,98 +572,125 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
                 imagenPrincipal: imagenPrincipal,
               ),
 
+              // Etiquetas del sitio.
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.pageHorizontal,
                 ),
+                child: _construirEtiquetas(),
+              ),
+
+              // Ubicación y acciones principales.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppDimensions.pageHorizontal,
+                  AppDimensions.spacingSm,
+                  AppDimensions.pageHorizontal,
+                  AppDimensions.spacingXl,
+                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (widget.sitio.etiquetas.isNotEmpty)
-                      Wrap(
-                        spacing: AppDimensions.spacingSm,
-                        runSpacing: AppDimensions.spacingSm,
-                        children: widget.sitio.etiquetas
-                            .where((etiqueta) => etiqueta.trim().isNotEmpty)
-                            .map(
-                              (etiqueta) => Chip(label: Text(etiqueta.trim())),
-                            )
-                            .toList(),
-                      ),
-
-                    const SizedBox(height: AppDimensions.spacingMd),
-
                     DetalleUbicacion(
                       sitio: widget.sitio,
-                      onVerMapa: () =>
-                          DetalleSitioAcciones.verMapa(context, widget.sitio),
+                      onVerMapa: () {
+                        DetalleSitioAcciones.verMapa(
+                          context,
+                          widget.sitio,
+                        );
+                      },
                     ),
-
                     const SizedBox(height: AppDimensions.spacingMd),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () =>
-                            DetalleSitioAcciones.agregarRuta(context),
-                        icon: const Icon(Icons.route_outlined),
-                        label: const Text('Agregar a mi ruta'),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppDimensions.spacingSm),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () =>
-                            DetalleSitioAcciones.mostrarDetalleMapa(
-                              context,
-                              widget.sitio,
-                            ),
-                        icon: const Icon(Icons.place_outlined),
-                        label: const Text('Ver detalles de ubicación'),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppDimensions.spacingSection),
+                    _construirAcciones(),
                   ],
                 ),
               ),
 
-              // Actividades del sitio turístico.
-              DetalleActividades(
-                actividades: _actividades,
-                cargando: _cargandoActividades,
-                onSeleccionar: (actividad) =>
-                    DetalleSitioAcciones.mostrarActividad(context, actividad),
+              // Actividades turísticas.
+              if (_cargandoActividades || _actividades.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppDimensions.spacingSm,
+                    bottom: AppDimensions.spacingMd,
+                  ),
+                  child: _construirEncabezadoSeccion(
+                    icono: Icons.explore_outlined,
+                    titulo: 'Experiencias para disfrutar',
+                    descripcion:
+                        'Conoce las actividades que puedes vivir '
+                        'durante tu visita.',
+                  ),
+                ),
+                DetalleActividades(
+                  actividades: _actividades,
+                  cargando: _cargandoActividades,
+                  onSeleccionar: (actividad) {
+                    DetalleSitioAcciones.mostrarActividad(
+                      context,
+                      actividad,
+                    );
+                  },
+                ),
+              ],
+
+              // Productos del establecimiento.
+              DetalleProductos(
+                key: ValueKey('productos_${widget.sitio.id}'),
+                sitioId: widget.sitio.id,
               ),
 
-              // Contenidos y audioguías.
-              if (_cargandoContenido)
-                const Padding(
-                  padding: EdgeInsets.all(AppDimensions.spacingXxl),
-                  child: Center(child: CircularProgressIndicator()),
+              // Historias, contenido y audioguías.
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: AppDimensions.spacingLg,
                 ),
-
-              if (!_cargandoContenido && _contenidos.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.spacingLg,
-                  ),
-                  child: SeccionContenidoSitio(
-                    contenidos: _contenidos,
-                    onReproducirAudioguia: _reproducirAudioguia,
-                  ),
+                child: _construirEncabezadoSeccion(
+                  icono: Icons.auto_stories_outlined,
+                  titulo: 'Historias y contenido',
+                  descripcion:
+                      'Descubre las historias, tradiciones y '
+                      'experiencias que hacen especial a este lugar.',
                 ),
+              ),
+              _construirSeccionContenido(),
 
               // Galería de fotografías.
-              DetalleGaleria(
-                imagenes: imagenes,
-                cargando: _cargandoContenido || _cargandoActividades,
-              ),
+              if (_cargandoContenido ||
+                  _cargandoActividades ||
+                  imagenes.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppDimensions.spacingLg,
+                    bottom: AppDimensions.spacingMd,
+                  ),
+                  child: _construirEncabezadoSeccion(
+                    icono: Icons.photo_library_outlined,
+                    titulo: 'Galería del sitio',
+                    descripcion:
+                        'Explora en imágenes los espacios y '
+                        'rincones de este destino.',
+                  ),
+                ),
+                DetalleGaleria(
+                  imagenes: imagenes,
+                  cargando: _cargandoContenido || _cargandoActividades,
+                ),
+              ],
 
-              // Reseñas y calificaciones conectadas al servicio.
+              // Reseñas y calificaciones.
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: AppDimensions.spacingLg,
+                  bottom: AppDimensions.spacingSm,
+                ),
+                child: _construirEncabezadoSeccion(
+                  icono: Icons.star_outline_rounded,
+                  titulo: 'Opiniones de viajeros',
+                  descripcion:
+                      'Consulta las experiencias y valoraciones '
+                      'de otros visitantes.',
+                ),
+              ),
               SeccionResenasSitio(
                 key: ValueKey('resenas_${widget.sitio.id}'),
                 sitioId: widget.sitio.id,

@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
+
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
 import '../../controllers/admin/cuenta/cuenta_admin_controlador.dart';
 import '../../services/admin/admin_servicio_autenticacion.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_menu_lateral.dart';
-import '../../widgets/admin/admin_proximamente.dart';
 import '../mapa_screen_2.dart';
 import 'admin_inicio.dart';
 import 'admin_inicio_sesion.dart';
 import 'admin_actividades_screen.dart';
 import 'admin_contenidos_screen.dart';
+import 'admin_productos_screen.dart';
 import 'categoria/pantalla_categoria.dart';
 import 'cuenta/admin_cuenta.dart';
+import 'cuenta_sitio/pantalla_cuenta_sitio.dart';
+import 'estadistica/pantalla_estadistica.dart';
 import 'reporte/pantalla_reporte_admin.dart';
 import 'reserva/pantalla_reserva_admin.dart';
 import 'resena/pantalla_resenas_admin.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
 import 'usuario/pantalla_usuarios_admin.dart';
-
 
 class PantallaAdministrador extends StatefulWidget {
   final String nombre;
@@ -35,8 +37,7 @@ class PantallaAdministrador extends StatefulWidget {
       _PantallaAdministradorState();
 }
 
-class _PantallaAdministradorState
-    extends State<PantallaAdministrador> {
+class _PantallaAdministradorState extends State<PantallaAdministrador> {
   late final ControladorPantallaAdministrador controlador;
   late final CuentaAdminController cuentaAdminController;
 
@@ -60,11 +61,8 @@ class _PantallaAdministradorState
     final idAdministrador =
         AdminServicioAutenticacion.idAdministrador;
 
-    if (idAdministrador != null &&
-        idAdministrador.isNotEmpty) {
-      await cuentaAdminController.cargarCuenta(
-        idAdministrador,
-      );
+    if (idAdministrador != null && idAdministrador.isNotEmpty) {
+      await cuentaAdminController.cargarCuenta(idAdministrador);
     }
   }
 
@@ -135,6 +133,9 @@ class _PantallaAdministradorState
       case 'actividades':
         return const AdminActividadesScreen();
 
+      case 'productos':
+        return const AdminProductosScreen();
+
       case 'contenido':
         return const AdminContenidosScreen();
 
@@ -146,10 +147,13 @@ class _PantallaAdministradorState
       case 'categorias':
         return const PantallaCategoria();
 
-      case 'estadisticas':
-        return const AdminProximamente(
-          nombre: 'Estadísticas',
+      case 'cuentasitio':
+        return PantallaCuentasSitio(
+          token: AdminServicioAutenticacion.tokenAdmin ?? '',
         );
+
+      case 'estadisticas':
+        return const PantallaEstadistica();
 
       case 'resenas':
         return const PantallaResenasAdmin();
@@ -184,7 +188,6 @@ class _PantallaAdministradorState
     controlador.removeListener(_actualizar);
     controlador.dispose();
     cuentaAdminController.dispose();
-
     super.dispose();
   }
 }

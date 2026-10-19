@@ -11,6 +11,7 @@ import 'sitio_contenido_screen.dart';
 import 'sitio_dashboard_screen.dart';
 import 'sitio_multimedia_screen.dart';
 import 'sitio_perfil_screen.dart';
+import 'sitio_productos_screen.dart';
 import 'sitio_resenas_screen.dart';
 import 'sitio_reservas_screen.dart';
 
@@ -30,6 +31,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     'Contenido',
     'Multimedia',
     'Actividades',
+    'Productos',
     'Reservas',
     'Reseñas',
   ];
@@ -40,6 +42,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     Icons.article_rounded,
     Icons.photo_library_rounded,
     Icons.local_activity_rounded,
+    Icons.inventory_2_rounded,
     Icons.calendar_month_rounded,
     Icons.star_rounded,
   ];
@@ -50,6 +53,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     const SitioContenidoScreen(),
     const SitioMultimediaScreen(),
     const SitioActividadesScreen(),
+    const SitioProductosScreen(),
     const SitioReservasScreen(),
     const SitioResenasScreen(),
   ];
@@ -74,8 +78,13 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
   void _abrirMenuMovil() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.sitioSurface,
       isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppDimensions.sitioPanelCardRadius),
+        ),
+      ),
       builder: (menuContext) {
         return NavegacionSitio(
           indiceActual: _indiceActual,
@@ -98,24 +107,24 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: AppColors.sitioSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
-              AppDimensions.radiusXl,
+              AppDimensions.sitioPanelCardRadius,
             ),
           ),
           title: const Text(
             'Cerrar sesión',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: AppColors.sitioTextPrimary,
               fontWeight: FontWeight.w800,
             ),
           ),
           content: const Text(
             '¿Deseas cerrar la sesión de tu cuenta de sitio?',
             style: TextStyle(
-              color: AppColors.textSecondary,
-              height: 1.4,
+              color: AppColors.sitioTextSecondary,
+              height: 1.5,
             ),
           ),
           actions: [
@@ -123,9 +132,24 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
-              child: const Text('Cancelar'),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: AppColors.sitioTextSecondary,
+                ),
+              ),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.sitioPrimary,
+                foregroundColor: AppColors.sitioTextOnPrimary,
+                minimumSize: const Size(0, AppDimensions.sitioButtonHeight),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMd,
+                  ),
+                ),
+              ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
 
@@ -150,11 +174,11 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
         final esEscritorio = ancho >= 900;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.sitioBackground,
           drawer: esEscritorio
               ? null
               : Drawer(
-                  backgroundColor: AppColors.surface,
+                  backgroundColor: AppColors.sitioSurface,
                   width: ancho < 400 ? ancho * 0.86 : 330,
                   child: NavegacionSitio(
                     indiceActual: _indiceActual,
@@ -191,9 +215,8 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
                         onCerrarSesion: _cerrarSesion,
                       ),
                       Expanded(
-                        child: Container(
-                          width: double.infinity,
-                          color: AppColors.background,
+                        child: ColoredBox(
+                          color: AppColors.sitioBackground,
                           child: IndexedStack(
                             index: _indiceActual,
                             children: _pantallas,

@@ -22,25 +22,21 @@ class TarjetaSeccionSitio extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(
-        AppDimensions.spacingLg,
+        AppDimensions.sitioPanelCardPadding,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.sitioSurface,
         borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
+          AppDimensions.sitioPanelCardRadius,
         ),
         border: Border.all(
-          color: AppColors.border.withValues(
-            alpha: 0.55,
-          ),
+          color: AppColors.sitioBorder.withValues(alpha: 0.75),
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: AppColors.coffeeDark.withValues(
-              alpha: 0.06,
-            ),
-            blurRadius: AppDimensions.elevationFloating,
-            offset: const Offset(0, 3),
+            color: AppColors.sitioCardShadow,
+            blurRadius: 14,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -51,18 +47,16 @@ class TarjetaSeccionSitio extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusMd,
-                  ),
+                  color: AppColors.sitioSurfaceGreen,
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   icono,
-                  color: AppColors.white,
-                  size: AppDimensions.iconLg,
+                  color: AppColors.sitioPrimary,
+                  size: AppDimensions.sitioActionIconSize + 4,
                 ),
               ),
               const SizedBox(
@@ -70,35 +64,29 @@ class TarjetaSeccionSitio extends StatelessWidget {
               ),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       titulo,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w800,
-                          ),
+                      style: const TextStyle(
+                        color: AppColors.sitioTextPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                      ),
                     ),
-                    const SizedBox(
-                      height: AppDimensions.spacingXs,
-                    ),
+                    const SizedBox(height: 6),
                     Text(
                       subtitulo,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(
-                            color: AppColors.textSecondary,
-                            height: 1.35,
-                          ),
+                      style: const TextStyle(
+                        color: AppColors.sitioTextSecondary,
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
                     ),
                   ],
                 ),
@@ -106,26 +94,25 @@ class TarjetaSeccionSitio extends StatelessWidget {
             ],
           ),
           const SizedBox(
-            height: AppDimensions.spacingLg,
+            height: AppDimensions.sitioPanelCardGap + 4,
           ),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(
-              AppDimensions.spacingMd,
+              AppDimensions.sitioPanelCardGap,
             ),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.sitioSurfaceSoft,
               borderRadius: BorderRadius.circular(
                 AppDimensions.radiusMd,
               ),
               border: Border.all(
-                color: AppColors.border.withValues(
-                  alpha: 0.45,
-                ),
+                color: AppColors.sitioDivider,
               ),
             ),
             child: child,
           ),
+          const SizedBox(height: 2),
         ],
       ),
     );

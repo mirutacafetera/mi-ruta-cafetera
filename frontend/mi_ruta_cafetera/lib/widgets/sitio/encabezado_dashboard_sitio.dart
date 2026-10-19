@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../models/sitio/sitio_dashboard_model.dart';
@@ -16,138 +17,149 @@ class EncabezadoDashboardSitio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nombreSitio = dashboard?.nombreSitio;
+    final nombreSitio = dashboard?.nombreSitio.trim();
+    final tieneNombre = nombreSitio != null && nombreSitio.isNotEmpty;
 
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(
         esEscritorio
-            ? AppDimensions.spacingXl
-            : AppDimensions.spacingLg,
+            ? AppDimensions.spacingXxl
+            : AppDimensions.sitioPanelCardPadding,
       ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primary,
-            AppColors.primaryDark,
+            AppColors.sitioPrimary,
+            AppColors.sitioPrimaryDark,
           ],
         ),
         borderRadius: BorderRadius.circular(
-          AppDimensions.heroRadius,
+          AppDimensions.sitioCoverImageRadius,
         ),
-        boxShadow: [
+        border: Border.all(
+          color: AppColors.sitioTextOnPrimary.withValues(alpha: 0.08),
+        ),
+        boxShadow: const [
           BoxShadow(
-            color: AppColors.primaryDark.withValues(
-              alpha: 0.18,
-            ),
-            blurRadius: AppDimensions.elevationFloating,
-            offset: const Offset(0, 4),
+            color: AppColors.sitioCardShadow,
+            blurRadius: 18,
+            offset: Offset(0, 7),
           ),
         ],
       ),
-      child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(
-                    horizontal:
-                        AppDimensions.spacingSm,
-                    vertical:
-                        AppDimensions.spacingXs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withValues(
-                      alpha: 0.12,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(
-                      AppDimensions.radiusPill,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.local_cafe_rounded,
-                        color: AppColors.white,
-                        size: AppDimensions.iconSm,
-                      ),
-                      const SizedBox(
-                        width: AppDimensions.spacingXs,
-                      ),
-                      Text(
-                        'PANEL DE TU EXPERIENCIA',
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelSmall
-                            ?.copyWith(
-                              color: AppColors.white,
-                              fontWeight:
-                                  FontWeight.w800,
-                              letterSpacing: 0.5,
-                            ),
-                      ),
-                    ],
-                  ),
+          Positioned(
+            right: -35,
+            top: -45,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.sitioTextOnPrimary.withValues(
+                  alpha: 0.035,
                 ),
-
-                const SizedBox(
-                  height: AppDimensions.spacingMd,
-                ),
-
-                Text(
-                  nombreSitio == null ||
-                          nombreSitio.isEmpty
-                      ? '¡Bienvenido a tu panel! ☕'
-                      : '¡Bienvenido a $nombreSitio! ☕',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w800,
-                        height: 1.15,
-                      ),
-                ),
-
-                const SizedBox(
-                  height: AppDimensions.spacingSm,
-                ),
-
-                Text(
-                  'Gestiona tu experiencia turística, '
-                  'mantén tu información actualizada y '
-                  'conecta con los visitantes de '
-                  'Mi Ruta Cafetera',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(
-                        color: AppColors.white.withValues(
-                          alpha: 0.86,
-                        ),
-                        height: 1.45,
-                      ),
-                ),
-              ],
+              ),
             ),
           ),
-
-          if (esEscritorio) ...[
-            const SizedBox(
-              width: AppDimensions.spacingLg,
-            ),
-            _iconoCafe(),
-          ],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingSm,
+                        vertical: AppDimensions.spacingXs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.sitioTextOnPrimary.withValues(
+                          alpha: 0.10,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusPill,
+                        ),
+                        border: Border.all(
+                          color: AppColors.sitioTextOnPrimary.withValues(
+                            alpha: 0.12,
+                          ),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.coffee_rounded,
+                            color: AppColors.sitioAccent,
+                            size: AppDimensions.iconSm,
+                          ),
+                          SizedBox(width: AppDimensions.spacingXs),
+                          Flexible(
+                            child: Text(
+                              'PANEL DE TU SITIO',
+                              style: TextStyle(
+                                color: AppColors.sitioTextOnPrimary,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    Text(
+                      tieneNombre
+                          ? '¡Bienvenido a\n$nombreSitio!'
+                          : '¡Bienvenido a tu panel!',
+                      style: TextStyle(
+                        color: AppColors.sitioTextOnPrimary,
+                        fontSize: esEscritorio ? 28 : 24,
+                        fontWeight: FontWeight.w800,
+                        height: 1.16,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingMd),
+                    Text(
+                      'Administra tu experiencia turística, '
+                      'actualiza tu información y conecta '
+                      'con los visitantes.',
+                      style: TextStyle(
+                        color: AppColors.sitioTextOnPrimary.withValues(
+                          alpha: 0.84,
+                        ),
+                        fontSize: 13,
+                        height: 1.55,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    Container(
+                      height: 3,
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.sitioAccent,
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusPill,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (esEscritorio) ...[
+                const SizedBox(width: AppDimensions.spacingXl),
+                _iconoCafe(),
+              ],
+            ],
+          ),
         ],
       ),
     );
@@ -155,25 +167,21 @@ class EncabezadoDashboardSitio extends StatelessWidget {
 
   Widget _iconoCafe() {
     return Container(
-      width: 82,
-      height: 82,
+      width: 84,
+      height: 84,
       decoration: BoxDecoration(
-        color: AppColors.white.withValues(
-          alpha: 0.13,
-        ),
+        color: AppColors.sitioTextOnPrimary.withValues(alpha: 0.09),
         borderRadius: BorderRadius.circular(
           AppDimensions.radiusXl,
         ),
         border: Border.all(
-          color: AppColors.white.withValues(
-            alpha: 0.12,
-          ),
+          color: AppColors.sitioTextOnPrimary.withValues(alpha: 0.14),
         ),
       ),
       child: const Icon(
         Icons.coffee_rounded,
-        color: AppColors.white,
-        size: AppDimensions.iconLg,
+        color: AppColors.sitioAccent,
+        size: 38,
       ),
     );
   }
