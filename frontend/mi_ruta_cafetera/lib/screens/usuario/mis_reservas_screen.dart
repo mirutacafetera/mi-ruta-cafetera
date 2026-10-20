@@ -391,7 +391,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(AppDimensions.pageHorizontal),
       itemCount: _reservas.length,
-      separatorBuilder: (_, __) =>
+      separatorBuilder: (_, _) =>
           const SizedBox(height: AppDimensions.spacingMd),
       itemBuilder: (_, i) => _tarjeta(_reservas[i]),
     );
