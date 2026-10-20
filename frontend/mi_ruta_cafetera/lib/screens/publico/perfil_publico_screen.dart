@@ -11,6 +11,7 @@ import '../usuario/crear_avatar_screen.dart';
 import '../usuario/editar_perfil_screen.dart';
 import '../usuario/eliminar_cuenta_screen.dart';
 import '../usuario/favoritos_usuario_screen.dart';
+import '../usuario/mis_reservas_screen.dart';
 import '../usuario/preferencias_screen.dart';
 import '../usuario/rutas_usuario_screen.dart';
 
@@ -476,6 +477,15 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
               titulo: 'Mis rutas',
               descripcion: 'Tus recorridos por el Huila.',
               onTap: _abrirRutas,
+            ),
+            const SizedBox(
+              height: AppDimensions.spacingMd,
+            ),
+            _OpcionCuenta(
+              icono: Icons.event_available_rounded,
+              titulo: 'Mis reservas',
+              descripcion: 'Tus solicitudes y su estado.',
+              onTap: () => _abrir(const MisReservasScreen()),
             ),
             const SizedBox(
               height: AppDimensions.spacingMd,
