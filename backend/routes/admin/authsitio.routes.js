@@ -6,23 +6,37 @@ const {
   recuperarPassword,
   verificarCodigoRecuperacion,
   restablecerPassword
-} = require(
-  '../../controllers/admin/authsitio.controller'
-);
+} = require('../../controllers/admin/authsitio.controller');
+
+const {
+  eliminarSitio,
+  obtenerCuentas,
+  actualizarCuenta,
+  cambiarEstadoCuenta
+} = require('../../controllers/admin/sitio.controller');
 
 const {
   verificarToken,
   verificarAdministrador
-} = require(
-  '../../middlewares/authmiddleware'
-);
+} = require('../../middlewares/authmiddleware');
 
 const router = express.Router();
 
-// =====================================================
-// CREAR CUENTA DE SITIO
-// SOLO ADMINISTRADOR
-// =====================================================
+// ============================================================
+// CONSULTAR CUENTAS
+// GET /api/admin/authsitio/cuentas
+// ============================================================
+
+router.get(
+  '/cuentas',
+  verificarToken,
+  verificarAdministrador,
+  obtenerCuentas
+);
+
+// ============================================================
+// CREAR CUENTA DEL SITIO
+// ============================================================
 
 router.post(
   '/crear-cuenta-sitio',
@@ -31,36 +45,69 @@ router.post(
   crearCuentaSitio
 );
 
-// =====================================================
-// INICIAR SESIÓN DEL SITIO
-// =====================================================
+// ============================================================
+// ACTUALIZAR CUENTA
+// ============================================================
+
+router.put(
+  '/cuentas/:cuentaId',
+  verificarToken,
+  verificarAdministrador,
+  actualizarCuenta
+);
+
+// ============================================================
+// CAMBIAR ESTADO DE CUENTA
+// ============================================================
+
+router.patch(
+  '/cuentas/:cuentaId/estado',
+  verificarToken,
+  verificarAdministrador,
+  cambiarEstadoCuenta
+);
+
+// ============================================================
+// ELIMINAR SITIO Y SU CUENTA ASOCIADA
+// ============================================================
+
+router.delete(
+  '/eliminar-sitio/:id',
+  verificarToken,
+  verificarAdministrador,
+  eliminarSitio
+);
+
+// ============================================================
+// INICIAR SESIÓN
+// ============================================================
 
 router.post(
   '/login',
   iniciarSesion
 );
 
-// =====================================================
-// RECUPERAR CONTRASEÑA DEL SITIO
-// =====================================================
+// ============================================================
+// RECUPERAR CONTRASEÑA
+// ============================================================
 
 router.post(
   '/recuperar-password',
   recuperarPassword
 );
 
-// =====================================================
+// ============================================================
 // VERIFICAR CÓDIGO DE RECUPERACIÓN
-// =====================================================
+// ============================================================
 
 router.post(
   '/verificar-codigo-recuperacion',
   verificarCodigoRecuperacion
 );
 
-// =====================================================
+// ============================================================
 // RESTABLECER CONTRASEÑA
-// =====================================================
+// ============================================================
 
 router.post(
   '/restablecer-password',

@@ -22,25 +22,21 @@ class SeccionFormularioSitio extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(
-        AppDimensions.spacingLg,
+        AppDimensions.sitioPanelCardPadding,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.sitioSurface,
         borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
+          AppDimensions.sitioPanelCardRadius,
         ),
         border: Border.all(
-          color: AppColors.border.withValues(
-            alpha: 0.55,
-          ),
+          color: AppColors.sitioBorder.withValues(alpha: 0.75),
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: AppColors.coffeeDark.withValues(
-              alpha: 0.05,
-            ),
-            blurRadius: AppDimensions.elevationFloating,
-            offset: const Offset(0, 3),
+            color: AppColors.sitioCardShadow,
+            blurRadius: 14,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -51,18 +47,16 @@ class SeccionFormularioSitio extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 58,
-                height: 58,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusMd,
-                  ),
+                  color: AppColors.sitioSurfaceGreen,
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   icono,
-                  color: AppColors.white,
-                  size: AppDimensions.iconLg,
+                  color: AppColors.sitioPrimary,
+                  size: AppDimensions.sitioActionIconSize + 4,
                 ),
               ),
               const SizedBox(
@@ -70,35 +64,25 @@ class SeccionFormularioSitio extends StatelessWidget {
               ),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       titulo,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w800,
-                          ),
+                      style: const TextStyle(
+                        color: AppColors.sitioTextPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                      ),
                     ),
-                    const SizedBox(
-                      height: AppDimensions.spacingXs,
-                    ),
+                    const SizedBox(height: 6),
                     Text(
                       subtitulo,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
-                            color: AppColors.textSecondary,
-                            height: 1.3,
-                          ),
+                      style: const TextStyle(
+                        color: AppColors.sitioTextSecondary,
+                        fontSize: 12,
+                        height: 1.45,
+                      ),
                     ),
                   ],
                 ),
@@ -106,9 +90,27 @@ class SeccionFormularioSitio extends StatelessWidget {
             ],
           ),
           const SizedBox(
-            height: AppDimensions.spacingLg,
+            height: AppDimensions.sitioSectionGapCompact,
           ),
-          ..._separarCampos(),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(
+              AppDimensions.sitioPanelCardGap,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.sitioSurfaceSoft,
+              borderRadius: BorderRadius.circular(
+                AppDimensions.sitioFormRadius,
+              ),
+              border: Border.all(
+                color: AppColors.sitioDivider,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: _separarCampos(),
+            ),
+          ),
         ],
       ),
     );
@@ -123,7 +125,7 @@ class SeccionFormularioSitio extends StatelessWidget {
       if (i < campos.length - 1) {
         resultado.add(
           const SizedBox(
-            height: AppDimensions.spacingMd,
+            height: AppDimensions.sitioFormFieldGap,
           ),
         );
       }

@@ -1,3 +1,4 @@
+
 class SitioMultimediaModel {
   final String id;
   final String tipo;
@@ -6,6 +7,8 @@ class SitioMultimediaModel {
   final String url;
   final String idioma;
   final bool activo;
+  final String origen;
+  final String origenId;
 
   const SitioMultimediaModel({
     required this.id,
@@ -15,6 +18,8 @@ class SitioMultimediaModel {
     required this.url,
     required this.idioma,
     required this.activo,
+    this.origen = 'Multimedia',
+    this.origenId = '',
   });
 
   factory SitioMultimediaModel.fromJson(
@@ -24,13 +29,15 @@ class SitioMultimediaModel {
       id: json['_id']?.toString() ??
           json['id']?.toString() ??
           '',
-      tipo: json['tipo']?.toString() ?? '',
+      tipo: json['tipo']?.toString() ?? 'imagen',
       titulo: json['titulo']?.toString() ?? '',
       descripcion:
           json['descripcion']?.toString() ?? '',
       url: json['url']?.toString() ?? '',
       idioma: json['idioma']?.toString() ?? 'es',
-      activo: json['activo'] == true,
+      activo: json['activo'] != false,
+      origen: json['origen']?.toString() ?? 'Multimedia',
+      origenId: json['origenId']?.toString() ?? '',
     );
   }
 }

@@ -25,48 +25,103 @@ class CampoFormularioSitio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bordeNormal = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(
+        AppDimensions.sitioFormRadius,
+      ),
+      borderSide: const BorderSide(
+        color: AppColors.sitioBorder,
+        width: 1,
+      ),
+    );
+
+    final bordeActivo = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(
+        AppDimensions.sitioFormRadius,
+      ),
+      borderSide: const BorderSide(
+        color: AppColors.sitioPrimary,
+        width: 1.6,
+      ),
+    );
+
     return TextFormField(
       controller: controller,
       enabled: habilitado,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      style: TextStyle(
+        color: habilitado
+            ? AppColors.sitioTextPrimary
+            : AppColors.sitioTextSecondary,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        height: 1.4,
+      ),
+      cursorColor: AppColors.sitioPrimary,
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: const TextStyle(
+          color: AppColors.sitioTextSecondary,
+          fontSize: 13,
+        ),
+        floatingLabelStyle: const TextStyle(
+          color: AppColors.sitioPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+        ),
         prefixIcon: Icon(
           icono,
-          color: AppColors.primary,
+          color: habilitado
+              ? AppColors.sitioPrimary
+              : AppColors.sitioTextSecondary,
+          size: AppDimensions.sitioActionIconSize,
         ),
         filled: true,
         fillColor: habilitado
-            ? AppColors.surface
-            : AppColors.background,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusMd,
-          ),
+            ? AppColors.sitioSurface
+            : AppColors.sitioSurfaceSoft,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 17,
         ),
-        enabledBorder: OutlineInputBorder(
+        border: bordeNormal,
+        enabledBorder: bordeNormal,
+        disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(
-            AppDimensions.radiusMd,
-          ),
-          borderSide: BorderSide(
-            color: AppColors.border,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusMd,
+            AppDimensions.sitioFormRadius,
           ),
           borderSide: const BorderSide(
-            color: AppColors.primary,
-            width: 2,
+            color: AppColors.sitioDivider,
           ),
+        ),
+        focusedBorder: bordeActivo,
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.sitioFormRadius,
+          ),
+          borderSide: const BorderSide(
+            color: AppColors.sitioError,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.sitioFormRadius,
+          ),
+          borderSide: const BorderSide(
+            color: AppColors.sitioError,
+            width: 1.6,
+          ),
+        ),
+        errorStyle: const TextStyle(
+          color: AppColors.sitioError,
+          fontSize: 12,
+          height: 1.3,
         ),
       ),
       validator: obligatorio
           ? (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
+              if (value == null || value.trim().isEmpty) {
                 return 'Este campo es obligatorio';
               }
 

@@ -1,3 +1,4 @@
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -130,8 +131,9 @@ class _FormularioMultimediaSitioState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
-        backgroundColor:
-            esError ? AppColors.error : AppColors.primary,
+        backgroundColor: esError
+            ? AppColors.sitioError
+            : AppColors.sitioPrimary,
       ),
     );
   }
@@ -139,8 +141,15 @@ class _FormularioMultimediaSitioState
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: AppColors.sitioSurface,
+      surfaceTintColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(
-        AppDimensions.spacingLg,
+        AppDimensions.sitioPagePadding,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioPanelCardRadius,
+        ),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
@@ -149,7 +158,7 @@ class _FormularioMultimediaSitioState
         ),
         child: Padding(
           padding: const EdgeInsets.all(
-            AppDimensions.spacingLg,
+            AppDimensions.sitioPanelCardPadding,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -158,51 +167,54 @@ class _FormularioMultimediaSitioState
               Row(
                 children: [
                   Container(
-                    width: 46,
-                    height: 46,
+                    width: AppDimensions.sitioHeaderIconSize,
+                    height: AppDimensions.sitioHeaderIconSize,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceGreen,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusMd,
-                      ),
+                      color: AppColors.sitioSurfaceGreen,
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Icon(
                       Icons.photo_library_outlined,
-                      color: AppColors.primary,
+                      color: AppColors.sitioPrimary,
                     ),
                   ),
                   const SizedBox(
-                    width: AppDimensions.spacingMd,
+                    width: AppDimensions.sitioPanelCardGap,
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Agregar fotografía',
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(
+                            color: AppColors.sitioTextPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
                     ),
                   ),
                   IconButton(
-                    onPressed:
-                        _subiendo ? null : _cancelar,
-                    icon: const Icon(Icons.close),
+                    onPressed: _subiendo ? null : _cancelar,
+                    tooltip: 'Cerrar',
+                    style: IconButton.styleFrom(
+                      foregroundColor: AppColors.sitioTextSecondary,
+                    ),
+                    icon: const Icon(Icons.close_rounded),
                   ),
                 ],
               ),
               const SizedBox(
-                height: AppDimensions.spacingLg,
+                height: AppDimensions.sitioSectionGapCompact,
               ),
               Flexible(
                 child: SingleChildScrollView(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _construirSelector(),
                       if (_imagenBytes != null) ...[
                         const SizedBox(
-                          height: AppDimensions.spacingMd,
+                          height: AppDimensions.sitioPanelCardGap,
                         ),
                         _construirVistaPrevia(),
                       ],
@@ -211,7 +223,7 @@ class _FormularioMultimediaSitioState
                 ),
               ),
               const SizedBox(
-                height: AppDimensions.spacingLg,
+                height: AppDimensions.sitioSectionGapCompact,
               ),
               _construirAcciones(),
             ],
@@ -225,68 +237,73 @@ class _FormularioMultimediaSitioState
     return InkWell(
       onTap: _subiendo ? null : _seleccionarImagen,
       borderRadius: BorderRadius.circular(
-        AppDimensions.radiusLg,
+        AppDimensions.sitioPanelCardRadius,
       ),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingXl,
-          horizontal: AppDimensions.spacingLg,
+          vertical: 28,
+          horizontal: AppDimensions.sitioPanelCardPadding,
         ),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: AppColors.sitioSurfaceSoft,
           borderRadius: BorderRadius.circular(
-            AppDimensions.radiusLg,
+            AppDimensions.sitioPanelCardRadius,
           ),
           border: Border.all(
-            color: AppColors.primary.withValues(
-              alpha: 0.25,
-            ),
+            color: AppColors.sitioBorder,
           ),
         ),
         child: Column(
           children: [
             Container(
-              width: 62,
-              height: 62,
+              width: 66,
+              height: 66,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(
-                  alpha: 0.10,
-                ),
-                shape: BoxShape.circle,
+                color: AppColors.sitioSurfaceGreen,
+                borderRadius: BorderRadius.circular(22),
               ),
               child: const Icon(
                 Icons.add_photo_alternate_rounded,
-                color: AppColors.primary,
-                size: 31,
+                color: AppColors.sitioPrimary,
+                size: 32,
               ),
             ),
-            const SizedBox(
-              height: AppDimensions.spacingMd,
-            ),
-            const Text(
+            const SizedBox(height: 14),
+            Text(
               'Agregar fotografía',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.sitioTextPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
             ),
-            const SizedBox(height: 5),
-            const Text(
+            const SizedBox(height: 6),
+            Text(
               'Selecciona una imagen para mostrar tu sitio turístico.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.sitioTextSecondary,
+                    height: 1.5,
+                  ),
             ),
-            const SizedBox(
-              height: AppDimensions.spacingMd,
-            ),
+            const SizedBox(height: 16),
             OutlinedButton.icon(
-              onPressed:
-                  _subiendo ? null : _seleccionarImagen,
+              onPressed: _subiendo ? null : _seleccionarImagen,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.sitioPrimary,
+                side: const BorderSide(
+                  color: AppColors.sitioPrimary,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.sitioFormRadius,
+                  ),
+                ),
+              ),
               icon: const Icon(Icons.upload_rounded),
               label: const Text('Seleccionar imagen'),
             ),
@@ -299,17 +316,15 @@ class _FormularioMultimediaSitioState
   Widget _construirVistaPrevia() {
     return Container(
       padding: const EdgeInsets.all(
-        AppDimensions.spacingMd,
+        AppDimensions.sitioPanelCardGap,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.sitioSurface,
         borderRadius: BorderRadius.circular(
-          AppDimensions.radiusLg,
+          AppDimensions.sitioPanelCardRadius,
         ),
         border: Border.all(
-          color: AppColors.primary.withValues(
-            alpha: 0.18,
-          ),
+          color: AppColors.sitioBorder,
         ),
       ),
       child: Column(
@@ -317,7 +332,7 @@ class _FormularioMultimediaSitioState
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(
-              AppDimensions.radiusMd,
+              AppDimensions.sitioFormRadius,
             ),
             child: AspectRatio(
               aspectRatio: 16 / 9,
@@ -328,35 +343,80 @@ class _FormularioMultimediaSitioState
             ),
           ),
           const SizedBox(
-            height: AppDimensions.spacingMd,
+            height: AppDimensions.sitioFormFieldGap,
           ),
           TextField(
             controller: _tituloController,
             enabled: !_subiendo,
-            decoration: const InputDecoration(
-              labelText: 'Título',
-              hintText: 'Ej. Entrada principal del sitio',
-              prefixIcon: Icon(Icons.title_rounded),
+            decoration: _decoracionCampo(
+              etiqueta: 'Título',
+              sugerencia: 'Ej. Entrada principal del sitio',
+              icono: Icons.title_rounded,
             ),
           ),
           const SizedBox(
-            height: AppDimensions.spacingMd,
+            height: AppDimensions.sitioFormFieldGap,
           ),
           TextField(
             controller: _descripcionController,
             enabled: !_subiendo,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Descripción',
-              hintText:
-                  'Describe brevemente esta fotografía',
-              prefixIcon: Icon(
-                Icons.description_outlined,
-              ),
-              alignLabelWithHint: true,
+            decoration: _decoracionCampo(
+              etiqueta: 'Descripción',
+              sugerencia: 'Describe brevemente esta fotografía',
+              icono: Icons.description_outlined,
+              alinearEtiqueta: true,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  InputDecoration _decoracionCampo({
+    required String etiqueta,
+    required String sugerencia,
+    required IconData icono,
+    bool alinearEtiqueta = false,
+  }) {
+    return InputDecoration(
+      labelText: etiqueta,
+      hintText: sugerencia,
+      prefixIcon: Icon(
+        icono,
+        color: AppColors.sitioTextSecondary,
+      ),
+      alignLabelWithHint: alinearEtiqueta,
+      filled: true,
+      fillColor: AppColors.sitioSurfaceSoft,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 15,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioFormRadius,
+        ),
+        borderSide: const BorderSide(
+          color: AppColors.sitioBorder,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioFormRadius,
+        ),
+        borderSide: const BorderSide(
+          color: AppColors.sitioBorder,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioFormRadius,
+        ),
+        borderSide: const BorderSide(
+          color: AppColors.sitioPrimary,
+          width: 1.5,
+        ),
       ),
     );
   }
@@ -367,28 +427,53 @@ class _FormularioMultimediaSitioState
       children: [
         TextButton(
           onPressed: _subiendo ? null : _cancelar,
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.sitioTextSecondary,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
           child: const Text('Cancelar'),
         ),
         const SizedBox(
-          width: AppDimensions.spacingSm,
+          width: AppDimensions.sitioPanelCardGap,
         ),
-        ElevatedButton.icon(
-          onPressed: _subiendo ? null : _subir,
-          icon: _subiendo
-              ? const SizedBox(
-                  width: AppDimensions.iconSm,
-                  height: AppDimensions.iconSm,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                )
-              : const Icon(
-                  Icons.cloud_upload_rounded,
+        Flexible(
+          child: ElevatedButton.icon(
+            onPressed: _subiendo ? null : _subir,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.sitioPrimary,
+              foregroundColor: AppColors.sitioTextOnPrimary,
+              disabledBackgroundColor: AppColors.sitioBorder,
+              disabledForegroundColor: AppColors.sitioTextSecondary,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 13,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.sitioFormRadius,
                 ),
-          label: Text(
-            _subiendo
-                ? 'Subiendo fotografía...'
-                : 'Subir fotografía',
+              ),
+            ),
+            icon: _subiendo
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.sitioTextOnPrimary,
+                    ),
+                  )
+                : const Icon(Icons.cloud_upload_rounded),
+            label: Text(
+              _subiendo
+                  ? 'Subiendo fotografía...'
+                  : 'Subir fotografía',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
       ],

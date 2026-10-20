@@ -139,6 +139,10 @@ const moderacionContenidoRoutes = require(
   './routes/admin/moderacionContenido.routes'
 );
 
+const adminProductosRoutes = require(
+  './routes/admin/productos.routes'
+);
+
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
@@ -174,6 +178,11 @@ const dashboardSitioRoutes = require(
 const informacionSitioRoutes = require(
   './routes/sitios/informacion.routes'
 );
+
+const productosRoutes = require(
+  './routes/sitios/productos.routes'
+);
+
 
 // ======================================================
 // RUTAS DE USUARIOS
@@ -332,6 +341,11 @@ app.use(
   moderacionContenidoRoutes
 );
 
+app.use(
+  '/api/admin/productos',
+  adminProductosRoutes
+);
+
 // ======================================================
 // SUBRUTAS DE SITIOS TURÍSTICOS
 // ======================================================
@@ -374,6 +388,11 @@ app.use(
 app.use(
   '/api/sitiosturisticos/informacion',
   informacionSitioRoutes
+);
+
+app.use(
+  '/api/sitiosturisticos/productos',
+  productosRoutes
 );
 
 // ======================================================

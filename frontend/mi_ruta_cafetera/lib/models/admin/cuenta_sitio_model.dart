@@ -1,4 +1,3 @@
-
 class CuentaSitioModel {
   final String id;
   final String sitioId;
@@ -6,7 +5,6 @@ class CuentaSitioModel {
   final String apellido;
   final String correo;
   final String telefono;
-  final String rol;
   final bool activo;
 
   const CuentaSitioModel({
@@ -16,7 +14,6 @@ class CuentaSitioModel {
     required this.apellido,
     required this.correo,
     required this.telefono,
-    required this.rol,
     required this.activo,
   });
 
@@ -24,20 +21,21 @@ class CuentaSitioModel {
     Map<String, dynamic> json,
   ) {
     final cuenta = json['cuenta'] is Map
-        ? Map<String, dynamic>.from(
-            json['cuenta'] as Map,
-          )
+        ? Map<String, dynamic>.from(json['cuenta'])
         : json;
 
+    final sitio = cuenta['sitioId'];
+
     return CuentaSitioModel(
-      id: (cuenta['id'] ?? cuenta['_id'] ?? '').toString(),
-      sitioId: (cuenta['sitioId'] ?? '').toString(),
-      nombre: (cuenta['nombre'] ?? '').toString(),
-      apellido: (cuenta['apellido'] ?? '').toString(),
-      correo: (cuenta['correo'] ?? '').toString(),
-      telefono: (cuenta['telefono'] ?? '').toString(),
-      rol: (cuenta['rol'] ?? '').toString(),
-      activo: cuenta['activo'] == true,
+      id: _texto(cuenta['_id'] ?? cuenta['id']),
+      sitioId: sitio is Map
+          ? _texto(sitio['_id'] ?? sitio['id'])
+          : _texto(sitio),
+      nombre: _texto(cuenta['nombre']),
+      apellido: _texto(cuenta['apellido']),
+      correo: _texto(cuenta['correo']),
+      telefono: _texto(cuenta['telefono']),
+      activo: _booleano(cuenta['activo']),
     );
   }
 
@@ -49,13 +47,40 @@ class CuentaSitioModel {
       'apellido': apellido,
       'correo': correo,
       'telefono': telefono,
-      'rol': rol,
       'activo': activo,
     };
   }
 
+  String get nombreCompleto => '$nombre $apellido'.trim();
+
+  static String _texto(dynamic valor) {
+    if (valor == null) return '';
+
+    if (valor is Map) {
+      return (
+        valor['_id'] ??
+        valor['id'] ??
+        valor[r'$oid'] ??
+        ''
+      ).toString();
+    }
+
+    return valor.toString().trim();
+  }
+
+  static bool _booleano(dynamic valor) {
+    if (valor is bool) return valor;
+    if (valor is num) return valor != 0;
+
+    if (valor is String) {
+      return valor.toLowerCase().trim() == 'true';
+    }
+
+    return false;
+  }
+
   @override
   String toString() {
-    return 'CuentaSitioModel(id: $id, nombre: $nombre, correo: $correo)';
+    return 'CuentaSitioModel(id: $id, sitioId: $sitioId, correo: $correo)';
   }
 }

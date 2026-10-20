@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -11,57 +12,48 @@ class EstadoResenasSitio extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(
-        AppDimensions.spacingXl,
+        AppDimensions.sitioPanelCardPadding,
       ),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.sitioSurfaceSoft,
         borderRadius: BorderRadius.circular(
-          AppDimensions.radiusLg,
+          AppDimensions.sitioPanelCardRadius,
         ),
         border: Border.all(
-          color: AppColors.border,
+          color: AppColors.sitioBorder,
         ),
       ),
       child: Column(
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 68,
+            height: 68,
             decoration: BoxDecoration(
-              color: AppColors.surfaceGreen,
-              shape: BoxShape.circle,
+              color: AppColors.sitioSurfaceGreen,
+              borderRadius: BorderRadius.circular(22),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.rate_review_outlined,
-              color: AppColors.primary,
-              size: AppDimensions.iconLg,
+              color: AppColors.sitioPrimary,
+              size: 32,
             ),
           ),
-          const SizedBox(
-            height: AppDimensions.spacingMd,
-          ),
+          const SizedBox(height: 16),
           Text(
             'Todavía no hay reseñas',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  color: AppColors.textPrimary,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppColors.sitioTextPrimary,
                   fontWeight: FontWeight.w800,
                 ),
           ),
-          const SizedBox(
-            height: AppDimensions.spacingXs,
-          ),
+          const SizedBox(height: 8),
           Text(
             'Las opiniones de los visitantes aparecerán aquí.',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(
-                  color: AppColors.textSecondary,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.sitioTextSecondary,
+                  height: 1.5,
                 ),
           ),
         ],

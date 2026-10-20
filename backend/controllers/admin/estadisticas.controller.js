@@ -1,26 +1,39 @@
+
 const Estadistica = require('../../models/admin/estadistica');
 const Usuario = require('../../models/usuario/usuario');
-const Sitio = require('../../models/usuario/sitio');
 const Resena = require('../../models/sitio/resena');
 const Reserva = require('../../models/sitio/reserva');
-const Visita = require('../../models/usuario/visita');
+const Ayuda = require('../../models/usuario/ayuda');
 
 const obtenerEstadisticas = async (req, res) => {
   try {
-    const usuarios = await Usuario.countDocuments();
-    const sitios = await Sitio.countDocuments();
-    const resenas = await Resena.countDocuments();
-    const reservas = await Reserva.countDocuments();
-    const visitas = await Visita.countDocuments();
+    const [
+      usuarios,
+      resenas,
+      reservas,
+      reportes,
+      reportesPendientes,
+      reportesEnRevision,
+      reportesResueltos
+    ] = await Promise.all([
+      Usuario.countDocuments(),
+      Resena.countDocuments(),
+      Reserva.countDocuments(),
+      Ayuda.countDocuments(),
+      Ayuda.countDocuments({ estado: 'pendiente' }),
+      Ayuda.countDocuments({ estado: 'en_revision' }),
+      Ayuda.countDocuments({ estado: 'resuelto' })
+    ]);
 
     res.json({
       usuarios,
-      sitios,
       resenas,
       reservas,
-      visitas
+      reportes,
+      reportesPendientes,
+      reportesEnRevision,
+      reportesResueltos
     });
-
   } catch (error) {
     res.status(500).json({
       mensaje: 'Error al obtener estadísticas',
@@ -29,14 +42,12 @@ const obtenerEstadisticas = async (req, res) => {
   }
 };
 
-
 const obtenerEstadisticasGuardadas = async (req, res) => {
   try {
     const estadisticas = await Estadistica.find()
       .sort({ fecha: -1 });
 
     res.json(estadisticas);
-
   } catch (error) {
     res.status(500).json({
       mensaje: 'Error al obtener estadísticas guardadas',
@@ -44,7 +55,6 @@ const obtenerEstadisticasGuardadas = async (req, res) => {
     });
   }
 };
-
 
 const crearEstadistica = async (req, res) => {
   try {
@@ -56,7 +66,6 @@ const crearEstadistica = async (req, res) => {
       mensaje: 'Estadística registrada correctamente',
       estadistica
     });
-
   } catch (error) {
     res.status(500).json({
       mensaje: 'Error al registrar estadística',
@@ -64,7 +73,6 @@ const crearEstadistica = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   obtenerEstadisticas,

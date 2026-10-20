@@ -23,6 +23,8 @@ const {
 
 router.get(
   '/:id',
+  verificarToken,
+  verificarSitio,
   obtenerMultimedia
 );
 
