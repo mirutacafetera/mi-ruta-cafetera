@@ -1,3 +1,4 @@
+
 const dns = require('dns');
 
 dns.setServers([
@@ -6,9 +7,7 @@ dns.setServers([
 ]);
 
 const express = require('express');
-
 const mongoose = require('mongoose');
-
 const cors = require('cors');
 
 require('dotenv').config();
@@ -20,7 +19,6 @@ const app = express();
 // ======================================================
 
 app.use(cors());
-
 app.use(express.json());
 
 app.use(
@@ -89,11 +87,13 @@ const aiRoutes = require(
   './routes/usuario/ai.routes'
 );
 
-const reservasAdminRoutes = require(
-  './routes/admin/reservas.routes');
 // ------------------------------------------------------
 // RUTAS DE ADMINISTRACIÓN
 // ------------------------------------------------------
+
+const reservasAdminRoutes = require(
+  './routes/admin/reservas.routes'
+);
 
 const administradorRoutes = require(
   './routes/admin/administrador.routes'
@@ -143,6 +143,11 @@ const adminProductosRoutes = require(
   './routes/admin/productos.routes'
 );
 
+// CHATBOT EXCLUSIVO DEL ADMINISTRADOR
+const adminChatbotRoutes = require(
+  './routes/admin/chatbot.routes'
+);
+
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
@@ -183,9 +188,8 @@ const productosRoutes = require(
   './routes/sitios/productos.routes'
 );
 
-
 // ======================================================
-// RUTAS DE USUARIOS
+// REGISTRO DE RUTAS DE USUARIOS
 // ======================================================
 
 app.use(
@@ -238,13 +242,15 @@ app.use(
   visitaRoutes
 );
 
+// CHATBOT PÚBLICO EXISTENTE
 app.use(
   '/api/chat',
   chatRoutes
 );
 
-app.use('/api/admin/reservas',
-   reservasAdminRoutes
+app.use(
+  '/api/admin/reservas',
+  reservasAdminRoutes
 );
 
 app.use(
@@ -259,7 +265,7 @@ app.use(
 );
 
 // ======================================================
-// RUTAS DE ADMINISTRACIÓN
+// REGISTRO DE RUTAS DE ADMINISTRACIÓN
 // ======================================================
 
 // ------------------------------------------------------
@@ -310,6 +316,15 @@ app.use(
 app.use(
   '/api/admin/ayuda',
   adminAyudaRoutes
+);
+
+// ======================================================
+// CHATBOT EXCLUSIVO DEL ADMINISTRADOR
+// ======================================================
+
+app.use(
+  '/api/admin/chatbot',
+  adminChatbotRoutes
 );
 
 // ======================================================
@@ -491,11 +506,15 @@ const iniciarServidor = async () => {
       console.log('🔐 Login administrador: /api/admin/administradores');
       console.log('📋 Actividades: /api/admin/actividades');
       console.log('📝 Moderación: /api/admin/moderacion-contenidos');
+      console.log('🤖 Chatbot administrador: /api/admin/chatbot');
       console.log('==========================================');
     });
 
     servidor.on('error', (error) => {
-      console.error('❌ Error al iniciar el servidor:', error.message);
+      console.error(
+        '❌ Error al iniciar el servidor:',
+        error.message
+      );
 
       if (error.code === 'EADDRINUSE') {
         console.error(`⚠️ El puerto ${PORT} ya está ocupado.`);

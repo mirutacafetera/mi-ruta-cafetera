@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -76,6 +77,11 @@ class AdminMenuLateral extends StatelessWidget {
                   opcion: 'contenido',
                 ),
                 _construirOpcion(
+                  icono: Icons.smart_toy_rounded,
+                  titulo: 'Chatbot IA',
+                  opcion: 'chatbot_ia',
+                ),
+                _construirOpcion(
                   icono: Icons.star_rounded,
                   titulo: 'Reseñas',
                   opcion: 'resenas',
@@ -122,9 +128,7 @@ class AdminMenuLateral extends StatelessWidget {
                 color: AppColors.background,
                 border: Border(
                   top: BorderSide(
-                    color: AppColors.divider.withValues(
-                      alpha: 0.5,
-                    ),
+                    color: AppColors.divider.withValues(alpha: 0.5),
                   ),
                 ),
               ),

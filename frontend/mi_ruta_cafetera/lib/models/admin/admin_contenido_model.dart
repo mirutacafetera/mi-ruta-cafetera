@@ -1,3 +1,4 @@
+
 class AdminContenidoModel {
   final String id;
   final String titulo;
@@ -7,6 +8,8 @@ class AdminContenidoModel {
   final List<AdminAudioGuiaModel> audioGuias;
   final String sitioId;
   final String sitioNombre;
+  final String sitioCategoriaIcono;
+  final String sitioCategoriaNombre;
   final String ciudad;
   final String departamento;
   final String estadoPublicacion;
@@ -23,6 +26,8 @@ class AdminContenidoModel {
     required this.audioGuias,
     required this.sitioId,
     required this.sitioNombre,
+    this.sitioCategoriaIcono = '',
+    this.sitioCategoriaNombre = '',
     required this.ciudad,
     required this.departamento,
     required this.estadoPublicacion,
@@ -31,52 +36,94 @@ class AdminContenidoModel {
     required this.createdAt,
   });
 
-  factory AdminContenidoModel.fromJson(Map<String, dynamic> json) {
-    final sitio = json['sitio'];
-    final sitioMap = sitio is Map
+  bool get estaPendiente =>
+      estadoPublicacion == 'pendiente_revision';
+
+  bool get estaAprobado => estadoPublicacion == 'aprobado';
+
+  bool get estaRechazado => estadoPublicacion == 'rechazado';
+
+  factory AdminContenidoModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final dynamic sitio = json['sitio'];
+
+    final Map<String, dynamic> sitioMap = sitio is Map
         ? Map<String, dynamic>.from(sitio)
         : <String, dynamic>{};
 
-    final imagenesJson = json['imagenes'];
-    final imagenes = imagenesJson is List
+    final dynamic categoria = sitioMap['categoria'];
+
+    final Map<String, dynamic> categoriaMap =
+        categoria is Map
+            ? Map<String, dynamic>.from(categoria)
+            : <String, dynamic>{};
+
+    final dynamic imagenesJson = json['imagenes'];
+
+    final List<String> imagenes = imagenesJson is List
         ? imagenesJson
-              .map((e) {
-                if (e is Map) {
-                  return (e['url'] ?? e['ruta'] ?? e['src'] ?? '').toString();
-                }
-                return e.toString();
-              })
-              .where((e) => e.trim().isNotEmpty)
-              .toList()
+            .map((elemento) {
+              if (elemento is Map) {
+                return (
+                  elemento['url'] ??
+                  elemento['ruta'] ??
+                  elemento['src'] ??
+                  ''
+                ).toString();
+              }
+
+              return elemento.toString();
+            })
+            .where((url) => url.trim().isNotEmpty)
+            .toList()
         : <String>[];
 
-    final audiosJson = json['audioGuias'];
-    final audioGuias = audiosJson is List
-        ? audiosJson
-              .whereType<Map>()
-              .map(
-                (e) =>
-                    AdminAudioGuiaModel.fromJson(Map<String, dynamic>.from(e)),
-              )
-              .where((audio) => audio.url.isNotEmpty)
-              .toList()
-        : <AdminAudioGuiaModel>[];
+    final dynamic audiosJson = json['audioGuias'];
+
+    final List<AdminAudioGuiaModel> audioGuias =
+        audiosJson is List
+            ? audiosJson
+                .whereType<Map>()
+                .map(
+                  (audio) => AdminAudioGuiaModel.fromJson(
+                    Map<String, dynamic>.from(audio),
+                  ),
+                )
+                .where((audio) => audio.url.isNotEmpty)
+                .toList()
+            : <AdminAudioGuiaModel>[];
 
     return AdminContenidoModel(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
       titulo: (json['titulo'] ?? '').toString(),
       descripcion: (json['descripcion'] ?? '').toString(),
-      imagenPrincipal: (json['imagenPrincipal'] ?? '').toString(),
+      imagenPrincipal:
+          (json['imagenPrincipal'] ?? '').toString(),
       imagenes: imagenes,
       audioGuias: audioGuias,
-      sitioId: (sitioMap['_id'] ?? sitio ?? '').toString(),
+      sitioId: (
+        sitioMap['_id'] ??
+        sitioMap['id'] ??
+        (sitio is String ? sitio : '')
+      ).toString(),
       sitioNombre: (sitioMap['nombre'] ?? '').toString(),
+      sitioCategoriaIcono:
+          (categoriaMap['icono'] ?? '').toString(),
+      sitioCategoriaNombre:
+          (categoriaMap['nombre'] ?? '').toString(),
       ciudad: (sitioMap['ciudad'] ?? '').toString(),
-      departamento: (sitioMap['departamento'] ?? '').toString(),
-      estadoPublicacion: (json['estadoPublicacion'] ?? 'borrador').toString(),
-      motivoRechazo: (json['motivoRechazo'] ?? '').toString(),
+      departamento:
+          (sitioMap['departamento'] ?? '').toString(),
+      estadoPublicacion:
+          (json['estadoPublicacion'] ?? 'pendiente_revision')
+              .toString(),
+      motivoRechazo:
+          (json['motivoRechazo'] ?? '').toString(),
       activo: json['activo'] == true,
-      createdAt: DateTime.tryParse((json['createdAt'] ?? '').toString()),
+      createdAt: DateTime.tryParse(
+        (json['createdAt'] ?? '').toString(),
+      ),
     );
   }
 }
@@ -94,7 +141,9 @@ class AdminAudioGuiaModel {
     required this.duracion,
   });
 
-  factory AdminAudioGuiaModel.fromJson(Map<String, dynamic> json) {
+  factory AdminAudioGuiaModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return AdminAudioGuiaModel(
       titulo: (json['titulo'] ?? 'Guía de audio').toString(),
       descripcion: (json['descripcion'] ?? '').toString(),

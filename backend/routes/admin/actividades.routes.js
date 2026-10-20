@@ -1,25 +1,20 @@
-const express = require('express');
 
+const express = require('express');
 const router = express.Router();
 
 const {
   verificarToken,
-  verificarAdministrador
+  verificarAdministrador,
 } = require('../../middlewares/authmiddleware');
 
 const {
   obtenerActividadesPendientes,
   obtenerActividad,
   aprobarActividad,
-  rechazarActividad
-} = require(
-  '../../controllers/admin/actividades.controller'
-);
+  rechazarActividad,
+} = require('../../controllers/admin/actividades.controller');
 
-// =====================================================
-// ACTIVIDADES PENDIENTES
-// =====================================================
-
+// Obtener actividades pendientes
 router.get(
   '/pendientes',
   verificarToken,
@@ -27,10 +22,7 @@ router.get(
   obtenerActividadesPendientes
 );
 
-// =====================================================
-// OBTENER ACTIVIDAD
-// =====================================================
-
+// Obtener una actividad por ID
 router.get(
   '/:id',
   verificarToken,
@@ -38,10 +30,7 @@ router.get(
   obtenerActividad
 );
 
-// =====================================================
-// APROBAR ACTIVIDAD
-// =====================================================
-
+// Aprobar actividad
 router.put(
   '/:id/aprobar',
   verificarToken,
@@ -49,10 +38,7 @@ router.put(
   aprobarActividad
 );
 
-// =====================================================
-// RECHAZAR ACTIVIDAD
-// =====================================================
-
+// Rechazar actividad
 router.put(
   '/:id/rechazar',
   verificarToken,

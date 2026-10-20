@@ -1,3 +1,4 @@
+
 class AdminProductoModel {
   final String id;
   final String nombre;
@@ -32,12 +33,13 @@ class AdminProductoModel {
   });
 
   factory AdminProductoModel.fromJson(Map<String, dynamic> json) {
-    final sitio = json['sitio'];
-    final sitioMap = sitio is Map
+    final dynamic sitio = json['sitio'];
+
+    final Map<String, dynamic> sitioMap = sitio is Map
         ? Map<String, dynamic>.from(sitio)
         : <String, dynamic>{};
 
-    final imagenesJson = json['imagenes'];
+    final dynamic imagenesJson = json['imagenes'];
 
     return AdminProductoModel(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
@@ -48,23 +50,61 @@ class AdminProductoModel {
       imagenPrincipal: (json['imagenPrincipal'] ?? '').toString(),
       imagenes: imagenesJson is List
           ? imagenesJson
-                .map((imagen) => imagen.toString())
-                .where((imagen) => imagen.isNotEmpty)
-                .toList()
+              .map((imagen) => imagen.toString())
+              .where((imagen) => imagen.isNotEmpty)
+              .toList()
           : <String>[],
-      activo: json['activo'] == true,
-      estadoPublicacion: (json['estadoPublicacion'] ?? 'pendiente_revision')
-          .toString(),
+      activo: json['activo'] is bool
+          ? json['activo'] as bool
+          : true,
+      estadoPublicacion:
+          (json['estadoPublicacion'] ?? 'borrador').toString(),
       motivoRechazo: (json['motivoRechazo'] ?? '').toString(),
-      sitioNombre: (sitioMap['nombre'] ?? 'Sitio turístico').toString(),
+      sitioNombre:
+          (sitioMap['nombre'] ?? 'Sitio turístico').toString(),
       ciudad: (sitioMap['ciudad'] ?? '').toString(),
       departamento: (sitioMap['departamento'] ?? '').toString(),
-      createdAt: DateTime.tryParse((json['createdAt'] ?? '').toString()),
+      createdAt: _parseFecha(json['createdAt']),
     );
   }
 
   static double _parsePrecio(dynamic valor) {
-    if (valor is num) return valor.toDouble();
-    return double.tryParse(valor?.toString() ?? '') ?? 0;
+    if (valor is num) {
+      return valor.toDouble();
+    }
+
+    return double.tryParse(valor?.toString() ?? '') ?? 0.0;
+  }
+
+  static DateTime? _parseFecha(dynamic valor) {
+    if (valor == null || valor.toString().isEmpty) {
+      return null;
+    }
+
+    return DateTime.tryParse(valor.toString());
+  }
+
+  bool get estaPendiente =>
+      estadoPublicacion == 'pendiente_revision';
+
+  bool get estaAprobado =>
+      estadoPublicacion == 'aprobado';
+
+  bool get estaRechazado =>
+      estadoPublicacion == 'rechazado';
+
+  String get estadoLegible {
+    switch (estadoPublicacion) {
+      case 'pendiente_revision':
+        return 'Pendiente de revisión';
+      case 'aprobado':
+        return 'Aprobado';
+      case 'rechazado':
+        return 'Rechazado';
+      case 'borrador':
+        return 'Borrador';
+      default:
+        return 'Desconocido';
+    }
   }
 }

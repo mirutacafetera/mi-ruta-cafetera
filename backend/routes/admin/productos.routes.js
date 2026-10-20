@@ -1,3 +1,4 @@
+
 const express = require('express');
 
 const router = express.Router();
@@ -9,6 +10,7 @@ const {
 
 const {
   obtenerProductosPendientes,
+  obtenerProductosPorEstado,
   obtenerProducto,
   aprobarProducto,
   rechazarProducto
@@ -19,6 +21,13 @@ router.get(
   verificarToken,
   verificarAdministrador,
   obtenerProductosPendientes
+);
+
+router.get(
+  '/estado/:estado',
+  verificarToken,
+  verificarAdministrador,
+  obtenerProductosPorEstado
 );
 
 router.get(

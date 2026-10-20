@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const Producto = require('../../models/sitio/producto');
 
@@ -15,6 +16,34 @@ const obtenerProductosPendientes = async (req, res) => {
 
     return res.status(500).json({
       mensaje: 'No se pudieron obtener los productos pendientes'
+    });
+  }
+};
+
+const obtenerProductosPorEstado = async (req, res) => {
+  try {
+    const { estado } = req.params;
+
+    const estadosPermitidos = ['aprobado', 'rechazado'];
+
+    if (!estadosPermitidos.includes(estado)) {
+      return res.status(400).json({
+        mensaje: 'El estado solicitado no es válido'
+      });
+    }
+
+    const productos = await Producto.find({
+      estadoPublicacion: estado
+    })
+      .populate('sitio', 'nombre ciudad departamento')
+      .sort({ revisadoAt: -1, createdAt: -1 });
+
+    return res.status(200).json({ productos });
+  } catch (error) {
+    console.error('Error al obtener productos por estado:', error);
+
+    return res.status(500).json({
+      mensaje: 'No se pudieron obtener los productos por estado'
     });
   }
 };
@@ -160,6 +189,7 @@ const rechazarProducto = async (req, res) => {
 
 module.exports = {
   obtenerProductosPendientes,
+  obtenerProductosPorEstado,
   obtenerProducto,
   aprobarProducto,
   rechazarProducto
