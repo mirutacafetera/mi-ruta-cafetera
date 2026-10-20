@@ -7,9 +7,6 @@ import '../../widgets/admin/admin_proximamente.dart';
 
 import 'admin_inicio.dart';
 import 'admin_perfil.dart';
-import 'admin_actividades_screen.dart';
-import 'admin_productos_screen.dart';
-import 'admin_contenidos_screen.dart';
 import 'admin_sitio_list_screen.dart';
 
 import '../mapa_screen_2.dart';
@@ -253,14 +250,8 @@ class _AdminScreenState extends State<AdminScreen> {
       case 'sitios':
         return _sitios();
 
-      case 'actividades':
-        return const AdminActividadesScreen();
-
       case 'productos':
-        return const AdminProductosScreen();
-
-      case 'contenido':
-        return const AdminContenidosScreen();
+        return const AdminProximamente(nombre: 'Productos');
 
       case 'perfil':
         return AdminPerfil(nombre: widget.nombre, email: widget.email);

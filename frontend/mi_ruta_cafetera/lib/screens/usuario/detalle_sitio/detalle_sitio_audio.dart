@@ -1,3 +1,4 @@
+
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -12,6 +13,7 @@ class DetalleSitioAudio extends ChangeNotifier {
   bool _cargando = false;
   String? _error;
   bool _cerrado = false;
+  int _operacionAudio = 0;
 
   AudioGuiaModel? get audioActual => _audioActual;
   bool get cargando => _cargando;
@@ -23,7 +25,9 @@ class DetalleSitioAudio extends ChangeNotifier {
         .toList();
 
     if (audios.isEmpty) {
-      throw Exception('Este contenido no tiene una audioguía disponible.');
+      throw Exception(
+        'Este contenido no tiene una audioguía disponible.',
+      );
     }
 
     await reproducirAudio(audios.first);
@@ -34,14 +38,16 @@ class DetalleSitioAudio extends ChangeNotifier {
 
     final url = audio.url.trim();
 
-    if (url.isEmpty || _cargando) return;
+    if (url.isEmpty) return;
 
     final mismoAudio =
-        _audioActual?.url.trim() == url && player.audioSource != null;
+        _audioActual?.url.trim() == url &&
+        player.audioSource != null;
 
-    if (mismoAudio) {
+    if (mismoAudio && !_cargando) {
       try {
         if (player.playing) {
+          ++_operacionAudio;
           await player.pause();
         } else {
           if (player.processingState == ProcessingState.completed) {
@@ -51,12 +57,18 @@ class DetalleSitioAudio extends ChangeNotifier {
           await player.play();
         }
       } catch (e) {
+        if (_cerrado) return;
+
         _error = 'No fue posible controlar esta audioguía.';
         _notificar();
+
+        debugPrint('Error al controlar audioguía: $e');
       }
 
       return;
     }
+
+    final operacion = ++_operacionAudio;
 
     _audioActual = audio;
     _cargando = true;
@@ -65,16 +77,21 @@ class DetalleSitioAudio extends ChangeNotifier {
 
     try {
       await player.stop();
+
+      if (_cerrado || operacion != _operacionAudio) return;
+
       await player.setUrl(url);
 
-      if (_cerrado) return;
+      if (_cerrado || operacion != _operacionAudio) return;
 
       _cargando = false;
       _notificar();
 
+      if (_cerrado || operacion != _operacionAudio) return;
+
       await player.play();
     } catch (e) {
-      if (_cerrado) return;
+      if (_cerrado || operacion != _operacionAudio) return;
 
       _cargando = false;
       _error = 'No fue posible cargar esta audioguía.';
@@ -84,7 +101,38 @@ class DetalleSitioAudio extends ChangeNotifier {
     }
   }
 
+  Future<void> alternarReproduccion() async {
+    if (_cerrado || _cargando) return;
+
+    try {
+      if (player.playing) {
+        // Invalida operaciones pendientes antes de pausar.
+        ++_operacionAudio;
+        await player.pause();
+        return;
+      }
+
+      if (player.audioSource == null) return;
+
+      if (player.processingState == ProcessingState.completed) {
+        await player.seek(Duration.zero);
+      }
+
+      await player.play();
+    } catch (e) {
+      if (_cerrado) return;
+
+      _error = 'No fue posible controlar esta audioguía.';
+      _notificar();
+
+      debugPrint('Error al controlar audioguía: $e');
+    }
+  }
+
   Future<void> cerrar() async {
+    // Invalida las operaciones pendientes.
+    ++_operacionAudio;
+
     try {
       await player.stop();
     } catch (e) {
@@ -108,6 +156,7 @@ class DetalleSitioAudio extends ChangeNotifier {
   @override
   void dispose() {
     _cerrado = true;
+    ++_operacionAudio;
     player.dispose();
     super.dispose();
   }

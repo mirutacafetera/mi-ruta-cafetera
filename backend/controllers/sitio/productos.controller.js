@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const Producto = require('../../models/sitio/producto');
 const SitioTuristico = require('../../models/admin/sitio');
 
+const {
+  procesarSolicitudAutomatica,
+} = require('../../services/historial_revision_ia');
+
 const CATEGORIAS_PRODUCTO = [
   'Cafe',
   'Gastronomia',
@@ -364,9 +368,27 @@ const enviarProductoRevision = async (req, res) => {
 
     await producto.save();
 
+    // NUEVO: enviar el producto a la moderación automática por IA.
+    const resultadoIA = await procesarSolicitudAutomatica(
+      'producto',
+      producto._id
+    );
+
+    // NUEVO: consultar el producto con el estado actualizado por la IA.
+    const productoActualizado = await Producto.findById(producto._id);
+
+    let mensaje = 'El producto continúa pendiente de revisión manual.';
+
+    if (resultadoIA.decision === 'aprobado') {
+      mensaje = 'La IA aprobó el producto.';
+    } else if (resultadoIA.decision === 'rechazado') {
+      mensaje = 'La IA rechazó el producto.';
+    }
+
     return res.status(200).json({
-      mensaje: 'Producto enviado a revisión correctamente',
-      producto
+      mensaje,
+      producto: productoActualizado,
+      moderacionIA: resultadoIA
     });
   } catch (error) {
     console.error(

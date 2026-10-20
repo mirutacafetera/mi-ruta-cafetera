@@ -1,5 +1,7 @@
-
 const Contenido = require('../../models/sitio/contenido');
+const {
+  procesarSolicitudAutomatica,
+} = require('../../services/historial_revision_ia');
 
 // ======================================================
 // OBTENER CONTENIDOS PÚBLICOS DE UN SITIO
@@ -270,7 +272,7 @@ const actualizarContenido = async (req, res) => {
 };
 
 // ======================================================
-// ENVIAR A REVISIÓN
+// ENVIAR A REVISIÓN CON MODERACIÓN AUTOMÁTICA POR IA
 // ======================================================
 
 const enviarContenidoRevision = async (req, res) => {
@@ -324,9 +326,29 @@ const enviarContenidoRevision = async (req, res) => {
 
     await contenido.save();
 
+    // La IA revisa el contenido y registra su decisión en el historial.
+    const resultadoIA = await procesarSolicitudAutomatica(
+      'contenido',
+      contenido._id,
+    );
+
+    const contenidoActualizado = await Contenido.findById(
+      contenido._id,
+    );
+
+    let mensaje =
+      'El contenido continúa pendiente de revisión manual.';
+
+    if (resultadoIA.decision === 'aprobado') {
+      mensaje = 'La IA aprobó el contenido.';
+    } else if (resultadoIA.decision === 'rechazado') {
+      mensaje = 'La IA rechazó el contenido.';
+    }
+
     return res.status(200).json({
-      mensaje: 'Contenido enviado a revisión',
-      contenido,
+      mensaje,
+      contenido: contenidoActualizado,
+      moderacionIA: resultadoIA,
     });
   } catch (error) {
     console.error(
@@ -341,6 +363,9 @@ const enviarContenidoRevision = async (req, res) => {
   }
 };
 
+// ======================================================
+// ELIMINAR CONTENIDO
+// ======================================================
 
 const eliminarContenido = async (req, res) => {
   try {

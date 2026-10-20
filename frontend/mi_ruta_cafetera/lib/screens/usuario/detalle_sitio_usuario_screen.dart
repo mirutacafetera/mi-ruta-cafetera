@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../models/contenido_model.dart';
@@ -490,6 +491,9 @@ class _DetalleSitioUsuarioScreenState extends State<DetalleSitioUsuarioScreen> {
                 cargando: _audioController.cargando,
                 error: _audioController.error,
                 onCerrar: _cerrarReproductor,
+                onAlternarReproduccion: () {
+                  _audioController.alternarReproduccion();
+                },
               ),
             ),
           );

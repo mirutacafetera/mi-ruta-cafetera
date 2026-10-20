@@ -9,10 +9,11 @@ import '../../widgets/admin/admin_menu_lateral.dart';
 import '../mapa_screen_2.dart';
 import 'admin_inicio.dart';
 import 'admin_inicio_sesion.dart';
-import 'admin_actividades_screen.dart';
-import 'admin_contenidos_screen.dart';
-import 'admin_productos_screen.dart';
+import 'actividades/pantalla_actividades.dart';
+import 'contenido/pantalla_contenido.dart';
+import 'producto/pantalla_producto.dart';
 import 'categoria/pantalla_categoria.dart';
+import 'chatbot/pantalla_chatbot.dart';
 import 'cuenta/admin_cuenta.dart';
 import 'cuenta_sitio/pantalla_cuenta_sitio.dart';
 import 'estadistica/pantalla_estadistica.dart';
@@ -131,13 +132,16 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
         return const PantallaListaSitios();
 
       case 'actividades':
-        return const AdminActividadesScreen();
+        return const PantallaActividades();
 
       case 'productos':
-        return const AdminProductosScreen();
+        return const PantallaProducto();
 
       case 'contenido':
-        return const AdminContenidosScreen();
+        return const PantallaContenido();
+
+      case 'chatbot_ia':
+        return const PantallaChatbot();
 
       case 'perfil':
         return AdminCuenta(
