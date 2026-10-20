@@ -24,7 +24,6 @@ class DetallePortada extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imagen = (imagenPrincipal ?? '').trim();
-    final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +31,7 @@ class DetallePortada extends StatelessWidget {
         Stack(
           children: [
             AspectRatio(
-              aspectRatio: 16 / 8.5,
+              aspectRatio: 16 / 10,
               child: SizedBox(
                 width: double.infinity,
                 child: imagen.isNotEmpty
@@ -45,13 +44,74 @@ class DetallePortada extends StatelessWidget {
                     : _imagenAlternativa(),
               ),
             ),
+
+            // Degradado para integrar la fotografía con el diseño.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.22),
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.48),
+                      ],
+                      stops: const [0, 0.45, 1],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Identidad turística sobre la fotografía.
+            Positioned(
+              left: AppDimensions.pageHorizontal,
+              bottom: AppDimensions.spacingLg,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 9,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.cream.withValues(alpha: 0.96),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.65),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.local_cafe_outlined,
+                      size: 17,
+                      color: AppColors.primary,
+                    ),
+                    SizedBox(width: 7),
+                    Text(
+                      'EXPERIENCIA CAFETERA',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             if (onFavorito != null)
               Positioned(
                 top: AppDimensions.spacingMd,
                 right: AppDimensions.spacingMd,
                 child: Material(
-                  color: AppColors.surface.withValues(alpha: 0.94),
+                  color: AppColors.cream.withValues(alpha: 0.96),
                   shape: const CircleBorder(),
+                  elevation: 3,
                   child: IconButton(
                     tooltip: esFavorito
                         ? 'Quitar de favoritos'
@@ -67,8 +127,8 @@ class DetallePortada extends StatelessWidget {
                           )
                         : Icon(
                             esFavorito
-                                ? Icons.favorite
-                                : Icons.favorite_border,
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
                             color: esFavorito
                                 ? AppColors.error
                                 : AppColors.primary,
@@ -78,34 +138,76 @@ class DetallePortada extends StatelessWidget {
               ),
           ],
         ),
-        Padding(
+
+        // Presentación editorial del sitio.
+        Container(
+          width: double.infinity,
           padding: const EdgeInsets.fromLTRB(
             AppDimensions.pageHorizontal,
-            AppDimensions.spacingLg,
+            AppDimensions.spacingXl,
             AppDimensions.pageHorizontal,
-            AppDimensions.spacingMd,
+            AppDimensions.spacingLg,
           ),
+          color: AppColors.surface,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  const SizedBox(width: 9),
+                  Flexible(
+                    child: Text(
+                      [
+                        sitio.ciudad.trim(),
+                        sitio.departamento.trim(),
+                      ].where((texto) => texto.isNotEmpty).join(' · ')
+                          .toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.secondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 sitio.nombre,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w800,
-                  height: 1.15,
-                ),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 27,
+                      height: 1.16,
+                    ),
               ),
               if (sitio.descripcion.trim().isNotEmpty) ...[
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.spacingMd),
                 Text(
                   sitio.descripcion.trim(),
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.45,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 15,
+                        height: 1.65,
+                      ),
                 ),
               ],
+              const SizedBox(height: AppDimensions.spacingLg),
+              Container(
+                height: 1,
+                color: AppColors.divider,
+              ),
             ],
           ),
         ),
@@ -119,7 +221,7 @@ class DetallePortada extends StatelessWidget {
       color: AppColors.cream,
       alignment: Alignment.center,
       child: Icon(
-        Icons.local_cafe,
+        Icons.local_cafe_outlined,
         size: AppDimensions.featuredImageHeight * 0.25,
         color: AppColors.secondary,
       ),

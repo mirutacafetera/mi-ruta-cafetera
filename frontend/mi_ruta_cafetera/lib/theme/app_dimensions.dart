@@ -321,4 +321,62 @@
 
   /// Animaciones de hero / secciones principales.
   static const int animationSlow = 450;
+
+  
+  // ==========================================================
+  // DIMENSIONES EXCLUSIVAS DEL PANEL MÓVIL DE SITIO
+  // ==========================================================
+
+  // Márgenes y distribución de pantalla
+  static const double sitioPagePadding = 16.0;
+  static const double sitioPagePaddingCompact = 12.0;
+  static const double sitioSectionGap = 24.0;
+  static const double sitioSectionGapCompact = 16.0;
+
+  // Tarjetas del panel
+  static const double sitioPanelCardRadius = 20.0;
+  static const double sitioPanelCardPadding = 16.0;
+  static const double sitioPanelCardGap = 12.0;
+  static const double sitioPanelCardElevation = 1.0;
+
+  // Encabezados
+  static const double sitioHeaderPaddingTop = 20.0;
+  static const double sitioHeaderPaddingBottom = 24.0;
+  static const double sitioHeaderIconSize = 48.0;
+
+  // Imágenes de actividades y productos
+  static const double sitioItemImageWidth = 104.0;
+  static const double sitioItemImageHeight = 112.0;
+  static const double sitioItemImageRadius = 12.0;
+
+  // Formularios
+  static const double sitioFormFieldHeight = 54.0;
+  static const double sitioFormFieldGap = 16.0;
+  static const double sitioFormSectionGap = 24.0;
+  static const double sitioFormRadius = 14.0;
+
+  // Botones y acciones
+  static const double sitioButtonHeight = 48.0;
+  static const double sitioButtonHeightCompact = 44.0;
+  static const double sitioActionIconSize = 20.0;
+
+  // Estadísticas del panel
+  static const double sitioStatCardRadius = 16.0;
+  static const double sitioStatCardPadding = 14.0;
+  static const double sitioStatIconSize = 24.0;
+
+  // Estados e indicadores
+  static const double sitioStatusRadius = 50.0;
+  static const double sitioStatusVerticalPadding = 6.0;
+  static const double sitioStatusHorizontalPadding = 10.0;
+
+  // Navegación del panel
+  static const double sitioNavigationHeight = 68.0;
+  static const double sitioNavigationIconSize = 23.0;
+  static const double sitioNavigationLabelSize = 11.0;
+
+  // Imágenes destacadas
+  static const double sitioCoverImageHeight = 200.0;
+  static const double sitioCoverImageRadius = 18.0;
+
 }

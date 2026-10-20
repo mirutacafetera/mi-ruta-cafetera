@@ -3,10 +3,14 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../config/mapa_corredor.dart';
 import '../controllers/mapa_controller.dart';
 import '../controllers/mapa_ruta_controller.dart';
 import '../models/ruta_predefinida_model.dart';
 import '../models/sitio_turistico_model.dart';
+import '../services/ruta_service.dart';
+import '../services/ubicacion_service.dart';
+import '../services/usuario/usuario_sesion_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_dimensions.dart';
 import '../widgets/mapa/mapa_buscador.dart';
@@ -53,7 +57,10 @@ class _MapaScreen2State extends State<MapaScreen2> {
   final TextEditingController _busquedaController =
       TextEditingController();
 
+  final RutaService _rutaService = RutaService();
+
   bool _obteniendoUbicacion = false;
+  bool _guardandoRuta = false;
   LatLng? _ubicacionUsuario;
 
   // ============================================================
@@ -65,16 +72,24 @@ bool _sitioInicialCentrado = false;
 bool get _modoSitioPublico =>
     widget.sitioInicial != null;
 
+  // Solo se dibujan sitios con coordenadas válidas dentro del
+  // corredor Garzón – Gigante. Una coordenada errónea (por
+  // ejemplo con el signo invertido) mandaba el mapa a otro
+  // continente.
   List<SitioTuristicoModel> get _sitiosVisiblesEnMapa {
+    final List<SitioTuristicoModel> lista;
+
     if (_rutaController.rutaGuardada) {
-      return _rutaController.rutaGuardadaSitios;
+      lista = _rutaController.rutaGuardadaSitios;
+    } else if (_modoSitioPublico) {
+      lista = <SitioTuristicoModel>[widget.sitioInicial!];
+    } else {
+      lista = _mapaController.sitiosFiltrados;
     }
 
-    if (_modoSitioPublico) {
-      return <SitioTuristicoModel>[widget.sitioInicial!];
-    }
-
-    return _mapaController.sitiosFiltrados;
+    return lista
+        .where((sitio) => sitio.enAreaTuristica)
+        .toList();
   }
 
 
@@ -115,6 +130,19 @@ void initState() {
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
         _centrarSitioInicial();
+      },
+    );
+  }
+
+  // Cuando el mapa se abre con una ruta ya cargada (por ejemplo
+  // desde la sección Rutas), la cámara se ajusta al recorrido.
+  if (_rutaController.rutaGuardada &&
+      _rutaController.mostrarRutaGuardada) {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        if (mounted) {
+          _ajustarARuta();
+        }
       },
     );
   }
@@ -167,10 +195,12 @@ void initState() {
   ) {
     _limpiarBusqueda();
 
-    _mapController.move(
-      sitio.ubicacion,
-      AppDimensions.mapaDetalleZoom,
-    );
+    if (sitio.enAreaTuristica) {
+      _mapController.move(
+        sitio.ubicacion,
+        AppDimensions.mapaDetalleZoom,
+      );
+    }
 
     if (_rutaController.modoCrearRuta) {
       _seleccionarSitio(sitio);
@@ -299,8 +329,31 @@ void initState() {
       return;
     }
 
+    // Punto de partida: ubicación real del usuario (si es posible).
+    _mostrarMensajeUbicacion(
+      'Obteniendo tu ubicación para iniciar la ruta...',
+    );
+
+    final origen =
+        await UbicacionService.obtenerOrigenRuta();
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    if (origen.punto != null) {
+      setState(() {
+        _ubicacionUsuario = origen.punto;
+      });
+    }
+
     final correcta =
-        await _rutaController.calcularRuta();
+        await _rutaController.calcularRuta(
+      origen: origen.punto,
+      avisoOrigen: origen.aviso,
+    );
 
     if (!mounted || !correcta) {
       return;
@@ -319,14 +372,7 @@ void initState() {
           return;
         }
 
-        _ajustarMapa(
-          sitios:
-              _rutaController.rutaGuardadaSitios,
-          padding:
-              AppDimensions.mapaRutaPadding,
-          maxZoom:
-              AppDimensions.mapaRutaMaxZoom,
-        );
+        _ajustarARuta();
       },
     );
   }
@@ -335,7 +381,7 @@ void initState() {
   // CONFIRMAR RUTA CALCULADA
   // ============================================================
 
-  void _confirmarRutaCalculada() {
+  Future<void> _confirmarRutaCalculada() async {
     _rutaController.confirmarRuta();
 
     if (!mounted) {
@@ -356,13 +402,169 @@ void initState() {
           return;
         }
 
-        _ajustarMapa(
-          sitios:
-              _rutaController.rutaGuardadaSitios,
-          padding:
-              AppDimensions.mapaRutaPadding,
-          maxZoom:
-              AppDimensions.mapaRutaMaxZoom,
+        _ajustarARuta();
+      },
+    );
+
+    // La ruta ya se ve en el mapa. Ahora se ofrece guardarla en
+    // la cuenta para recuperarla desde la sección Rutas.
+    await _ofrecerGuardarRuta();
+  }
+
+  // ============================================================
+  // GUARDAR LA RUTA CONFIRMADA
+  // ============================================================
+  //
+  // Usa el mismo servicio y el mismo endpoint (POST /api/rutas)
+  // que la pantalla "Crear ruta" de la sección Rutas, por lo que
+  // la ruta guardada aquí aparece allí y viceversa.
+  //
+  // Solo se guarda si el usuario lo acepta. Abrir una plantilla
+  // o calcular una ruta nunca guarda nada por sí solo.
+  // ============================================================
+
+  Future<void> _ofrecerGuardarRuta() async {
+    if (!mounted || _guardandoRuta) {
+      return;
+    }
+
+    // Ya guardada (por ejemplo, creada desde la sección Rutas).
+    if (_rutaController.rutaPersistidaId != null) {
+      return;
+    }
+
+    final sitios = _rutaController.rutaGuardadaSitios;
+
+    if (sitios.length < 2) {
+      return;
+    }
+
+    final sesion =
+        UsuarioSesionService.instance.sesionActual.value;
+
+    if (sesion == null ||
+        sesion.id.trim().isEmpty ||
+        sesion.token.trim().isEmpty) {
+      _mostrarMensajeUbicacion(
+        'Inicia sesión para guardar tus rutas.',
+      );
+
+      return;
+    }
+
+    final nombre = await _pedirNombreRuta(
+      _rutaController.nombreRuta,
+    );
+
+    if (!mounted || nombre == null) {
+      return;
+    }
+
+    setState(() {
+      _guardandoRuta = true;
+    });
+
+    try {
+      final creada = await _rutaService.crearRuta(
+        usuarioId: sesion.id,
+        nombre: nombre,
+        sitios: sitios.map((sitio) => sitio.id).toList(),
+        descripcion:
+            'Ruta personalizada creada desde el mapa.',
+        tipo: 'personalizada',
+        activa: true,
+        token: sesion.token,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      _rutaController.marcarRutaPersistida(
+        id: creada.id,
+        nombre: nombre,
+      );
+
+      _mostrarMensajeUbicacion(
+        'Ruta guardada. Encuéntrala en la sección Rutas.',
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      final detalle = error
+          .toString()
+          .replaceFirst('Exception: ', '');
+
+      _mostrarMensajeUbicacion(
+        'La ruta se muestra en el mapa, pero no se guardó: '
+        '$detalle',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _guardandoRuta = false;
+        });
+      }
+    }
+  }
+
+  Future<String?> _pedirNombreRuta(
+    String nombreInicial,
+  ) {
+    final controller = TextEditingController(
+      text: nombreInicial,
+    );
+
+    return showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Guardar ruta'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Guárdala para recuperarla desde la '
+                'sección Rutas. Se conserva 24 horas.',
+              ),
+              const SizedBox(
+                height: AppDimensions.spacingMd,
+              ),
+              TextField(
+                controller: controller,
+                maxLength: 60,
+                textCapitalization:
+                    TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre de la ruta',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('Solo ver'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final nombre = controller.text.trim();
+
+                if (nombre.isEmpty) {
+                  return;
+                }
+
+                Navigator.of(dialogContext).pop(nombre);
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
         );
       },
     );
@@ -385,14 +587,7 @@ void initState() {
           return;
         }
 
-        _ajustarMapa(
-          sitios:
-              _rutaController.rutaGuardadaSitios,
-          padding:
-              AppDimensions.mapaRutaPadding,
-          maxZoom:
-              AppDimensions.mapaRutaMaxZoom,
-        );
+        _ajustarARuta();
       },
     );
   }
@@ -463,10 +658,12 @@ void initState() {
           onVerMapa: () {
             Navigator.pop(context);
 
-            _mapController.move(
-              sitio.ubicacion,
-              AppDimensions.mapaDetalleZoom,
-            );
+            if (sitio.enAreaTuristica) {
+              _mapController.move(
+                sitio.ubicacion,
+                AppDimensions.mapaDetalleZoom,
+              );
+            }
           },
           onAgregarRuta: () {
             Navigator.pop(context);
@@ -524,11 +721,15 @@ void initState() {
 
     final validos = lista
         .where(
-          (sitio) => sitio.tieneCoordenadas,
+          (sitio) => sitio.enAreaTuristica,
         )
         .toList();
 
+    // Sin sitios válidos se muestra el corredor, nunca una
+    // posición arbitraria.
     if (validos.isEmpty) {
+      _verCorredor();
+
       return;
     }
 
@@ -589,6 +790,62 @@ void initState() {
   }
 
   // ============================================================
+  // AJUSTAR A LA RUTA (GEOMETRÍA DE CARRETERA)
+  // ============================================================
+  //
+  // Encuadra la geometría real de la ruta; si no hay geometría
+  // se encuadran los sitios de la ruta.
+  // ============================================================
+
+  void _ajustarARuta() {
+    final resultado = _rutaController.rutaResultado;
+
+    final puntos = resultado?.puntos
+            .where(MapaCorredor.contienePunto)
+            .toList() ??
+        const <LatLng>[];
+
+    if (puntos.length < 2) {
+      _ajustarMapa(
+        sitios: _rutaController.rutaGuardadaSitios,
+        padding: AppDimensions.mapaRutaPadding,
+        maxZoom: AppDimensions.mapaRutaMaxZoom,
+      );
+
+      return;
+    }
+
+    _mapController.fitCamera(
+      CameraFit.bounds(
+        bounds: LatLngBounds.fromPoints(puntos),
+        padding: const EdgeInsets.all(
+          AppDimensions.mapaRutaPadding,
+        ),
+        maxZoom: AppDimensions.mapaRutaMaxZoom,
+      ),
+    );
+  }
+
+  // ============================================================
+  // VER EL CORREDOR GARZÓN – GIGANTE
+  // ============================================================
+
+  void _verCorredor() {
+    _mapController.fitCamera(
+      CameraFit.bounds(
+        bounds: LatLngBounds(
+          MapaCorredor.vistaSuroeste,
+          MapaCorredor.vistaNoreste,
+        ),
+        padding: const EdgeInsets.all(
+          AppDimensions.spacingLg,
+        ),
+        maxZoom: AppDimensions.mapaMaxZoom,
+      ),
+    );
+  }
+
+  // ============================================================
   // CENTRAR MAPA CON GPS REAL
   // ============================================================
 
@@ -602,107 +859,102 @@ void initState() {
     });
 
     try {
-      final servicioActivo =
-          await Geolocator
-              .isLocationServiceEnabled();
-
-      if (!servicioActivo) {
-        if (!mounted) {
-          return;
-        }
-
-        await _mostrarDialogoUbicacion(
-          titulo: 'Ubicación desactivada',
-          mensaje:
-              'Para centrar el mapa en tu ubicación actual, '
-              'activa la ubicación del dispositivo.',
-          accionTexto:
-              'Abrir ubicación',
-          accion:
-              Geolocator.openLocationSettings,
-        );
-
-        return;
-      }
-
-      var permiso =
-          await Geolocator.checkPermission();
-
-      if (permiso ==
-          LocationPermission.denied) {
-        permiso =
-            await Geolocator.requestPermission();
-      }
-
-      if (permiso ==
-          LocationPermission.denied) {
-        if (!mounted) {
-          return;
-        }
-
-        _mostrarMensajeUbicacion(
-          'Se necesita permiso de ubicación para centrar el mapa.',
-        );
-
-        return;
-      }
-
-      if (permiso ==
-          LocationPermission.deniedForever) {
-        if (!mounted) {
-          return;
-        }
-
-        await _mostrarDialogoUbicacion(
-          titulo:
-              'Permiso de ubicación requerido',
-          mensaje:
-              'El permiso de ubicación está bloqueado. '
-              'Puedes habilitarlo desde la configuración de la aplicación.',
-          accionTexto:
-              'Abrir configuración',
-          accion:
-              Geolocator.openAppSettings,
-        );
-
-        return;
-      }
-
-      final posicion =
-          await Geolocator.getCurrentPosition(
-        locationSettings:
-            const LocationSettings(
-          accuracy:
-              LocationAccuracy.high,
-        ),
+      // Única implementación de geolocalización de la app:
+      // comprueba servicio, permisos y obtiene el GPS real.
+      final resultado = await UbicacionService.obtener(
+        precision: LocationAccuracy.high,
       );
 
       if (!mounted) {
         return;
       }
 
-      final ubicacionActual =
-          LatLng(
-        posicion.latitude,
-        posicion.longitude,
+      switch (resultado.estado) {
+        case EstadoUbicacion.servicioDesactivado:
+          await _mostrarDialogoUbicacion(
+            titulo: 'Ubicación desactivada',
+            mensaje:
+                'Para centrar el mapa en tu ubicación actual, '
+                'activa la ubicación del dispositivo.',
+            accionTexto: 'Abrir ubicación',
+            accion: Geolocator.openLocationSettings,
+          );
+
+          return;
+
+        case EstadoUbicacion.permisoDenegado:
+          _mostrarMensajeUbicacion(
+            'Se necesita permiso de ubicación para centrar el mapa.',
+          );
+
+          return;
+
+        case EstadoUbicacion.permisoBloqueado:
+          await _mostrarDialogoUbicacion(
+            titulo: 'Permiso de ubicación requerido',
+            mensaje:
+                'El permiso de ubicación está bloqueado. '
+                'Puedes habilitarlo desde la configuración de la aplicación.',
+            accionTexto: 'Abrir configuración',
+            accion: Geolocator.openAppSettings,
+          );
+
+          return;
+
+        case EstadoUbicacion.error:
+          _mostrarMensajeUbicacion(
+            'No fue posible obtener tu ubicación actual. '
+            'Se muestra el corredor Garzón–Gigante.',
+          );
+
+          _verCorredor();
+
+          return;
+
+        case EstadoUbicacion.disponible:
+          break;
+      }
+
+      final ubicacion = resultado.ubicacion;
+
+      if (ubicacion == null) {
+        _mostrarMensajeUbicacion(
+          'No fue posible obtener tu ubicación actual.',
+        );
+
+        return;
+      }
+
+      final ubicacionActual = LatLng(
+        ubicacion.latitud,
+        ubicacion.longitud,
       );
 
+      // El mapa está limitado al corredor. Si el usuario está
+      // fuera de él se le dice con claridad y no se finge una
+      // posición.
+      if (!MapaCorredor.contienePunto(ubicacionActual)) {
+        final km =
+            MapaCorredor.distanciaAlCentroKm(ubicacionActual);
+
+        _mostrarMensajeUbicacion(
+          'Estás fuera del corredor Garzón–Gigante '
+          '(a unos ${km.round()} km). '
+          'Se muestra el área turística.',
+        );
+
+        _verCorredor();
+
+        return;
+      }
+
       setState(() {
-        _ubicacionUsuario =
-            ubicacionActual;
+        _ubicacionUsuario = ubicacionActual;
       });
 
       _mapController.move(
         ubicacionActual,
         AppDimensions.mapaDetalleZoom,
-      );
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      _mostrarMensajeUbicacion(
-        'No fue posible obtener tu ubicación actual.',
       );
     } finally {
       if (mounted) {
@@ -760,7 +1012,7 @@ void initState() {
   }
 
    // ============================================================
-  // MOSTRAR TODOS LOS SITIOS
+  // BOTÓN DE MAPA: RESTABLECER LA VISTA DEL CORREDOR
   // ============================================================
 
   void _mostrarTodosLosSitios() {
@@ -786,15 +1038,14 @@ void initState() {
 
     _mapaController.mostrarTodos();
 
+    // Restablece la vista del corredor Garzón – Gigante.
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
         if (!mounted) {
           return;
         }
 
-        _ajustarMapa(
-          sitios: _mapaController.todosLosSitios,
-        );
+        _verCorredor();
       },
     );
   }
@@ -1055,6 +1306,8 @@ void initState() {
                         AppDimensions.spacingSm,
                   ),
 
+                  _bloqueOrigenResumen(),
+
                   ...List.generate(
                     sitios.length,
                     (index) {
@@ -1205,6 +1458,61 @@ void initState() {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // ORIGEN DE LA RUTA EN EL RESUMEN
+  // ============================================================
+  //
+  // Muestra el tramo desde la ubicación real del usuario hasta
+  // el primer sitio, o explica por qué la ruta empieza en el
+  // primer sitio.
+  // ============================================================
+
+  Widget _bloqueOrigenResumen() {
+    final tramo = _rutaController.tramoOrigen;
+    final aviso = _rutaController.avisoOrigen;
+
+    if (tramo == null && aviso == null) {
+      return const SizedBox.shrink();
+    }
+
+    final texto = tramo != null
+        ? 'Desde tu ubicación · '
+            '${tramo.distanciaKm.toStringAsFixed(1)} km · '
+            '${tramo.duracionMinutos.toStringAsFixed(0)} min'
+        : aviso!;
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: AppDimensions.spacingSm,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            tramo != null
+                ? Icons.my_location
+                : Icons.location_off_outlined,
+            size: AppDimensions.iconMd,
+            color: AppColors.primary,
+          ),
+          const SizedBox(
+            width: AppDimensions.spacingSm,
+          ),
+          Expanded(
+            child: Text(
+              texto,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1363,7 +1671,7 @@ void initState() {
         title: Text(
           _modoSitioPublico
               ? 'Sitio turístico'
-              : 'Mi Ruta Mágica del Café',
+              : 'Mi Ruta Cafetera',
         ),
         centerTitle: true,
         actions: [

@@ -4,7 +4,10 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 
 class MapaControles extends StatelessWidget {
+  /// Centra el mapa en la posición GPS real del usuario.
   final VoidCallback onCentrar;
+
+  /// Restablece la vista del corredor Garzón–Gigante.
   final VoidCallback onMostrarTodos;
 
   const MapaControles({
@@ -20,7 +23,7 @@ class MapaControles extends StatelessWidget {
       children: [
         _boton(
           icono: Icons.my_location,
-          tooltip: 'Centrar mapa',
+          tooltip: 'Mi ubicación',
           onPressed: onCentrar,
         ),
 
@@ -30,7 +33,7 @@ class MapaControles extends StatelessWidget {
 
         _boton(
           icono: Icons.map_outlined,
-          tooltip: 'Mostrar todos los sitios',
+          tooltip: 'Ver corredor Garzón–Gigante',
           onPressed: onMostrarTodos,
         ),
       ],

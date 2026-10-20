@@ -81,20 +81,53 @@ flutter:
   # Assets de la aplicación
   assets:
     - assets/img/mi_ruta_cafetera.png
+    - assets/img/iconoia.png
+    - assets/img/logo-completo.png
+    - assets/img/fondo-i-sesion.png
     - assets/images/bienvenida/
     - assets/images/sitios/
+    - assets/fonts/Lora-OFL.txt
+    - assets/fonts/Poppins-OFL.txt
+    - assets/fonts/Nunito-OFL.txt
 
-  # To add custom fonts to your application, add a fonts section
-  # in this `flutter` section, see:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #
-  # For details regarding fonts from package dependencies, see:
-  # https://flutter.dev/to/asset-from-package
+  # Tipografías. Lora, Poppins y Nunito (SIL Open Font License 1.1, ver
+  # assets/fonts/*-OFL.txt) se
+  # incluyen como archivos locales para que funcionen sin conexión,
+  # tanto en Android como en Web. La fuente predeterminada (Roboto)
+  # sigue siendo la del sistema.
+  fonts:
+    - family: Lora
+      fonts:
+        - asset: assets/fonts/Lora-Regular.ttf
+        - asset: assets/fonts/Lora-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Lora-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Lora-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Poppins-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Nunito-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Nunito-BoldItalic.ttf
+          weight: 700
+          style: italic
 
 # Configuración para generar el ícono de la aplicación
 flutter_launcher_icons:
@@ -104,3 +137,4 @@ flutter_launcher_icons:
   min_sdk_android: 21
   adaptive_icon_background: "#22130C"
   adaptive_icon_foreground: "assets/img/mi_ruta_cafetera.png"
+

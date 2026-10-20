@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -20,8 +19,7 @@ class SitioActividadesScreen extends StatefulWidget {
       _SitioActividadesScreenState();
 }
 
-class _SitioActividadesScreenState
-    extends State<SitioActividadesScreen> {
+class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
   final SitioActividadesService _actividadesService =
       SitioActividadesService();
   final SitioSesionService _sesionService = SitioSesionService();
@@ -108,6 +106,7 @@ class _SitioActividadesScreenState
           required List<XFile> imagenes,
           required List<String> imagenesEliminar,
           required String imagenPrincipalUrl,
+          required String? imagenPrincipalNueva,
         }) async {
           await _guardarActividad(
             actividad: actividad,
@@ -119,6 +118,7 @@ class _SitioActividadesScreenState
             imagenes: imagenes,
             imagenesEliminar: imagenesEliminar,
             imagenPrincipalUrl: imagenPrincipalUrl,
+            imagenPrincipalNueva: imagenPrincipalNueva,
           );
         },
       ),
@@ -139,14 +139,23 @@ class _SitioActividadesScreenState
     required List<XFile> imagenes,
     required List<String> imagenesEliminar,
     required String imagenPrincipalUrl,
+    required String? imagenPrincipalNueva,
   }) async {
     if (_token.isEmpty || _sitioId.isEmpty) {
       throw Exception('No hay una sesión activa del sitio.');
     }
 
-    setState(() => _guardando = true);
+    if (mounted) {
+      setState(() => _guardando = true);
+    }
 
     try {
+      final imagenesOriginales = <String>{
+        if (actividad != null && actividad.imagenPrincipal.isNotEmpty)
+          actividad.imagenPrincipal,
+        ...?actividad?.imagenes,
+      };
+
       late SitioActividadModel guardada;
 
       if (actividad == null) {
@@ -172,7 +181,6 @@ class _SitioActividadesScreenState
         );
       }
 
-      // Subir las imágenes nuevas.
       if (imagenes.isNotEmpty) {
         guardada = await _actividadesService.subirImagenes(
           token: _token,
@@ -182,29 +190,89 @@ class _SitioActividadesScreenState
         );
       }
 
-      // Si la imagen principal elegida ya está guardada y no se
-      // ha marcado para eliminar, establecerla antes de borrar otras.
-      if (imagenPrincipalUrl.isNotEmpty &&
-          !imagenesEliminar.contains(imagenPrincipalUrl) &&
-          guardada.imagenes.contains(imagenPrincipalUrl)) {
-        guardada =
-            await _actividadesService.establecerImagenPrincipal(
-          token: _token,
-          sitioId: _sitioId,
-          actividadId: guardada.id,
-          url: imagenPrincipalUrl,
+      List<String> obtenerUrls(SitioActividadModel item) {
+        return {
+          if (item.imagenPrincipal.isNotEmpty) item.imagenPrincipal,
+          ...item.imagenes.where((url) => url.isNotEmpty),
+        }.toList();
+      }
+
+      var urlsDisponibles = obtenerUrls(guardada);
+
+      final urlsNuevas = urlsDisponibles
+          .where((url) => !imagenesOriginales.contains(url))
+          .toList();
+
+      var principalDeseada = imagenPrincipalUrl.trim();
+
+      if (imagenPrincipalNueva != null) {
+        final indiceSeleccionado = imagenes.indexWhere(
+          (imagen) => imagen.path == imagenPrincipalNueva,
+        );
+
+        if (indiceSeleccionado < 0) {
+          throw Exception(
+            'No se encontró la fotografía seleccionada como portada.',
+          );
+        }
+
+        if (indiceSeleccionado >= urlsNuevas.length) {
+          throw Exception(
+            'El servidor no devolvió una URL para la fotografía elegida. '
+            'No se eliminarán las imágenes existentes.',
+          );
+        }
+
+        principalDeseada = urlsNuevas[indiceSeleccionado];
+      }
+
+      if (principalDeseada.isEmpty ||
+          imagenesEliminar.contains(principalDeseada) ||
+          !urlsDisponibles.contains(principalDeseada)) {
+        principalDeseada = '';
+
+        for (final url in urlsDisponibles) {
+          if (!imagenesEliminar.contains(url)) {
+            principalDeseada = url;
+            break;
+          }
+        }
+      }
+
+      if (principalDeseada.isEmpty) {
+        throw Exception(
+          'La actividad debe conservar al menos una imagen.',
         );
       }
 
-      // Eliminar las imágenes guardadas que se marcaron para quitar.
-      for (final url in imagenesEliminar) {
-        // El backend no permite eliminar la principal directamente.
-        // Por eso se exige elegir otra antes de eliminarla.
+      if (guardada.imagenPrincipal != principalDeseada) {
+        if (!guardada.imagenes.contains(principalDeseada)) {
+          throw Exception(
+            'La imagen elegida como portada no está disponible '
+            'en la galería del servidor.',
+          );
+        }
+
+        guardada = await _actividadesService.establecerImagenPrincipal(
+          token: _token,
+          sitioId: _sitioId,
+          actividadId: guardada.id,
+          url: principalDeseada,
+        );
+
+        urlsDisponibles = obtenerUrls(guardada);
+      }
+
+      for (final url in imagenesEliminar.toSet()) {
         if (url == guardada.imagenPrincipal) {
           throw Exception(
-            'Selecciona otra imagen principal antes de eliminar '
-            'la imagen principal actual.',
+            'No se puede eliminar la imagen principal actual. '
+            'Selecciona otra portada antes de continuar.',
           );
+        }
+
+        if (!urlsDisponibles.contains(url)) {
+          continue;
         }
 
         guardada = await _actividadesService.eliminarImagen(
@@ -213,7 +281,26 @@ class _SitioActividadesScreenState
           actividadId: guardada.id,
           url: url,
         );
+
+        urlsDisponibles = obtenerUrls(guardada);
       }
+
+      if (mounted) {
+        _mostrarMensaje(
+          actividad == null
+              ? 'Actividad creada correctamente.'
+              : 'Actividad actualizada correctamente.',
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        _mostrarMensaje(
+          error.toString().replaceFirst('Exception: ', ''),
+          esError: true,
+        );
+      }
+
+      rethrow;
     } finally {
       if (mounted) {
         setState(() => _guardando = false);
@@ -237,6 +324,7 @@ class _SitioActividadesScreenState
       await _cargarActividades();
     } catch (error) {
       if (!mounted) return;
+
       _mostrarMensaje(
         error.toString().replaceFirst('Exception: ', ''),
         esError: true,
@@ -250,14 +338,38 @@ class _SitioActividadesScreenState
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Eliminar actividad'),
+        backgroundColor: AppColors.sitioSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.sitioPanelCardRadius,
+          ),
+        ),
+        icon: const Icon(
+          Icons.delete_outline_rounded,
+          color: AppColors.sitioError,
+          size: 32,
+        ),
+        title: const Text(
+          'Eliminar actividad',
+          style: TextStyle(
+            color: AppColors.sitioTextPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         content: Text(
           '¿Deseas eliminar definitivamente "${actividad.nombre}"?\n\n'
           'Esta acción no se puede deshacer.',
+          style: const TextStyle(
+            color: AppColors.sitioTextSecondary,
+            height: 1.4,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.sitioPrimary,
+            ),
             child: const Text('Cancelar'),
           ),
           ElevatedButton.icon(
@@ -265,8 +377,8 @@ class _SitioActividadesScreenState
             icon: const Icon(Icons.delete_outline_rounded),
             label: const Text('Eliminar'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.sitioError,
+              foregroundColor: AppColors.sitioTextOnPrimary,
             ),
           ),
         ],
@@ -302,14 +414,21 @@ class _SitioActividadesScreenState
     }
   }
 
-  void _mostrarMensaje(String mensaje, {bool esError = false}) {
+  void _mostrarMensaje(
+    String mensaje, {
+    bool esError = false,
+  }) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
+          behavior: SnackBarBehavior.floating,
           content: Text(mensaje),
-          backgroundColor:
-              esError ? AppColors.error : AppColors.primary,
+          backgroundColor: esError
+              ? AppColors.sitioError
+              : AppColors.sitioPrimary,
         ),
       );
   }
@@ -318,25 +437,31 @@ class _SitioActividadesScreenState
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final esDesktop = constraints.maxWidth >= 900;
+        final ancho = constraints.maxWidth;
+        final esDesktop = ancho >= 900;
 
         return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.symmetric(
             horizontal: esDesktop
-                ? AppDimensions.pageHorizontal
-                : AppDimensions.pageHorizontalSmall,
-            vertical: AppDimensions.spacingLg,
+                ? AppDimensions.sitioPagePadding
+                : AppDimensions.sitioPagePaddingCompact,
+            vertical: AppDimensions.sitioSectionGapCompact,
           ),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1400),
+              constraints: const BoxConstraints(maxWidth: 1200),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _encabezado(esDesktop),
-                  const SizedBox(height: AppDimensions.spacingLg),
-                  _resumen(esDesktop),
-                  const SizedBox(height: AppDimensions.sectionGap),
+                  const SizedBox(
+                    height: AppDimensions.sitioSectionGap,
+                  ),
+                  _resumen(esDesktop, ancho),
+                  const SizedBox(
+                    height: AppDimensions.sitioSectionGap,
+                  ),
                   TarjetaSeccionSitio(
                     titulo: 'Actividades turísticas',
                     subtitulo:
@@ -345,22 +470,47 @@ class _SitioActividadesScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Align(
-                          alignment: esDesktop
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: ElevatedButton.icon(
-                            onPressed: _guardando
-                                ? null
-                                : () => _mostrarFormulario(),
-                            icon: const Icon(Icons.add),
-                            label: const Text('Nueva actividad'),
+                        SizedBox(
+                          width: esDesktop ? null : double.infinity,
+                          child: Align(
+                            alignment: esDesktop
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: ElevatedButton.icon(
+                              onPressed: _guardando
+                                  ? null
+                                  : () => _mostrarFormulario(),
+                              icon: const Icon(Icons.add_rounded),
+                              label: const Text('Nueva actividad'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.sitioPrimary,
+                                foregroundColor:
+                                    AppColors.sitioTextOnPrimary,
+                                minimumSize: const Size(
+                                  0,
+                                  AppDimensions.sitioButtonHeight,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppDimensions.sitioFormRadius,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingLg),
+                        const SizedBox(
+                          height: AppDimensions.sitioSectionGapCompact,
+                        ),
                         _contenidoActividades(),
                       ],
                     ),
+                  ),
+                  const SizedBox(
+                    height: AppDimensions.sitioSectionGap,
                   ),
                 ],
               ),
@@ -372,41 +522,100 @@ class _SitioActividadesScreenState
   }
 
   Widget _encabezado(bool esDesktop) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Actividades',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                    ),
-              ),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Text(
-                'Gestiona las experiencias que hacen especial tu sitio turístico.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-              ),
-            ],
-          ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(
+        AppDimensions.sitioPanelCardPadding,
+      ),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppColors.sitioPrimary,
+            AppColors.sitioPrimaryDark,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        if (esDesktop)
-          IconButton(
-            onPressed: _cargando ? null : _cargarActividades,
-            tooltip: 'Actualizar',
-            icon: const Icon(Icons.refresh),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioPanelCardRadius,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.sitioCardShadow,
+            blurRadius: 14,
+            offset: Offset(0, 4),
           ),
-      ],
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.local_activity_rounded,
+              color: AppColors.sitioTextOnPrimary,
+              size: 25,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'GESTIÓN DE TU EXPERIENCIA',
+                  style: TextStyle(
+                    color: Color(0xFFE6EDE7),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Actividades',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.sitioTextOnPrimary,
+                        fontSize: esDesktop ? 28 : 24,
+                      ),
+                ),
+                const SizedBox(height: 7),
+                const Text(
+                  'Gestiona las experiencias que hacen especial tu sitio turístico.',
+                  style: TextStyle(
+                    color: Color(0xFFE6EDE7),
+                    fontSize: 12,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (esDesktop) ...[
+            const SizedBox(width: 8),
+            IconButton(
+              onPressed: _cargando ? null : _cargarActividades,
+              tooltip: 'Actualizar actividades',
+              icon: const Icon(Icons.refresh_rounded),
+              color: AppColors.sitioTextOnPrimary,
+            ),
+          ],
+        ],
+      ),
     );
   }
 
-  Widget _resumen(bool esDesktop) {
+  Widget _resumen(bool esDesktop, double ancho) {
     final tarjetas = [
       TarjetaResumenSitio(
         titulo: 'Total',
@@ -428,26 +637,37 @@ class _SitioActividadesScreenState
       ),
     ];
 
-    if (esDesktop) {
-      return Row(
+    final columnas = esDesktop
+        ? 3
+        : ancho >= 520
+            ? 3
+            : 1;
+
+    if (columnas == 1) {
+      return Column(
         children: [
-          Expanded(child: tarjetas[0]),
-          const SizedBox(width: AppDimensions.spacingMd),
-          Expanded(child: tarjetas[1]),
-          const SizedBox(width: AppDimensions.spacingMd),
-          Expanded(child: tarjetas[2]),
+          for (int i = 0; i < tarjetas.length; i++) ...[
+            tarjetas[i],
+            if (i < tarjetas.length - 1)
+              const SizedBox(
+                height: AppDimensions.sitioPanelCardGap,
+              ),
+          ],
         ],
       );
     }
 
-    return Column(
-      children: [
-        tarjetas[0],
-        const SizedBox(height: AppDimensions.spacingMd),
-        tarjetas[1],
-        const SizedBox(height: AppDimensions.spacingMd),
-        tarjetas[2],
-      ],
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: tarjetas.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columnas,
+        crossAxisSpacing: AppDimensions.sitioPanelCardGap,
+        mainAxisSpacing: AppDimensions.sitioPanelCardGap,
+        mainAxisExtent: esDesktop ? 150 : 165,
+      ),
+      itemBuilder: (context, index) => tarjetas[index],
     );
   }
 
@@ -455,35 +675,105 @@ class _SitioActividadesScreenState
     if (_cargando) {
       return const Center(
         child: Padding(
-          padding: EdgeInsets.all(AppDimensions.spacingXl),
-          child: CircularProgressIndicator(color: AppColors.primary),
+          padding: EdgeInsets.all(
+            AppDimensions.sitioSectionGap,
+          ),
+          child: CircularProgressIndicator(
+            color: AppColors.sitioPrimary,
+          ),
         ),
       );
     }
 
     if (_error != null) {
-      return Column(
-        children: [
-          Text(
-            _error!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.error),
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(
+          AppDimensions.sitioPanelCardPadding,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.sitioErrorSoft,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.sitioFormRadius,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
-          OutlinedButton.icon(
-            onPressed: _cargarActividades,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Intentar nuevamente'),
-          ),
-        ],
+        ),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 32,
+              color: AppColors.sitioError,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.sitioError,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _cargarActividades,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Intentar nuevamente'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.sitioPrimary,
+                side: const BorderSide(
+                  color: AppColors.sitioPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
     if (_actividades.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(AppDimensions.spacingXl),
-        child: Center(
-          child: Text('Aún no tienes actividades registradas.'),
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 30,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.sitioSurfaceSoft,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.sitioFormRadius,
+          ),
+          border: Border.all(
+            color: AppColors.sitioDivider,
+          ),
+        ),
+        child: const Column(
+          children: [
+            Icon(
+              Icons.local_activity_outlined,
+              size: 42,
+              color: AppColors.sitioPrimary,
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Aún no tienes actividades registradas',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.sitioTextPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              'Crea tu primera actividad para que los visitantes conozcan las experiencias que ofreces.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.sitioTextSecondary,
+                fontSize: 12,
+                height: 1.45,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -492,7 +782,7 @@ class _SitioActividadesScreenState
       children: _actividades.map((actividad) {
         return Padding(
           padding: const EdgeInsets.only(
-            bottom: AppDimensions.spacingMd,
+            bottom: AppDimensions.sitioPanelCardGap,
           ),
           child: TarjetaActividadSitio(
             actividad: actividad,

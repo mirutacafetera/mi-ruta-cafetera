@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/sitio_turistico_model.dart';
 import '../../services/ruta_service.dart';
 import '../../services/sitio_service.dart';
+import '../../services/ubicacion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/navegacion/boton_regresar.dart';
@@ -88,7 +89,7 @@ class _CrearRutaUsuarioScreenState
             .where(
               (sitio) =>
                   sitio.activo &&
-                  sitio.tieneCoordenadas,
+                  sitio.enAreaTuristica,
             )
             .toList();
 
@@ -190,8 +191,22 @@ class _CrearRutaUsuarioScreenState
     // 1. CALCULAR RECORRIDO REAL
     // ------------------------------------------------------------
 
+    // Punto de partida: ubicación real del usuario. Si no se
+    // puede usar (GPS desactivado, permiso denegado, fuera del
+    // corredor) la ruta empieza en el primer sitio y el resumen
+    // lo explica.
+    final origen =
+        await UbicacionService.obtenerOrigenRuta();
+
+    if (!mounted) {
+      return;
+    }
+
     final correcto =
-        await _rutaController.calcularRuta();
+        await _rutaController.calcularRuta(
+      origen: origen.punto,
+      avisoOrigen: origen.aviso,
+    );
 
     if (!mounted) {
       return;
@@ -284,7 +299,7 @@ class _CrearRutaUsuarioScreenState
     });
 
     try {
-      await _rutaService.crearRuta(
+      final creada = await _rutaService.crearRuta(
         usuarioId: widget.usuarioId,
         nombre: nombre,
         sitios: sitiosIds,
@@ -293,6 +308,13 @@ class _CrearRutaUsuarioScreenState
         tipo: 'personalizada',
         activa: true,
         token: widget.token,
+      );
+
+      // Recuerda que esta ruta ya está guardada para que el mapa
+      // no vuelva a ofrecer guardarla.
+      _rutaController.marcarRutaPersistida(
+        id: creada.id,
+        nombre: nombre,
       );
     } catch (e) {
       if (!mounted) {
@@ -325,6 +347,13 @@ class _CrearRutaUsuarioScreenState
     // ------------------------------------------------------------
     // 4. ABRIR MAPA
     // ------------------------------------------------------------
+    //
+    // La ruta ya fue revisada y confirmada: se marca como
+    // confirmada para que el mapa dibuje la geometría de la
+    // carretera y salga del modo de creación.
+    // ------------------------------------------------------------
+
+    _rutaController.confirmarRuta();
 
     await Navigator.push(
       context,
@@ -939,6 +968,74 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
   }
 
   // ============================================================
+  // ORIGEN DE LA RUTA
+  // ============================================================
+  //
+  // Tramo desde la ubicación real del usuario hasta el primer
+  // sitio, o el motivo por el que la ruta empieza en el primer
+  // sitio.
+  // ============================================================
+
+  Widget _construirOrigen() {
+    final tramo = rutaController.tramoOrigen;
+    final aviso = rutaController.avisoOrigen;
+
+    if (tramo == null && aviso == null) {
+      return const SizedBox.shrink();
+    }
+
+    final texto = tramo != null
+        ? 'Tu ubicación actual · '
+            '${_formatearDistancia(tramo.distanciaKm)} · '
+            '${_formatearDuracion(tramo.duracionMinutos)} '
+            'hasta el primer sitio'
+        : aviso!;
+
+    return Container(
+      margin: const EdgeInsets.only(
+        bottom: AppDimensions.spacingMd,
+      ),
+      padding: const EdgeInsets.all(
+        AppDimensions.spacingMd,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusLg,
+        ),
+        border: Border.all(
+          color: AppColors.border,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            tramo != null
+                ? Icons.my_location
+                : Icons.location_off_outlined,
+            color: AppColors.primary,
+          ),
+          const SizedBox(
+            width: AppDimensions.spacingSm,
+          ),
+          Expanded(
+            child: Text(
+              texto,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                height: 1.4,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
   // TARJETA DE SITIO
   // ============================================================
 
@@ -1311,6 +1408,11 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
                   const SizedBox(
                     height: AppDimensions.spacingMd,
                   ),
+
+                  // ------------------------------------------------
+                  // ORIGEN (UBICACIÓN REAL DEL USUARIO)
+                  // ------------------------------------------------
+                  _construirOrigen(),
 
                   // ------------------------------------------------
                   // SITIOS Y TRAMOS

@@ -1,9 +1,47 @@
 
 import 'package:flutter/material.dart';
 
-
 abstract class AppColors {
   AppColors._();
+
+  
+  // =====================================================
+  // IDENTIDAD VISUAL EXCLUSIVA DEL PANEL DE SITIO
+  // Aplicable únicamente a las pantallas de gestión del sitio.
+  // No reemplaza los colores globales de la aplicación.
+  // =====================================================
+
+  // Colores principales del panel
+  static const Color sitioPrimary = Color(0xFF214F3D);
+  static const Color sitioPrimaryDark = Color(0xFF163A2C);
+  static const Color sitioAccent = Color(0xFFBD8B43);
+
+  // Fondos y superficies
+  static const Color sitioBackground = Color(0xFFF5F0E6);
+  static const Color sitioSurface = Color(0xFFFFFFFF);
+  static const Color sitioSurfaceSoft = Color(0xFFFAF7F0);
+  static const Color sitioSurfaceGreen = Color(0xFFE8F0E9);
+
+  // Textos
+  static const Color sitioTextPrimary = Color(0xFF292D29);
+  static const Color sitioTextSecondary = Color(0xFF6C746D);
+  static const Color sitioTextOnPrimary = Color(0xFFFFFFFF);
+
+  // Bordes y sombras
+  static const Color sitioBorder = Color(0xFFDED5C8);
+  static const Color sitioDivider = Color(0xFFEAE3D8);
+  static const Color sitioCardShadow = Color(0x12000000);
+
+  // Estados del panel
+  static const Color sitioSuccess = Color(0xFF347653);
+  static const Color sitioSuccessSoft = Color(0xFFE4F1E7);
+  static const Color sitioInfo = Color(0xFF397A9B);
+  static const Color sitioInfoSoft = Color(0xFFE5F0F5);
+  static const Color sitioWarning = Color(0xFF98651E);
+  static const Color sitioWarningSoft = Color(0xFFFFF0D8);
+  static const Color sitioError = Color(0xFFB7433C);
+  static const Color sitioErrorSoft = Color(0xFFF9E8E5);
+
 
   // IDENTIDAD PRINCIPAL
   static const Color primary = Color(0xFF174B35);
@@ -150,111 +188,113 @@ abstract class AppColors {
     'parque natural': categoryNaturaleza,
   };
 
-  // ICONOS ORIGINALES Y NUEVOS
+  // ICONOS POR CATEGORÍA
+  // Fuente única de iconos de categoría de toda la aplicación
+  // (Material Icons redondeados). Los colores siguen viniendo de
+  // categoryColors / newIconColors.
   static const Map<String, IconData> categoryIcons = {
-    // Café
     'café y experiencias cafeteras': Icons.coffee_rounded,
     'cafe y experiencias cafeteras': Icons.coffee_rounded,
     'café': Icons.coffee_rounded,
     'cafe': Icons.coffee_rounded,
-    'finca cafetera': Icons.coffee_maker_rounded,
-    'finca': Icons.landscape_rounded,
-    'fincas': Icons.landscape_rounded,
+    'café especial': Icons.coffee_rounded,
+    'cafe especial': Icons.coffee_rounded,
+    'finca cafetera': Icons.agriculture_rounded,
+    'finca': Icons.agriculture_rounded,
+    'fincas': Icons.agriculture_rounded,
     'agroturismo': Icons.agriculture_rounded,
     'cafetería': Icons.local_cafe_rounded,
     'cafeteria': Icons.local_cafe_rounded,
     'tienda': Icons.storefront_rounded,
-    'café especial': Icons.coffee_maker_rounded,
-    'cafe especial': Icons.coffee_maker_rounded,
-
-    // Artesanías
-    'artesanías y productos locales': Icons.palette_rounded,
-    'artesanias y productos locales': Icons.palette_rounded,
-    'artesanías': Icons.palette_rounded,
-    'artesanias': Icons.palette_rounded,
+    'artesanías y productos locales': Icons.brush_rounded,
+    'artesanias y productos locales': Icons.brush_rounded,
+    'artesanías': Icons.brush_rounded,
+    'artesanias': Icons.brush_rounded,
     'productos locales': Icons.shopping_bag_rounded,
-
-    // Aventuras
-    'aventuras': Icons.directions_run_rounded,
-    'aventura': Icons.directions_run_rounded,
-    'deportes de aventura': Icons.sports_score_rounded,
-
-    // Cultura e historia
-    'cultura e historia': Icons.account_balance_rounded,
-    'cultura': Icons.museum_rounded,
+    'aventuras': Icons.explore_rounded,
+    'aventura': Icons.explore_rounded,
+    'deportes de aventura': Icons.kayaking_rounded,
+    'cultura e historia': Icons.museum_rounded,
+    'cultura': Icons.theater_comedy_rounded,
     'historia': Icons.account_balance_rounded,
     'patrimonio': Icons.account_balance_rounded,
-
-    // Familia
     'experiencias familiares': Icons.family_restroom_rounded,
     'experiencia familiar': Icons.family_restroom_rounded,
     'familia': Icons.family_restroom_rounded,
     'familiar': Icons.family_restroom_rounded,
-
-    // Gastronomía
-    'gastronomía': Icons.restaurant_rounded,
-    'gastronomia': Icons.restaurant_rounded,
-    'restaurante': Icons.restaurant_rounded,
-    'comida': Icons.restaurant_menu_rounded,
-
-    // Alojamiento
-    'alojamiento': Icons.hotel_rounded,
-    'hotel': Icons.hotel_rounded,
+    'gastronomía': Icons.local_dining_rounded,
+    'gastronomia': Icons.local_dining_rounded,
+    'restaurante': Icons.local_dining_rounded,
+    'comida': Icons.local_dining_rounded,
+    'alojamiento': Icons.cottage_rounded,
     'hospedaje': Icons.bed_rounded,
-
-    // Miradores y paisajes
+    'hotel': Icons.hotel_rounded,
     'miradores y paisajes': Icons.landscape_rounded,
-    'mirador': Icons.visibility_rounded,
-    'miradores': Icons.visibility_rounded,
     'paisajes': Icons.landscape_rounded,
-
-    // Naturaleza original
-    'naturaleza y ecoturismo': Icons.park_rounded,
-    'naturaleza': Icons.park_rounded,
-    'ecoturismo': Icons.eco_rounded,
-    'senderismo': Icons.hiking_rounded,
-    'parque natural': Icons.forest_rounded,
-
-    // NUEVOS: aves
-   'avistamiento de aves': Icons.visibility_rounded,
-   'avistamiento aves': Icons.visibility_rounded,
-   'aves': Icons.visibility_rounded,
-
-    // NUEVOS: mariposas
-    'mariposas': Icons.local_florist_rounded,
-    'mariposas y naturaleza': Icons.local_florist_rounded,
-
-    // NUEVOS: fauna
-    'fauna': Icons.pets_rounded,
-    'animales': Icons.pets_rounded,
-
-    // NUEVOS: caminatas
-    'caminata': Icons.directions_walk_rounded,
-    'caminatas': Icons.directions_walk_rounded,
-
-    // NUEVOS: ciclismo
-    'ciclismo': Icons.directions_bike_rounded,
-    'bicicleta': Icons.directions_bike_rounded,
-
-    // NUEVOS: jardines
-    'jardines': Icons.local_florist_rounded,
-    'flores': Icons.local_florist_rounded,
-
-    // NUEVOS: ríos y cascadas
-    'ríos y cascadas': Icons.waves_rounded,
-    'rios y cascadas': Icons.waves_rounded,
-    'rio': Icons.water_drop_rounded,
-    'río': Icons.water_drop_rounded,
-    'ríos': Icons.water_drop_rounded,
-    'rios': Icons.water_drop_rounded,
-
-    // NUEVOS: camping
-    'camping': Icons.nature_people_rounded,
-
-    // NUEVOS: montañas
     'montañas': Icons.landscape_rounded,
     'montanas': Icons.landscape_rounded,
+    'mirador': Icons.panorama_rounded,
+    'miradores': Icons.panorama_rounded,
+    'naturaleza y ecoturismo': Icons.emoji_nature_rounded,
+    'naturaleza': Icons.emoji_nature_rounded,
+    'parque natural': Icons.emoji_nature_rounded,
+    'ecoturismo': Icons.eco_rounded,
+    'senderismo': Icons.hiking_rounded,
+    'avistamiento de aves': Icons.flutter_dash_rounded,
+    'avistamiento aves': Icons.flutter_dash_rounded,
+    'aves': Icons.flutter_dash_rounded,
+    'mariposas': Icons.eco_rounded,
+    'mariposas y naturaleza': Icons.eco_rounded,
+    'jardines': Icons.eco_rounded,
+    'flores': Icons.eco_rounded,
+    'fauna': Icons.pets_rounded,
+    'animales': Icons.pets_rounded,
+    'caminata': Icons.directions_walk_rounded,
+    'caminatas': Icons.directions_walk_rounded,
+    'ciclismo': Icons.directions_bike_rounded,
+    'bicicleta': Icons.directions_bike_rounded,
+    'ríos y cascadas': Icons.waves_rounded,
+    'rios y cascadas': Icons.waves_rounded,
+    'rio': Icons.waves_rounded,
+    'río': Icons.waves_rounded,
+    'ríos': Icons.waves_rounded,
+    'rios': Icons.waves_rounded,
+    'camping': Icons.nature_people_rounded,
   };
+
+  // ICONO POR PALABRA CLAVE
+  // Respaldo para nombres de categoría que no coinciden exactamente
+  // con categoryIcons (por ejemplo "Gastronomía local"). Se compara
+  // sin acentos y en el orden en que están escritas.
+  static const Map<String, IconData> _iconosPorPalabra = {
+    'cafe': Icons.coffee_rounded,
+    'naturaleza': Icons.emoji_nature_rounded,
+    'ecoturismo': Icons.eco_rounded,
+    'mirador': Icons.panorama_rounded,
+    'paisaje': Icons.landscape_rounded,
+    'gastronom': Icons.local_dining_rounded,
+    'cultura': Icons.theater_comedy_rounded,
+    'historia': Icons.account_balance_rounded,
+    'patrimonio': Icons.account_balance_rounded,
+    'artesania': Icons.brush_rounded,
+    'productos locales': Icons.shopping_bag_rounded,
+    'aventura': Icons.explore_rounded,
+    'alojamiento': Icons.cottage_rounded,
+    'hospedaje': Icons.bed_rounded,
+    'hotel': Icons.hotel_rounded,
+    'famil': Icons.family_restroom_rounded,
+  };
+
+  static String _sinAcentos(String texto) {
+    return texto
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ü', 'u')
+        .replaceAll('ñ', 'n');
+  }
 
   // COLORES SOLO PARA LOS NUEVOS ICONOS
   static const Map<String, Color> newIconColors = {
@@ -319,7 +359,22 @@ abstract class AppColors {
     }
 
     final key = categoryName.toLowerCase().trim();
-    return categoryIcons[key] ?? Icons.place_rounded;
+
+    final exacto = categoryIcons[key];
+
+    if (exacto != null) {
+      return exacto;
+    }
+
+    final nombre = _sinAcentos(key);
+
+    for (final entrada in _iconosPorPalabra.entries) {
+      if (nombre.contains(entrada.key)) {
+        return entrada.value;
+      }
+    }
+
+    return Icons.place_rounded;
   }
 
   // COLOR SUAVE DE CATEGORÍA

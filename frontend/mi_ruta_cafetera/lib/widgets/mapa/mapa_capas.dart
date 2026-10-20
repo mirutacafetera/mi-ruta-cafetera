@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../config/mapa_corredor.dart';
 import '../../models/sitio_turistico_model.dart';
 import '../../services/routing_service.dart';
 import '../../theme/app_colors.dart';
@@ -34,12 +35,24 @@ class MapaCapas extends StatelessWidget {
   Widget build(BuildContext context) {
     return FlutterMap(
       mapController: mapController,
-      options: const MapOptions(
-        initialCenter: LatLng(2.195, -75.627),
-        initialZoom: 10.5,
-        minZoom: 5,
-        maxZoom: 18,
-        interactionOptions: InteractionOptions(
+      options: MapOptions(
+        // El mapa siempre abre en el corredor Garzón – Gigante.
+        initialCenter: MapaCorredor.centro,
+        initialZoom: MapaCorredor.zoomInicial,
+        minZoom: MapaCorredor.zoomMinimo,
+        maxZoom: MapaCorredor.zoomMaximo,
+
+        // La cámara no puede salir del área turística.
+        cameraConstraint: MapaCorredor.restringirCamara
+            ? CameraConstraint.contain(
+                bounds: LatLngBounds(
+                  MapaCorredor.limiteSuroeste,
+                  MapaCorredor.limiteNoreste,
+                ),
+              )
+            : const CameraConstraint.unconstrained(),
+
+        interactionOptions: const InteractionOptions(
           flags: InteractiveFlag.all,
         ),
       ),

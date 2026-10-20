@@ -1,6 +1,14 @@
 
 const Reserva = require('../../models/sitio/reserva');
 
+const ESTADOS_PERMITIDOS = [
+  'pendiente',
+  'confirmada',
+  'rechazada',
+  'cancelada',
+  'completada'
+];
+
 // Obtener todas las reservas
 const obtenerReservas = async (req, res) => {
   try {
@@ -64,16 +72,9 @@ const obtenerReserva = async (req, res) => {
 // Cambiar estado de una reserva
 const actualizarEstadoReserva = async (req, res) => {
   try {
-    const { estado } = req.body;
+    const { estado } = req.body || {};
 
-    const estadosPermitidos = [
-      'pendiente',
-      'confirmada',
-      'cancelada',
-      'completada'
-    ];
-
-    if (!estadosPermitidos.includes(estado)) {
+    if (!ESTADOS_PERMITIDOS.includes(estado)) {
       return res.status(400).json({
         mensaje: 'Estado de reserva no válido'
       });

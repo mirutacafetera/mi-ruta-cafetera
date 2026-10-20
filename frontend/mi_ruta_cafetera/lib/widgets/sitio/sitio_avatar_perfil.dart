@@ -1,5 +1,7 @@
-
 import 'package:flutter/material.dart';
+
+import '../../models/usuario/avatar_cafetero_model.dart';
+import '../usuario/avatar_cafetero.dart';
 
 class SitioAvatarPerfil extends StatelessWidget {
   final String? fotoPerfil;
@@ -8,6 +10,11 @@ class SitioAvatarPerfil extends StatelessWidget {
   final Color colorFondo;
   final Color colorIcono;
 
+  // Avatar cafetero opcional. Solo se muestra cuando el usuario
+  // lo activó (avatar.usar == true); en cualquier otro caso se
+  // conserva el comportamiento anterior (foto o ícono).
+  final AvatarCafeteroModel? avatar;
+
   const SitioAvatarPerfil({
     super.key,
     required this.fotoPerfil,
@@ -15,10 +22,23 @@ class SitioAvatarPerfil extends StatelessWidget {
     this.radio = 24,
     this.colorFondo = const Color(0xFF194F3A),
     this.colorIcono = Colors.white,
+    this.avatar,
   });
 
   @override
   Widget build(BuildContext context) {
+    final avatarActivo = avatar;
+
+    if (avatarActivo != null && avatarActivo.usar) {
+      return Tooltip(
+        message: nombre.isEmpty ? 'Perfil de usuario' : nombre,
+        child: AvatarCafetero(
+          avatar: avatarActivo,
+          size: radio * 2,
+        ),
+      );
+    }
+
     final foto = fotoPerfil?.trim();
 
     final uri = foto == null ? null : Uri.tryParse(foto);

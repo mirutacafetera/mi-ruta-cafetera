@@ -3,6 +3,29 @@ const express = require('express');
 const router = express.Router();
 
 const {
+  crearLimitador
+} = require(
+  '../../middlewares/ratelimitmiddleware'
+);
+
+// Edición del perfil: 30 solicitudes cada 10 minutos.
+const limitarEdicion = crearLimitador({
+  ventanaMs: 10 * 60 * 1000,
+  maximo: 30,
+  mensaje:
+    'Has hecho muchos cambios seguidos. Intenta de nuevo en unos minutos.'
+});
+
+// Eliminación de cuenta: 5 intentos cada 10 minutos
+// (protege la comprobación de contraseña).
+const limitarEliminacion = crearLimitador({
+  ventanaMs: 10 * 60 * 1000,
+  maximo: 5,
+  mensaje:
+    'Demasiados intentos. Intenta de nuevo en unos minutos.'
+});
+
+const {
   loginWithGoogle
 } = require(
   '../../controllers/usuario/google.controller'
@@ -85,17 +108,19 @@ router.get(
   obtenerMiPerfil
 );
 
-// Actualizar usuario
+// Actualizar mi perfil (nombre, apellido, teléfono, ciudad, foto y avatar)
 router.put(
   '/:id',
   verificarToken,
+  limitarEdicion,
   actualizarUsuario
 );
 
-// Eliminar cuenta
+// Eliminar cuenta (anonimiza; exige confirmación e identidad)
 router.delete(
   '/:id',
   verificarToken,
+  limitarEliminacion,
   eliminarUsuario
 );
 

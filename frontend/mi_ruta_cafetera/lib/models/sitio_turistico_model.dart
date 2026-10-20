@@ -1,5 +1,6 @@
 import 'package:latlong2/latlong.dart';
 
+import '../config/mapa_corredor.dart';
 import 'categoria_model.dart';
 
 class SitioTuristicoModel {
@@ -47,6 +48,21 @@ class SitioTuristicoModel {
   bool get tieneCoordenadas {
     return latitud != 0.0 &&
         longitud != 0.0;
+  }
+
+  // ============================================================
+  // DENTRO DEL ÁREA TURÍSTICA (CORREDOR GARZÓN – GIGANTE)
+  // ============================================================
+  //
+  // Una coordenada fuera del área (signo invertido, latitud y
+  // longitud intercambiadas, etc.) hace que el mapa salte a
+  // otro continente. El mapa y las rutas solo usan sitios con
+  // coordenadas dentro del área.
+  // ============================================================
+
+  bool get enAreaTuristica {
+    return tieneCoordenadas &&
+        MapaCorredor.contiene(latitud, longitud);
   }
 
   // ============================================================

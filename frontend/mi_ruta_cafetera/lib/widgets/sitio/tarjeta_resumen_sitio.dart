@@ -17,99 +17,109 @@ class TarjetaResumenSitio extends StatelessWidget {
     required this.descripcion,
   });
 
+  Color get _colorIcono {
+    switch (titulo.toLowerCase()) {
+      case 'total':
+        return AppColors.sitioPrimary;
+      case 'publicadas':
+        return AppColors.sitioSuccess;
+      case 'en revisión':
+        return AppColors.sitioWarning;
+      default:
+        return AppColors.sitioPrimary;
+    }
+  }
+
+  Color get _fondoIcono {
+    switch (titulo.toLowerCase()) {
+      case 'total':
+        return AppColors.sitioSurfaceGreen;
+      case 'publicadas':
+        return AppColors.sitioSuccessSoft;
+      case 'en revisión':
+        return AppColors.sitioWarningSoft;
+      default:
+        return AppColors.sitioSurfaceGreen;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(
-        AppDimensions.spacingLg,
+        AppDimensions.sitioStatCardPadding,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.sitioSurface,
         borderRadius: BorderRadius.circular(
-          AppDimensions.radiusLg,
+          AppDimensions.sitioStatCardRadius,
         ),
         border: Border.all(
-          color: AppColors.border.withValues(
-            alpha: 0.55,
-          ),
+          color: AppColors.sitioBorder.withValues(alpha: 0.75),
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: AppColors.coffeeDark.withValues(
-              alpha: 0.06,
-            ),
-            blurRadius: AppDimensions.elevationFloating,
-            offset: const Offset(0, 3),
+            color: AppColors.sitioCardShadow,
+            blurRadius: 12,
+            offset: Offset(0, 4),
           ),
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(
-                AppDimensions.radiusMd,
-              ),
+              color: _fondoIcono,
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               icono,
-              color: AppColors.white,
-              size: AppDimensions.iconLg,
+              color: _colorIcono,
+              size: AppDimensions.sitioStatIconSize,
             ),
           ),
-          const SizedBox(
-            width: AppDimensions.spacingMd,
-          ),
+          const SizedBox(width: AppDimensions.spacingMd),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   titulo,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: const TextStyle(
+                    color: AppColors.sitioTextSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                const SizedBox(
-                  height: AppDimensions.spacingXs,
-                ),
+                const SizedBox(height: 4),
                 Text(
                   valor,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: const TextStyle(
+                    color: AppColors.sitioTextPrimary,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                  ),
                 ),
-                const SizedBox(
-                  height: AppDimensions.spacingXs,
-                ),
+                const SizedBox(height: 5),
                 Text(
                   descripcion,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        color: AppColors.textSecondary,
-                        height: 1.25,
-                      ),
+                  style: const TextStyle(
+                    color: AppColors.sitioTextSecondary,
+                    fontSize: 11,
+                    height: 1.3,
+                  ),
                 ),
               ],
             ),

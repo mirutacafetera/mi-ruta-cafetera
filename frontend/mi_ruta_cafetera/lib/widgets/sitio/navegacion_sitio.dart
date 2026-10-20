@@ -34,12 +34,10 @@ class NavegacionSitio extends StatelessWidget {
   Widget _navegacionEscritorio(BuildContext context) {
     return Container(
       width: 270,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
+      decoration: const BoxDecoration(
+        color: AppColors.sitioSurface,
         border: Border(
-          right: BorderSide(
-            color: AppColors.border.withValues(alpha: 0.65),
-          ),
+          right: BorderSide(color: AppColors.sitioBorder),
         ),
       ),
       child: SafeArea(
@@ -47,7 +45,7 @@ class NavegacionSitio extends StatelessWidget {
         child: Column(
           children: [
             _marca(context),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.sitioSectionGap),
             Expanded(child: _listaNavegacion(context)),
             _cerrarSesion(context),
           ],
@@ -57,14 +55,17 @@ class NavegacionSitio extends StatelessWidget {
   }
 
   Widget _navegacionMovil(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          _marca(context),
-          const SizedBox(height: AppDimensions.spacingLg),
-          Expanded(child: _listaNavegacion(context)),
-          _cerrarSesion(context),
-        ],
+    return Container(
+      color: AppColors.sitioSurface,
+      child: SafeArea(
+        child: Column(
+          children: [
+            _marca(context),
+            const SizedBox(height: AppDimensions.sitioSectionGapCompact),
+            Expanded(child: _listaNavegacion(context)),
+            _cerrarSesion(context),
+          ],
+        ),
       ),
     );
   }
@@ -76,7 +77,7 @@ class NavegacionSitio extends StatelessWidget {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
+        horizontal: AppDimensions.sitioPagePadding,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -88,18 +89,18 @@ class NavegacionSitio extends StatelessWidget {
             child: Text(
               'GESTIÓN DE TU SITIO',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: AppColors.sitioTextSecondary,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 0.7,
+                    letterSpacing: 1.1,
                   ),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.spacingMd),
           ...List.generate(
             cantidad,
             (indice) => Padding(
               padding: const EdgeInsets.only(
-                bottom: AppDimensions.spacingXs,
+                bottom: AppDimensions.spacingSm,
               ),
               child: _item(context, indice),
             ),
@@ -112,25 +113,32 @@ class NavegacionSitio extends StatelessWidget {
   Widget _marca(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
-        AppDimensions.spacingLg,
-        AppDimensions.spacingLg,
+        AppDimensions.sitioPagePadding,
+        AppDimensions.sitioHeaderPaddingTop,
+        AppDimensions.sitioPagePadding,
         0,
       ),
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: AppDimensions.sitioHeaderIconSize,
+            height: AppDimensions.sitioHeaderIconSize,
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: AppColors.sitioPrimary,
               borderRadius: BorderRadius.circular(
                 AppDimensions.radiusLg,
               ),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.sitioCardShadow,
+                  blurRadius: 8,
+                  offset: Offset(0, 3),
+                ),
+              ],
             ),
             child: const Icon(
               Icons.local_cafe_rounded,
-              color: AppColors.white,
+              color: AppColors.sitioTextOnPrimary,
               size: AppDimensions.iconLg,
             ),
           ),
@@ -141,15 +149,21 @@ class NavegacionSitio extends StatelessWidget {
               children: [
                 Text(
                   'Mi Ruta',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: AppColors.sitioTextPrimary,
                         fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
                       ),
                 ),
+                const SizedBox(height: 2),
                 Text(
-                  'Mágica del Café',
+                  'Cafetera',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.primary,
+                        color: AppColors.sitioPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                 ),
@@ -167,50 +181,60 @@ class NavegacionSitio extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(
-        AppDimensions.radiusLg,
+        AppDimensions.sitioPanelCardRadius,
       ),
       child: InkWell(
         onTap: () => onSeleccionar(indice),
         borderRadius: BorderRadius.circular(
-          AppDimensions.radiusLg,
+          AppDimensions.sitioPanelCardRadius,
         ),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: const Duration(
+            milliseconds: AppDimensions.animationNormal,
+          ),
+          curve: Curves.easeOut,
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.sitioButtonHeight,
+          ),
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,
             vertical: AppDimensions.spacingSm,
           ),
           decoration: BoxDecoration(
             color: seleccionado
-                ? AppColors.primary.withValues(alpha: 0.11)
+                ? AppColors.sitioSurfaceGreen
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(
-              AppDimensions.radiusLg,
+              AppDimensions.sitioPanelCardRadius,
             ),
             border: Border.all(
               color: seleccionado
-                  ? AppColors.primary.withValues(alpha: 0.10)
+                  ? AppColors.sitioPrimary.withValues(alpha: 0.12)
                   : Colors.transparent,
             ),
           ),
           child: Row(
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                alignment: Alignment.center,
+              AnimatedContainer(
+                duration: const Duration(
+                  milliseconds: AppDimensions.animationFast,
+                ),
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: seleccionado
-                      ? AppColors.primary
-                      : AppColors.surfaceGreen,
+                      ? AppColors.sitioPrimary
+                      : AppColors.sitioSurfaceSoft,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusMd,
                   ),
                 ),
                 child: Icon(
                   iconos[indice],
-                  size: 24,
-                  color: AppColors.white,
+                  size: AppDimensions.navigationIcon,
+                  color: seleccionado
+                      ? AppColors.sitioTextOnPrimary
+                      : AppColors.sitioTextSecondary,
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingMd),
@@ -221,18 +245,17 @@ class NavegacionSitio extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: seleccionado
-                            ? AppColors.primary
-                            : AppColors.textPrimary,
-                        fontWeight: seleccionado
-                            ? FontWeight.w800
-                            : FontWeight.w600,
+                            ? AppColors.sitioPrimary
+                            : AppColors.sitioTextPrimary,
+                        fontWeight:
+                            seleccionado ? FontWeight.w800 : FontWeight.w600,
                       ),
                 ),
               ),
               if (seleccionado)
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.primary,
+                  color: AppColors.sitioPrimary,
                   size: AppDimensions.iconMd,
                 ),
             ],
@@ -245,37 +268,36 @@ class NavegacionSitio extends StatelessWidget {
   Widget _cerrarSesion(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(
-        AppDimensions.spacingMd,
+        AppDimensions.sitioPagePadding,
       ),
       child: Material(
-        color: AppColors.orangeSoft.withValues(alpha: 0.45),
+        color: AppColors.sitioErrorSoft,
         borderRadius: BorderRadius.circular(
-          AppDimensions.radiusLg,
+          AppDimensions.sitioPanelCardRadius,
         ),
         child: InkWell(
           onTap: onCerrarSesion,
           borderRadius: BorderRadius.circular(
-            AppDimensions.radiusLg,
+            AppDimensions.sitioPanelCardRadius,
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: AppDimensions.spacingSm,
+            padding: const EdgeInsets.all(
+              AppDimensions.spacingSm,
             ),
             child: Row(
               children: [
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.orangeSoft,
+                    color: AppColors.sitioSurface,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.radiusMd,
                     ),
                   ),
                   child: const Icon(
                     Icons.logout_rounded,
-                    color: AppColors.coffeeDark,
+                    color: AppColors.sitioError,
                     size: AppDimensions.iconMd,
                   ),
                 ),
@@ -284,10 +306,15 @@ class NavegacionSitio extends StatelessWidget {
                   child: Text(
                     'Cerrar sesión',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.coffeeDark,
+                          color: AppColors.sitioError,
                           fontWeight: FontWeight.w700,
                         ),
                   ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: AppColors.sitioError,
+                  size: AppDimensions.iconSm,
                 ),
               ],
             ),

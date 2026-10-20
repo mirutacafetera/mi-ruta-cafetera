@@ -1,11 +1,29 @@
 const mongoose = require('mongoose');
 
+// Una notificación tiene como destinatario a un usuario o a un sitio
+// turístico (cuenta del establecimiento). Las anteriores solo tienen
+// usuario y siguen siendo válidas.
+
 const notificacionSchema = new mongoose.Schema(
   {
     usuario: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Usuario',
-      required: true
+      required: function () {
+        return !this.sitio;
+      }
+    },
+
+    sitio: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SitioTuristico',
+      default: null
+    },
+
+    reserva: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Reserva',
+      default: null
     },
 
     titulo: {
@@ -40,4 +58,8 @@ const notificacionSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Notificacion', notificacionSchema);
+notificacionSchema.index({ sitio: 1, activo: 1, createdAt: -1 });
+
+module.exports =
+  mongoose.models.Notificacion ||
+  mongoose.model('Notificacion', notificacionSchema);

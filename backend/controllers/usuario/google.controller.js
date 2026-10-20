@@ -3,6 +3,10 @@ const jwt = require('jsonwebtoken');
 
 const Usuario = require('../../models/usuario/usuario');
 
+const {
+  usuarioPublico
+} = require('./usuario.controller');
+
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID
 );
@@ -105,15 +109,7 @@ const loginWithGoogle = async (req, res) => {
     return res.status(200).json({
       mensaje: 'Inicio de sesión con Google exitoso',
       token,
-      usuario: {
-        id: usuario._id,
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        correo: usuario.correo,
-        telefono: usuario.telefono,
-        ciudad: usuario.ciudad,
-        fotoPerfil: usuario.fotoPerfil
-      }
+      usuario: usuarioPublico(usuario)
     });
   } catch (error) {
     console.error(
