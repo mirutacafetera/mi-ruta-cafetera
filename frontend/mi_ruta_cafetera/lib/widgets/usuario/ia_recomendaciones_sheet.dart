@@ -8,6 +8,7 @@ import '../../services/ubicacion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../utils/categoria_utils.dart';
+import 'icono_ia.dart';
 
 /// Panel inferior con las recomendaciones de "Mi Ruta Cafetera IA".
 ///
@@ -67,12 +68,10 @@ class IaRecomendacionesSheet extends StatefulWidget {
   }
 
   @override
-  State<IaRecomendacionesSheet> createState() =>
-      _IaRecomendacionesSheetState();
+  State<IaRecomendacionesSheet> createState() => _IaRecomendacionesSheetState();
 }
 
-class _IaRecomendacionesSheetState
-    extends State<IaRecomendacionesSheet> {
+class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
   bool _cargando = true;
   String? _error;
   IaRespuesta? _respuesta;
@@ -190,9 +189,7 @@ class _IaRecomendacionesSheetState
                   height: 5,
                   decoration: BoxDecoration(
                     color: AppColors.border,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusSm,
-                    ),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                   ),
                 ),
               ),
@@ -219,10 +216,9 @@ class _IaRecomendacionesSheetState
       children: [
         const Row(
           children: [
-            Icon(
-              Icons.auto_awesome_rounded,
-              color: AppColors.secondary,
-              size: AppDimensions.iconLg,
+            IconoIa(
+              size: AppDimensions.iconLg + AppDimensions.spacingXs,
+              colorRespaldo: AppColors.secondary,
             ),
             SizedBox(width: AppDimensions.spacingSm),
             Expanded(
@@ -270,10 +266,8 @@ class _IaRecomendacionesSheetState
           for (final categoria in _categorias)
             _chip(
               etiqueta: categoria.nombre,
-              seleccionado:
-                  _categoriaSeleccionada == categoria.nombre,
-              onTap: () =>
-                  _seleccionarCategoria(categoria.nombre),
+              seleccionado: _categoriaSeleccionada == categoria.nombre,
+              onTap: () => _seleccionarCategoria(categoria.nombre),
             ),
         ],
       ),
@@ -286,9 +280,7 @@ class _IaRecomendacionesSheetState
     required VoidCallback onTap,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(
-        right: AppDimensions.spacingSm,
-      ),
+      padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
       child: ChoiceChip(
         label: Text(etiqueta),
         selected: seleccionado,
@@ -298,9 +290,7 @@ class _IaRecomendacionesSheetState
         backgroundColor: AppColors.surface,
         side: const BorderSide(color: AppColors.border),
         labelStyle: TextStyle(
-          color: seleccionado
-              ? AppColors.white
-              : AppColors.textPrimary,
+          color: seleccionado ? AppColors.white : AppColors.textPrimary,
           fontWeight: FontWeight.w700,
           fontSize: 13,
         ),
@@ -315,9 +305,7 @@ class _IaRecomendacionesSheetState
   Widget _construirCuerpo() {
     if (_cargando) {
       return const Padding(
-        padding: EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingSection,
-        ),
+        padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingSection),
         child: Column(
           children: [
             CircularProgressIndicator(),
@@ -361,17 +349,11 @@ class _IaRecomendacionesSheetState
       children: [
         if (respuesta.esRespaldo)
           Container(
-            margin: const EdgeInsets.only(
-              bottom: AppDimensions.spacingMd,
-            ),
-            padding: const EdgeInsets.all(
-              AppDimensions.spacingMd,
-            ),
+            margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
             decoration: BoxDecoration(
               color: AppColors.orangeSoft,
-              borderRadius: BorderRadius.circular(
-                AppDimensions.radiusMd,
-              ),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             ),
             child: const Text(
               'El asistente no estuvo disponible; estas son '
@@ -402,18 +384,12 @@ class _IaRecomendacionesSheetState
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.radiusXl,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
-          Icon(
-            icono,
-            color: AppColors.textSecondary,
-            size: 38,
-          ),
+          Icon(icono, color: AppColors.textSecondary, size: 38),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             mensaje,
@@ -440,15 +416,12 @@ class _IaRecomendacionesSheetState
 
   Widget _construirTarjeta(IaRecomendacion recomendacion) {
     final sitio = recomendacion.sitio;
-    final colorCategoria = AppColors.getColorForCategory(
-      sitio.categoriaNombre,
-    );
+    final colorCategoria = AppColors.getColorForCategory(sitio.categoriaNombre);
 
     final datos = <String>[
       if (recomendacion.distanciaKm != null)
-        '${recomendacion.distanciaKm!.toStringAsFixed(1)} km',
-      if (recomendacion.horario.isNotEmpty)
-        recomendacion.horario,
+        '≈ ${recomendacion.distanciaKm!.toStringAsFixed(1)} km en línea recta',
+      if (recomendacion.horario.isNotEmpty) recomendacion.horario,
       if (recomendacion.precioDesde > 0)
         'Desde ${_precio(recomendacion.precioDesde)}',
     ];
@@ -456,9 +429,7 @@ class _IaRecomendacionesSheetState
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
         border: Border.all(color: AppColors.border),
       ),
       clipBehavior: Clip.antiAlias,
@@ -471,15 +442,12 @@ class _IaRecomendacionesSheetState
             child: Image.asset(
               CategoriaUtils.imagen(sitio.categoriaNombre),
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
-                color: AppColors.surfaceVariant,
-              ),
+              errorBuilder: (_, _, _) =>
+                  Container(color: AppColors.surfaceVariant),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(
-              AppDimensions.spacingLg,
-            ),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -490,9 +458,7 @@ class _IaRecomendacionesSheetState
                       vertical: AppDimensions.spacingXs,
                     ),
                     decoration: BoxDecoration(
-                      color: colorCategoria.withValues(
-                        alpha: 0.14,
-                      ),
+                      color: colorCategoria.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(
                         AppDimensions.chipRadius,
                       ),
@@ -573,9 +539,7 @@ class _IaRecomendacionesSheetState
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         color: AppColors.cream,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.radiusMd,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -602,36 +566,27 @@ class _IaRecomendacionesSheetState
   }
 
   Widget _construirAcciones(IaRecomendacion recomendacion) {
-    final puedeReservar =
-        recomendacion.reservable && widget.onReservar != null;
+    final puedeReservar = recomendacion.reservable && widget.onReservar != null;
 
     return Wrap(
       spacing: AppDimensions.spacingSm,
       runSpacing: AppDimensions.spacingSm,
       children: [
         OutlinedButton.icon(
-          onPressed: () =>
-              widget.onVerSitio(recomendacion.sitio),
-          icon: const Icon(
-            Icons.place_outlined,
-            size: AppDimensions.iconSm,
-          ),
+          onPressed: () => widget.onVerSitio(recomendacion.sitio),
+          icon: const Icon(Icons.place_outlined, size: AppDimensions.iconSm),
           label: const Text('Ver sitio'),
         ),
         OutlinedButton.icon(
           onPressed: recomendacion.sitio.tieneCoordenadas
               ? () => widget.onVerRuta(recomendacion.sitio)
               : null,
-          icon: const Icon(
-            Icons.route_rounded,
-            size: AppDimensions.iconSm,
-          ),
+          icon: const Icon(Icons.route_rounded, size: AppDimensions.iconSm),
           label: const Text('Ver ruta'),
         ),
         if (puedeReservar)
           ElevatedButton.icon(
-            onPressed: () =>
-                widget.onReservar!(recomendacion),
+            onPressed: () => widget.onReservar!(recomendacion),
             icon: const Icon(
               Icons.event_available_rounded,
               size: AppDimensions.iconSm,

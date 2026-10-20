@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 const Resena = require('../../models/sitio/resena');
 const SitioTuristico = require('../../models/admin/sitio');
@@ -22,7 +21,7 @@ const obtenerResenasPorSitio = async (req, res) => {
       activo: true
     })
       .select('usuario sitio calificacion comentario activo createdAt')
-      .populate('usuario', 'nombre apellido fotoPerfil')
+      .populate('usuario', 'nombre apellido fotoPerfil avatar')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -86,7 +85,7 @@ const crearResena = async (req, res) => {
 
     await resena.populate(
       'usuario',
-      'nombre apellido fotoPerfil'
+      'nombre apellido fotoPerfil avatar'
     );
 
     return res.status(201).json({
@@ -179,7 +178,7 @@ const actualizarResena = async (req, res) => {
         new: true,
         runValidators: true
       }
-    ).populate('usuario', 'nombre apellido fotoPerfil');
+    ).populate('usuario', 'nombre apellido fotoPerfil avatar');
 
     if (!resena) {
       return res.status(404).json({

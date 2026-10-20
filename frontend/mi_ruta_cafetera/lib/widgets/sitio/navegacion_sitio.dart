@@ -159,7 +159,7 @@ class NavegacionSitio extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Mágica del Café',
+                  'Cafetera',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(

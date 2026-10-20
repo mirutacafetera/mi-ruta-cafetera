@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'avatar_cafetero_model.dart';
+
 class UsuarioSesionModel {
   final String token;
 
@@ -11,6 +13,9 @@ class UsuarioSesionModel {
   final String ciudad;
   final String fotoPerfil;
 
+  // Avatar cafetero (opcional). Null si el backend no lo envía.
+  final AvatarCafeteroModel? avatar;
+
   const UsuarioSesionModel({
     required this.token,
     required this.id,
@@ -20,6 +25,7 @@ class UsuarioSesionModel {
     required this.telefono,
     required this.ciudad,
     required this.fotoPerfil,
+    this.avatar,
   });
 
   // ============================================================
@@ -43,6 +49,7 @@ class UsuarioSesionModel {
       telefono: (usuario['telefono'] ?? '').toString(),
       ciudad: (usuario['ciudad'] ?? '').toString(),
       fotoPerfil: (usuario['fotoPerfil'] ?? '').toString(),
+      avatar: AvatarCafeteroModel.desdeDinamico(usuario['avatar']),
     );
   }
 
@@ -60,6 +67,7 @@ class UsuarioSesionModel {
       telefono: (json['telefono'] ?? '').toString(),
       ciudad: (json['ciudad'] ?? '').toString(),
       fotoPerfil: (json['fotoPerfil'] ?? '').toString(),
+      avatar: AvatarCafeteroModel.desdeDinamico(json['avatar']),
     );
   }
 
@@ -73,6 +81,7 @@ class UsuarioSesionModel {
       'telefono': telefono,
       'ciudad': ciudad,
       'fotoPerfil': fotoPerfil,
+      if (avatar != null) 'avatar': avatar!.toJson(),
     };
   }
 
@@ -93,7 +102,29 @@ class UsuarioSesionModel {
       'telefono': telefono,
       'ciudad': ciudad,
       'fotoPerfil': fotoPerfil,
+      if (avatar != null) 'avatar': avatar!.toJson(),
     };
+  }
+
+  UsuarioSesionModel copyWith({
+    String? nombre,
+    String? apellido,
+    String? telefono,
+    String? ciudad,
+    String? fotoPerfil,
+    AvatarCafeteroModel? avatar,
+  }) {
+    return UsuarioSesionModel(
+      token: token,
+      id: id,
+      nombre: nombre ?? this.nombre,
+      apellido: apellido ?? this.apellido,
+      correo: correo,
+      telefono: telefono ?? this.telefono,
+      ciudad: ciudad ?? this.ciudad,
+      fotoPerfil: fotoPerfil ?? this.fotoPerfil,
+      avatar: avatar ?? this.avatar,
+    );
   }
 
   String get nombreCompleto {

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../data/rutas_predefinidas.dart';
 import '../../models/ruta_model.dart';
+import '../../models/ruta_predefinida_model.dart';
+import '../../models/sitio_turistico_model.dart';
 import '../../services/ruta_service.dart';
 import '../../services/sitio_service.dart';
 import '../../theme/app_colors.dart';
@@ -27,17 +30,27 @@ class RutasUsuarioScreen extends StatefulWidget {
   final bool mostrarRegresar;
 
   @override
-  State<RutasUsuarioScreen> createState() =>
-      _RutasUsuarioScreenState();
+  State<RutasUsuarioScreen> createState() => _RutasUsuarioScreenState();
 }
 
-class _RutasUsuarioScreenState
-    extends State<RutasUsuarioScreen> {
+class _RutasUsuarioScreenState extends State<RutasUsuarioScreen> {
   final RutaService _rutaService = RutaService();
   final SitioService _sitioService = SitioService();
 
   List<RutaModel> _rutasPersonalizadas = [];
+
+  // Rutas predefinidas = las registradas en la API (si existen)
+  // + las plantillas de la aplicación (RutasPredefinidas), que
+  // son las mismas que ofrece el mapa. Así ambas pantallas
+  // muestran las mismas rutas predefinidas.
   List<RutaModel> _rutasPredefinidas = [];
+
+  // Plantillas de la aplicación, por el id del RutaModel con el
+  // que se muestran en la lista.
+  final Map<String, RutaPredefinidaModel> _plantillas = {};
+
+  // Sitios turísticos ya cargados (para abrir rutas en el mapa).
+  List<SitioTuristicoModel> _sitios = [];
 
   bool _cargando = true;
   String? _error;
@@ -74,40 +87,85 @@ class _RutasUsuarioScreenState
           token: widget.token,
         ),
         _rutaService.obtenerRutasPredefinidas(),
+        _sitioService.obtenerSitios(),
       ]);
 
-      final rutasUsuario =
-          resultados[0];
+      final rutasUsuario = resultados[0] as List<RutaModel>;
 
-      final rutasDisponibles =
-          resultados[1];
+      final rutasDisponibles = resultados[1] as List<RutaModel>;
+
+      final sitios = resultados[2] as List<SitioTuristicoModel>;
 
       final rutasPersonalizadas = rutasUsuario
-          .where(
-            (ruta) =>
-                ruta.tipo == 'personalizada' &&
-                ruta.activa,
-          )
+          .where((ruta) => ruta.tipo == 'personalizada' && ruta.activa)
           .toList();
 
-      final rutasPredefinidas = rutasDisponibles
-          .where(
-            (ruta) =>
-                ruta.tipo == 'predefinida' &&
-                ruta.activa,
-          )
+      final rutasPredefinidasApi = rutasDisponibles
+          .where((ruta) => ruta.tipo == 'predefinida' && ruta.activa)
           .toList();
+
+      // ------------------------------------------------------
+      // PLANTILLAS DE LA APLICACIÓN
+      // ------------------------------------------------------
+      //
+      // Solo se listan las que tienen al menos 2 sitios reales
+      // disponibles. No se inventa ninguna ruta.
+      // ------------------------------------------------------
+
+      final plantillas = <String, RutaPredefinidaModel>{};
+      final rutasPlantilla = <RutaModel>[];
+
+      final auxiliar = MapaRutaController();
+
+      try {
+        for (final plantilla in RutasPredefinidas.todas) {
+          final sitiosPlantilla = auxiliar.seleccionarSitiosParaRutaPredefinida(
+            ruta: plantilla,
+            sitios: sitios,
+          );
+
+          if (sitiosPlantilla.length < 2) {
+            continue;
+          }
+
+          final id = 'plantilla:${plantilla.id}';
+
+          plantillas[id] = plantilla;
+
+          rutasPlantilla.add(
+            RutaModel(
+              id: id,
+              nombre: plantilla.nombre,
+              descripcion: plantilla.descripcion,
+              tipo: 'predefinida',
+              sitios: sitiosPlantilla.map((sitio) => sitio.id).toList(),
+              distanciaKm: 0,
+              duracionMinutos: 0,
+              usuarioId: null,
+              activa: true,
+              creadaEn: null,
+              venceEn: null,
+            ),
+          );
+        }
+      } finally {
+        auxiliar.dispose();
+      }
 
       if (!mounted) {
         return;
       }
 
       setState(() {
-        _rutasPersonalizadas =
-            rutasPersonalizadas;
+        _rutasPersonalizadas = rutasPersonalizadas;
 
-        _rutasPredefinidas =
-            rutasPredefinidas;
+        _rutasPredefinidas = [...rutasPredefinidasApi, ...rutasPlantilla];
+
+        _plantillas
+          ..clear()
+          ..addAll(plantillas);
+
+        _sitios = sitios;
 
         _cargando = false;
       });
@@ -118,8 +176,7 @@ class _RutasUsuarioScreenState
 
       setState(() {
         _cargando = false;
-        _error =
-            'No fue posible cargar las rutas.';
+        _error = 'No fue posible cargar las rutas.';
       });
     }
   }
@@ -129,22 +186,17 @@ class _RutasUsuarioScreenState
   // ==========================================================
 
   int get _cantidadRutas =>
-      _rutasPersonalizadas.length >
-              _maximoRutasPersonalizadas
-          ? _maximoRutasPersonalizadas
-          : _rutasPersonalizadas.length;
+      _rutasPersonalizadas.length > _maximoRutasPersonalizadas
+      ? _maximoRutasPersonalizadas
+      : _rutasPersonalizadas.length;
 
-  bool get _puedeCrearRuta =>
-      _cantidadRutas <
-      _maximoRutasPersonalizadas;
+  bool get _puedeCrearRuta => _cantidadRutas < _maximoRutasPersonalizadas;
 
   // ==========================================================
   // ABRIR RUTA
   // ==========================================================
 
-  Future<void> _abrirRuta(
-    RutaModel ruta,
-  ) async {
+  Future<void> _abrirRuta(RutaModel ruta) async {
     if (_rutaCargandoId != null) {
       return;
     }
@@ -154,26 +206,28 @@ class _RutasUsuarioScreenState
     });
 
     try {
-      final sitios =
-          await _sitioService.obtenerSitios();
+      final sitios = _sitios.isNotEmpty
+          ? _sitios
+          : await _sitioService.obtenerSitios();
 
-      final idsRuta =
-          ruta.sitios.toSet();
+      // Los sitios se ordenan según el orden de visita de la
+      // ruta (el de ruta.sitios), no según el orden en que la
+      // API devuelve el catálogo de sitios.
+      final sitiosPorId = {for (final sitio in sitios) sitio.id: sitio};
 
-      final sitiosRuta = sitios
-          .where(
-            (sitio) =>
-                idsRuta.contains(sitio.id),
-          )
-          .toList();
+      final sitiosRuta = <SitioTuristicoModel>[
+        for (final id in ruta.sitios)
+          if (sitiosPorId[id] != null) sitiosPorId[id]!,
+      ];
+
+      final plantilla = _plantillas[ruta.id];
 
       if (sitiosRuta.length < 2) {
         if (!mounted) {
           return;
         }
 
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
               'No fue posible recuperar '
@@ -185,19 +239,25 @@ class _RutasUsuarioScreenState
         return;
       }
 
-      final rutaController =
-          MapaRutaController();
+      final rutaController = MapaRutaController();
 
-      final cargada =
-          await rutaController.cargarRutaGuardada(
-        nombre: ruta.nombre,
-        sitios: sitiosRuta,
-      );
+      // Plantilla: se calcula y se muestra, pero NO se guarda.
+      // Ruta personal: se muestra la misma ruta persistida
+      // (mismo id), sin crear duplicados.
+      final cargada = plantilla != null
+          ? await rutaController.cargarRutaPredefinida(
+              ruta: plantilla,
+              sitios: sitios,
+            )
+          : await rutaController.cargarRutaGuardada(
+              nombre: ruta.nombre,
+              sitios: sitiosRuta,
+              rutaId: ruta.tipo == 'personalizada' ? ruta.id : null,
+            );
 
       if (!cargada) {
         final mensaje =
-            rutaController.mensaje ??
-                'No fue posible cargar la ruta.';
+            rutaController.mensaje ?? 'No fue posible cargar la ruta.';
 
         rutaController.dispose();
 
@@ -205,12 +265,9 @@ class _RutasUsuarioScreenState
           return;
         }
 
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-          SnackBar(
-            content: Text(mensaje),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mensaje)));
 
         return;
       }
@@ -223,10 +280,7 @@ class _RutasUsuarioScreenState
       await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => MapaScreen2(
-            rutaController:
-                rutaController,
-          ),
+          builder: (_) => MapaScreen2(rutaController: rutaController),
         ),
       );
 
@@ -236,13 +290,8 @@ class _RutasUsuarioScreenState
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            'No fue posible abrir la ruta: $e',
-          ),
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No fue posible abrir la ruta: $e')),
       );
     } finally {
       if (mounted) {
@@ -257,17 +306,12 @@ class _RutasUsuarioScreenState
   // CONFIRMAR ELIMINACIÓN
   // ==========================================================
 
-  Future<void> _confirmarEliminarRuta(
-    RutaModel ruta,
-  ) async {
-    final confirmar =
-        await showDialog<bool>(
+  Future<void> _confirmarEliminarRuta(RutaModel ruta) async {
+    final confirmar = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Eliminar ruta',
-          ),
+          title: const Text('Eliminar ruta'),
           content: Text(
             '¿Deseas eliminar la ruta '
             '"${ruta.nombre}"?\n\n'
@@ -278,25 +322,15 @@ class _RutasUsuarioScreenState
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  false,
-                );
+                Navigator.pop(dialogContext, false);
               },
-              child: const Text(
-                'Cancelar',
-              ),
+              child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  true,
-                );
+                Navigator.pop(dialogContext, true);
               },
-              child: const Text(
-                'Eliminar',
-              ),
+              child: const Text('Eliminar'),
             ),
           ],
         );
@@ -314,9 +348,7 @@ class _RutasUsuarioScreenState
   // ELIMINAR RUTA
   // ==========================================================
 
-  Future<void> _eliminarRuta(
-    RutaModel ruta,
-  ) async {
+  Future<void> _eliminarRuta(RutaModel ruta) async {
     if (_rutaEliminandoId != null) {
       return;
     }
@@ -326,41 +358,26 @@ class _RutasUsuarioScreenState
     });
 
     try {
-      await _rutaService.eliminarRuta(
-        ruta.id,
-        token: widget.token,
-      );
+      await _rutaService.eliminarRuta(ruta.id, token: widget.token);
 
       if (!mounted) {
         return;
       }
 
       setState(() {
-        _rutasPersonalizadas.removeWhere(
-          (item) => item.id == ruta.id,
-        );
+        _rutasPersonalizadas.removeWhere((item) => item.id == ruta.id);
       });
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Ruta eliminada correctamente.',
-          ),
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ruta eliminada correctamente.')),
       );
     } catch (e) {
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            'No fue posible eliminar la ruta: $e',
-          ),
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No fue posible eliminar la ruta: $e')),
       );
     } finally {
       if (mounted) {
@@ -377,8 +394,7 @@ class _RutasUsuarioScreenState
 
   Future<void> _crearRuta() async {
     if (!_puedeCrearRuta) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
             'Ya tienes 2 rutas personalizadas. '
@@ -391,12 +407,10 @@ class _RutasUsuarioScreenState
       return;
     }
 
-    final resultado =
-        await Navigator.push<bool>(
+    final resultado = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            CrearRutaUsuarioScreen(
+        builder: (_) => CrearRutaUsuarioScreen(
           usuarioId: widget.usuarioId,
           token: widget.token,
         ),
@@ -416,26 +430,21 @@ class _RutasUsuarioScreenState
   // INFORMACIÓN DE EXPIRACIÓN
   // ==========================================================
 
-  String _textoExpiracion(
-    DateTime? venceEn,
-  ) {
+  String _textoExpiracion(DateTime? venceEn) {
     if (venceEn == null) {
       return 'Sin fecha de expiración';
     }
 
     final ahora = DateTime.now();
 
-    final diferencia =
-        venceEn.difference(ahora);
+    final diferencia = venceEn.difference(ahora);
 
-    if (diferencia.isNegative ||
-        diferencia.inSeconds <= 0) {
+    if (diferencia.isNegative || diferencia.inSeconds <= 0) {
       return 'Expirada';
     }
 
     if (diferencia.inHours < 1) {
-      final minutos =
-          diferencia.inMinutes;
+      final minutos = diferencia.inMinutes;
 
       if (minutos <= 0) {
         return 'Expira en menos de 1 min';
@@ -463,29 +472,28 @@ class _RutasUsuarioScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          AppColors.background,
+      backgroundColor: AppColors.background,
 
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leading: widget.mostrarRegresar
-            ? const BotonRegresar()
-            : null,
+        leading: widget.mostrarRegresar ? const BotonRegresar() : null,
 
         title: const Text(
           'Mis rutas',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
         ),
 
-        backgroundColor:
-            AppColors.background,
+        backgroundColor: AppColors.background,
 
         elevation: 0,
       ),
 
       body: RefreshIndicator(
         onRefresh: _cargarRutas,
-        child:
-            _construirContenido(),
+        child: _construirContenido(),
       ),
     );
   }
@@ -496,10 +504,7 @@ class _RutasUsuarioScreenState
 
   Widget _construirContenido() {
     if (_cargando) {
-      return const Center(
-        child:
-            CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_error != null) {
@@ -507,34 +512,22 @@ class _RutasUsuarioScreenState
     }
 
     return ListView(
-      physics:
-          const AlwaysScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
 
-      padding: const EdgeInsets.all(
-        AppDimensions.pageHorizontal,
-      ),
+      padding: const EdgeInsets.all(AppDimensions.pageHorizontal),
 
       children: [
         _construirEncabezado(),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingLg,
-        ),
+        const SizedBox(height: AppDimensions.spacingLg),
 
         _construirSeccionPersonalizadas(),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingXl,
-        ),
+        const SizedBox(height: AppDimensions.spacingXl),
 
         _construirSeccionPredefinidas(),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingXl,
-        ),
+        const SizedBox(height: AppDimensions.spacingXl),
       ],
     );
   }
@@ -545,39 +538,25 @@ class _RutasUsuarioScreenState
 
   Widget _construirSeccionPersonalizadas() {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
 
       children: [
         const Text(
           'Mis rutas personalizadas',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight:
-                FontWeight.w800,
-          ),
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
         ),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingSm,
-        ),
+        const SizedBox(height: AppDimensions.spacingSm),
 
         if (_rutasPersonalizadas.isEmpty)
           _construirEstadoVacio()
         else
           ..._rutasPersonalizadas.map(
-            (ruta) =>
-                _construirRuta(
-              ruta,
-              personalizada: true,
-            ),
+            (ruta) => _construirRuta(ruta, personalizada: true),
           ),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingSm,
-        ),
+        const SizedBox(height: AppDimensions.spacingSm),
 
         _construirBotonCrear(),
       ],
@@ -590,57 +569,36 @@ class _RutasUsuarioScreenState
 
   Widget _construirSeccionPredefinidas() {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
 
       children: [
         const Text(
           'Rutas predefinidas',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight:
-                FontWeight.w800,
-          ),
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
         ),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingSm,
-        ),
+        const SizedBox(height: AppDimensions.spacingSm),
 
         if (_rutasPredefinidas.isEmpty)
           Container(
-            padding:
-                const EdgeInsets.all(
-              AppDimensions.spacingLg,
-            ),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
 
-            decoration:
-                BoxDecoration(
-              color:
-                  AppColors.surface,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
 
-              borderRadius:
-                  BorderRadius.circular(
-                AppDimensions
-                    .rutaCardRadius,
-              ),
+              borderRadius: BorderRadius.circular(AppDimensions.rutaCardRadius),
             ),
 
             child: const Text(
               'No hay rutas predefinidas '
               'disponibles en este momento.',
-              textAlign:
-                  TextAlign.center,
+              textAlign: TextAlign.center,
             ),
           )
         else
           ..._rutasPredefinidas.map(
-            (ruta) =>
-                _construirRuta(
-              ruta,
-              personalizada: false,
-            ),
+            (ruta) => _construirRuta(ruta, personalizada: false),
           ),
       ],
     );
@@ -652,80 +610,43 @@ class _RutasUsuarioScreenState
 
   Widget _construirEncabezado() {
     return Container(
-      padding: const EdgeInsets.all(
-        AppDimensions.spacingLg,
-      ),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
 
-      decoration:
-          BoxDecoration(
-        color:
-            AppColors.surface,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
 
-        borderRadius:
-            BorderRadius.circular(
-          AppDimensions
-              .rutaCardRadius,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.rutaCardRadius),
       ),
 
       child: Row(
         children: [
           Container(
-            width:
-                AppDimensions
-                    .rutaIconContainer,
+            width: AppDimensions.rutaIconContainer,
 
-            height:
-                AppDimensions
-                    .rutaIconContainer,
+            height: AppDimensions.rutaIconContainer,
 
-            decoration:
-                BoxDecoration(
-              color:
-                  AppColors.primary
-                      .withValues(
-                alpha: 0.12,
-              ),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
 
-              borderRadius:
-                  BorderRadius.circular(
-                AppDimensions
-                    .rutaCardRadius,
-              ),
+              borderRadius: BorderRadius.circular(AppDimensions.rutaCardRadius),
             ),
 
-            child: const Icon(
-              Icons.alt_route,
-              color:
-                  AppColors.primary,
-            ),
+            child: const Icon(Icons.alt_route, color: AppColors.primary),
           ),
 
-          const SizedBox(
-            width:
-                AppDimensions.spacingMd,
-          ),
+          const SizedBox(width: AppDimensions.spacingMd),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
                 const Text(
                   'Rutas personalizadas',
-                  style: TextStyle(
-                    fontWeight:
-                        FontWeight.bold,
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
 
-                const SizedBox(
-                  height:
-                      AppDimensions
-                          .spacingXs,
-                ),
+                const SizedBox(height: AppDimensions.spacingXs),
 
                 Text(
                   'Puedes tener hasta '
@@ -740,15 +661,12 @@ class _RutasUsuarioScreenState
             '$_cantidadRutas/'
             '$_maximoRutasPersonalizadas',
 
-            style:
-                const TextStyle(
-              fontWeight:
-                  FontWeight.bold,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
 
               fontSize: 20,
 
-              color:
-                  AppColors.primary,
+              color: AppColors.primary,
             ),
           ),
         ],
@@ -760,28 +678,16 @@ class _RutasUsuarioScreenState
   // RUTA
   // ==========================================================
 
-  Widget _construirRuta(
-    RutaModel ruta, {
-    required bool personalizada,
-  }) {
-    final cargando =
-        _rutaCargandoId ==
-            ruta.id;
+  Widget _construirRuta(RutaModel ruta, {required bool personalizada}) {
+    final cargando = _rutaCargandoId == ruta.id;
 
-    final eliminando =
-        _rutaEliminandoId ==
-            ruta.id;
+    final eliminando = _rutaEliminandoId == ruta.id;
 
     return Padding(
-      padding:
-          const EdgeInsets.only(
-        bottom:
-            AppDimensions.spacingMd,
-      ),
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
 
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
 
         children: [
           Stack(
@@ -789,137 +695,80 @@ class _RutasUsuarioScreenState
               RutaCard(
                 ruta: ruta,
 
-                onTap:
-                    cargando ||
-                            eliminando
-                        ? () {}
-                        : () =>
-                            _abrirRuta(
-                              ruta,
-                            ),
+                onTap: cargando || eliminando ? () {} : () => _abrirRuta(ruta),
               ),
 
               if (personalizada)
                 Positioned(
-                  top:
-                      AppDimensions
-                          .spacingSm,
+                  top: AppDimensions.spacingSm,
 
-                  right:
-                      AppDimensions
-                          .spacingSm,
+                  right: AppDimensions.spacingSm,
 
                   child: Material(
-                    color:
-                        Colors.transparent,
+                    color: Colors.transparent,
 
-                    child:
-                        IconButton(
-                      tooltip:
-                          'Eliminar ruta',
+                    child: IconButton(
+                      tooltip: 'Eliminar ruta',
 
-                      onPressed:
-                          cargando ||
-                                  eliminando
-                              ? null
-                              : () =>
-                                  _confirmarEliminarRuta(
-                                    ruta,
-                                  ),
+                      onPressed: cargando || eliminando
+                          ? null
+                          : () => _confirmarEliminarRuta(ruta),
 
-                      icon:
-                          eliminando
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child:
-                                      CircularProgressIndicator(
-                                    strokeWidth:
-                                        2,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons
-                                      .delete_outline,
-                                ),
+                      icon: eliminando
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.delete_outline),
 
-                      color:
-                          AppColors
-                              .primary,
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
 
               if (cargando)
                 Positioned.fill(
-                  child:
-                      Container(
-                    decoration:
-                        BoxDecoration(
-                      color:
-                          Colors.black
-                              .withValues(
-                        alpha: 0.08,
-                      ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.08),
 
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        AppDimensions
-                            .rutaCardRadius,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.rutaCardRadius,
                       ),
                     ),
 
-                    child:
-                        const Center(
-                      child:
-                          CircularProgressIndicator(),
-                    ),
+                    child: const Center(child: CircularProgressIndicator()),
                   ),
                 ),
             ],
           ),
 
           Padding(
-            padding:
-                const EdgeInsets
-                    .symmetric(
-              horizontal:
-                  AppDimensions
-                      .spacingSm,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
             ),
 
             child: Row(
               children: [
                 const Icon(
-                  Icons
-                      .schedule_outlined,
+                  Icons.schedule_outlined,
 
                   size: 16,
 
-                  color:
-                      AppColors.primary,
+                  color: AppColors.primary,
                 ),
 
-                const SizedBox(
-                  width:
-                      AppDimensions
-                          .spacingXs,
-                ),
+                const SizedBox(width: AppDimensions.spacingXs),
 
                 Expanded(
                   child: Text(
                     personalizada
-                        ? _textoExpiracion(
-                            ruta.venceEn,
-                          )
+                        ? _textoExpiracion(ruta.venceEn)
                         : 'Ruta predefinida · '
-                          'disponible siempre',
+                              'disponible siempre',
 
-                    style:
-                        const TextStyle(
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ),
 
@@ -927,10 +776,7 @@ class _RutasUsuarioScreenState
                   '${ruta.sitios.length} '
                   '${ruta.sitios.length == 1 ? 'sitio' : 'sitios'}',
 
-                  style:
-                      const TextStyle(
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ],
             ),
@@ -946,24 +792,15 @@ class _RutasUsuarioScreenState
 
   Widget _construirBotonCrear() {
     return SizedBox(
-      width:
-          double.infinity,
+      width: double.infinity,
 
-      child:
-          FilledButton.icon(
-        onPressed:
-            _crearRuta,
+      child: FilledButton.icon(
+        onPressed: _crearRuta,
 
-        icon:
-            const Icon(
-          Icons.add,
-        ),
+        icon: const Icon(Icons.add),
 
-        label:
-            Text(
-          _puedeCrearRuta
-              ? 'Crear nueva ruta'
-              : 'Límite de 2 rutas alcanzado',
+        label: Text(
+          _puedeCrearRuta ? 'Crear nueva ruta' : 'Límite de 2 rutas alcanzado',
         ),
       ),
     );
@@ -975,67 +812,36 @@ class _RutasUsuarioScreenState
 
   Widget _construirEstadoVacio() {
     return Container(
-      padding:
-          const EdgeInsets.all(
-        AppDimensions
-            .spacingXl,
-      ),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
 
-      decoration:
-          BoxDecoration(
-        color:
-            AppColors.surface,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
 
-        borderRadius:
-            BorderRadius.circular(
-          AppDimensions
-              .rutaCardRadius,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.rutaCardRadius),
       ),
 
       child: Column(
         children: [
-          const Icon(
-            Icons.route_outlined,
+          const Icon(Icons.route_outlined, size: 64, color: AppColors.primary),
 
-            size: 64,
-
-            color:
-                AppColors.primary,
-          ),
-
-          const SizedBox(
-            height:
-                AppDimensions.spacingLg,
-          ),
+          const SizedBox(height: AppDimensions.spacingLg),
 
           const Text(
             'Todavía no tienes '
             'rutas personalizadas',
 
-            textAlign:
-                TextAlign.center,
+            textAlign: TextAlign.center,
 
-            style:
-                TextStyle(
-              fontWeight:
-                  FontWeight.bold,
-
-              fontSize: 18,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
 
-          const SizedBox(
-            height:
-                AppDimensions.spacingSm,
-          ),
+          const SizedBox(height: AppDimensions.spacingSm),
 
           const Text(
             'Crea una ruta personalizada '
             'para organizar tus sitios turísticos.',
 
-            textAlign:
-                TextAlign.center,
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -1048,60 +854,27 @@ class _RutasUsuarioScreenState
 
   Widget _construirError() {
     return ListView(
-      physics:
-          const AlwaysScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
 
-      padding:
-          const EdgeInsets.all(
-        AppDimensions
-            .pageHorizontal,
-      ),
+      padding: const EdgeInsets.all(AppDimensions.pageHorizontal),
 
       children: [
-        const SizedBox(
-          height: 80,
-        ),
+        const SizedBox(height: 80),
 
-        const Icon(
-          Icons.error_outline,
+        const Icon(Icons.error_outline, size: 64, color: AppColors.primary),
 
-          size: 64,
+        const SizedBox(height: AppDimensions.spacingLg),
 
-          color:
-              AppColors.primary,
-        ),
+        Text(_error ?? 'Ocurrió un error.', textAlign: TextAlign.center),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingLg,
-        ),
-
-        Text(
-          _error ??
-              'Ocurrió un error.',
-
-          textAlign:
-              TextAlign.center,
-        ),
-
-        const SizedBox(
-          height:
-              AppDimensions.spacingLg,
-        ),
+        const SizedBox(height: AppDimensions.spacingLg),
 
         FilledButton.icon(
-          onPressed:
-              _cargarRutas,
+          onPressed: _cargarRutas,
 
-          icon:
-              const Icon(
-            Icons.refresh,
-          ),
+          icon: const Icon(Icons.refresh),
 
-          label:
-              const Text(
-            'Intentar nuevamente',
-          ),
+          label: const Text('Intentar nuevamente'),
         ),
       ],
     );

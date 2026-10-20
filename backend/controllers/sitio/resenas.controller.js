@@ -6,7 +6,7 @@ const obtenerResenas = async (req, res) => {
       sitio: req.params.id,
       activo: true
     })
-      .populate('usuario', 'nombre apellido fotoPerfil')
+      .populate('usuario', 'nombre apellido fotoPerfil avatar')
       .sort({ createdAt: -1 });
 
     res.json(resenas);

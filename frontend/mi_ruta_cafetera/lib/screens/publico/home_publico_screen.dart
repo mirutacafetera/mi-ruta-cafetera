@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../models/categoria_model.dart';
 import '../../models/clima_model.dart';
@@ -12,12 +12,15 @@ import '../../services/ubicacion_service.dart';
 import '../../services/usuario/usuario_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../utils/seleccion_sitios.dart';
 import '../../utils/text_utils.dart';
 import '../../widgets/publico/banner_cuenta.dart';
+import '../../widgets/publico/bloque_institucional.dart';
 import '../../widgets/publico/categoria_card.dart';
 import '../../widgets/publico/home_hero.dart';
 import '../../widgets/publico/requiere_cuenta_sheet.dart';
 import '../../widgets/publico/sitio_card.dart';
+import '../../widgets/publico/sitios_grilla.dart';
 import '../../widgets/usuario/clima_card.dart';
 import '../../widgets/usuario/ia_card.dart';
 import '../../widgets/usuario/ia_recomendaciones_sheet.dart';
@@ -33,29 +36,22 @@ import '../usuario/registro_usuario_screen.dart';
 /// carrusel (todas las imágenes), el saludo y las acciones
 /// disponibles (mapa general, favoritos persistentes).
 class HomePublicoScreen extends StatefulWidget {
-  const HomePublicoScreen({
-    super.key,
-  });
+  const HomePublicoScreen({super.key});
 
   @override
-  State<HomePublicoScreen> createState() =>
-      _HomePublicoScreenState();
+  State<HomePublicoScreen> createState() => _HomePublicoScreenState();
 }
 
-class _HomePublicoScreenState
-    extends State<HomePublicoScreen> {
+class _HomePublicoScreenState extends State<HomePublicoScreen> {
   // ============================================================
   // SERVICIOS
   // ============================================================
 
-  final CategoriaService _categoriaService =
-      CategoriaService();
+  final CategoriaService _categoriaService = CategoriaService();
 
-  final SitioService _sitioService =
-      SitioService();
+  final SitioService _sitioService = SitioService();
 
-  final FavoritoService _favoritoService =
-      FavoritoService.instance;
+  final FavoritoService _favoritoService = FavoritoService.instance;
 
   // ============================================================
   // SESIÓN Y FAVORITOS DEL USUARIO
@@ -95,6 +91,11 @@ class _HomePublicoScreenState
 
   List<SitioTuristicoModel> _sitios = [];
 
+  // Selección aleatoria (máx. 10, con diversidad de categorías) que
+  // muestra la cuadrícula cuando no hay una categoría elegida. Se
+  // calcula al cargar los sitios, no en cada reconstrucción.
+  List<SitioTuristicoModel> _sitiosGrilla = [];
+
   // ============================================================
   // ESTADO
   // ============================================================
@@ -121,8 +122,7 @@ class _HomePublicoScreenState
   void initState() {
     super.initState();
 
-    UsuarioSesionService.instance.sesionActual
-        .addListener(_alCambiarSesion);
+    UsuarioSesionService.instance.sesionActual.addListener(_alCambiarSesion);
 
     _cargarContenido();
     _cargarFavoritos();
@@ -131,8 +131,7 @@ class _HomePublicoScreenState
 
   @override
   void dispose() {
-    UsuarioSesionService.instance.sesionActual
-        .removeListener(_alCambiarSesion);
+    UsuarioSesionService.instance.sesionActual.removeListener(_alCambiarSesion);
 
     super.dispose();
   }
@@ -256,11 +255,7 @@ class _HomePublicoScreenState
   void _verEnMapa(SitioTuristicoModel sitio) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => MapaScreen2(
-          sitioInicial: sitio,
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => MapaScreen2(sitioInicial: sitio)),
     );
   }
 
@@ -273,25 +268,19 @@ class _HomePublicoScreenState
   }
 
   Future<void> _sesionExpirada() async {
-    await UsuarioSesionService.instance.cerrarSesion();
+    await UsuarioSesionService.instance.cerrarSesionCompleta();
 
     if (!mounted) {
       return;
     }
 
-    _mostrarMensaje(
-      'Tu sesión expiró. Inicia sesión nuevamente.',
-    );
+    _mostrarMensaje('Tu sesión expiró. Inicia sesión nuevamente.');
   }
 
   void _mostrarMensaje(String mensaje) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(mensaje),
-        ),
-      );
+      ..showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   // ============================================================
@@ -306,8 +295,7 @@ class _HomePublicoScreenState
     }
 
     try {
-      final favoritos =
-          await _favoritoService.obtenerFavoritos(
+      final favoritos = await _favoritoService.obtenerFavoritos(
         sesion.id,
         token: sesion.token,
       );
@@ -339,9 +327,7 @@ class _HomePublicoScreenState
         await _sesionExpirada();
       }
 
-      debugPrint(
-        'HOME - ERROR FAVORITOS: $error',
-      );
+      debugPrint('HOME - ERROR FAVORITOS: $error');
     }
   }
 
@@ -349,9 +335,7 @@ class _HomePublicoScreenState
   // AGREGAR / QUITAR FAVORITO
   // ============================================================
 
-  Future<void> _alternarFavorito(
-    SitioTuristicoModel sitio,
-  ) async {
+  Future<void> _alternarFavorito(SitioTuristicoModel sitio) async {
     final sesion = _sesion;
 
     // Sin sesión se invita a crear una cuenta.
@@ -362,8 +346,7 @@ class _HomePublicoScreenState
 
     final sitioId = sitio.id;
 
-    if (sitioId.isEmpty ||
-        _sitiosProcesando.contains(sitioId)) {
+    if (sitioId.isEmpty || _sitiosProcesando.contains(sitioId)) {
       return;
     }
 
@@ -386,12 +369,9 @@ class _HomePublicoScreenState
           _favoritosPorSitio.remove(sitioId);
         });
 
-        _mostrarMensaje(
-          'Sitio eliminado de favoritos.',
-        );
+        _mostrarMensaje('Sitio eliminado de favoritos.');
       } else {
-        final favorito =
-            await _favoritoService.agregarFavorito(
+        final favorito = await _favoritoService.agregarFavorito(
           usuarioId: sesion.id,
           sitioId: sitioId,
           token: sesion.token,
@@ -409,19 +389,14 @@ class _HomePublicoScreenState
           await _cargarFavoritos();
         }
 
-        _mostrarMensaje(
-          'Sitio agregado a favoritos.',
-        );
+        _mostrarMensaje('Sitio agregado a favoritos.');
       }
     } catch (error) {
       if (!mounted) {
         return;
       }
 
-      final mensaje = error.toString().replaceFirst(
-            'Exception: ',
-            '',
-          );
+      final mensaje = error.toString().replaceFirst('Exception: ', '');
 
       // El backend responde 400 si ya estaba guardado:
       // se sincroniza el estado local en vez de mostrar error.
@@ -458,10 +433,7 @@ class _HomePublicoScreenState
       _errorSitios = null;
     });
 
-    await Future.wait([
-      _cargarCategorias(),
-      _cargarSitios(),
-    ]);
+    await Future.wait([_cargarCategorias(), _cargarSitios()]);
   }
 
   // ============================================================
@@ -470,8 +442,7 @@ class _HomePublicoScreenState
 
   Future<void> _cargarCategorias() async {
     try {
-      final categorias =
-          await _categoriaService.obtenerCategorias();
+      final categorias = await _categoriaService.obtenerCategorias();
 
       if (!mounted) {
         return;
@@ -495,13 +466,10 @@ class _HomePublicoScreenState
       setState(() {
         _categorias = [];
         _cargandoCategorias = false;
-        _errorCategorias =
-            'No fue posible cargar las categorías.';
+        _errorCategorias = 'No fue posible cargar las categorías.';
       });
 
-      debugPrint(
-        'HOME - ERROR CATEGORÍAS: $error',
-      );
+      debugPrint('HOME - ERROR CATEGORÍAS: $error');
     }
   }
 
@@ -511,8 +479,7 @@ class _HomePublicoScreenState
 
   Future<void> _cargarSitios() async {
     try {
-      final sitios =
-          await _sitioService.obtenerSitios();
+      final sitios = await _sitioService.obtenerSitios();
 
       if (!mounted) {
         return;
@@ -520,6 +487,7 @@ class _HomePublicoScreenState
 
       setState(() {
         _sitios = sitios;
+        _sitiosGrilla = _seleccionarParaGrilla(sitios);
         _cargandoSitios = false;
         _errorSitios = null;
       });
@@ -535,14 +503,12 @@ class _HomePublicoScreenState
 
       setState(() {
         _sitios = [];
+        _sitiosGrilla = [];
         _cargandoSitios = false;
-        _errorSitios =
-            'No fue posible cargar los sitios turísticos.';
+        _errorSitios = 'No fue posible cargar los sitios turísticos.';
       });
 
-      debugPrint(
-        'HOME - ERROR SITIOS: $error',
-      );
+      debugPrint('HOME - ERROR SITIOS: $error');
     }
   }
 
@@ -551,10 +517,7 @@ class _HomePublicoScreenState
   // ============================================================
 
   Future<void> _recargar() async {
-    await Future.wait([
-      _cargarContenido(),
-      _cargarClima(),
-    ]);
+    await Future.wait([_cargarContenido(), _cargarClima()]);
   }
 
   // ============================================================
@@ -575,41 +538,73 @@ class _HomePublicoScreenState
   }
 
   // ============================================================
-  // SITIOS FILTRADOS POR CATEGORÍA
+  // SELECCIÓN PARA LA CUADRÍCULA
+  // ============================================================
+  //
+  // Hasta 10 sitios reales y activos, al azar, sin duplicados y con
+  // un sitio por categoría cuando hay suficientes (ver
+  // SeleccionSitios). No se crean sitios de relleno.
   // ============================================================
 
-  List<SitioTuristicoModel>
-      get _sitiosFiltrados {
+  List<SitioTuristicoModel> _seleccionarParaGrilla(
+    List<SitioTuristicoModel> sitios,
+  ) {
+    return SeleccionSitios.diversa<SitioTuristicoModel>(
+      sitios.where((sitio) => sitio.activo),
+      idDe: (sitio) => sitio.id,
+      categoriaDe: (sitio) => sitio.categoriaNombre.isNotEmpty
+          ? sitio.categoriaNombre
+          : sitio.categoriaId,
+    );
+  }
+
+  // ============================================================
+  // SITIOS FILTRADOS POR CATEGORÍA
+  // ============================================================
+  //
+  // Un sitio pertenece a la categoría elegida si coincide su id de
+  // categoría o, cuando el backend solo envía el nombre, su nombre
+  // normalizado. Así el filtro funciona con ambas formas de datos
+  // sin mezclar categorías.
+  // ============================================================
+
+  List<SitioTuristicoModel> get _sitiosFiltrados {
     if (_categoriaSeleccionada == null) {
       return _sitios;
     }
 
-    final categoriaSeleccionada =
-        _normalizarTexto(
-      _categoriaSeleccionada!,
-    );
+    final nombreSeleccionado = _normalizarTexto(_categoriaSeleccionada!);
+
+    final idSeleccionado = _categorias
+        .where(
+          (categoria) =>
+              _normalizarTexto(categoria.nombre) == nombreSeleccionado,
+        )
+        .map((categoria) => categoria.id.trim())
+        .firstWhere((id) => id.isNotEmpty, orElse: () => '');
 
     return _sitios.where((sitio) {
-      final categoriaSitio =
-          _normalizarTexto(
-        sitio.categoriaNombre,
-      );
+      if (idSeleccionado.isNotEmpty && sitio.categoriaId == idSeleccionado) {
+        return true;
+      }
 
-      return categoriaSitio ==
-          categoriaSeleccionada;
+      return _normalizarTexto(sitio.categoriaNombre) == nombreSeleccionado;
     }).toList();
   }
 
   // ============================================================
   // SITIOS DESTACADOS
   //
-  // Se conservan todos los sitios devueltos
-  // por la API y los correspondientes a la
-  // categoría seleccionada.
+  // Sin categoría elegida: selección aleatoria de la cuadrícula
+  // (máx. 10). Con categoría elegida: todos los sitios reales de
+  // esa categoría.
   // ============================================================
 
-  List<SitioTuristicoModel>
-      get _sitiosDestacados {
+  List<SitioTuristicoModel> get _sitiosDestacados {
+    if (_categoriaSeleccionada == null) {
+      return _sitiosGrilla;
+    }
+
     return _sitiosFiltrados;
   }
 
@@ -617,9 +612,7 @@ class _HomePublicoScreenState
   // SELECCIONAR CATEGORÍA
   // ============================================================
 
-  void _seleccionarCategoria(
-    String? categoria,
-  ) {
+  void _seleccionarCategoria(String? categoria) {
     if (!mounted) {
       return;
     }
@@ -630,15 +623,11 @@ class _HomePublicoScreenState
         return;
       }
 
-      final nuevaCategoria =
-          _normalizarTexto(categoria);
+      final nuevaCategoria = _normalizarTexto(categoria);
 
-      final categoriaActual =
-          _categoriaSeleccionada == null
-              ? ''
-              : _normalizarTexto(
-                  _categoriaSeleccionada!,
-                );
+      final categoriaActual = _categoriaSeleccionada == null
+          ? ''
+          : _normalizarTexto(_categoriaSeleccionada!);
 
       if (nuevaCategoria == categoriaActual) {
         _categoriaSeleccionada = null;
@@ -685,10 +674,7 @@ class _HomePublicoScreenState
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) =>
-            const LoginUsuarioScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const LoginUsuarioScreen()),
     );
   }
 
@@ -699,10 +685,7 @@ class _HomePublicoScreenState
   void _irRegistroUsuario() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) =>
-            const RegistroUsuarioScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const RegistroUsuarioScreen()),
     );
   }
 
@@ -713,10 +696,8 @@ class _HomePublicoScreenState
   void _requiereCuenta() {
     RequiereCuentaSheet.mostrar(
       context: context,
-      onIniciarSesion:
-          _irLoginUsuario,
-      onCrearCuenta:
-          _irRegistroUsuario,
+      onIniciarSesion: _irLoginUsuario,
+      onCrearCuenta: _irRegistroUsuario,
     );
   }
 
@@ -744,10 +725,7 @@ class _HomePublicoScreenState
       return;
     }
 
-    Navigator.pushNamed(
-      context,
-      '/mapa',
-    );
+    Navigator.pushNamed(context, '/mapa');
   }
 
   // ============================================================
@@ -761,9 +739,7 @@ class _HomePublicoScreenState
   // * Sin sesión: el corazón invita a iniciar sesión.
   // ============================================================
 
-  void _abrirSitio(
-    SitioTuristicoModel sitio,
-  ) {
+  void _abrirSitio(SitioTuristicoModel sitio) {
     final conSesion = _sesion != null;
 
     Navigator.push(
@@ -772,11 +748,8 @@ class _HomePublicoScreenState
         builder: (_) => DetalleSitioUsuarioScreen(
           sitio: sitio,
           imagen: _imagenSitio(sitio),
-          esFavorito:
-              _favoritosPorSitio.containsKey(sitio.id),
-          onFavorite: conSesion
-              ? () => _favoritoDesdeDetalle(sitio)
-              : null,
+          esFavorito: _favoritosPorSitio.containsKey(sitio.id),
+          onFavorite: conSesion ? () => _favoritoDesdeDetalle(sitio) : null,
           onRequiereCuenta: _requiereCuenta,
         ),
       ),
@@ -791,9 +764,7 @@ class _HomePublicoScreenState
   // propagan para que el detalle revierta el corazón.
   // ============================================================
 
-  Future<void> _favoritoDesdeDetalle(
-    SitioTuristicoModel sitio,
-  ) async {
+  Future<void> _favoritoDesdeDetalle(SitioTuristicoModel sitio) async {
     final sesion = _sesion;
 
     if (sesion == null) {
@@ -816,8 +787,7 @@ class _HomePublicoScreenState
           });
         }
       } else {
-        final favorito =
-            await _favoritoService.agregarFavorito(
+        final favorito = await _favoritoService.agregarFavorito(
           usuarioId: sesion.id,
           sitioId: sitioId,
           token: sesion.token,
@@ -857,119 +827,89 @@ class _HomePublicoScreenState
   // ============================================================
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          AppColors.surfaceGreen,
+      backgroundColor: AppColors.surfaceGreen,
       body: RefreshIndicator(
         onRefresh: _recargar,
         color: AppColors.secondary,
         child: CustomScrollView(
-          physics:
-              const AlwaysScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             // ==================================================
             // CARRUSEL SUPERIOR
             // ==================================================
-
             HomeHero(
-              onLogin:
-                  _irLoginUsuario,
-              usuarioAutenticado:
-                  _sesion != null,
-              nombre:
-                  _sesion?.nombre,
+              onLogin: _irLoginUsuario,
+              usuarioAutenticado: _sesion != null,
+              nombre: _sesion?.nombre,
             ),
 
             // ==================================================
             // CONTENIDO
             // ==================================================
-
             SliverToBoxAdapter(
               child: Padding(
-                padding:
-                    const EdgeInsets.fromLTRB(
+                padding: const EdgeInsets.fromLTRB(
                   AppDimensions.spacingLg + 4,
                   AppDimensions.spacingLg + 6,
                   AppDimensions.spacingLg + 4,
                   AppDimensions.spacingSection + 3,
                 ),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ==========================================
                     // BANNER
                     // ==========================================
-
                     if (_sesion == null) ...[
-                      BannerCuenta(
-                        onLogin:
-                            _irLoginUsuario,
-                      ),
+                      BannerCuenta(onLogin: _irLoginUsuario),
                     ] else ...[
-                      IaCard(
-                        onTap: _abrirIa,
-                      ),
+                      IaCard(onTap: _abrirIa),
 
-                      const SizedBox(
-                        height:
-                            AppDimensions.spacingMd + 4,
-                      ),
+                      const SizedBox(height: AppDimensions.spacingMd + 4),
 
                       ClimaCard(
                         estado: _estadoClima,
                         clima: _clima,
-                        mensajeUbicacion:
-                            _mensajeUbicacion,
+                        mensajeUbicacion: _mensajeUbicacion,
                         onReintentar: _cargarClima,
                       ),
                     ],
 
-                    const SizedBox(
-                      height:
-                          AppDimensions.spacingSection - 2,
-                    ),
+                    const SizedBox(height: AppDimensions.spacingSection - 2),
 
                     // ==========================================
                     // CATEGORÍAS
                     // ==========================================
-
                     _construirCategorias(),
 
-                    const SizedBox(
-                      height:
-                          AppDimensions.spacingSection - 2,
-                    ),
+                    const SizedBox(height: AppDimensions.spacingSection - 2),
 
                     // ==========================================
                     // SITIOS
                     // ==========================================
-
                     _construirSitios(),
 
-                    const SizedBox(
-                      height:
-                          AppDimensions.spacingSection,
-                    ),
+                    const SizedBox(height: AppDimensions.spacingSection),
 
                     // ==========================================
                     // RUTAS
                     // ==========================================
-
                     _construirRutas(),
 
-                    const SizedBox(
-                      height:
-                          AppDimensions.spacingSection + 3,
-                    ),
+                    const SizedBox(height: AppDimensions.spacingSection),
+
+                    // ==========================================
+                    // SOBRE LA APLICACIÓN
+                    // ==========================================
+                    const BloqueInstitucional(),
+
+                    const SizedBox(height: AppDimensions.spacingSection + 3),
 
                     // ==========================================
                     // MENSAJE FINAL
                     // ==========================================
-
                     _construirMensajeFinal(),
                   ],
                 ),
@@ -995,51 +935,38 @@ class _HomePublicoScreenState
     }
 
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Explora por experiencia',
-          style: TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textOnDark,
+        const Center(
+          child: Text(
+            'Explora por experiencia',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textOnDark,
+            ),
           ),
         ),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingMd + 3,
-        ),
+        const SizedBox(height: AppDimensions.spacingMd + 3),
 
         SizedBox(
-          height:
-              AppDimensions.categoryCardHeight,
+          height: AppDimensions.categoryCardHeight,
           child: ListView.separated(
-            scrollDirection:
-                Axis.horizontal,
-            itemCount:
-                _categorias.length,
-            separatorBuilder:
-                (context, index) {
-              return const SizedBox(
-                width:
-                    AppDimensions.spacingMd,
-              );
+            scrollDirection: Axis.horizontal,
+            itemCount: _categorias.length,
+            separatorBuilder: (context, index) {
+              return const SizedBox(width: AppDimensions.spacingMd);
             },
-            itemBuilder:
-                (context, index) {
-              final categoria =
-                  _categorias[index];
+            itemBuilder: (context, index) {
+              final categoria = _categorias[index];
 
               return CategoriaCard(
                 categoria: categoria,
-                categoriaSeleccionada:
-                    _categoriaSeleccionada,
+                categoriaSeleccionada: _categoriaSeleccionada,
                 onTap: () {
-                  _seleccionarCategoria(
-                    categoria.nombre,
-                  );
+                  _seleccionarCategoria(categoria.nombre);
                 },
               );
             },
@@ -1054,107 +981,66 @@ class _HomePublicoScreenState
   // ============================================================
 
   Widget _construirSitios() {
-    final sitios =
-        _sitiosDestacados;
+    final sitios = _sitiosDestacados;
 
-    final hayFiltro =
-        _categoriaSeleccionada != null;
+    final hayFiltro = _categoriaSeleccionada != null;
 
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'Descubre lugares',
-                style: TextStyle(
-                  fontSize: 21,
-                  fontWeight:
-                      FontWeight.w800,
-                  color:
-                      AppColors.textOnDark,
-                ),
-              ),
-            ),
-
-            TextButton.icon(
-              onPressed:
-                  _abrirMapa,
-              icon:
-                  const Icon(
-                Icons.map_outlined,
-                size:
-                    AppDimensions.iconSm,
-              ),
-              label:
-                  const Text(
-                'Ver mapa',
-              ),
-            ),
-          ],
+        const Text(
+          'Descubre lugares',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 21,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textOnDark,
+          ),
         ),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingSm,
-        ),
+        const SizedBox(height: AppDimensions.spacingMd),
 
         if (_cargandoSitios)
           _construirCargaSitios()
-        else if (_errorSitios != null &&
-            _sitios.isEmpty)
+        else if (_errorSitios != null && _sitios.isEmpty)
           _construirEstadoError()
         else if (sitios.isEmpty)
-          _construirEstadoVacio(
-            hayFiltro: hayFiltro,
-          )
-        else
-          SizedBox(
-            height: 330,
-            child:
-                ListView.separated(
-              scrollDirection:
-                  Axis.horizontal,
-              itemCount:
-                  sitios.length,
-              separatorBuilder:
-                  (context, index) {
-                return const SizedBox(
-                  width:
-                      AppDimensions.spacingMd + 3,
-                );
-              },
-              itemBuilder:
-                  (context, index) {
-                final sitio =
-                    sitios[index];
+          _construirEstadoVacio(hayFiltro: hayFiltro)
+        else ...[
+          // ================================================
+          // CUADRÍCULA (máx. 10 al azar; con categoría
+          // elegida, todos los de esa categoría)
+          // ================================================
+          SitiosGrilla(
+            sitios: sitios,
+            construirTarjeta: (sitio) {
+              return SitioCard(
+                sitio: sitio,
+                imagen: _imagenSitio(sitio),
+                ancho: double.infinity,
+                esFavorito: _favoritosPorSitio.containsKey(sitio.id),
+                onFavorite: () {
+                  _alternarFavorito(sitio);
+                },
 
-                return SitioCard(
-                  sitio: sitio,
-                  imagen:
-                      _imagenSitio(sitio),
-                  esFavorito:
-                      _favoritosPorSitio
-                          .containsKey(sitio.id),
-                  onFavorite: () {
-                    _alternarFavorito(sitio);
-                  },
+                // Se envía el sitio seleccionado al detalle.
+                onTap: () {
+                  _abrirSitio(sitio);
+                },
+              );
+            },
+          ),
 
-                  // ==================================================
-                  // IMPORTANTE:
-                  // Aquí enviamos el sitio seleccionado.
-                  // Ya no abrimos simplemente el mapa general.
-                  // ==================================================
+          const SizedBox(height: AppDimensions.spacingMd),
 
-                  onTap: () {
-                    _abrirSitio(sitio);
-                  },
-                );
-              },
+          Center(
+            child: OutlinedButton.icon(
+              onPressed: _abrirMapa,
+              icon: const Icon(Icons.map_outlined, size: AppDimensions.iconSm),
+              label: const Text('Ver mapa'),
             ),
           ),
+        ],
       ],
     );
   }
@@ -1163,13 +1049,8 @@ class _HomePublicoScreenState
   // IMÁGENES DE SITIOS
   // ============================================================
 
-  String _imagenSitio(
-    SitioTuristicoModel sitio,
-  ) {
-    final categoria =
-        _normalizarTexto(
-      sitio.categoriaNombre,
-    );
+  String _imagenSitio(SitioTuristicoModel sitio) {
+    final categoria = _normalizarTexto(sitio.categoriaNombre);
 
     if (categoria.contains('cafe')) {
       return 'assets/images/sitios/cafe.jpeg';
@@ -1209,8 +1090,7 @@ class _HomePublicoScreenState
       return 'assets/images/sitios/aventuras.jpeg';
     }
 
-    if (categoria.contains('mirador') ||
-        categoria.contains('paisaje')) {
+    if (categoria.contains('mirador') || categoria.contains('paisaje')) {
       return 'assets/images/sitios/miradores.jpeg';
     }
 
@@ -1224,24 +1104,21 @@ class _HomePublicoScreenState
 
   Widget _construirRutas() {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Rutas para inspirarte',
-          style: TextStyle(
-            fontSize: 21,
-            fontWeight:
-                FontWeight.w800,
-            color:
-                AppColors.textOnDark,
+        const Center(
+          child: Text(
+            'Rutas para inspirarte',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textOnDark,
+            ),
           ),
         ),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingSm,
-        ),
+        const SizedBox(height: AppDimensions.spacingSm),
 
         _construirRutasVacias(),
       ],
@@ -1255,32 +1132,16 @@ class _HomePublicoScreenState
   Widget _construirRutasVacias() {
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(
-        AppDimensions.spacingXl,
-      ),
-      decoration:
-          BoxDecoration(
-        color:
-            AppColors.surface,
-        borderRadius:
-            BorderRadius.circular(
-          AppDimensions.radiusXl,
-        ),
-        border:
-            Border.all(
-          color:
-              AppColors.border,
-        ),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color:
-                AppColors.black.withValues(
-              alpha: 0.04,
-            ),
+            color: AppColors.black.withValues(alpha: 0.04),
             blurRadius: 12,
-            offset:
-                const Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1289,59 +1150,40 @@ class _HomePublicoScreenState
           Container(
             width: 58,
             height: 58,
-            decoration:
-                BoxDecoration(
-              color:
-                  AppColors.getSoftColorForCategory(
-                'naturaleza',
-              ),
-              shape:
-                  BoxShape.circle,
+            decoration: BoxDecoration(
+              color: AppColors.getSoftColorForCategory('naturaleza'),
+              shape: BoxShape.circle,
             ),
-            child:
-                const Icon(
+            child: const Icon(
               Icons.route_rounded,
-              color:
-                  AppColors.primary,
+              color: AppColors.primary,
               size: 29,
             ),
           ),
 
-          const SizedBox(
-            width:
-                AppDimensions.spacingMd,
-          ),
+          const SizedBox(width: AppDimensions.spacingMd),
 
           const Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Muy pronto',
-                  style:
-                      TextStyle(
-                    color:
-                        AppColors.primary,
-                    fontWeight:
-                        FontWeight.w800,
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
                     fontSize: 15,
                   ),
                 ),
 
-                SizedBox(
-                  height:
-                      AppDimensions.spacingXs,
-                ),
+                SizedBox(height: AppDimensions.spacingXs),
 
                 Text(
                   'Estamos preparando rutas '
                   'especiales para que descubras '
                   'el Huila paso a paso.',
-                  style:
-                      TextStyle(
-                    color:
-                        AppColors.textSecondary,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
                     fontSize: 13,
                     height: 1.4,
                   ),
@@ -1364,28 +1206,20 @@ class _HomePublicoScreenState
         children: [
           const Icon(
             Icons.eco_rounded,
-            color:
-                AppColors.coffeeLight,
-            size:
-                AppDimensions.iconLg + 6,
+            color: AppColors.coffeeLight,
+            size: AppDimensions.iconLg + 6,
           ),
 
-          const SizedBox(
-            height:
-                AppDimensions.spacingSm + 2,
-          ),
+          const SizedBox(height: AppDimensions.spacingSm + 2),
 
           const Text(
             'En cada taza hay una historia, '
             'un paisaje y un corazón que late.',
-            textAlign:
-                TextAlign.center,
+            textAlign: TextAlign.center,
             style: TextStyle(
-              color:
-                  AppColors.secondary,
+              color: AppColors.secondary,
               fontSize: 15,
-              fontStyle:
-                  FontStyle.italic,
+              fontStyle: FontStyle.italic,
               height: 1.5,
             ),
           ),
@@ -1400,43 +1234,32 @@ class _HomePublicoScreenState
 
   Widget _construirCargaCategorias() {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Explora por experiencia',
-          style: TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.w800,
-            color:
-                AppColors.textOnDark,
+        const Center(
+          child: Text(
+            'Explora por experiencia',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textOnDark,
+            ),
           ),
         ),
 
-        const SizedBox(
-          height:
-              AppDimensions.spacingMd,
-        ),
+        const SizedBox(height: AppDimensions.spacingMd),
 
         SizedBox(
-          height:
-              AppDimensions.categoryCardHeight,
-          child:
-              ListView.separated(
-            scrollDirection:
-                Axis.horizontal,
+          height: AppDimensions.categoryCardHeight,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
             itemCount: 5,
-            separatorBuilder:
-                (context, index) {
-              return const SizedBox(
-                width:
-                    AppDimensions.spacingMd,
-              );
+            separatorBuilder: (context, index) {
+              return const SizedBox(width: AppDimensions.spacingMd);
             },
-            itemBuilder:
-                (context, index) {
-              return const
-                  _CategoriaSkeleton();
+            itemBuilder: (context, index) {
+              return const _CategoriaSkeleton();
             },
           ),
         ),
@@ -1451,22 +1274,14 @@ class _HomePublicoScreenState
   Widget _construirCargaSitios() {
     return SizedBox(
       height: 330,
-      child:
-          ListView.separated(
-        scrollDirection:
-            Axis.horizontal,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
         itemCount: 3,
-        separatorBuilder:
-            (context, index) {
-          return const SizedBox(
-            width:
-                AppDimensions.spacingMd + 3,
-          );
+        separatorBuilder: (context, index) {
+          return const SizedBox(width: AppDimensions.spacingMd + 3);
         },
-        itemBuilder:
-            (context, index) {
-          return const
-              _SitioCardSkeleton();
+        itemBuilder: (context, index) {
+          return const _SitioCardSkeleton();
         },
       ),
     );
@@ -1479,61 +1294,32 @@ class _HomePublicoScreenState
   Widget _construirEstadoCategorias() {
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal:
-            AppDimensions.spacingLg,
-        vertical:
-            AppDimensions.spacingMd,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingLg,
+        vertical: AppDimensions.spacingMd,
       ),
-      decoration:
-          BoxDecoration(
-        color:
-            AppColors.surface,
-        borderRadius:
-            BorderRadius.circular(
-          AppDimensions.radiusLg,
-        ),
-        border:
-            Border.all(
-          color:
-              AppColors.border,
-        ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.category_outlined,
-            color:
-                AppColors.textSecondary,
-          ),
+          const Icon(Icons.category_outlined, color: AppColors.textSecondary),
 
-          const SizedBox(
-            width:
-                AppDimensions.spacingSm,
-          ),
+          const SizedBox(width: AppDimensions.spacingSm),
 
           Expanded(
             child: Text(
-              _errorCategorias ??
-                  'No se pudieron cargar las categorías.',
-              style:
-                  const TextStyle(
-                color:
-                    AppColors.textSecondary,
+              _errorCategorias ?? 'No se pudieron cargar las categorías.',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
                 fontSize: 13,
               ),
             ),
           ),
 
-          TextButton(
-            onPressed:
-                _recargar,
-            child:
-                const Text(
-              'Reintentar',
-            ),
-          ),
+          TextButton(onPressed: _recargar, child: const Text('Reintentar')),
         ],
       ),
     );
@@ -1546,82 +1332,49 @@ class _HomePublicoScreenState
   Widget _construirEstadoError() {
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(
-        AppDimensions.spacingXl,
-      ),
-      decoration:
-          BoxDecoration(
-        color:
-            AppColors.surface,
-        borderRadius:
-            BorderRadius.circular(
-          AppDimensions.radiusXl,
-        ),
-        border:
-            Border.all(
-          color:
-              AppColors.border,
-        ),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
           const Icon(
             Icons.cloud_off_rounded,
-            color:
-                AppColors.textSecondary,
+            color: AppColors.textSecondary,
             size: 38,
           ),
 
-          const SizedBox(
-            height:
-                AppDimensions.spacingMd,
-          ),
+          const SizedBox(height: AppDimensions.spacingMd),
 
           const Text(
             'No pudimos cargar los sitios.',
-            textAlign:
-                TextAlign.center,
-            style:
-                TextStyle(
-              fontWeight:
-                  FontWeight.bold,
-              color:
-                  AppColors.textPrimary,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
           ),
 
-          const SizedBox(
-            height:
-                AppDimensions.spacingSm,
-          ),
+          const SizedBox(height: AppDimensions.spacingSm),
 
           Text(
             _errorSitios ??
                 'Ocurrió un problema al obtener '
-                'los sitios turísticos.',
-            textAlign:
-                TextAlign.center,
-            style:
-                const TextStyle(
-              color:
-                  AppColors.textSecondary,
+                    'los sitios turísticos.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
               fontSize: 13,
             ),
           ),
 
-          const SizedBox(
-            height:
-                AppDimensions.spacingSm,
-          ),
+          const SizedBox(height: AppDimensions.spacingSm),
 
           TextButton(
-            onPressed:
-                _recargar,
-            child:
-                const Text(
-              'Intentar nuevamente',
-            ),
+            onPressed: _recargar,
+            child: const Text('Intentar nuevamente'),
           ),
         ],
       ),
@@ -1632,68 +1385,42 @@ class _HomePublicoScreenState
   // SIN RESULTADOS
   // ============================================================
 
-  Widget _construirEstadoVacio({
-    required bool hayFiltro,
-  }) {
+  Widget _construirEstadoVacio({required bool hayFiltro}) {
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(
-        AppDimensions.spacingXl,
-      ),
-      decoration:
-          BoxDecoration(
-        color:
-            AppColors.surface,
-        borderRadius:
-            BorderRadius.circular(
-          AppDimensions.radiusXl,
-        ),
-        border:
-            Border.all(
-          color:
-              AppColors.border,
-        ),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
           const Icon(
             Icons.travel_explore_rounded,
-            color:
-                AppColors.coffeeLight,
+            color: AppColors.coffeeLight,
             size: 42,
           ),
 
-          const SizedBox(
-            height:
-                AppDimensions.spacingMd,
-          ),
+          const SizedBox(height: AppDimensions.spacingMd),
 
           Text(
             hayFiltro
                 ? 'No encontramos lugares '
-                  'para esta categoría.'
+                      'para esta categoría.'
                 : 'Todavía no hay lugares disponibles.',
-            textAlign:
-                TextAlign.center,
-            style:
-                const TextStyle(
-              color:
-                  AppColors.textSecondary,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
               fontSize: 14,
-              fontWeight:
-                  FontWeight.w600,
+              fontWeight: FontWeight.w600,
             ),
           ),
 
           if (hayFiltro)
             TextButton(
-              onPressed:
-                  _limpiarCategoria,
-              child:
-                  const Text(
-                'Mostrar todos',
-              ),
+              onPressed: _limpiarCategoria,
+              child: const Text('Mostrar todos'),
             ),
         ],
       ),
@@ -1705,27 +1432,17 @@ class _HomePublicoScreenState
 // SKELETON CATEGORÍA
 // =====================================================================
 
-class _CategoriaSkeleton
-    extends StatelessWidget {
+class _CategoriaSkeleton extends StatelessWidget {
   const _CategoriaSkeleton();
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Container(
-      width:
-          AppDimensions.categoryCardWidth,
-      height:
-          AppDimensions.categoryCardHeight,
-      decoration:
-          BoxDecoration(
-        color:
-            AppColors.surfaceVariant,
-        borderRadius:
-            BorderRadius.circular(
-          AppDimensions.categoryRadius,
-        ),
+      width: AppDimensions.categoryCardWidth,
+      height: AppDimensions.categoryCardHeight,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(AppDimensions.categoryRadius),
       ),
     );
   }
@@ -1735,26 +1452,17 @@ class _CategoriaSkeleton
 // SKELETON SITIO
 // =====================================================================
 
-class _SitioCardSkeleton
-    extends StatelessWidget {
+class _SitioCardSkeleton extends StatelessWidget {
   const _SitioCardSkeleton();
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Container(
-      width:
-          AppDimensions.sitioCardWidth,
+      width: AppDimensions.sitioCardWidth,
       height: 330,
-      decoration:
-          BoxDecoration(
-        color:
-            AppColors.surfaceVariant,
-        borderRadius:
-            BorderRadius.circular(
-          AppDimensions.sitioCardRadius,
-        ),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(AppDimensions.sitioCardRadius),
       ),
     );
   }

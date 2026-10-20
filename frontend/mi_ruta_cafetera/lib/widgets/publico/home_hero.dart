@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
@@ -23,14 +24,11 @@ class HomeHero extends StatefulWidget {
   });
 
   @override
-  State<HomeHero> createState() =>
-      _HomeHeroState();
+  State<HomeHero> createState() => _HomeHeroState();
 }
 
-class _HomeHeroState
-    extends State<HomeHero> {
-  late final PageController
-      _pageController;
+class _HomeHeroState extends State<HomeHero> {
+  late final PageController _pageController;
 
   Timer? _carruselTimer;
 
@@ -41,55 +39,36 @@ class _HomeHeroState
   // corrigiendo la extensión real de cafe.jpeg).
   // ------------------------------------------------------------
 
-  static const List<_HeroImagen>
-      _imagenesPublicas = [
+  static const List<_HeroImagen> _imagenesPublicas = [
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/cafe.jpeg',
-      titulo:
-          'Descubre la magia del café',
-      subtitulo:
-          'Sabores, fincas y experiencias que nacen en el Huila.',
+      imagen: 'assets/images/sitios/cafe.jpeg',
+      titulo: 'Descubre la magia del café',
+      subtitulo: 'Sabores, fincas y experiencias que nacen en el Huila.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/naturaleza.jpeg',
-      titulo:
-          'Naturaleza para explorar',
-      subtitulo:
-          'Senderos, montañas y paisajes para vivir el territorio.',
+      imagen: 'assets/images/sitios/naturaleza.jpeg',
+      titulo: 'Naturaleza para explorar',
+      subtitulo: 'Senderos, montañas y paisajes para vivir el territorio.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/cultura.jpg',
-      titulo:
-          'Historias que permanecen',
-      subtitulo:
-          'Cultura, tradición y patrimonio del Huila.',
+      imagen: 'assets/images/sitios/cultura.jpg',
+      titulo: 'Historias que permanecen',
+      subtitulo: 'Cultura, tradición y patrimonio del Huila.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/artesanias.jpg',
-      titulo:
-          'Hecho con identidad',
-      subtitulo:
-          'Artesanías y productos locales que cuentan historias.',
+      imagen: 'assets/images/sitios/artesanias.jpg',
+      titulo: 'Hecho con identidad',
+      subtitulo: 'Artesanías y productos locales que cuentan historias.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/aventuras.jpeg',
-      titulo:
-          'Aventuras para vivir',
-      subtitulo:
-          'Experiencias diferentes para descubrir nuevos lugares.',
+      imagen: 'assets/images/sitios/aventuras.jpeg',
+      titulo: 'Aventuras para vivir',
+      subtitulo: 'Experiencias diferentes para descubrir nuevos lugares.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/familiares.jpeg',
-      titulo:
-          'Experiencias para compartir',
-      subtitulo:
-          'Lugares para disfrutar en familia y con amigos.',
+      imagen: 'assets/images/sitios/familiares.jpeg',
+      titulo: 'Experiencias para compartir',
+      subtitulo: 'Lugares para disfrutar en familia y con amigos.',
     ),
   ];
 
@@ -101,165 +80,105 @@ class _HomeHeroState
   // y 9 de sitios.
   // ------------------------------------------------------------
 
-  static const List<_HeroImagen>
-      _imagenesUsuario = [
+  static const List<_HeroImagen> _imagenesUsuario = [
     _HeroImagen(
-      imagen:
-          'assets/images/bienvenida/paisaje.jpg',
-      titulo:
-          'Bienvenido al Huila',
-      subtitulo:
-          'Paisajes que cambian con cada curva del camino.',
+      imagen: 'assets/images/bienvenida/paisaje.jpg',
+      titulo: 'Bienvenido al Huila',
+      subtitulo: 'Paisajes que cambian con cada curva del camino.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/bienvenida/cafe.jpg',
-      titulo:
-          'Del grano a tu taza',
-      subtitulo:
-          'Conoce el origen del café que enamora al mundo.',
+      imagen: 'assets/images/bienvenida/cafe.jpg',
+      titulo: 'Del grano a tu taza',
+      subtitulo: 'Conoce el origen del café que enamora al mundo.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/bienvenida/naturaleza.jpg',
-      titulo:
-          'Naturaleza viva',
-      subtitulo:
-          'Montañas, ríos y rincones para desconectarte.',
+      imagen: 'assets/images/bienvenida/naturaleza.jpg',
+      titulo: 'Naturaleza viva',
+      subtitulo: 'Montañas, ríos y rincones para desconectarte.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/bienvenida/cultura.jpg',
-      titulo:
-          'Cultura con raíces',
-      subtitulo:
-          'Tradiciones que se sienten en cada rincón.',
+      imagen: 'assets/images/bienvenida/cultura.jpg',
+      titulo: 'Cultura con raíces',
+      subtitulo: 'Tradiciones que se sienten en cada rincón.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/bienvenida/experiencia.jpg',
-      titulo:
-          'Vive la experiencia',
-      subtitulo:
-          'Planes pensados para recordar mucho tiempo.',
+      imagen: 'assets/images/bienvenida/experiencia.jpg',
+      titulo: 'Vive la experiencia',
+      subtitulo: 'Planes pensados para recordar mucho tiempo.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/cafe.jpeg',
-      titulo:
-          'Descubre la magia del café',
-      subtitulo:
-          'Sabores, fincas y experiencias que nacen en el Huila.',
+      imagen: 'assets/images/sitios/cafe.jpeg',
+      titulo: 'Descubre la magia del café',
+      subtitulo: 'Sabores, fincas y experiencias que nacen en el Huila.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/naturaleza.jpeg',
-      titulo:
-          'Naturaleza para explorar',
-      subtitulo:
-          'Senderos, montañas y paisajes para vivir el territorio.',
+      imagen: 'assets/images/sitios/naturaleza.jpeg',
+      titulo: 'Naturaleza para explorar',
+      subtitulo: 'Senderos, montañas y paisajes para vivir el territorio.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/cultura.jpg',
-      titulo:
-          'Historias que permanecen',
-      subtitulo:
-          'Cultura, tradición y patrimonio del Huila.',
+      imagen: 'assets/images/sitios/cultura.jpg',
+      titulo: 'Historias que permanecen',
+      subtitulo: 'Cultura, tradición y patrimonio del Huila.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/artesanias.jpg',
-      titulo:
-          'Hecho con identidad',
-      subtitulo:
-          'Artesanías y productos locales que cuentan historias.',
+      imagen: 'assets/images/sitios/artesanias.jpg',
+      titulo: 'Hecho con identidad',
+      subtitulo: 'Artesanías y productos locales que cuentan historias.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/aventuras.jpeg',
-      titulo:
-          'Aventuras para vivir',
-      subtitulo:
-          'Experiencias diferentes para descubrir nuevos lugares.',
+      imagen: 'assets/images/sitios/aventuras.jpeg',
+      titulo: 'Aventuras para vivir',
+      subtitulo: 'Experiencias diferentes para descubrir nuevos lugares.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/familiares.jpeg',
-      titulo:
-          'Experiencias para compartir',
-      subtitulo:
-          'Lugares para disfrutar en familia y con amigos.',
+      imagen: 'assets/images/sitios/familiares.jpeg',
+      titulo: 'Experiencias para compartir',
+      subtitulo: 'Lugares para disfrutar en familia y con amigos.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/gastronomia.jpeg',
-      titulo:
-          'Sabores del Huila',
-      subtitulo:
-          'Gastronomía local para probar en cada parada.',
+      imagen: 'assets/images/sitios/gastronomia.jpeg',
+      titulo: 'Sabores del Huila',
+      subtitulo: 'Gastronomía local para probar en cada parada.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/alojamiento.jpg',
-      titulo:
-          'Descansa como en casa',
-      subtitulo:
-          'Alojamientos con el encanto del campo cafetero.',
+      imagen: 'assets/images/sitios/alojamiento.jpg',
+      titulo: 'Descansa como en casa',
+      subtitulo: 'Alojamientos con el encanto del campo cafetero.',
     ),
     _HeroImagen(
-      imagen:
-          'assets/images/sitios/miradores.jpeg',
-      titulo:
-          'Miradores inolvidables',
-      subtitulo:
-          'Vistas que valen cada paso del recorrido.',
+      imagen: 'assets/images/sitios/miradores.jpeg',
+      titulo: 'Miradores inolvidables',
+      subtitulo: 'Vistas que valen cada paso del recorrido.',
     ),
   ];
 
   List<_HeroImagen> get _imagenes =>
-      widget.usuarioAutenticado
-          ? _imagenesUsuario
-          : _imagenesPublicas;
+      widget.usuarioAutenticado ? _imagenesUsuario : _imagenesPublicas;
 
   @override
   void initState() {
     super.initState();
 
-    _pageController =
-        PageController();
+    _pageController = PageController();
 
     _iniciarCarrusel();
   }
 
   void _iniciarCarrusel() {
-    _carruselTimer =
-        Timer.periodic(
-      const Duration(
-        seconds: 5,
-      ),
-      (_) {
-        if (!mounted ||
-            !_pageController
-                .hasClients) {
-          return;
-        }
+    _carruselTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_pageController.hasClients) {
+        return;
+      }
 
-        final siguiente =
-            (_paginaActual + 1) %
-                _imagenes.length;
+      final siguiente = (_paginaActual + 1) % _imagenes.length;
 
-        _pageController.animateToPage(
-          siguiente,
-          duration:
-              const Duration(
-            milliseconds: 650,
-          ),
-          curve:
-              Curves.easeInOutCubic,
-        );
-      },
-    );
+      _pageController.animateToPage(
+        siguiente,
+        duration: const Duration(milliseconds: 650),
+        curve: Curves.easeInOutCubic,
+      );
+    });
   }
 
   String get _saludo {
@@ -281,336 +200,230 @@ class _HomeHeroState
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return SliverAppBar(
       expandedHeight: 290,
       pinned: true,
-      backgroundColor:
-          AppColors.coffeeDark,
-      foregroundColor:
-          AppColors.white,
-      elevation:
-          AppDimensions.elevationNone,
-      flexibleSpace:
+
+      // Al hacer scroll la imagen del carrusel se desvanece y queda
+      // visible el color de fondo de la barra. Antes era coffeeDark
+      // (casi negro) y sin contenido, lo que se veía como una franja
+      // negra. Ahora usa el verde de la marca y, al bajar, muestra
+      // el logo completo en compacto (no ocupa espacio al inicio).
+      backgroundColor: AppColors.primary,
+      foregroundColor: AppColors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: AppDimensions.elevationNone,
+      scrolledUnderElevation: AppDimensions.elevationNone,
+      systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
+      centerTitle: true,
+      flexibleSpace: Stack(
+        fit: StackFit.expand,
+        children: [
           FlexibleSpaceBar(
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            // ==================================================
-            // CARRUSEL
-            // ==================================================
-
-            PageView.builder(
-              controller:
-                  _pageController,
-              itemCount:
-                  _imagenes.length,
-              onPageChanged:
-                  (pagina) {
-                setState(() {
-                  _paginaActual =
-                      pagina;
-                });
-              },
-              itemBuilder:
-                  (
-                context,
-                index,
-              ) {
-                final item =
-                    _imagenes[index];
-
-                return Image.asset(
-                  item.imagen,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (
-                    context,
-                    error,
-                    stackTrace,
-                  ) {
-                    return Container(
-                      decoration:
-                          const BoxDecoration(
-                        gradient:
-                            LinearGradient(
-                          begin:
-                              Alignment
-                                  .topLeft,
-                          end:
-                              Alignment
-                                  .bottomRight,
-                          colors: [
-                            AppColors
-                                .coffeeDark,
-                            AppColors
-                                .primaryDark,
-                            AppColors
-                                .secondary,
-                          ],
-                        ),
-                      ),
-                    );
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                // ==================================================
+                // CARRUSEL
+                // ==================================================
+                PageView.builder(
+                  controller: _pageController,
+                  itemCount: _imagenes.length,
+                  onPageChanged: (pagina) {
+                    setState(() {
+                      _paginaActual = pagina;
+                    });
                   },
-                );
-              },
-            ),
+                  itemBuilder: (context, index) {
+                    final item = _imagenes[index];
 
-            // ==================================================
-            // CAPA OSCURA
-            // ==================================================
-
-            Container(
-              decoration:
-                  BoxDecoration(
-                gradient:
-                    LinearGradient(
-                  begin:
-                      Alignment.topCenter,
-                  end:
-                      Alignment.bottomCenter,
-                  colors: [
-                    AppColors
-                        .coffeeDark
-                        .withValues(
-                      alpha: 0.12,
-                    ),
-                    AppColors
-                        .primaryDark
-                        .withValues(
-                      alpha: 0.42,
-                    ),
-                    AppColors
-                        .coffeeDark
-                        .withValues(
-                      alpha: 0.88,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ==================================================
-            // DECORACIÓN
-            // ==================================================
-
-            Positioned(
-              right: -35,
-              top: 40,
-              child: Icon(
-                Icons
-                    .local_cafe_rounded,
-                size: 175,
-                color: AppColors
-                    .white
-                    .withValues(
-                  alpha: 0.055,
-                ),
-              ),
-            ),
-
-            Positioned(
-              left: -45,
-              top: 105,
-              child: Icon(
-                Icons.eco_rounded,
-                size: 145,
-                color: AppColors
-                    .white
-                    .withValues(
-                  alpha: 0.035,
-                ),
-              ),
-            ),
-
-            // ==================================================
-            // TEXTO
-            // ==================================================
-
-            Padding(
-              padding:
-                  const EdgeInsets
-                      .fromLTRB(
-                AppDimensions
-                    .spacingXxl,
-                75,
-                AppDimensions
-                    .spacingXxl,
-                AppDimensions
-                        .spacingXl +
-                    8,
-              ),
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
-                mainAxisAlignment:
-                    MainAxisAlignment.end,
-                children: [
-                  Text(
-                    _saludo,
-                    style:
-                        TextStyle(
-                      color: AppColors
-                          .white
-                          .withValues(
-                        alpha: 0.82,
-                      ),
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(
-                    height:
-                        AppDimensions
-                            .spacingSm,
-                  ),
-                  AnimatedSwitcher(
-                    duration:
-                        const Duration(
-                      milliseconds: 350,
-                    ),
-                    child: Text(
-                      _imagenes[
-                              _paginaActual]
-                          .titulo,
-                      key: ValueKey(
-                        _paginaActual,
-                      ),
-                      style:
-                          const TextStyle(
-                        color:
-                            AppColors
-                                .white,
-                        fontSize: 31,
-                        height: 1.05,
-                        fontWeight:
-                            FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height:
-                        AppDimensions
-                            .spacingSm +
-                        2,
-                  ),
-                  AnimatedSwitcher(
-                    duration:
-                        const Duration(
-                      milliseconds: 350,
-                    ),
-                    child: Text(
-                      _imagenes[
-                              _paginaActual]
-                          .subtitulo,
-                      key: ValueKey(
-                        'sub$_paginaActual',
-                      ),
-                      maxLines: 2,
-                      overflow:
-                          TextOverflow
-                              .ellipsis,
-                      style:
-                          TextStyle(
-                        color: AppColors
-                            .white
-                            .withValues(
-                          alpha: 0.84,
-                        ),
-                        fontSize: 13,
-                        height: 1.35,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height:
-                        AppDimensions
-                            .spacingMd,
-                  ),
-
-                  // ==================================================
-                  // INDICADORES
-                  // ==================================================
-
-                  Row(
-                    children:
-                        List.generate(
-                      _imagenes.length,
-                      (index) {
-                        final activo =
-                            index ==
-                                _paginaActual;
-
-                        return AnimatedContainer(
-                          duration:
-                              const Duration(
-                            milliseconds:
-                                220,
-                          ),
-                          margin:
-                              const EdgeInsets
-                                  .only(
-                            right:
-                                AppDimensions
-                                    .spacingXs,
-                          ),
-                          width:
-                              activo
-                                  ? 22
-                                  : 7,
-                          height: 6,
-                          decoration:
-                              BoxDecoration(
-                            color: activo
-                                ? AppColors
-                                    .white
-                                : AppColors
-                                    .white
-                                    .withValues(
-                                    alpha:
-                                        0.42,
-                                  ),
-                            borderRadius:
-                                BorderRadius
-                                    .circular(
-                              10,
+                    return Image.asset(
+                      item.imagen,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.coffeeDark,
+                                AppColors.primaryDark,
+                                AppColors.secondary,
+                              ],
                             ),
                           ),
                         );
                       },
+                    );
+                  },
+                ),
+
+                // ==================================================
+                // CAPA OSCURA
+                // ==================================================
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        AppColors.coffeeDark.withValues(alpha: 0.12),
+                        AppColors.primaryDark.withValues(alpha: 0.42),
+                        AppColors.coffeeDark.withValues(alpha: 0.88),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // ==================================================
+                // DEGRADADO SUPERIOR (legibilidad del nombre)
+                // ==================================================
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 120,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.coffeeDark.withValues(alpha: 0.62),
+                          AppColors.coffeeDark.withValues(alpha: 0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // ==================================================
+                // DECORACIÓN
+                // ==================================================
+                Positioned(
+                  right: -35,
+                  top: 40,
+                  child: Icon(
+                    Icons.local_cafe_rounded,
+                    size: 175,
+                    color: AppColors.white.withValues(alpha: 0.055),
+                  ),
+                ),
+
+                Positioned(
+                  left: -45,
+                  top: 105,
+                  child: Icon(
+                    Icons.eco_rounded,
+                    size: 145,
+                    color: AppColors.white.withValues(alpha: 0.035),
+                  ),
+                ),
+
+                // ==================================================
+                // TEXTO
+                // ==================================================
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppDimensions.spacingXxl,
+                    75,
+                    AppDimensions.spacingXxl,
+                    AppDimensions.spacingXl + 8,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        _saludo,
+                        style: TextStyle(
+                          color: AppColors.white.withValues(alpha: 0.82),
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingSm),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 350),
+                        child: Text(
+                          _imagenes[_paginaActual].titulo,
+                          key: ValueKey(_paginaActual),
+                          style: const TextStyle(
+                            color: AppColors.white,
+                            fontSize: 31,
+                            height: 1.05,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingSm + 2),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 350),
+                        child: Text(
+                          _imagenes[_paginaActual].subtitulo,
+                          key: ValueKey('sub$_paginaActual'),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.white.withValues(alpha: 0.84),
+                            fontSize: 13,
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingMd),
+
+                      // ==================================================
+                      // INDICADORES
+                      // ==================================================
+                      Row(
+                        children: List.generate(_imagenes.length, (index) {
+                          final activo = index == _paginaActual;
+
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 220),
+                            margin: const EdgeInsets.only(
+                              right: AppDimensions.spacingXs,
+                            ),
+                            width: activo ? 22 : 7,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: activo
+                                  ? AppColors.white
+                                  : AppColors.white.withValues(alpha: 0.42),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          // Logo completo compacto: aparece solo al hacer scroll hacia
+          // abajo; con el Home arriba no ocupa espacio.
+          const _TituloColapsado(),
+        ],
       ),
       actions: widget.usuarioAutenticado
           ? const <Widget>[]
           : [
-        Padding(
-          padding:
-              const EdgeInsets.only(
-            right:
-                AppDimensions
-                        .spacingSm +
-                    4,
-          ),
-          child: IconButton(
-            tooltip:
-                'Iniciar sesión',
-            onPressed:
-                widget.onLogin,
-            icon: const Icon(
-              Icons
-                  .person_outline_rounded,
-            ),
-          ),
-        ),
-      ],
+              Padding(
+                padding: const EdgeInsets.only(
+                  right: AppDimensions.spacingSm + 4,
+                ),
+                child: IconButton(
+                  tooltip: 'Iniciar sesión',
+                  onPressed: widget.onLogin,
+                  icon: const Icon(Icons.person_outline_rounded),
+                ),
+              ),
+            ],
     );
   }
 }
@@ -625,4 +438,107 @@ class _HeroImagen {
     required this.titulo,
     required this.subtitulo,
   });
+}
+
+// =====================================================================
+// LOGO COMPLETO
+// =====================================================================
+//
+// El logo (pin + «Mi Ruta Cafetera · Huila · Colombia») está pensado
+// para fondo claro: va sobre una tarjeta blanca para que se lea sobre
+// la foto del carrusel y sobre el verde de la barra. Se conservan sus
+// proporciones (se fija solo el alto).
+// =====================================================================
+
+class _TarjetaLogo extends StatelessWidget {
+  final double alto;
+
+  const _TarjetaLogo({required this.alto});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingXs + 2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: 0.18),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Image.asset(
+        'assets/img/logo-completo.png',
+        height: alto,
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.high,
+        semanticLabel: 'Mi Ruta Cafetera, Huila, Colombia',
+        errorBuilder: (context, error, stackTrace) {
+          return SizedBox(
+            height: alto,
+            child: const Center(
+              child: Text(
+                'Mi Ruta Cafetera',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Logo compacto de la barra superior. Lee cuánto se contrajo la barra
+// desde FlexibleSpaceBarSettings (lo mismo que usa FlexibleSpaceBar):
+// con el Home arriba es invisible y aparece gradualmente cuando el
+// usuario hace scroll hacia abajo, hasta quedar fijo en la barra.
+class _TituloColapsado extends StatelessWidget {
+  const _TituloColapsado();
+
+  @override
+  Widget build(BuildContext context) {
+    final ajustes = context
+        .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+
+    var contraccion = 0.0;
+
+    if (ajustes != null) {
+      final recorrido = ajustes.maxExtent - ajustes.minExtent;
+
+      if (recorrido > 0) {
+        contraccion = ((ajustes.maxExtent - ajustes.currentExtent) / recorrido)
+            .clamp(0.0, 1.0);
+      }
+    }
+
+    final opacidad = ((contraccion - 0.10) / 0.30).clamp(0.0, 1.0);
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        bottom: false,
+        child: IgnorePointer(
+          child: SizedBox(
+            height: kToolbarHeight,
+            child: Opacity(
+              opacity: opacidad,
+              child: const Center(child: _TarjetaLogo(alto: 28)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
