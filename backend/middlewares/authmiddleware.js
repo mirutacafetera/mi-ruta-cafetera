@@ -218,11 +218,38 @@ const verificarSitio = (
 
 
 // =====================================================
+// VERIFICAR QUE SEA UN USUARIO (VISITANTE)
+// =====================================================
+
+const verificarUsuario = (
+  req,
+  res,
+  next
+) => {
+
+  if (!req.usuario) {
+    return res.status(401).json({
+      mensaje: 'Debes iniciar sesión'
+    });
+  }
+
+  if (req.usuario.rol !== 'usuario') {
+    return res.status(403).json({
+      mensaje:
+        'Esta operación es solo para cuentas de usuario'
+    });
+  }
+
+  next();
+};
+
+// =====================================================
 // EXPORTAR
 // =====================================================
 
 module.exports = {
   verificarToken,
   verificarAdministrador,
-  verificarSitio
+  verificarSitio,
+  verificarUsuario
 };

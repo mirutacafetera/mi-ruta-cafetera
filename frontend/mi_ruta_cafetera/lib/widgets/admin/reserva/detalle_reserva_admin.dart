@@ -21,6 +21,7 @@ class DetalleReservaAdmin extends StatelessWidget {
     const estados = [
       'pendiente',
       'confirmada',
+      'rechazada',
       'cancelada',
       'completada',
     ];

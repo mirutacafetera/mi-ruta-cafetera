@@ -1,6 +1,6 @@
-﻿
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
+import '../../models/sitio/sitio_notificacion_model.dart';
 import '../../models/sitio/sitio_reserva_model.dart';
 import '../../services/sitio/sitio_reservas_service.dart';
 import '../../theme/app_colors.dart';
@@ -22,6 +22,7 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
       SitioReservasService.instance;
 
   List<SitioReservaModel> _reservas = [];
+  List<SitioNotificacionModel> _avisos = [];
   bool _cargando = true;
   String? _error;
   String _filtroEstado = 'todas';
@@ -50,11 +51,13 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
 
     try {
       final reservas = await _servicio.obtenerReservas();
+      final avisos = await _cargarAvisos();
 
       if (!mounted) return;
 
       setState(() {
         _reservas = reservas;
+        _avisos = avisos;
         _cargando = false;
       });
     } catch (error) {
@@ -64,6 +67,41 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
         _error = error.toString().replaceFirst('Exception: ', '');
         _cargando = false;
       });
+    }
+  }
+
+  // Los avisos son un complemento: si fallan, la lista de reservas
+  // se muestra igual.
+  Future<List<SitioNotificacionModel>> _cargarAvisos() async {
+    try {
+      return await _servicio.obtenerNotificaciones();
+    } catch (_) {
+      return <SitioNotificacionModel>[];
+    }
+  }
+
+  int get _avisosSinLeer => _avisos.where((a) => !a.leida).length;
+
+  Future<void> _marcarAvisosVistos() async {
+    final pendientes = _avisos.where((a) => !a.leida).toList();
+
+    try {
+      for (final aviso in pendientes) {
+        await _servicio.marcarNotificacionLeida(aviso.id);
+      }
+
+      final avisos = await _cargarAvisos();
+
+      if (!mounted) return;
+
+      setState(() => _avisos = avisos);
+    } catch (error) {
+      if (!mounted) return;
+
+      _mostrarMensaje(
+        error.toString().replaceFirst('Exception: ', ''),
+        esError: true,
+      );
     }
   }
 
@@ -153,37 +191,15 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
     SitioReservaModel reserva,
     String estado,
   ) async {
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.sitioSurface,
-        title: const Text('Actualizar reserva'),
-        content: Text(
-          'Â¿Deseas cambiar el estado de esta reserva a '
-          '${_nombreEstado(estado)}?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.sitioPrimary,
-            ),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Confirmar'),
-          ),
-        ],
-      ),
-    );
+    final motivo = await _pedirConfirmacion(estado);
 
-    if (confirmado != true || !mounted) return;
+    if (motivo == null || !mounted) return;
 
     try {
       await _servicio.actualizarEstado(
         reservaId: reserva.id,
         estado: estado,
+        motivo: motivo,
       );
 
       if (!mounted) return;
@@ -198,6 +214,85 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
         esError: true,
       );
     }
+  }
+
+  // Devuelve null si la persona cancela; si acepta, devuelve el
+  // mensaje escrito ('' si no escribió ninguno).
+  //  - rechazada: el motivo es obligatorio (mínimo 3 caracteres).
+  //  - confirmada: mensaje opcional para el visitante.
+  Future<String?> _pedirConfirmacion(String estado) async {
+    final controlador = TextEditingController();
+    final pideTexto = estado == 'rechazada' || estado == 'confirmada';
+    final obligatorio = estado == 'rechazada';
+    String? errorTexto;
+
+    final resultado = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setLocal) {
+            return AlertDialog(
+              backgroundColor: AppColors.sitioSurface,
+              title: const Text('Actualizar reserva'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '¿Deseas cambiar el estado de esta reserva a '
+                    '${_nombreEstado(estado)}?',
+                  ),
+                  if (pideTexto) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: controlador,
+                      maxLength: 300,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        labelText: obligatorio
+                            ? 'Motivo (obligatorio)'
+                            : 'Mensaje para el visitante (opcional)',
+                        helperText: obligatorio
+                            ? null
+                            : 'Por ejemplo, cómo te comunicarás para '
+                                'coordinar el pago.',
+                        errorText: errorTexto,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Volver'),
+                ),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.sitioPrimary,
+                  ),
+                  onPressed: () {
+                    final texto = controlador.text.trim();
+
+                    if (obligatorio && texto.length < 3) {
+                      setLocal(() {
+                        errorTexto = 'Escribe el motivo (mínimo 3 letras).';
+                      });
+                      return;
+                    }
+
+                    Navigator.pop(dialogContext, texto);
+                  },
+                  child: const Text('Confirmar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    return resultado;
   }
 
   void _mostrarMensaje(
@@ -220,6 +315,8 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
         return 'Pendiente';
       case 'confirmada':
         return 'Confirmada';
+      case 'rechazada':
+        return 'Rechazada';
       case 'cancelada':
         return 'Cancelada';
       case 'completada':
@@ -249,6 +346,7 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
       case 'completada':
         return AppColors.sitioSuccess;
       case 'cancelada':
+      case 'rechazada':
         return AppColors.sitioError;
       default:
         return AppColors.sitioWarning;
@@ -261,6 +359,7 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
       case 'completada':
         return AppColors.sitioSuccessSoft;
       case 'cancelada':
+      case 'rechazada':
         return AppColors.sitioErrorSoft;
       default:
         return AppColors.sitioWarningSoft;
@@ -453,6 +552,12 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (_avisosSinLeer > 0) ...[
+            _bannerAvisos(),
+            const SizedBox(
+              height: AppDimensions.sitioSectionGapCompact,
+            ),
+          ],
           _controles(esEscritorio),
           const SizedBox(
             height: AppDimensions.sitioSectionGapCompact,
@@ -474,6 +579,50 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
                 : _sinResultados()
           else
             _listaReservas(esEscritorio),
+        ],
+      ),
+    );
+  }
+
+  Widget _bannerAvisos() {
+    final n = _avisosSinLeer;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.sitioWarningSoft,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.sitioPanelCardRadius,
+        ),
+        border: Border.all(
+          color: AppColors.sitioWarning.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.notifications_active_rounded,
+            color: AppColors.sitioWarning,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              n == 1
+                  ? 'Tienes 1 aviso nuevo de reservas.'
+                  : 'Tienes $n avisos nuevos de reservas.',
+              style: const TextStyle(
+                color: AppColors.sitioTextPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: _marcarAvisosVistos,
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.sitioPrimary,
+            ),
+            child: const Text('Marcar vistos'),
+          ),
         ],
       ),
     );
@@ -539,6 +688,10 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
         DropdownMenuItem(
           value: 'confirmada',
           child: Text('Confirmadas'),
+        ),
+        DropdownMenuItem(
+          value: 'rechazada',
+          child: Text('Rechazadas'),
         ),
         DropdownMenuItem(
           value: 'cancelada',
@@ -768,6 +921,12 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
           ),
           const SizedBox(height: 10),
           _dato(
+            Icons.groups_outlined,
+            'Personas',
+            '${reserva.cantidadPersonas}',
+          ),
+          const SizedBox(height: 10),
+          _dato(
             Icons.email_outlined,
             'Correo',
             reserva.correoUsuario.isEmpty
@@ -778,7 +937,7 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
             const SizedBox(height: 10),
             _dato(
               Icons.phone_outlined,
-              'TelÃ©fono',
+              'Teléfono',
               reserva.telefonoUsuario,
             ),
           ],
@@ -810,6 +969,24 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
               ),
             ),
           ],
+          if (reserva.respuestaSitio.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.sitioSurfaceGreen,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Tu respuesta: ${reserva.respuestaSitio}',
+                style: const TextStyle(
+                  color: AppColors.sitioTextPrimary,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
           if (reserva.estado.toLowerCase() == 'pendiente' ||
               reserva.estado.toLowerCase() == 'confirmada') ...[
             const SizedBox(height: 16),
@@ -819,6 +996,19 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
               alignment: WrapAlignment.end,
               children: [
                 if (reserva.estado.toLowerCase() == 'pendiente')
+                  OutlinedButton.icon(
+                    onPressed: () =>
+                        _cambiarEstado(reserva, 'rechazada'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.sitioError,
+                      side: const BorderSide(
+                        color: AppColors.sitioError,
+                      ),
+                    ),
+                    icon: const Icon(Icons.close_rounded),
+                    label: const Text('Rechazar'),
+                  ),
+                if (reserva.estado.toLowerCase() == 'confirmada')
                   OutlinedButton.icon(
                     onPressed: () =>
                         _cambiarEstado(reserva, 'cancelada'),
@@ -926,7 +1116,7 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            _error ?? 'OcurriÃ³ un error inesperado.',
+            _error ?? 'Ocurrió un error inesperado.',
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.sitioTextSecondary,
@@ -976,7 +1166,7 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
           ),
           SizedBox(height: 6),
           Text(
-            'Prueba cambiando el estado, la fecha o la bÃºsqueda.',
+            'Prueba cambiando el estado, la fecha o la búsqueda.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.sitioTextSecondary,
@@ -988,4 +1178,3 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
     );
   }
 }
-

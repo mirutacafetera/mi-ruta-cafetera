@@ -16,6 +16,7 @@ class FiltroEstadoReserva extends StatelessWidget {
     'Todas',
     'Pendiente',
     'Confirmada',
+    'Rechazada',
     'Cancelada',
     'Completada',
   ];

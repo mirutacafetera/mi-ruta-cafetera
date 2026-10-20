@@ -10,51 +10,49 @@ const {
 } = require('../../controllers/usuario/reservas.controller');
 
 const {
-  verificarToken
+  verificarToken,
+  verificarUsuario
 } = require('../../middlewares/authmiddleware');
 
 
 // =====================================================
-// OBTENER RESERVAS
+// RESERVAS DEL USUARIO
+//
+// Solo cuentas de usuario: un token de sitio o de
+// administrador no puede crear ni consultar reservas
+// como si fuera un visitante.
 // =====================================================
 
+// OBTENER RESERVAS
 router.get(
   '/',
   verificarToken,
+  verificarUsuario,
   obtenerReservas
 );
 
-
-// =====================================================
 // CREAR RESERVA
-// =====================================================
-
 router.post(
   '/',
   verificarToken,
+  verificarUsuario,
   crearReserva
 );
 
-
-// =====================================================
-// ACTUALIZAR RESERVA
-// =====================================================
-
-router.put(
-  '/:id',
-  verificarToken,
-  actualizarReserva
-);
-
-
-// =====================================================
 // CANCELAR RESERVA
-// =====================================================
-
 router.put(
   '/:id/cancelar',
   verificarToken,
+  verificarUsuario,
   cancelarReserva
+);
+
+// ACTUALIZAR RESERVA (solo pendientes)
+router.put(
+  '/:id',
+  verificarToken,
+  verificarUsuario,
+  actualizarReserva
 );
 
 

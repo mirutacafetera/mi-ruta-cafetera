@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../models/sitio_turistico_model.dart';
 import '../../../models/sitio/sitio_actividad_model.dart';
+import '../../../services/usuario/usuario_sesion_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../widgets/mapa/mapa_detalle_sitio.dart';
 import '../../mapa_screen_2.dart';
+import '../reservar_actividad_screen.dart';
 
 class DetalleSitioAcciones {
   DetalleSitioAcciones._();
@@ -80,8 +82,9 @@ class DetalleSitioAcciones {
 
   static void mostrarActividad(
     BuildContext context,
-    SitioActividadModel actividad,
-  ) {
+    SitioActividadModel actividad, {
+    String nombreSitio = '',
+  }) {
     // Reunir la imagen principal y las imágenes adicionales
     // sin repetir direcciones.
     final Set<String> imagenesUnicas = <String>{};
@@ -295,6 +298,71 @@ class DetalleSitioAcciones {
 
                         const SizedBox(
                           height: AppDimensions.spacingXl,
+                        ),
+
+                        // Solicitar reserva (solo con sesión de usuario)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              final sesion = UsuarioSesionService
+                                  .instance.sesionActual.value;
+                              final navegador = Navigator.of(context);
+                              final mensajes =
+                                  ScaffoldMessenger.of(context);
+
+                              Navigator.of(sheetContext).pop();
+
+                              if (sesion == null) {
+                                mensajes.showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Inicia sesión para solicitar '
+                                      'una reserva.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              navegador.push(
+                                MaterialPageRoute(
+                                  builder: (_) => ReservarActividadScreen(
+                                    actividad: actividad,
+                                    nombreSitio: nombreSitio,
+                                  ),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  AppColors.sitioAccent,
+                              foregroundColor:
+                                  AppColors.sitioTextOnPrimary,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 15,
+                              ),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd,
+                                ),
+                              ),
+                            ),
+                            icon: const Icon(
+                              Icons.event_available_rounded,
+                            ),
+                            label: const Text(
+                              'Solicitar reserva',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: AppDimensions.spacingMd,
                         ),
 
                         // Botón para cerrar

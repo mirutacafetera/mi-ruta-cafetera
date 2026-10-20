@@ -1,4 +1,3 @@
-
 class SitioReservaModel {
   final String id;
   final String usuarioId;
@@ -18,6 +17,7 @@ class SitioReservaModel {
   final String estado;
   final String observaciones;
   final DateTime? creadaEn;
+  final String respuestaSitio;
 
   const SitioReservaModel({
     required this.id,
@@ -38,6 +38,7 @@ class SitioReservaModel {
     required this.estado,
     required this.observaciones,
     required this.creadaEn,
+    this.respuestaSitio = '',
   });
 
   factory SitioReservaModel.fromJson(Map<String, dynamic> json) {
@@ -55,7 +56,9 @@ class SitioReservaModel {
       sitioId: _idDe(json['sitio']),
       nombreSitio: _texto(sitio['nombre']),
       actividadId: _idDe(json['actividad']),
-      nombreActividad: _texto(actividad['nombre']),
+      nombreActividad: _texto(json['actividadNombre']).isNotEmpty
+          ? _texto(json['actividadNombre'])
+          : _texto(actividad['nombre']),
       descripcionActividad: _texto(actividad['descripcion']),
       precioActividad: _numero(actividad['precio']),
       fecha: _fecha(json['fecha']),
@@ -64,6 +67,7 @@ class SitioReservaModel {
       estado: _texto(json['estado'], defecto: 'pendiente'),
       observaciones: _texto(json['observaciones']),
       creadaEn: _fecha(json['createdAt']),
+      respuestaSitio: _texto(json['respuestaSitio']),
     );
   }
 

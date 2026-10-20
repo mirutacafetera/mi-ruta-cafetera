@@ -19,6 +19,7 @@ class TarjetaReservaAdmin extends StatelessWidget {
       case 'confirmada':
         return AppColors.success;
       case 'cancelada':
+      case 'rechazada':
         return AppColors.error;
       case 'completada':
         return AppColors.primary;

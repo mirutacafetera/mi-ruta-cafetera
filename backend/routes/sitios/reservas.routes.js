@@ -10,8 +10,32 @@ const {
 const {
   obtenerReservas,
   obtenerReserva,
-  actualizarEstadoReserva
+  actualizarEstadoReserva,
+  obtenerNotificacionesSitio,
+  marcarNotificacionSitioLeida
 } = require('../../controllers/sitio/reservas.controller');
+
+
+// =====================================================
+// NOTIFICACIONES DEL ESTABLECIMIENTO
+//
+// Van antes de las rutas con parámetros para que
+// "notificaciones" no se interprete como el id de un sitio.
+// =====================================================
+
+router.get(
+  '/notificaciones',
+  verificarToken,
+  verificarSitio,
+  obtenerNotificacionesSitio
+);
+
+router.put(
+  '/notificaciones/:id/leida',
+  verificarToken,
+  verificarSitio,
+  marcarNotificacionSitioLeida
+);
 
 
 // =====================================================
