@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/actividades/actividad_admin_controller.dart';
@@ -195,6 +194,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
         }
 
         return Scaffold(
+          backgroundColor: Colors.transparent,
           body: SafeArea(
             child: RefreshIndicator(
               onRefresh: _cargar,

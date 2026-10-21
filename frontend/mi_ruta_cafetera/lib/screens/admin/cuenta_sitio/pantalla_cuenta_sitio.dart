@@ -27,6 +27,7 @@ class PantallaCuentasSitio extends StatefulWidget {
 
 class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
   late final CuentaSitioController _controller;
+
   final TextEditingController _busquedaController =
       TextEditingController();
 
@@ -150,6 +151,7 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
         cuentaId: cuenta.id,
         activo: nuevoEstado,
       );
+
       _mostrarMensaje(
         nuevoEstado ? 'Cuenta activada' : 'Cuenta desactivada',
       );
@@ -164,7 +166,8 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
       builder: (context) => AlertDialog(
         title: const Text('Eliminar sitio turístico'),
         content: Text(
-          '¿Deseas eliminar "${sitio.nombre}" y su cuenta asociada? Esta acción no se puede deshacer.',
+          '¿Deseas eliminar "${sitio.nombre}" y su cuenta asociada? '
+          'Esta acción no se puede deshacer.',
         ),
         actions: [
           TextButton(
@@ -200,7 +203,7 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
         final sitios = _controller.sitiosFiltrados;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Colors.transparent,
           body: SafeArea(
             child: Column(
               children: [
@@ -276,7 +279,8 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
                           filtroSeleccionado: _controller.filtro,
                           onChanged: _controller.cambiarFiltro,
                         ),
-                        if (_controller.cargando && _controller.sitios.isEmpty)
+                        if (_controller.cargando &&
+                            _controller.sitios.isEmpty)
                           const Padding(
                             padding: EdgeInsets.all(
                               AppDimensions.spacingXxl,

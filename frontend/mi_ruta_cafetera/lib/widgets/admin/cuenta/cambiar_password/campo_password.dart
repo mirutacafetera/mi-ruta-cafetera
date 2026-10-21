@@ -19,48 +19,66 @@ class CampoPassword extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final borde = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(
+        AppDimensions.radiusMd,
+      ),
+      borderSide: const BorderSide(
+        color: Color(0xFFB58A70),
+        width: 1.5,
+      ),
+    );
+
     return TextField(
       controller: controller,
       obscureText: !visible,
       style: const TextStyle(
         color: AppColors.textPrimary,
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         labelText: etiqueta,
+        labelStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+        ),
+        floatingLabelStyle: const TextStyle(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w600,
+        ),
         prefixIcon: const Icon(
-          Icons.lock_outline,
+          Icons.lock_outline_rounded,
           color: AppColors.secondary,
         ),
         suffixIcon: IconButton(
           onPressed: onCambiarVisibilidad,
+          tooltip: visible
+              ? 'Ocultar contraseña'
+              : 'Mostrar contraseña',
           icon: Icon(
             visible
-                ? Icons.visibility_off
-                : Icons.visibility,
-            color: AppColors.textSecondary,
+                ? Icons.visibility_off_rounded
+                : Icons.visibility_rounded,
+            color: AppColors.secondary,
           ),
         ),
         filled: true,
-        fillColor: AppColors.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusMd,
-          ),
+        fillColor: AppColors.creamLight,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingLg,
+          vertical: AppDimensions.spacingLg,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusMd,
-          ),
-          borderSide: const BorderSide(
-            color: AppColors.borderDark,
-          ),
-        ),
+        border: borde,
+        enabledBorder: borde,
+        disabledBorder: borde,
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(
             AppDimensions.radiusMd,
           ),
           borderSide: const BorderSide(
-            color: AppColors.secondary,
+            color: AppColors.primary,
+            width: 1.8,
           ),
         ),
       ),

@@ -3,12 +3,6 @@ const mongoose = require('mongoose');
 // =====================================================
 // OPCIONES DEL AVATAR CAFETERO
 // =====================================================
-//
-// El avatar se guarda como una configuración pequeña de
-// identificadores (no como imagen). La app los dibuja con
-// widgets. Estas listas son la fuente de validación del
-// backend; deben coincidir con avatar_cafetero_model.dart.
-// =====================================================
 
 const AVATAR_OPCIONES = {
   piel: ['clara', 'trigo', 'canela', 'morena', 'oscura'],
@@ -66,26 +60,46 @@ const usuarioSchema = new mongoose.Schema(
     // ==================================================
     // AVATAR CAFETERO
     // ==================================================
-    //
-    // `usar` indica si la app debe mostrar el avatar en
-    // lugar de la fotografía (por ejemplo, la de Google).
-    // La fotografía en `fotoPerfil` nunca se reemplaza.
-    // ==================================================
 
     avatar: {
       usar: {
         type: Boolean,
         default: false
       },
-      piel: { type: String, enum: AVATAR_OPCIONES.piel },
-      peinado: { type: String, enum: AVATAR_OPCIONES.peinado },
-      colorPelo: { type: String, enum: AVATAR_OPCIONES.colorPelo },
-      ropa: { type: String, enum: AVATAR_OPCIONES.ropa },
-      sombrero: { type: String, enum: AVATAR_OPCIONES.sombrero },
-      accesorio: { type: String, enum: AVATAR_OPCIONES.accesorio },
-      fondo: { type: String, enum: AVATAR_OPCIONES.fondo }
+      piel: {
+        type: String,
+        enum: AVATAR_OPCIONES.piel
+      },
+      peinado: {
+        type: String,
+        enum: AVATAR_OPCIONES.peinado
+      },
+      colorPelo: {
+        type: String,
+        enum: AVATAR_OPCIONES.colorPelo
+      },
+      ropa: {
+        type: String,
+        enum: AVATAR_OPCIONES.ropa
+      },
+      sombrero: {
+        type: String,
+        enum: AVATAR_OPCIONES.sombrero
+      },
+      accesorio: {
+        type: String,
+        enum: AVATAR_OPCIONES.accesorio
+      },
+      fondo: {
+        type: String,
+        enum: AVATAR_OPCIONES.fondo
+      }
     },
-    
+
+    // ==================================================
+    // ESTADO DE LA CUENTA
+    // ==================================================
+
     activo: {
       type: Boolean,
       default: true
@@ -94,17 +108,55 @@ const usuarioSchema = new mongoose.Schema(
     // ==================================================
     // ANONIMIZACIÓN DE CUENTA
     // ==================================================
-    //
-    // Fecha en que el usuario eliminó su cuenta. Los datos
-    // personales ya fueron anonimizados; el documento se
-    // conserva para no romper reseñas y reservas.
-    // ==================================================
 
     eliminadoAt: {
       type: Date,
       default: null
     },
 
+    // ==================================================
+    // HISTORIAL DE ELIMINACIÓN
+    // ==================================================
+
+    eliminacion: {
+      type: {
+        tipo: {
+          type: String,
+          enum: ['usuario', 'administrador']
+        },
+
+        usuarioNombre: {
+          type: String,
+          default: ''
+        },
+
+        usuarioCorreo: {
+          type: String,
+          default: ''
+        },
+
+        responsableId: {
+          type: mongoose.Schema.Types.ObjectId,
+          default: null
+        },
+
+        responsableNombre: {
+          type: String,
+          default: ''
+        },
+
+        fecha: {
+          type: Date,
+          default: null
+        },
+
+        motivo: {
+          type: String,
+          default: ''
+        }
+      },
+      default: null
+    },
 
     // ==================================================
     // VERIFICACIÓN DE CORREO
@@ -154,10 +206,7 @@ const usuarioSchema = new mongoose.Schema(
   }
 );
 
-const Usuario = mongoose.model(
-  'Usuario',
-  usuarioSchema
-);
+const Usuario = mongoose.model('Usuario', usuarioSchema);
 
 Usuario.AVATAR_OPCIONES = AVATAR_OPCIONES;
 

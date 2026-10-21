@@ -19,34 +19,85 @@ class OpcionCuenta extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(
-        bottom: AppDimensions.spacingSm,
+        bottom: AppDimensions.spacingMd,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.creamLight,
         borderRadius: BorderRadius.circular(
-          AppDimensions.radiusMd,
+          AppDimensions.cardRadius,
         ),
         border: Border.all(
-          color: AppColors.borderDark,
+          color: const Color(0xFFB58A70),
+          width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.coffeeDark.withValues(
+              alpha: 0.08,
+            ),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: ListTile(
-        leading: Icon(
-          icono,
-          color: AppColors.secondary,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.cardRadius,
         ),
-        title: Text(
-          titulo,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.cardRadius,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingLg,
+              vertical: AppDimensions.spacingSm,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: AppColors.cream,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusMd,
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFFB58A70),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Icon(
+                    icono,
+                    color: AppColors.secondary,
+                    size: AppDimensions.iconLg,
+                  ),
+                ),
+                const SizedBox(
+                  width: AppDimensions.spacingMd,
+                ),
+                Expanded(
+                  child: Text(
+                    titulo,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.secondary,
+                  size: 25,
+                ),
+              ],
+            ),
           ),
         ),
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: AppColors.textSecondary,
-        ),
-        onTap: onTap,
       ),
     );
   }

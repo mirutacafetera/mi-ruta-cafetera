@@ -22,10 +22,26 @@ class DatoCuenta extends StatelessWidget {
         vertical: AppDimensions.spacingMd,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icono,
-            color: AppColors.secondary,
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.cream,
+              borderRadius: BorderRadius.circular(
+                AppDimensions.radiusMd,
+              ),
+              border: Border.all(
+                color: const Color(0xFFB58A70),
+                width: 1.5,
+              ),
+            ),
+            child: Icon(
+              icono,
+              color: AppColors.secondary,
+              size: AppDimensions.iconMd,
+            ),
           ),
           const SizedBox(
             width: AppDimensions.spacingMd,
@@ -39,6 +55,7 @@ class DatoCuenta extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(
@@ -48,6 +65,7 @@ class DatoCuenta extends StatelessWidget {
                   valor,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../services/admin/admin_servicio_autenticacion.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
+import '../../../widgets/admin/fondo_admin.dart';
 import '../../../widgets/admin/cuenta/cambiar_password/boton_password.dart';
 import '../../../widgets/admin/cuenta/cambiar_password/campo_password.dart';
 import '../../../widgets/admin/cuenta/cambiar_password/pasos_cambio_password.dart';
@@ -47,9 +48,7 @@ class _CambiarPasswordState extends State<CambiarPassword> {
         correo: widget.correo,
       );
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         codigoEnviado = true;
@@ -63,17 +62,12 @@ class _CambiarPasswordState extends State<CambiarPassword> {
         ),
       );
     } catch (e) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            e.toString().replaceFirst(
-              'Exception: ',
-              '',
-            ),
+            e.toString().replaceFirst('Exception: ', ''),
           ),
         ),
       );
@@ -104,15 +98,12 @@ class _CambiarPasswordState extends State<CambiarPassword> {
 
     try {
       final token =
-          await AdminServicioAutenticacion
-              .verificarCodigoRecuperacion(
+          await AdminServicioAutenticacion.verificarCodigoRecuperacion(
         correo: widget.correo,
         codigo: codigoController.text,
       );
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         tokenRecuperacion = token;
@@ -126,17 +117,12 @@ class _CambiarPasswordState extends State<CambiarPassword> {
         ),
       );
     } catch (e) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            e.toString().replaceFirst(
-              'Exception: ',
-              '',
-            ),
+            e.toString().replaceFirst('Exception: ', ''),
           ),
         ),
       );
@@ -206,9 +192,7 @@ class _CambiarPasswordState extends State<CambiarPassword> {
         nuevaPassword: passwordController.text,
       );
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -220,17 +204,12 @@ class _CambiarPasswordState extends State<CambiarPassword> {
 
       Navigator.pop(context);
     } catch (e) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            e.toString().replaceFirst(
-              'Exception: ',
-              '',
-            ),
+            e.toString().replaceFirst('Exception: ', ''),
           ),
         ),
       );
@@ -252,146 +231,149 @@ class _CambiarPasswordState extends State<CambiarPassword> {
             : 1;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          'Cambiar contraseña',
-        ),
+        title: const Text('Cambiar contraseña'),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(
-          AppDimensions.spacingXl,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Cambiar contraseña',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+      body: FondoAdmin(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(
+            AppDimensions.spacingXl,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 600,
               ),
-            ),
-            const SizedBox(
-              height: AppDimensions.spacingSm,
-            ),
-            Text(
-              'Enviaremos un código de recuperación a ${widget.correo}.',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(
-              height: AppDimensions.spacingXl,
-            ),
-            PasosCambioPassword(
-              pasoActual: pasoActual,
-            ),
-            const SizedBox(
-              height: AppDimensions.spacingXl,
-            ),
-            BotonPassword(
-              texto: 'Enviar código',
-              icono: Icons.email_outlined,
-              cargando: verificandoCodigo && !codigoEnviado,
-              onPressed: _enviarCodigo,
-            ),
-            if (codigoEnviado) ...[
-              const SizedBox(
-                height: AppDimensions.spacingXl,
-              ),
-              TextField(
-                controller: codigoController,
-                keyboardType: TextInputType.number,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Código de recuperación',
-                  prefixIcon: const Icon(
-                    Icons.pin_outlined,
-                    color: AppColors.secondary,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusMd,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Enviaremos un código de recuperación a ${widget.correo}.',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                      height: 1.5,
                     ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusMd,
-                    ),
-                    borderSide: const BorderSide(
-                      color: AppColors.borderDark,
-                    ),
+                  const SizedBox(
+                    height: AppDimensions.spacingXl,
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusMd,
-                    ),
-                    borderSide: const BorderSide(
-                      color: AppColors.secondary,
-                    ),
+                  PasosCambioPassword(
+                    pasoActual: pasoActual,
                   ),
-                ),
+                  const SizedBox(
+                    height: AppDimensions.spacingXl,
+                  ),
+                  BotonPassword(
+                    texto: 'Enviar código',
+                    icono: Icons.email_outlined,
+                    cargando: verificandoCodigo && !codigoEnviado,
+                    onPressed: _enviarCodigo,
+                  ),
+                  if (codigoEnviado) ...[
+                    const SizedBox(
+                      height: AppDimensions.spacingXl,
+                    ),
+                    TextField(
+                      controller: codigoController,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Código de recuperación',
+                        labelStyle: const TextStyle(
+                          color: AppColors.textSecondary,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.pin_outlined,
+                          color: AppColors.secondary,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.creamLight,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMd,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMd,
+                          ),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFB58A70),
+                            width: 1.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMd,
+                          ),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.8,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: AppDimensions.spacingMd,
+                    ),
+                    BotonPassword(
+                      texto: 'Verificar código',
+                      icono: Icons.verified_outlined,
+                      cargando: verificandoCodigo &&
+                          tokenRecuperacion == null,
+                      onPressed: tokenRecuperacion != null
+                          ? null
+                          : _verificarCodigo,
+                    ),
+                  ],
+                  if (tokenRecuperacion != null) ...[
+                    const SizedBox(
+                      height: AppDimensions.spacingXl,
+                    ),
+                    CampoPassword(
+                      controller: passwordController,
+                      etiqueta: 'Nueva contraseña',
+                      visible: mostrarPassword,
+                      onCambiarVisibilidad: () {
+                        setState(() {
+                          mostrarPassword = !mostrarPassword;
+                        });
+                      },
+                    ),
+                    const SizedBox(
+                      height: AppDimensions.spacingMd,
+                    ),
+                    CampoPassword(
+                      controller: confirmarPasswordController,
+                      etiqueta: 'Confirmar contraseña',
+                      visible: mostrarConfirmarPassword,
+                      onCambiarVisibilidad: () {
+                        setState(() {
+                          mostrarConfirmarPassword =
+                              !mostrarConfirmarPassword;
+                        });
+                      },
+                    ),
+                    const SizedBox(
+                      height: AppDimensions.spacingXl,
+                    ),
+                    BotonPassword(
+                      texto: 'Cambiar contraseña',
+                      icono: Icons.lock_reset_outlined,
+                      cargando: cambiandoPassword,
+                      onPressed: _cambiarPassword,
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(
-                height: AppDimensions.spacingMd,
-              ),
-              BotonPassword(
-                texto: 'Verificar código',
-                icono: Icons.verified_outlined,
-                cargando: verificandoCodigo &&
-                    tokenRecuperacion == null,
-                onPressed: tokenRecuperacion != null
-                    ? null
-                    : _verificarCodigo,
-              ),
-            ],
-            if (tokenRecuperacion != null) ...[
-              const SizedBox(
-                height: AppDimensions.spacingXl,
-              ),
-              CampoPassword(
-                controller: passwordController,
-                etiqueta: 'Nueva contraseña',
-                visible: mostrarPassword,
-                onCambiarVisibilidad: () {
-                  setState(() {
-                    mostrarPassword =
-                        !mostrarPassword;
-                  });
-                },
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingMd,
-              ),
-              CampoPassword(
-                controller: confirmarPasswordController,
-                etiqueta: 'Confirmar contraseña',
-                visible: mostrarConfirmarPassword,
-                onCambiarVisibilidad: () {
-                  setState(() {
-                    mostrarConfirmarPassword =
-                        !mostrarConfirmarPassword;
-                  });
-                },
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingXl,
-              ),
-              BotonPassword(
-                texto: 'Cambiar contraseña',
-                icono: Icons.lock_reset_outlined,
-                cargando: cambiandoPassword,
-                onPressed: _cambiarPassword,
-              ),
-            ],
-          ],
+            ),
+          ),
         ),
       ),
     );

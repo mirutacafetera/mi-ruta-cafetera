@@ -1,3 +1,4 @@
+
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 
@@ -34,6 +35,10 @@ const loginWithGoogle = async (req, res) => {
       });
     }
 
+    // DEPURACIÓN: comprobar los datos que entrega Google.
+    console.log('CORREO GOOGLE:', payload.email);
+    console.log('FOTO GOOGLE:', payload.picture);
+
     const {
       sub: googleId,
       email,
@@ -64,6 +69,7 @@ const loginWithGoogle = async (req, res) => {
       .select('+password');
 
     if (!usuario) {
+      // Crear usuario guardando la foto de Google.
       usuario = await Usuario.create({
         nombre: nombre || 'Usuario',
         apellido: apellido || 'Google',
@@ -72,13 +78,16 @@ const loginWithGoogle = async (req, res) => {
         fotoPerfil: fotoPerfil || '',
         correoVerificado: true
       });
+
+      console.log(
+        'USUARIO GOOGLE CREADO. FOTO GUARDADA:',
+        usuario.fotoPerfil || '(vacía)'
+      );
     } else {
       let necesitaGuardar = false;
 
-      if (
-        fotoPerfil &&
-        usuario.fotoPerfil !== fotoPerfil
-      ) {
+      // Actualizar la foto si Google entrega una URL.
+      if (fotoPerfil && usuario.fotoPerfil !== fotoPerfil) {
         usuario.fotoPerfil = fotoPerfil;
         necesitaGuardar = true;
       }
@@ -91,6 +100,11 @@ const loginWithGoogle = async (req, res) => {
       if (necesitaGuardar) {
         await usuario.save();
       }
+
+      console.log(
+        'USUARIO GOOGLE EXISTENTE. FOTO EN BD:',
+        usuario.fotoPerfil || '(vacía)'
+      );
     }
 
     const token = jwt.sign(
@@ -101,8 +115,7 @@ const loginWithGoogle = async (req, res) => {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn:
-          process.env.JWT_EXPIRES_IN || '1d'
+        expiresIn: process.env.JWT_EXPIRES_IN || '1d'
       }
     );
 
@@ -112,10 +125,7 @@ const loginWithGoogle = async (req, res) => {
       usuario: usuarioPublico(usuario)
     });
   } catch (error) {
-    console.error(
-      'Error en login con Google:',
-      error
-    );
+    console.error('Error en login con Google:', error);
 
     return res.status(401).json({
       mensaje: 'No se pudo autenticar con Google',

@@ -17,13 +17,19 @@ class BotonGuardarCuenta extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
+      height: 52,
       child: ElevatedButton(
         onPressed: guardando ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.secondary,
+          backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
+          disabledBackgroundColor: AppColors.primary.withValues(
+            alpha: 0.6,
+          ),
+          disabledForegroundColor: AppColors.white,
+          elevation: 0,
           padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingMd,
+            horizontal: AppDimensions.spacingLg,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
@@ -33,8 +39,8 @@ class BotonGuardarCuenta extends StatelessWidget {
         ),
         child: guardando
             ? const SizedBox(
-                height: 22,
                 width: 22,
+                height: 22,
                 child: CircularProgressIndicator(
                   color: AppColors.white,
                   strokeWidth: 2,
@@ -44,7 +50,8 @@ class BotonGuardarCuenta extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.save_outlined,
+                    Icons.save_rounded,
+                    size: 20,
                   ),
                   SizedBox(
                     width: AppDimensions.spacingSm,
@@ -52,7 +59,8 @@ class BotonGuardarCuenta extends StatelessWidget {
                   Text(
                     'Guardar cambios',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],

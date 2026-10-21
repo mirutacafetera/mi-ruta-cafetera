@@ -67,9 +67,11 @@ const verificarToken = async (req, res, next) => {
     // CUENTAS DE USUARIO: DEBEN SEGUIR EXISTIENDO
     // -------------------------------------------------
     //
-    // Un token emitido antes de eliminar la cuenta deja de ser
-    // válido. Los tokens de administrador y de sitio no se ven
-    // afectados.
+    // Un token emitido antes de eliminar o desactivar
+    // la cuenta deja de ser válido.
+    // Los tokens de administrador y de sitio no se ven
+    // afectados por esta comprobación.
+    // -------------------------------------------------
 
     if (decoded.rol === 'usuario') {
       let cuenta;
@@ -77,7 +79,7 @@ const verificarToken = async (req, res, next) => {
       try {
         cuenta = await Usuario
           .findById(decoded.id)
-          .select('_id eliminadoAt')
+          .select('_id activo eliminadoAt')
           .lean();
       } catch (errorBusqueda) {
         console.error(
@@ -93,6 +95,12 @@ const verificarToken = async (req, res, next) => {
       if (!cuenta || cuenta.eliminadoAt) {
         return res.status(401).json({
           mensaje: 'Tu cuenta ya no existe o fue eliminada'
+        });
+      }
+
+      if (cuenta.activo === false) {
+        return res.status(403).json({
+          mensaje: 'Tu cuenta está desactivada'
         });
       }
     }
