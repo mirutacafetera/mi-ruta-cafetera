@@ -1,19 +1,23 @@
+
 import 'package:flutter/material.dart';
+
 import '../../../models/admin/reporte_admin.dart';
 import '../../../services/admin/reporte/admin_reporte.dart';
 
 class ReporteController extends ChangeNotifier {
   List<ReporteAdmin> reportes = [];
+
   bool cargando = false;
   bool guardando = false;
+
   String busqueda = '';
   String estadoSeleccionado = 'todos';
   String? error;
 
   List<ReporteAdmin> get reportesFiltrados {
-    return reportes.where((reporte) {
-      final texto = busqueda.toLowerCase();
+    final texto = busqueda.toLowerCase().trim();
 
+    return reportes.where((reporte) {
       final coincideBusqueda =
           reporte.asunto.toLowerCase().contains(texto) ||
           reporte.mensaje.toLowerCase().contains(texto) ||
@@ -28,7 +32,7 @@ class ReporteController extends ChangeNotifier {
   }
 
   int contarPorEstado(String estado) {
-    return reportes.where((r) => r.estado == estado).length;
+    return reportes.where((reporte) => reporte.estado == estado).length;
   }
 
   void cambiarBusqueda(String valor) {
@@ -72,10 +76,32 @@ class ReporteController extends ChangeNotifier {
         respuestaAdmin: respuestaAdmin,
       );
 
-      final indice = reportes.indexWhere((r) => r.id == id);
+      final indice = reportes.indexWhere(
+        (reporte) => reporte.id == id,
+      );
 
       if (indice != -1) {
-        reportes[indice] = actualizado;
+        final anterior = reportes[indice];
+
+        reportes[indice] = ReporteAdmin(
+          id: actualizado.id,
+          asunto: actualizado.asunto,
+          mensaje: actualizado.mensaje,
+          estado: actualizado.estado,
+          respuestaAdmin: actualizado.respuestaAdmin,
+          usuarioId: actualizado.usuarioId ?? anterior.usuarioId,
+          nombreUsuario: actualizado.nombreUsuario.isNotEmpty
+              ? actualizado.nombreUsuario
+              : anterior.nombreUsuario,
+          apellidoUsuario: actualizado.apellidoUsuario.isNotEmpty
+              ? actualizado.apellidoUsuario
+              : anterior.apellidoUsuario,
+          correoUsuario: actualizado.correoUsuario.isNotEmpty
+              ? actualizado.correoUsuario
+              : anterior.correoUsuario,
+          createdAt: actualizado.createdAt ?? anterior.createdAt,
+          updatedAt: actualizado.updatedAt ?? anterior.updatedAt,
+        );
       }
 
       return true;

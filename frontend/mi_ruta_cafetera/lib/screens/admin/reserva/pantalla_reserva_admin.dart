@@ -9,6 +9,7 @@ import '../../../widgets/admin/sitio_turistico/barra_busqueda.dart';
 import '../../../widgets/admin/reserva/tarjeta_reserva_admin.dart';
 import '../../../widgets/admin/reserva/filtro_estado_reserva.dart';
 import '../../../widgets/admin/reserva/detalle_reserva_admin.dart';
+import '../../../widgets/admin/reserva/resumen_reservas.dart';
 
 class PantallaReservaAdmin extends StatefulWidget {
   const PantallaReservaAdmin({super.key});
@@ -20,6 +21,7 @@ class PantallaReservaAdmin extends StatefulWidget {
 
 class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
   late final ReservaAdminController controller;
+
   final TextEditingController busquedaController =
       TextEditingController();
 
@@ -41,21 +43,26 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
   }
 
   List<ReservaAdminModel> get reservasFiltradas {
-    return controller.reservas.where((reserva) {
-      final consulta = busqueda.toLowerCase().trim();
+    final consulta = busqueda.toLowerCase().trim();
 
-      final coincideBusqueda = reserva.nombreUsuario
-              .toLowerCase()
-              .contains(consulta) ||
+    return controller.reservas.where((reserva) {
+      final coincideBusqueda =
+          reserva.nombreUsuario.toLowerCase().contains(consulta) ||
           reserva.nombreSitio.toLowerCase().contains(consulta) ||
           reserva.nombreActividad.toLowerCase().contains(consulta);
 
       final coincideEstado = estadoSeleccionado == 'Todas' ||
-          reserva.estado.toLowerCase() ==
+          reserva.estado.trim().toLowerCase() ==
               estadoSeleccionado.toLowerCase();
 
       return coincideBusqueda && coincideEstado;
     }).toList();
+  }
+
+  int _contarEstado(String estado) {
+    return controller.reservas.where((reserva) {
+      return reserva.estado.trim().toLowerCase() == estado;
+    }).length;
   }
 
   void limpiarBusqueda() {
@@ -68,6 +75,7 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
+      backgroundColor: AppColors.creamLight,
       builder: (context) {
         return AnimatedBuilder(
           animation: controller,
@@ -79,42 +87,72 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
 
             return SafeArea(
               child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.75,
+                height: MediaQuery.of(context).size.height * 0.85,
                 child: DetalleReservaAdmin(
                   reserva: actual,
-                  guardando: controller.guardando,
-                  onCambiarEstado: (estado) async {
-                    final exito = await controller.actualizarEstado(
-                      id: actual.id,
-                      estado: estado,
-                    );
-
-                    if (!mounted || !context.mounted) return;
-
-                    if (exito) {
-                      Navigator.pop(context);
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(this.context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Estado actualizado correctamente'),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            controller.error ?? 'No se pudo actualizar',
-                          ),
-                        ),
-                      );
-                    }
-                  },
                 ),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  Widget _construirListaReservas(
+    List<ReservaAdminModel> reservas,
+  ) {
+    if (controller.cargando) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 55),
+        child: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary,
+          ),
+        ),
+      );
+    }
+
+    if (reservas.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 45),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.event_busy_rounded,
+                color: AppColors.secondary,
+                size: 42,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'No se encontraron reservas',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: reservas.map((reserva) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            12,
+            0,
+            12,
+            14,
+          ),
+          child: TarjetaReservaAdmin(
+            reserva: reserva,
+            onTap: () => abrirDetalle(reserva),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -126,69 +164,83 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
         final reservas = reservasFiltradas;
 
         return Scaffold(
-          body: Column(
-            children: [
-              EncabezadoLista(
-                titulo: 'Reservas',
-                descripcion: 'reservas registradas',
-                textoNuevo: '',
-                cantidad: controller.reservas.length,
-                cargando: controller.cargando,
-                mostrarBotonNuevo: false,
-                onActualizar: controller.cargarReservas,
-                onNuevo: () {},
-              ),
-              BarraBusqueda(
-                valor: busqueda,
-                textoAyuda: 'Buscar usuario, sitio o actividad...',
-                controller: busquedaController,
-                onChanged: (valor) {
-                  setState(() => busqueda = valor);
-                },
-                onLimpiar: limpiarBusqueda,
-              ),
-              FiltroEstadoReserva(
-                estadoSeleccionado: estadoSeleccionado,
-                onChanged: (estado) {
-                  setState(() => estadoSeleccionado = estado);
-                },
-              ),
-              if (controller.error != null)
-                Padding(
-                  padding: EdgeInsets.all(AppDimensions.spacingMd),
-                  child: Text(
-                    controller.error!,
-                    style: const TextStyle(color: AppColors.error),
-                  ),
+          backgroundColor: Colors.transparent,
+          body: RefreshIndicator(
+            onRefresh: controller.cargarReservas,
+            color: AppColors.primary,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              children: [
+                EncabezadoLista(
+                  titulo: 'Reservas',
+                  descripcion: 'reservas registradas',
+                  textoNuevo: '',
+                  cantidad: controller.reservas.length,
+                  cargando: false,
+                  mostrarBotonNuevo: false,
+                  onActualizar: controller.cargarReservas,
+                  onNuevo: () {},
                 ),
-              Expanded(
-                child: controller.cargando
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : reservas.isEmpty
-                        ? const Center(
-                            child: Text('No se encontraron reservas'),
-                          )
-                        : RefreshIndicator(
-                            onRefresh: controller.cargarReservas,
-                            child: ListView.builder(
-                              padding: EdgeInsets.all(
-                                AppDimensions.spacingMd,
-                              ),
-                              itemCount: reservas.length,
-                              itemBuilder: (context, index) {
-                                final reserva = reservas[index];
 
-                                return TarjetaReservaAdmin(
-                                  reserva: reserva,
-                                  onTap: () => abrirDetalle(reserva),
-                                );
-                              },
-                            ),
-                          ),
-              ),
-            ],
+                const SizedBox(height: AppDimensions.spacingSm),
+
+                ResumenReservas(
+                  todas: controller.reservas.length,
+                  pendientes: _contarEstado('pendiente'),
+                  confirmadas: _contarEstado('confirmada'),
+                  rechazadas: _contarEstado('rechazada'),
+                  canceladas: _contarEstado('cancelada'),
+                  completadas: _contarEstado('completada'),
+                ),
+
+                const SizedBox(height: AppDimensions.spacingLg),
+
+                BarraBusqueda(
+                  valor: busqueda,
+                  textoAyuda:
+                      'Buscar usuario, sitio o actividad...',
+                  controller: busquedaController,
+                  onChanged: (valor) {
+                    setState(() => busqueda = valor);
+                  },
+                  onLimpiar: limpiarBusqueda,
+                ),
+
+                const SizedBox(height: AppDimensions.spacingSm),
+
+                FiltroEstadoReserva(
+                  estadoSeleccionado: estadoSeleccionado,
+                  onChanged: (estado) {
+                    setState(() => estadoSeleccionado = estado);
+                  },
+                ),
+
+                const SizedBox(height: AppDimensions.spacingLg),
+
+                if (controller.error != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.pageHorizontalSmall,
+                      vertical: AppDimensions.spacingSm,
+                    ),
+                    child: Text(
+                      controller.error!,
+                      style: const TextStyle(
+                        color: AppColors.error,
+                      ),
+                    ),
+                  ),
+
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppDimensions.spacingSm,
+                    bottom: AppDimensions.spacingXxl,
+                  ),
+                  child: _construirListaReservas(reservas),
+                ),
+              ],
+            ),
           ),
         );
       },

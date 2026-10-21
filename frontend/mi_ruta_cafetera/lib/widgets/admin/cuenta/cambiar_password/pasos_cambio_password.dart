@@ -23,72 +23,107 @@ class PasosCambioPassword extends StatelessWidget {
         titulo: 'Verificar código',
       ),
       (
-        icono: Icons.lock_outline,
+        icono: Icons.lock_outline_rounded,
         titulo: 'Nueva contraseña',
       ),
     ];
 
-    return Row(
-      children: List.generate(
-        pasos.length,
-        (index) {
-          final paso = index + 1;
-          final activo = paso <= pasoActual;
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 350,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+              pasos.length,
+              (index) {
+                final paso = index + 1;
+                final activo = paso <= pasoActual;
+                final completado = paso < pasoActual;
 
-          return Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: activo
-                            ? AppColors.secondary
-                            : AppColors.borderDark,
-                        child: Icon(
-                          pasos[index].icono,
-                          color: activo
-                              ? AppColors.white
-                              : AppColors.textSecondary,
-                          size: AppDimensions.iconMd,
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 54,
+                          height: 54,
+                          decoration: BoxDecoration(
+                            color: activo
+                                ? AppColors.secondary
+                                : AppColors.cream,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: activo
+                                  ? AppColors.secondary
+                                  : const Color(0xFFB58A70),
+                              width: 1.6,
+                            ),
+                          ),
+                          child: Icon(
+                            pasos[index].icono,
+                            size: 25,
+                            color: activo
+                                ? AppColors.white
+                                : AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: AppDimensions.spacingSm,
-                      ),
-                      Text(
-                        pasos[index].titulo,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: activo
-                              ? AppColors.textPrimary
-                              : AppColors.textSecondary,
-                          fontSize: 11,
-                          fontWeight: activo
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                        const SizedBox(
+                          width: AppDimensions.spacingLg,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (index < pasos.length - 1)
-                  Expanded(
-                    child: Container(
-                      height: 2,
-                      margin: const EdgeInsets.only(
-                        bottom: 28,
-                      ),
-                      color: paso < pasoActual
-                          ? AppColors.secondary
-                          : AppColors.borderDark,
+                        Expanded(
+                          child: Text(
+                            pasos[index].titulo,
+                            style: TextStyle(
+                              color: activo
+                                  ? AppColors.textPrimary
+                                  : AppColors.textSecondary,
+                              fontSize: 16,
+                              fontWeight: activo
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        if (completado)
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            color: AppColors.primary,
+                            size: 24,
+                          ),
+                      ],
                     ),
-                  ),
-              ],
+                    if (index < pasos.length - 1)
+                      SizedBox(
+                        height: 42,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            width: 2.5,
+                            height: 42,
+                            margin: const EdgeInsets.only(
+                              left: 26,
+                            ),
+                            decoration: BoxDecoration(
+                              color: pasoActual > paso
+                                  ? AppColors.primary
+                                  : const Color(0xFFB58A70),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

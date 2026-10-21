@@ -21,6 +21,7 @@ class BotonPassword extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
+      height: 52,
       child: ElevatedButton.icon(
         onPressed: cargando ? null : onPressed,
         icon: cargando
@@ -39,18 +40,29 @@ class BotonPassword extends StatelessWidget {
         label: Text(
           cargando ? 'Procesando...' : texto,
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.secondary,
+          backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
+          disabledBackgroundColor: AppColors.primary.withValues(
+            alpha: 0.6,
+          ),
+          disabledForegroundColor: AppColors.white,
+          elevation: 0,
           padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingLg,
             vertical: AppDimensions.spacingMd,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
-              AppDimensions.radiusXl,
+              AppDimensions.radiusMd,
+            ),
+            side: const BorderSide(
+              color: Color(0xFFB58A70),
+              width: 1.2,
             ),
           ),
         ),

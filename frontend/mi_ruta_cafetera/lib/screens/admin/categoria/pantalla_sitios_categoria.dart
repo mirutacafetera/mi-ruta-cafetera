@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
@@ -20,8 +19,7 @@ class PantallaSitiosCategoria extends StatefulWidget {
       _PantallaSitiosCategoriaState();
 }
 
-class _PantallaSitiosCategoriaState
-    extends State<PantallaSitiosCategoria> {
+class _PantallaSitiosCategoriaState extends State<PantallaSitiosCategoria> {
   List<SitioAdminModel> sitios = [];
 
   bool cargando = true;
@@ -47,9 +45,7 @@ class _PantallaSitiosCategoriaState
 
       setState(() {
         sitios = todos
-            .where(
-              (sitio) => sitio.categoria?.id == widget.categoria.id,
-            )
+            .where((sitio) => sitio.categoria?.id == widget.categoria.id)
             .toList();
 
         cargando = false;
@@ -91,8 +87,7 @@ class _PantallaSitiosCategoriaState
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Navigator.of(context).maybePop(),
@@ -113,7 +108,6 @@ class _PantallaSitiosCategoriaState
           const SizedBox(width: AppDimensions.spacingXs),
         ],
       ),
-
       body: SafeArea(
         top: false,
         child: RefreshIndicator(
@@ -126,7 +120,6 @@ class _PantallaSitiosCategoriaState
               AppDimensions.pageHorizontalSmall,
             ),
             children: [
-              // BUSCADOR
               SizedBox(
                 height: AppDimensions.searchHeight,
                 child: TextField(
@@ -178,12 +171,9 @@ class _PantallaSitiosCategoriaState
                   ),
                 ),
               ),
-
               const SizedBox(
                 height: AppDimensions.spacingLg,
               ),
-
-              // CONTENIDO
               if (cargando)
                 const Padding(
                   padding: EdgeInsets.all(
@@ -195,7 +185,6 @@ class _PantallaSitiosCategoriaState
                     ),
                   ),
                 )
-
               else if (error != null)
                 Padding(
                   padding: const EdgeInsets.all(
@@ -229,7 +218,6 @@ class _PantallaSitiosCategoriaState
                     ],
                   ),
                 )
-
               else if (filtrados.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -273,9 +261,7 @@ class _PantallaSitiosCategoriaState
                     ],
                   ),
                 )
-
               else ...[
-                // TÍTULO Y CANTIDAD
                 Padding(
                   padding: const EdgeInsets.only(
                     left: AppDimensions.spacingXs,
@@ -322,13 +308,10 @@ class _PantallaSitiosCategoriaState
                     ],
                   ),
                 ),
-
-                // TARJETAS DE SITIOS
                 ...filtrados.map((sitio) {
-                  final descripcion =
-                      sitio.descripcion.trim().isNotEmpty
-                          ? sitio.descripcion.trim()
-                          : sitio.direccion.trim();
+                  final descripcion = sitio.descripcion.trim().isNotEmpty
+                      ? sitio.descripcion.trim()
+                      : sitio.direccion.trim();
 
                   return Container(
                     margin: const EdgeInsets.only(
@@ -352,7 +335,6 @@ class _PantallaSitiosCategoriaState
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // IMAGEN O ICONO DEL SITIO
                           if (sitio.imagen.trim().isNotEmpty)
                             ClipRRect(
                               borderRadius: BorderRadius.circular(
@@ -376,16 +358,12 @@ class _PantallaSitiosCategoriaState
                               colorCategoria,
                               iconoCategoria,
                             ),
-
                           const SizedBox(
                             width: AppDimensions.spacingMd,
                           ),
-
-                          // INFORMACIÓN
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   sitio.nombre,
@@ -398,7 +376,6 @@ class _PantallaSitiosCategoriaState
                                     height: 1.25,
                                   ),
                                 ),
-
                                 if (descripcion.isNotEmpty) ...[
                                   const SizedBox(
                                     height: AppDimensions.spacingXs,
@@ -430,8 +407,6 @@ class _PantallaSitiosCategoriaState
     );
   }
 
-  // ICONO DEL SITIO CON EL COLOR DE SU CATEGORÍA.
-  // Se define dentro de esta pantalla: no crea otro archivo.
   Widget _iconoSitio(Color color, IconData icono) {
     return Container(
       width: 50,

@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
 import '../../controllers/admin/cuenta/cuenta_admin_controlador.dart';
+import '../../controllers/admin/cuenta/foto_perfil_admin_controlador.dart';
 import '../../services/admin/admin_servicio_autenticacion.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_menu_lateral.dart';
+import '../../widgets/admin/fondo_admin.dart';
 import '../mapa_screen_2.dart';
 import 'admin_inicio.dart';
-import 'admin_inicio_sesion.dart';
 import 'actividades/pantalla_actividades.dart';
 import 'contenido/pantalla_contenido.dart';
 import 'producto/pantalla_producto.dart';
@@ -41,6 +42,7 @@ class PantallaAdministrador extends StatefulWidget {
 class _PantallaAdministradorState extends State<PantallaAdministrador> {
   late final ControladorPantallaAdministrador controlador;
   late final CuentaAdminController cuentaAdminController;
+  late final FotoPerfilAdminControlador fotoPerfilControlador;
 
   @override
   void initState() {
@@ -50,8 +52,10 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       ..addListener(_actualizar);
 
     cuentaAdminController = CuentaAdminController();
+    fotoPerfilControlador = FotoPerfilAdminControlador();
 
     _cargarCuenta();
+    fotoPerfilControlador.cargarFoto();
   }
 
   Future<void> _cargarCuenta() async {
@@ -78,18 +82,50 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
     if (!mounted) return;
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const AdminInicioSesion(),
-      ),
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      '/',
       (route) => false,
     );
   }
 
+  Future<void> _confirmarCerrarSesion() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Cerrar sesión'),
+          content: const Text(
+            '¿Deseas cerrar la sesión de administrador?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Cerrar sesión'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmar != true || !mounted) return;
+
+    await _cerrarSesion();
+  }
+
   void _manejarOpcion(String opcion) {
-    if (opcion == 'logout') {
-      _cerrarSesion();
+    final opcionNormalizada = opcion.trim().toLowerCase();
+
+    if (opcionNormalizada == 'logout' ||
+        opcionNormalizada == 'cerrar_sesion') {
+      _confirmarCerrarSesion();
       return;
     }
 
@@ -99,7 +135,7 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   void _abrirMapa() {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => const MapaScreen2(),
       ),
     );
@@ -117,9 +153,13 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       drawer: AdminMenuLateral(
         nombre: widget.nombre,
         email: widget.email,
+        fotoPerfilControlador: fotoPerfilControlador,
         onOpcionSeleccionada: _manejarOpcion,
+        opcionSeleccionada: controlador.opcion,
       ),
-      body: _contenido(),
+      body: FondoAdmin(
+        child: _contenido(),
+      ),
     );
   }
 
@@ -146,6 +186,8 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       case 'perfil':
         return AdminCuenta(
           controller: cuentaAdminController,
+          fotoPerfilControlador: fotoPerfilControlador,
+          onCerrarSesion: _confirmarCerrarSesion,
         );
 
       case 'categorias':
@@ -192,6 +234,7 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     controlador.removeListener(_actualizar);
     controlador.dispose();
     cuentaAdminController.dispose();
+    fotoPerfilControlador.dispose();
     super.dispose();
   }
 }

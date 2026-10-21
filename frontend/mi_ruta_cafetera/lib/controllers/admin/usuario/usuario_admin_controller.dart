@@ -22,35 +22,44 @@ class UsuarioAdminController extends ChangeNotifier {
   String get filtroEstado => _filtroEstado;
   String? get error => _error;
 
-  int get totalUsuarios => _usuarios.length;
+  int get totalUsuarios =>
+      _usuarios.where((usuario) => !usuario.eliminado).length;
 
-  int get usuariosActivos =>
-      _usuarios.where((usuario) => usuario.activo).length;
+  int get usuariosActivos => _usuarios
+      .where((usuario) => !usuario.eliminado && usuario.activo)
+      .length;
 
-  int get usuariosInactivos =>
-      _usuarios.where((usuario) => !usuario.activo).length;
+  int get usuariosInactivos => _usuarios
+      .where((usuario) => !usuario.eliminado && !usuario.activo)
+      .length;
 
-  int get correosVerificados =>
-      _usuarios.where((usuario) => usuario.correoVerificado).length;
+  int get usuariosEliminados =>
+      _usuarios.where((usuario) => usuario.eliminado).length;
 
-  // ============================================================
-  // USUARIOS FILTRADOS POR NOMBRE, CORREO Y ESTADO
-  // ============================================================
+  int get correosVerificados => _usuarios
+      .where((usuario) => !usuario.eliminado && usuario.correoVerificado)
+      .length;
+
+  // USUARIOS FILTRADOS
 
   List<UsuarioAdmin> get usuariosFiltrados {
     final consulta = _busqueda.trim().toLowerCase();
 
     return _usuarios.where((usuario) {
       final nombre = usuario.nombreCompleto.toLowerCase();
-      final correo = usuario.correo.toLowerCase();
+      final correo = usuario.correoMostrado.toLowerCase();
+      final nombreOriginal =
+          (usuario.usuarioNombreEliminado ?? '').toLowerCase();
 
       final coincideBusqueda = consulta.isEmpty ||
           nombre.contains(consulta) ||
-          correo.contains(consulta);
+          correo.contains(consulta) ||
+          nombreOriginal.contains(consulta);
 
       final coincideEstado = switch (_filtroEstado) {
-        'activos' => usuario.activo,
-        'inactivos' => !usuario.activo,
+        'activos' => !usuario.eliminado && usuario.activo,
+        'inactivos' => !usuario.eliminado && !usuario.activo,
+        'eliminados' => usuario.eliminado,
         _ => true,
       };
 
@@ -58,9 +67,7 @@ class UsuarioAdminController extends ChangeNotifier {
     }).toList();
   }
 
-  // ============================================================
   // CARGAR USUARIOS
-  // ============================================================
 
   Future<void> cargarUsuarios() async {
     if (_cargando) return;
@@ -79,44 +86,34 @@ class UsuarioAdminController extends ChangeNotifier {
     }
   }
 
-  // ============================================================
-  // BUSCAR USUARIOS
-  // ============================================================
+  // BUSCAR
 
   void buscar(String texto) {
     _busqueda = texto;
     notifyListeners();
   }
 
-  // ============================================================
-  // FILTRAR POR ESTADO
-  // ============================================================
+  // FILTRAR
 
   void filtrarPorEstado(String estado) {
     _filtroEstado = estado;
     notifyListeners();
   }
 
-  // ============================================================
-  // BUSCAR USUARIO POR ID
-  // ============================================================
+  // BUSCAR POR ID
 
   UsuarioAdmin? buscarUsuarioPorId(String id) {
     for (final usuario in _usuarios) {
-      if (usuario.id == id) {
-        return usuario;
-      }
+      if (usuario.id == id) return usuario;
     }
 
     return null;
   }
 
-  // ============================================================
-  // ACTIVAR O DESACTIVAR USUARIO
-  // ============================================================
+  // ACTIVAR O DESACTIVAR
 
   Future<bool> cambiarEstadoUsuario(UsuarioAdmin usuario) async {
-    if (_procesando) return false;
+    if (_procesando || usuario.eliminado) return false;
 
     _procesando = true;
     _error = null;
@@ -138,12 +135,18 @@ class UsuarioAdminController extends ChangeNotifier {
     }
   }
 
-  // ============================================================
   // ELIMINAR USUARIO
-  // ============================================================
 
   Future<bool> eliminarUsuario(String id) async {
     if (_procesando) return false;
+
+    final usuario = buscarUsuarioPorId(id);
+
+    if (usuario == null || usuario.eliminado) {
+      _error = 'El usuario no existe o ya fue eliminado.';
+      notifyListeners();
+      return false;
+    }
 
     _procesando = true;
     _error = null;
@@ -152,7 +155,10 @@ class UsuarioAdminController extends ChangeNotifier {
     try {
       await AdminUsuarioService.eliminarUsuario(id);
 
-      _usuarios.removeWhere((usuario) => usuario.id == id);
+      // No quitarlo de la lista: el backend debe devolver
+      // la cuenta anonimizada para contarla como eliminada.
+      await cargarUsuarios();
+
       return true;
     } catch (e) {
       _error = _limpiarError(e);
@@ -163,9 +169,7 @@ class UsuarioAdminController extends ChangeNotifier {
     }
   }
 
-  // ============================================================
-  // ACTUALIZAR USUARIO EN LA LISTA
-  // ============================================================
+  // REEMPLAZAR USUARIO
 
   void _reemplazarUsuario(UsuarioAdmin actualizado) {
     final indice = _usuarios.indexWhere(
@@ -177,9 +181,7 @@ class UsuarioAdminController extends ChangeNotifier {
     }
   }
 
-  // ============================================================
-  // LIMPIAR MENSAJE DE ERROR
-  // ============================================================
+  // LIMPIAR ERROR
 
   String _limpiarError(Object error) {
     return error.toString().replaceFirst('Exception: ', '');
@@ -190,9 +192,7 @@ class UsuarioAdminController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ============================================================
   // LIMPIAR DATOS
-  // ============================================================
 
   void limpiarDatos() {
     _usuarios = [];

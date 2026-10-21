@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/sitio/formulario_admin_sitio.dart';
@@ -34,8 +35,7 @@ class _FormularioSitioState extends State<FormularioSitio> {
 
   final _formKey = GlobalKey<FormState>();
 
-  final _messengerKey =
-      GlobalKey<ScaffoldMessengerState>();
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
@@ -77,22 +77,16 @@ class _FormularioSitioState extends State<FormularioSitio> {
     try {
       await controlador.guardar();
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       Navigator.of(context).pop(true);
     } catch (e) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       String mensaje = e.toString();
 
       if (mensaje.startsWith('Exception: ')) {
-        mensaje = mensaje.substring(
-          'Exception: '.length,
-        );
+        mensaje = mensaje.substring('Exception: '.length);
       }
 
       _mostrarError(mensaje);
@@ -125,7 +119,6 @@ class _FormularioSitioState extends State<FormularioSitio> {
                   guardando: controlador.guardando,
                   onCerrar: () => Navigator.pop(context),
                 ),
-
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(
@@ -136,20 +129,23 @@ class _FormularioSitioState extends State<FormularioSitio> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          // DATOS DE ACCESO
-                          SitioDatosAcceso(
-                            esEdicion: edicion,
-                            controladorNombre:
-                                controlador.nombreCuentaController,
-                            controladorApellido:
-                                controlador.apellidoCuentaController,
-                            controladorCorreo:
-                                controlador.correoController,
-                            controladorContrasena:
-                                controlador.passwordController,
-                            controladorTelefono:
-                                controlador.telefonoCuentaController,
-                          ),
+                          // DATOS DE ACCESO:
+                          // Solo se muestran al crear un sitio.
+                          if (!edicion) ...[
+                            SitioDatosAcceso(
+                              esEdicion: false,
+                              controladorNombre:
+                                  controlador.nombreCuentaController,
+                              controladorApellido:
+                                  controlador.apellidoCuentaController,
+                              controladorCorreo:
+                                  controlador.correoController,
+                              controladorContrasena:
+                                  controlador.passwordController,
+                              controladorTelefono:
+                                  controlador.telefonoCuentaController,
+                            ),
+                          ],
 
                           // INFORMACIÓN DEL SITIO
                           SitioInformacion(
@@ -205,8 +201,7 @@ class _FormularioSitioState extends State<FormularioSitio> {
 
                           // IMAGEN
                           SitioImagen(
-                            imagenBytes:
-                                controlador.imagenBytes,
+                            imagenBytes: controlador.imagenBytes,
                             imagenesExistentes:
                                 controlador.imagenesExistentes,
                             onSeleccionarImagen:
@@ -230,10 +225,8 @@ class _FormularioSitioState extends State<FormularioSitio> {
 
                           // CANCELAR
                           BotonCancelarSitio(
-                            deshabilitado:
-                                controlador.guardando,
-                            onPressed: () =>
-                                Navigator.pop(context),
+                            deshabilitado: controlador.guardando,
+                            onPressed: () => Navigator.pop(context),
                           ),
 
                           const SizedBox(
@@ -256,7 +249,6 @@ class _FormularioSitioState extends State<FormularioSitio> {
   void dispose() {
     controlador.removeListener(_actualizar);
     controlador.dispose();
-
     super.dispose();
   }
 }

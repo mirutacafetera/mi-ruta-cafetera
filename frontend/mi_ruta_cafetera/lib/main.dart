@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import 'screens/admin/pantalla_administrador.dart';
@@ -28,8 +29,6 @@ class MiRutaCafeteraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Tipo de letra elegido en Preferencias: reconstruye el tema
-    // (no la navegación) cuando cambia.
     return ValueListenableBuilder<FuenteApp>(
       valueListenable: PreferenciasService.instance.fuente,
       builder: (context, fuente, _) {
@@ -44,8 +43,6 @@ class MiRutaCafeteraApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.construir(fontFamily: fuente.familia),
 
-      // Preferencia de tamaño de texto (Mi perfil → Preferencias).
-      // Se combina con el tamaño de texto del sistema.
       builder: (context, child) {
         return ValueListenableBuilder<TamanoTexto>(
           valueListenable: PreferenciasService.instance.tamanoTexto,
@@ -56,7 +53,9 @@ class MiRutaCafeteraApp extends StatelessWidget {
             return MediaQuery(
               data: media.copyWith(
                 textScaler: TextScaler.linear(
-                  (escalaSistema * tamano.factor).clamp(0.8, 1.8).toDouble(),
+                  (escalaSistema * tamano.factor)
+                      .clamp(0.8, 1.8)
+                      .toDouble(),
                 ),
               ),
               child: child ?? const SizedBox.shrink(),
@@ -64,8 +63,14 @@ class MiRutaCafeteraApp extends StatelessWidget {
           },
         );
       },
-      home: const BienvenidaScreen(),
+
+      initialRoute: '/',
+
       routes: {
+        // PRIMERA PANTALLA DE LA APLICACIÓN
+        '/': (context) => const BienvenidaScreen(),
+
+        // ADMINISTRADOR
         '/admin': (context) {
           return const PantallaAdministrador(
             nombre: 'Administrador',
@@ -73,11 +78,12 @@ class MiRutaCafeteraApp extends StatelessWidget {
           );
         },
 
+        // INICIO DE SESIÓN DEL SITIO TURÍSTICO
         '/sitio-login': (context) {
           return const SitioLoginScreen();
         },
 
-        // MAPA GENERAL: exclusivo de usuarios con sesión.
+        // MAPA GENERAL: exclusivo de usuarios con sesión
         '/mapa': (context) {
           if (UsuarioSesionService.instance.sesionActual.value == null) {
             return const LoginUsuarioScreen();
@@ -86,11 +92,12 @@ class MiRutaCafeteraApp extends StatelessWidget {
           return const MapaScreen2();
         },
 
-        // USUARIO
+        // INICIO DE SESIÓN DEL USUARIO
         '/login-usuario': (context) {
           return const LoginUsuarioScreen();
         },
 
+        // REGISTRO DE USUARIO
         '/registro-usuario': (context) {
           return const RegistroUsuarioScreen();
         },
