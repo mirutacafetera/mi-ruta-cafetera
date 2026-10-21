@@ -74,7 +74,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                 ),
                 children: [
                   EncabezadoLista(
-                    titulo: 'Gestión de reportes',
+                    titulo: '',
                     descripcion: 'reportes recibidos',
                     textoNuevo: '',
                     cantidad: _controller.reportes.length,

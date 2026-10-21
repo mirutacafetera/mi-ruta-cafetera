@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -6,6 +7,7 @@ import '../../../models/admin/admin_contenido_model.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../widgets/admin/contenido/detalle_contenido.dart';
+import '../../../widgets/admin/contenido/filtros_contenido.dart';
 import '../../../widgets/admin/contenido/galeria_imagenes.dart';
 import '../../../widgets/admin/contenido/tarjeta_contenido.dart';
 import '../../../widgets/admin/producto/resumen_productos.dart';
@@ -24,8 +26,9 @@ class _PantallaContenidoState extends State<PantallaContenido> {
   final _busqueda = TextEditingController();
   final _audio = AudioPlayer();
 
-  String _estado = 'pendiente_revision';
+  String _filtroActivo = 'todas';
   String? _seleccionado;
+  bool _actualizandoLista = false;
 
   @override
   void initState() {
@@ -43,11 +46,21 @@ class _PantallaContenidoState extends State<PantallaContenido> {
   }
 
   Future<void> _cargar() async {
-    await _audio.stop();
-    await _controller.cargarContenidos();
+    if (_actualizandoLista) return;
 
-    if (mounted && _controller.error != null) {
-      _mensaje(_controller.error!, true);
+    setState(() => _actualizandoLista = true);
+
+    try {
+      await _audio.stop();
+      await _controller.cargarContenidos();
+
+      if (mounted && _controller.error != null) {
+        _mensaje(_controller.error!, true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _actualizandoLista = false);
+      }
     }
   }
 
@@ -74,13 +87,15 @@ class _PantallaContenidoState extends State<PantallaContenido> {
           }
         }
 
-        if (contenido != null) return _detalle(contenido);
+        if (contenido != null) {
+          return _detalle(contenido);
+        }
 
         return Column(
           children: [
             EncabezadoLista(
-              titulo: 'Moderación de contenido',
-              descripcion: 'Revisa los contenidos enviados',
+              titulo: '',
+              descripcion: 'contenidos enviados',
               textoNuevo: '',
               cantidad: _controller.totalContenidos,
               cargando: _controller.cargando,
@@ -89,8 +104,6 @@ class _PantallaContenidoState extends State<PantallaContenido> {
               onNuevo: () {},
             ),
             ResumenProductos(
-              estadoSeleccionado: _estado,
-              onSeleccionar: (v) => setState(() => _estado = v),
               tarjetas: [
                 ResumenTarjetaConfig(
                   titulo: 'Pendientes',
@@ -125,7 +138,29 @@ class _PantallaContenidoState extends State<PantallaContenido> {
                 _controller.limpiarBusqueda();
               },
             ),
-            Expanded(child: _lista()),
+            FiltrosContenido(
+              seleccionado: _filtroActivo,
+              onSeleccionar: (valor) {
+                setState(() => _filtroActivo = valor);
+              },
+            ),
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned.fill(child: _lista()),
+                  if (_actualizandoLista &&
+                      _controller.contenidos.isNotEmpty)
+                    Positioned.fill(
+                      child: ColoredBox(
+                        color: Colors.white.withValues(alpha: 0.65),
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ],
         );
       },
@@ -134,20 +169,24 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
   Widget _lista() {
     if (_controller.cargando && _controller.contenidos.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
     }
 
-    if (_controller.error != null && _controller.contenidos.isEmpty) {
+    if (_controller.error != null &&
+        _controller.contenidos.isEmpty) {
       return _vacio(_controller.error!, _cargar);
     }
 
-    final lista = _controller.contenidosFiltrados
-        .where((c) => c.estadoPublicacion == _estado)
-        .toList();
+    final lista = _controller.contenidosFiltrados.where((c) {
+      return _filtroActivo == 'todas' ||
+          c.estadoPublicacion == _filtroActivo;
+    }).toList();
 
     if (lista.isEmpty) {
       return _vacio(
-        'No hay contenidos ${_estadoTexto()}.',
+        _mensajeListaVacia(),
         _controller.busqueda.isNotEmpty
             ? () {
                 _busqueda.clear();
@@ -186,6 +225,23 @@ class _PantallaContenidoState extends State<PantallaContenido> {
     );
   }
 
+  String _mensajeListaVacia() {
+    if (_controller.busqueda.isNotEmpty) {
+      return 'No se encontraron contenidos para esta búsqueda.';
+    }
+
+    switch (_filtroActivo) {
+      case 'pendiente_revision':
+        return 'No hay contenidos pendientes.';
+      case 'aprobado':
+        return 'No hay contenidos aprobados.';
+      case 'rechazado':
+        return 'No hay contenidos rechazados.';
+      default:
+        return 'No hay contenidos disponibles.';
+    }
+  }
+
   Widget _detalle(AdminContenidoModel c) {
     return DetalleContenido(
       contenido: c,
@@ -205,14 +261,11 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
   Future<void> _ver(AdminContenidoModel c) async {
     await _audio.stop();
-    if (mounted) setState(() => _seleccionado = c.id);
-  }
 
-  String _estadoTexto() => switch (_estado) {
-        'pendiente_revision' => 'pendientes',
-        'aprobado' => 'aprobados',
-        _ => 'rechazados',
-      };
+    if (mounted) {
+      setState(() => _seleccionado = c.id);
+    }
+  }
 
   Widget _vacio(String texto, VoidCallback accion) {
     return Center(
@@ -221,13 +274,22 @@ class _PantallaContenidoState extends State<PantallaContenido> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.perm_media_outlined, size: 48),
+            const Icon(
+              Icons.perm_media_outlined,
+              size: 48,
+              color: Color(0xFF76513B),
+            ),
             const SizedBox(height: 12),
-            Text(texto, textAlign: TextAlign.center),
+            Text(
+              texto,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: accion,
-              child: const Text('Actualizar o limpiar búsqueda'),
+              child: const Text(
+                'Actualizar o limpiar búsqueda',
+              ),
             ),
           ],
         ),
@@ -235,7 +297,10 @@ class _PantallaContenidoState extends State<PantallaContenido> {
     );
   }
 
-  Future<bool?> _confirmar(String titulo, String mensaje) {
+  Future<bool?> _confirmar(
+    String titulo,
+    String mensaje,
+  ) {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -265,17 +330,17 @@ class _PantallaContenidoState extends State<PantallaContenido> {
     }
 
     final ok = await _controller.aprobarContenido(c.id);
+
     if (!mounted) return;
 
     if (ok) {
-      setState(() {
-        _seleccionado = null;
-        _estado = 'aprobado';
-      });
+      setState(() => _seleccionado = null);
     }
 
     _mensaje(
-      ok ? 'Contenido aprobado.' : _controller.error ?? 'No se pudo aprobar.',
+      ok
+          ? 'Contenido aprobado.'
+          : _controller.error ?? 'No se pudo aprobar.',
       !ok,
     );
   }
@@ -324,14 +389,13 @@ class _PantallaContenidoState extends State<PantallaContenido> {
       if (!mounted) return;
 
       if (ok) {
-        setState(() {
-          _seleccionado = null;
-          _estado = 'rechazado';
-        });
+        setState(() => _seleccionado = null);
       }
 
       _mensaje(
-        ok ? 'Contenido rechazado.' : _controller.error ?? 'No se pudo rechazar.',
+        ok
+            ? 'Contenido rechazado.'
+            : _controller.error ?? 'No se pudo rechazar.',
         !ok,
       );
     } finally {
@@ -341,7 +405,9 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
   Future<void> _editar(AdminContenidoModel c) async {
     final titulo = TextEditingController(text: c.titulo);
-    final descripcion = TextEditingController(text: c.descripcion);
+    final descripcion = TextEditingController(
+      text: c.descripcion,
+    );
     final formKey = GlobalKey<FormState>();
 
     try {
@@ -411,7 +477,9 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
       if (mounted) {
         _mensaje(
-          ok ? 'Contenido actualizado.' : _controller.error ?? 'No se pudo actualizar.',
+          ok
+              ? 'Contenido actualizado.'
+              : _controller.error ?? 'No se pudo actualizar.',
           !ok,
         );
       }
@@ -426,7 +494,8 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
     if (await _confirmar(
           activar ? 'Activar contenido' : 'Desactivar contenido',
-          '¿Deseas ${activar ? 'activar' : 'desactivar'} "${c.titulo}"?',
+          '¿Deseas ${activar ? 'activar' : 'desactivar'} '
+              '"${c.titulo}"?',
         ) !=
         true) {
       return;
@@ -438,7 +507,9 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
     if (mounted) {
       _mensaje(
-        ok ? 'Estado actualizado.' : _controller.error ?? 'No se pudo actualizar.',
+        ok
+            ? 'Estado actualizado.'
+            : _controller.error ?? 'No se pudo actualizar.',
         !ok,
       );
     }
@@ -447,14 +518,17 @@ class _PantallaContenidoState extends State<PantallaContenido> {
   Future<void> _eliminar(AdminContenidoModel c) async {
     if (await _confirmar(
           'Eliminar contenido',
-          '¿Eliminar "${c.titulo}"? Esta acción no se puede deshacer.',
+          '¿Eliminar "${c.titulo}"? '
+              'Esta acción no se puede deshacer.',
         ) !=
         true) {
       return;
     }
 
     await _audio.stop();
+
     final ok = await _controller.eliminarContenido(c.id);
+
     if (!mounted) return;
 
     if (ok && _seleccionado == c.id) {
@@ -462,7 +536,9 @@ class _PantallaContenidoState extends State<PantallaContenido> {
     }
 
     _mensaje(
-      ok ? 'Contenido eliminado.' : _controller.error ?? 'No se pudo eliminar.',
+      ok
+          ? 'Contenido eliminado.'
+          : _controller.error ?? 'No se pudo eliminar.',
       !ok,
     );
   }

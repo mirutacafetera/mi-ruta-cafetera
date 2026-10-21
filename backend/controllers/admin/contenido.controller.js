@@ -1,233 +1,261 @@
 
-const ContenidoAdmin = require('../../models/admin/contenido');
+const mongoose = require('mongoose');
 
-// ============================================================
-// OBTENER CONTENIDOS PARA MODERACIÓN
-// ============================================================
+const ContenidoAdmin = require('../../models/admin/contenido');
+const HistorialRevisionIA = require('../../models/admin/historial_revision_ia');
+
+const agregarDatosRevision = async (contenidos) => {
+  const lista = Array.isArray(contenidos)
+    ? contenidos
+    : contenidos
+      ? [contenidos]
+      : [];
+
+  if (!lista.length) {
+    return Array.isArray(contenidos) ? [] : null;
+  }
+
+  const ids = lista.map((contenido) => contenido._id);
+
+  const historial = await HistorialRevisionIA.find({
+    tipoSolicitud: 'contenido',
+    solicitudId: { $in: ids },
+  })
+    .sort({ fechaDecision: -1 })
+    .lean();
+
+  const evaluaciones = new Map();
+
+  for (const revision of historial) {
+    const id = revision.solicitudId.toString();
+
+    if (!evaluaciones.has(id)) {
+      evaluaciones.set(id, {
+        decision: revision.decision,
+        motivo: revision.motivo,
+        criterios: revision.criterios || [],
+        modeloIA: revision.modeloIA || '',
+        fechaDecision: revision.fechaDecision,
+      });
+    }
+  }
+
+  const resultado = lista.map((contenido) => {
+    const documento = contenido.toObject
+      ? contenido.toObject()
+      : contenido;
+
+    return {
+      ...documento,
+      evaluacionIA:
+        evaluaciones.get(contenido._id.toString()) || null,
+    };
+  });
+
+  return Array.isArray(contenidos) ? resultado : resultado[0];
+};
 
 const obtenerContenidos = async (req, res) => {
   try {
     const filtro = {};
 
     if (req.query.estado) {
-      const estadosPermitidos = [
-        'pendiente_revision',
-        'aprobado',
-        'rechazado',
-      ];
-
-      if (!estadosPermitidos.includes(req.query.estado)) {
-        return res.status(400).json({
-          mensaje: 'El estado de publicación no es válido.',
-        });
-      }
-
       filtro.estadoPublicacion = req.query.estado;
     }
 
     const contenidos = await ContenidoAdmin.find(filtro)
-      .populate('sitio', 'nombre')
+      .populate('sitio', 'nombre ciudad departamento')
+      .populate('revisadoPor', 'nombre nombreCompleto correo')
       .sort({ createdAt: -1 });
 
-    return res.json(contenidos);
+    const resultado = await agregarDatosRevision(contenidos);
+
+    console.log(
+      'CONTENIDOS Y REVISIONES:',
+      JSON.stringify(
+        resultado.map((contenido) => ({
+          id: contenido._id,
+          titulo: contenido.titulo,
+          estadoPublicacion: contenido.estadoPublicacion,
+          revisadoPor: contenido.revisadoPor,
+          revisadoAt: contenido.revisadoAt,
+          evaluacionIA: contenido.evaluacionIA,
+        })),
+        null,
+        2
+      )
+    );
+
+    return res.status(200).json(resultado);
   } catch (error) {
+    console.error('Error al obtener contenidos:', error);
+
     return res.status(500).json({
-      mensaje: 'Error al obtener contenidos.',
-      error: error.message,
+      mensaje: 'Error al obtener los contenidos',
     });
   }
 };
-
-// ============================================================
-// OBTENER UN CONTENIDO
-// ============================================================
 
 const obtenerContenido = async (req, res) => {
   try {
-    const contenido = await ContenidoAdmin.findById(req.params.id)
-      .populate('sitio', 'nombre');
-
-    if (!contenido) {
-      return res.status(404).json({
-        mensaje: 'Contenido no encontrado.',
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        mensaje: 'Identificador no válido',
       });
     }
 
-    return res.json(contenido);
+    const contenido = await ContenidoAdmin.findById(req.params.id)
+      .populate('sitio', 'nombre ciudad departamento')
+      .populate('revisadoPor', 'nombre nombreCompleto correo');
+
+    if (!contenido) {
+      return res.status(404).json({
+        mensaje: 'Contenido no encontrado',
+      });
+    }
+
+    return res.status(200).json(
+      await agregarDatosRevision(contenido)
+    );
   } catch (error) {
+    console.error('Error al obtener contenido:', error);
+
     return res.status(500).json({
-      mensaje: 'Error al obtener contenido.',
-      error: error.message,
+      mensaje: 'Error al obtener el contenido',
     });
   }
 };
 
-// ============================================================
-// ACTUALIZAR CONTENIDO Y MULTIMEDIA
-// ============================================================
-
 const actualizarContenido = async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        mensaje: 'Identificador no válido',
+      });
+    }
+
     const contenido = await ContenidoAdmin.findById(req.params.id);
 
     if (!contenido) {
       return res.status(404).json({
-        mensaje: 'Contenido no encontrado.',
+        mensaje: 'Contenido no encontrado',
       });
     }
 
-    const camposTexto = [
-      'tipo',
+    const campos = [
       'titulo',
       'descripcion',
       'url',
       'idioma',
       'imagenPrincipal',
+      'imagenes',
+      'audioGuias',
     ];
 
-    for (const campo of camposTexto) {
+    for (const campo of campos) {
       if (req.body[campo] !== undefined) {
-        if (typeof req.body[campo] !== 'string') {
-          return res.status(400).json({
-            mensaje: `El campo ${campo} debe ser un texto.`,
-          });
-        }
-
-        contenido[campo] = req.body[campo].trim();
+        contenido[campo] = req.body[campo];
       }
-    }
-
-    if (
-      req.body.imagenes !== undefined &&
-      !Array.isArray(req.body.imagenes)
-    ) {
-      return res.status(400).json({
-        mensaje: 'Las imágenes deben enviarse como una lista.',
-      });
-    }
-
-    if (req.body.imagenes !== undefined) {
-      if (
-        req.body.imagenes.some(
-          (imagen) => typeof imagen !== 'string'
-        )
-      ) {
-        return res.status(400).json({
-          mensaje: 'Cada imagen debe contener una URL de texto.',
-        });
-      }
-
-      contenido.imagenes = req.body.imagenes.map(
-        (imagen) => imagen.trim()
-      );
-    }
-
-    if (
-      req.body.audioGuias !== undefined &&
-      !Array.isArray(req.body.audioGuias)
-    ) {
-      return res.status(400).json({
-        mensaje: 'Las audioguías deben enviarse como una lista.',
-      });
-    }
-
-    if (req.body.audioGuias !== undefined) {
-      const audiosValidos = req.body.audioGuias.every(
-        (audio) =>
-          audio &&
-          typeof audio.titulo === 'string' &&
-          audio.titulo.trim().length >= 2 &&
-          typeof audio.url === 'string' &&
-          audio.url.trim().length > 0 &&
-          (audio.descripcion === undefined ||
-            typeof audio.descripcion === 'string') &&
-          (audio.duracion === undefined ||
-            typeof audio.duracion === 'string') &&
-          (audio.publicId === undefined ||
-            typeof audio.publicId === 'string')
-      );
-
-      if (!audiosValidos) {
-        return res.status(400).json({
-          mensaje: 'Los datos de una o más audioguías no son válidos.',
-        });
-      }
-
-      contenido.audioGuias = req.body.audioGuias.map((audio) => ({
-        ...(audio._id ? { _id: audio._id } : {}),
-        titulo: audio.titulo.trim(),
-        descripcion: (audio.descripcion || '').trim(),
-        url: audio.url.trim(),
-        duracion: (audio.duracion || '').trim(),
-        publicId: (audio.publicId || '').trim(),
-      }));
     }
 
     await contenido.save();
+    await contenido.populate('sitio', 'nombre ciudad departamento');
+    await contenido.populate(
+      'revisadoPor',
+      'nombre nombreCompleto correo'
+    );
 
-    await contenido.populate('sitio', 'nombre');
-
-    return res.json({
-      mensaje: 'Contenido actualizado correctamente.',
-      contenido,
+    return res.status(200).json({
+      mensaje: 'Contenido actualizado correctamente',
+      contenido: await agregarDatosRevision(contenido),
     });
   } catch (error) {
+    console.error('Error al actualizar contenido:', error);
+
     return res.status(500).json({
-      mensaje: 'Error al actualizar contenido.',
-      error: error.message,
+      mensaje: 'Error al actualizar el contenido',
     });
   }
 };
 
-// ============================================================
-// APROBAR CONTENIDO
-// ============================================================
-
 const aprobarContenido = async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        mensaje: 'Identificador no válido',
+      });
+    }
+
     const contenido = await ContenidoAdmin.findById(req.params.id);
 
     if (!contenido) {
       return res.status(404).json({
-        mensaje: 'Contenido no encontrado.',
+        mensaje: 'Contenido no encontrado',
       });
     }
 
     if (contenido.estadoPublicacion !== 'pendiente_revision') {
-      return res.status(400).json({
-        mensaje: 'Solo se pueden aceptar contenidos pendientes de revisión.',
+      return res.status(409).json({
+        mensaje: 'El contenido ya fue revisado',
+      });
+    }
+
+    const administradorId = req.usuario?.id || req.usuario?._id;
+
+    if (
+      !administradorId ||
+      !mongoose.isValidObjectId(administradorId)
+    ) {
+      console.error(
+        'No se identificó al administrador:',
+        req.usuario
+      );
+
+      return res.status(401).json({
+        mensaje:
+          'No se pudo identificar al administrador. Verifica el token de sesión.',
       });
     }
 
     contenido.estadoPublicacion = 'aprobado';
     contenido.motivoRechazo = '';
     contenido.activo = true;
+    contenido.revisadoPor = administradorId;
+    contenido.revisadoAt = new Date();
 
     await contenido.save();
+    await contenido.populate('sitio', 'nombre ciudad departamento');
+    await contenido.populate(
+      'revisadoPor',
+      'nombre nombreCompleto correo'
+    );
 
-    return res.json({
-      mensaje: 'Contenido aprobado correctamente.',
-      contenido,
+    return res.status(200).json({
+      mensaje: 'Contenido aprobado correctamente',
+      contenido: await agregarDatosRevision(contenido),
     });
   } catch (error) {
+    console.error('Error al aprobar contenido:', error);
+
     return res.status(500).json({
-      mensaje: 'Error al aprobar contenido.',
-      error: error.message,
+      mensaje: 'Error al aprobar el contenido',
     });
   }
 };
 
-// ============================================================
-// RECHAZAR CONTENIDO
-// ============================================================
-
 const rechazarContenido = async (req, res) => {
   try {
-    const motivo = String(req.body.motivoRechazo || '').trim();
-
-    if (!motivo) {
+    if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(400).json({
-        mensaje: 'Debes indicar el motivo del rechazo.',
+        mensaje: 'Identificador no válido',
+      });
+    }
+
+    const motivo = req.body?.motivoRechazo;
+
+    if (typeof motivo !== 'string' || motivo.trim().length < 3) {
+      return res.status(400).json({
+        mensaje: 'Debes indicar un motivo de rechazo válido',
       });
     }
 
@@ -235,107 +263,112 @@ const rechazarContenido = async (req, res) => {
 
     if (!contenido) {
       return res.status(404).json({
-        mensaje: 'Contenido no encontrado.',
+        mensaje: 'Contenido no encontrado',
       });
     }
 
     if (contenido.estadoPublicacion !== 'pendiente_revision') {
-      return res.status(400).json({
-        mensaje: 'Solo se pueden rechazar contenidos pendientes de revisión.',
+      return res.status(409).json({
+        mensaje: 'El contenido ya fue revisado',
+      });
+    }
+
+    const administradorId = req.usuario?.id || req.usuario?._id;
+
+    if (
+      !administradorId ||
+      !mongoose.isValidObjectId(administradorId)
+    ) {
+      console.error(
+        'No se identificó al administrador:',
+        req.usuario
+      );
+
+      return res.status(401).json({
+        mensaje:
+          'No se pudo identificar al administrador. Verifica el token de sesión.',
       });
     }
 
     contenido.estadoPublicacion = 'rechazado';
-    contenido.motivoRechazo = motivo;
+    contenido.motivoRechazo = motivo.trim();
     contenido.activo = false;
+    contenido.revisadoPor = administradorId;
+    contenido.revisadoAt = new Date();
 
     await contenido.save();
+    await contenido.populate('sitio', 'nombre ciudad departamento');
+    await contenido.populate(
+      'revisadoPor',
+      'nombre nombreCompleto correo'
+    );
 
-    return res.json({
-      mensaje: 'Contenido rechazado correctamente.',
-      contenido,
+    return res.status(200).json({
+      mensaje: 'Contenido rechazado correctamente',
+      contenido: await agregarDatosRevision(contenido),
     });
   } catch (error) {
+    console.error('Error al rechazar contenido:', error);
+
     return res.status(500).json({
-      mensaje: 'Error al rechazar contenido.',
-      error: error.message,
+      mensaje: 'Error al rechazar el contenido',
     });
   }
 };
-
-// ============================================================
-// DESACTIVAR CONTENIDO APROBADO
-// ============================================================
 
 const desactivarContenido = async (req, res) => {
   try {
-    const contenido = await ContenidoAdmin.findById(req.params.id);
+    const contenido = await ContenidoAdmin.findByIdAndUpdate(
+      req.params.id,
+      { activo: false },
+      { new: true }
+    );
 
     if (!contenido) {
       return res.status(404).json({
-        mensaje: 'Contenido no encontrado.',
+        mensaje: 'Contenido no encontrado',
       });
     }
 
-    if (contenido.estadoPublicacion !== 'aprobado') {
-      return res.status(400).json({
-        mensaje: 'Solo se pueden desactivar contenidos aprobados.',
-      });
-    }
-
-    contenido.activo = false;
-    await contenido.save();
-
-    return res.json({
-      mensaje: 'Contenido desactivado correctamente.',
+    return res.status(200).json({
+      mensaje: 'Contenido desactivado correctamente',
       contenido,
     });
   } catch (error) {
+    console.error('Error al desactivar contenido:', error);
+
     return res.status(500).json({
-      mensaje: 'Error al desactivar contenido.',
-      error: error.message,
+      mensaje: 'Error al desactivar el contenido',
     });
   }
 };
-
-// ============================================================
-// ACTIVAR CONTENIDO APROBADO
-// ============================================================
 
 const activarContenido = async (req, res) => {
   try {
-    const contenido = await ContenidoAdmin.findById(req.params.id);
+    const contenido = await ContenidoAdmin.findByIdAndUpdate(
+      req.params.id,
+      { activo: true },
+      { new: true }
+    );
 
     if (!contenido) {
       return res.status(404).json({
-        mensaje: 'Contenido no encontrado.',
+        mensaje: 'Contenido no encontrado',
       });
     }
 
-    if (contenido.estadoPublicacion !== 'aprobado') {
-      return res.status(400).json({
-        mensaje: 'Solo se pueden activar contenidos aprobados.',
-      });
-    }
-
-    contenido.activo = true;
-    await contenido.save();
-
-    return res.json({
-      mensaje: 'Contenido activado correctamente.',
+    return res.status(200).json({
+      mensaje: 'Contenido activado correctamente',
       contenido,
     });
   } catch (error) {
+    console.error('Error al activar contenido:', error);
+
     return res.status(500).json({
-      mensaje: 'Error al activar contenido.',
-      error: error.message,
+      mensaje: 'Error al activar el contenido',
     });
   }
 };
-
-// ============================================================
-// ELIMINAR CONTENIDO
-// ============================================================
 
 const eliminarContenido = async (req, res) => {
   try {
@@ -345,17 +378,18 @@ const eliminarContenido = async (req, res) => {
 
     if (!contenido) {
       return res.status(404).json({
-        mensaje: 'Contenido no encontrado.',
+        mensaje: 'Contenido no encontrado',
       });
     }
 
-    return res.json({
-      mensaje: 'Contenido eliminado correctamente.',
+    return res.status(200).json({
+      mensaje: 'Contenido eliminado correctamente',
     });
   } catch (error) {
+    console.error('Error al eliminar contenido:', error);
+
     return res.status(500).json({
-      mensaje: 'Error al eliminar contenido.',
-      error: error.message,
+      mensaje: 'Error al eliminar el contenido',
     });
   }
 };

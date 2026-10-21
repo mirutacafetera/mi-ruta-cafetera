@@ -19,13 +19,13 @@ class ResumenTarjeta {
 
 class ResumenUsuarios extends StatelessWidget {
   final List<ResumenTarjeta> tarjetas;
+  final int columnas;
 
   const ResumenUsuarios({
     super.key,
     required this.tarjetas,
+    this.columnas = 2,
   });
-
-  static const Color _bordeCafe = Color(0xFFB58A70);
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +35,13 @@ class ResumenUsuarios extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        const columnas = 2;
+        final cantidadColumnas = columnas.clamp(1, tarjetas.length);
         const espacio = AppDimensions.spacingSm;
 
         final anchoTarjeta =
-            (constraints.maxWidth - espacio) / columnas;
+            (constraints.maxWidth -
+                espacio * (cantidadColumnas - 1)) /
+            cantidadColumnas;
 
         return Wrap(
           spacing: espacio,
@@ -71,11 +73,9 @@ class ResumenUsuarios extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.creamLight.withValues(alpha: 0.97),
-        borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
         border: Border.all(
-          color: _bordeCafe,
+          color: AppColors.adminBorder,
           width: 1.1,
         ),
         boxShadow: [
@@ -104,7 +104,7 @@ class ResumenUsuarios extends StatelessWidget {
                   size: compacta ? 17 : 20,
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppDimensions.spacingXs),
               Expanded(
                 child: Text(
                   tarjeta.titulo,
@@ -120,7 +120,7 @@ class ResumenUsuarios extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingMd),
           Text(
             '${tarjeta.cantidad}',
             maxLines: 1,
@@ -131,13 +131,13 @@ class ResumenUsuarios extends StatelessWidget {
               height: 1,
             ),
           ),
-          const SizedBox(height: 9),
+          const SizedBox(height: AppDimensions.spacingSm),
           Container(
             width: compacta ? 27 : 34,
             height: 3,
             decoration: BoxDecoration(
               color: tarjeta.color,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
           ),
         ],

@@ -173,7 +173,7 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
               padding: EdgeInsets.zero,
               children: [
                 EncabezadoLista(
-                  titulo: 'Reservas',
+                  titulo: '',
                   descripcion: 'reservas registradas',
                   textoNuevo: '',
                   cantidad: controller.reservas.length,

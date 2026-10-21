@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const Contenido = require('../../models/sitio/contenido');
-const SitioTuristico = require('../../models/admin/sitio');
 
 // =====================================================
 // OBTENER CONTENIDOS PENDIENTES
@@ -14,6 +13,7 @@ const obtenerContenidosPendientes = async (req, res) => {
       activo: true,
     })
       .populate('sitio', 'nombre ciudad departamento')
+      .populate('revisadoPor', 'nombre nombreCompleto correo')
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -42,7 +42,8 @@ const obtenerDetalleContenido = async (req, res) => {
     }
 
     const contenido = await Contenido.findById(req.params.id)
-      .populate('sitio', 'nombre ciudad departamento direccion');
+      .populate('sitio', 'nombre ciudad departamento direccion')
+      .populate('revisadoPor', 'nombre nombreCompleto correo');
 
     if (!contenido) {
       return res.status(404).json({
@@ -93,12 +94,29 @@ const aprobarContenido = async (req, res) => {
       });
     }
 
+    const administradorId = req.usuario?.id || req.usuario?._id;
+
+    if (!administradorId) {
+      return res.status(401).json({
+        mensaje: 'No se pudo identificar al administrador',
+      });
+    }
+
     contenido.estadoPublicacion = 'aprobado';
     contenido.motivoRechazo = '';
-    contenido.revisadoPor = req.usuario.id;
+    contenido.revisadoPor = administradorId;
     contenido.revisadoAt = new Date();
 
     await contenido.save();
+
+    await contenido.populate(
+      'revisadoPor',
+      'nombre nombreCompleto correo'
+    );
+    await contenido.populate(
+      'sitio',
+      'nombre ciudad departamento'
+    );
 
     return res.status(200).json({
       mensaje: 'Contenido aprobado correctamente',
@@ -148,15 +166,33 @@ const rechazarContenido = async (req, res) => {
       });
     }
 
+    const administradorId = req.usuario?.id || req.usuario?._id;
+
+    if (!administradorId) {
+      return res.status(401).json({
+        mensaje: 'No se pudo identificar al administrador',
+      });
+    }
+
     contenido.estadoPublicacion = 'rechazado';
     contenido.motivoRechazo = motivo.trim();
-    contenido.revisadoPor = req.usuario.id;
+    contenido.activo = false;
+    contenido.revisadoPor = administradorId;
     contenido.revisadoAt = new Date();
 
     await contenido.save();
 
+    await contenido.populate(
+      'revisadoPor',
+      'nombre nombreCompleto correo'
+    );
+    await contenido.populate(
+      'sitio',
+      'nombre ciudad departamento'
+    );
+
     return res.status(200).json({
-      mensaje: 'Contenido rechazado. Se ha registrado el motivo.',
+      mensaje: 'Contenido rechazado correctamente',
       contenido,
     });
   } catch (error) {
