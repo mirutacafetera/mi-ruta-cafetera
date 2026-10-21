@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
@@ -13,7 +14,8 @@ class PantallaResenasAdmin extends StatefulWidget {
   const PantallaResenasAdmin({super.key});
 
   @override
-  State<PantallaResenasAdmin> createState() => _PantallaResenasAdminState();
+  State<PantallaResenasAdmin> createState() =>
+      _PantallaResenasAdminState();
 }
 
 class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
@@ -67,7 +69,9 @@ class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          resultado ? 'Reseña eliminada' : 'No se pudo eliminar la reseña',
+          resultado
+              ? 'Reseña eliminada'
+              : 'No se pudo eliminar la reseña',
         ),
       ),
     );
@@ -81,7 +85,9 @@ class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          resultado ? 'Estado actualizado' : 'No se pudo actualizar el estado',
+          resultado
+              ? 'Estado actualizado'
+              : 'No se pudo actualizar el estado',
         ),
       ),
     );
@@ -92,7 +98,7 @@ class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
     return Column(
       children: [
         EncabezadoLista(
-          titulo: 'Reseñas',
+          titulo: '',
           descripcion: 'reseñas registradas',
           textoNuevo: '',
           cantidad: _controller.totalResenas,
@@ -106,6 +112,7 @@ class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
             horizontal: AppDimensions.pageHorizontalSmall,
           ),
           child: ResumenUsuarios(
+            columnas: 3,
             tarjetas: [
               ResumenTarjeta(
                 titulo: 'Total de reseñas',
@@ -144,14 +151,18 @@ class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
         ),
         Expanded(
           child: _controller.cargando
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
               : _controller.error != null
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(_controller.error!),
-                          const SizedBox(height: AppDimensions.spacingSm),
+                          const SizedBox(
+                            height: AppDimensions.spacingSm,
+                          ),
                           FilledButton(
                             onPressed: _controller.cargarResenas,
                             child: const Text('Reintentar'),
@@ -167,15 +178,18 @@ class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
                           padding: const EdgeInsets.only(
                             bottom: AppDimensions.spacingLg,
                           ),
-                          itemCount: _controller.resenasFiltradas.length,
+                          itemCount:
+                              _controller.resenasFiltradas.length,
                           itemBuilder: (context, index) {
                             final resena =
                                 _controller.resenasFiltradas[index];
 
                             return TarjetaResena(
                               resena: resena,
-                              onCambiarEstado: () => _cambiarEstado(resena),
-                              onEliminar: () => _eliminarResena(resena.id),
+                              onCambiarEstado: () =>
+                                  _cambiarEstado(resena),
+                              onEliminar: () =>
+                                  _eliminarResena(resena.id),
                             );
                           },
                         ),

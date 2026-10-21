@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
@@ -9,15 +10,15 @@ import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_menu_lateral.dart';
 import '../../widgets/admin/fondo_admin.dart';
 import '../mapa_screen_2.dart';
+
 import 'admin_inicio.dart';
 import 'actividades/pantalla_actividades.dart';
-import 'contenido/pantalla_contenido.dart';
-import 'producto/pantalla_producto.dart';
 import 'categoria/pantalla_categoria.dart';
-import 'chatbot/pantalla_chatbot.dart';
+import 'contenido/pantalla_contenido.dart';
 import 'cuenta/admin_cuenta.dart';
 import 'cuenta_sitio/pantalla_cuenta_sitio.dart';
 import 'estadistica/pantalla_estadistica.dart';
+import 'producto/pantalla_producto.dart';
 import 'reporte/pantalla_reporte_admin.dart';
 import 'reserva/pantalla_reserva_admin.dart';
 import 'resena/pantalla_resenas_admin.dart';
@@ -58,6 +59,12 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     fotoPerfilControlador.cargarFoto();
   }
 
+  void _actualizar() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   Future<void> _cargarCuenta() async {
     await AdminServicioAutenticacion.cargarToken();
 
@@ -68,12 +75,6 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
     if (idAdministrador != null && idAdministrador.isNotEmpty) {
       await cuentaAdminController.cargarCuenta(idAdministrador);
-    }
-  }
-
-  void _actualizar() {
-    if (mounted) {
-      setState(() {});
     }
   }
 
@@ -99,15 +100,11 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, false);
-              },
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancelar'),
             ),
             FilledButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, true);
-              },
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Cerrar sesión'),
             ),
           ],
@@ -115,9 +112,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       },
     );
 
-    if (confirmar != true || !mounted) return;
-
-    await _cerrarSesion();
+    if (confirmar == true && mounted) {
+      await _cerrarSesion();
+    }
   }
 
   void _manejarOpcion(String opcion) {
@@ -180,8 +177,7 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       case 'contenido':
         return const PantallaContenido();
 
-      case 'chatbot_ia':
-        return const PantallaChatbot();
+      
 
       case 'perfil':
         return AdminCuenta(

@@ -74,7 +74,7 @@ class _PantallaUsuariosAdminState extends State<PantallaUsuariosAdmin> {
                 ),
                 children: [
                   EncabezadoLista(
-                    titulo: 'Gestión de usuarios',
+                    titulo: '',
                     descripcion: 'usuarios registrados',
                     textoNuevo: '',
                     cantidad: _controller.totalUsuarios,

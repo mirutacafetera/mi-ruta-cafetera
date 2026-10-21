@@ -13,8 +13,6 @@ class FiltrosUsuarios extends StatelessWidget {
     required this.onFiltroSeleccionado,
   });
 
-  static const Color _bordeCafe = Color(0xFFB58A70);
-
   static const List<Map<String, dynamic>> _filtros = [
     {
       'texto': 'Todos',
@@ -85,7 +83,9 @@ class FiltrosUsuarios extends StatelessWidget {
         color: seleccionado ? AppColors.primary : AppColors.creamLight,
         borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
         border: Border.all(
-          color: seleccionado ? AppColors.primary : _bordeCafe,
+          color: seleccionado
+              ? AppColors.primary
+              : AppColors.adminBorder,
           width: seleccionado ? 1.5 : 1.2,
         ),
         boxShadow: seleccionado

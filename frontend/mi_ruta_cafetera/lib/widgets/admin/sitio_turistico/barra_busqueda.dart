@@ -1,9 +1,10 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
 
-class BarraBusqueda extends StatelessWidget {
+class BarraBusqueda extends StatefulWidget {
   final String valor;
   final String textoAyuda;
   final ValueChanged<String> onChanged;
@@ -20,8 +21,69 @@ class BarraBusqueda extends StatelessWidget {
   });
 
   @override
+  State<BarraBusqueda> createState() => _BarraBusquedaState();
+}
+
+class _BarraBusquedaState extends State<BarraBusqueda> {
+  late final TextEditingController _controller;
+  late final bool _controllerExterno;
+
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controllerExterno = widget.controller != null;
+    _controller =
+        widget.controller ?? TextEditingController(text: widget.valor);
+
+    _focusNode.addListener(_actualizarBorde);
+  }
+
+  void _actualizarBorde() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(covariant BarraBusqueda oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (_controller.text != widget.valor &&
+        widget.valor != oldWidget.valor) {
+      _controller.value = TextEditingValue(
+        text: widget.valor,
+        selection: TextSelection.collapsed(
+          offset: widget.valor.length,
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_actualizarBorde);
+    _focusNode.dispose();
+
+    if (!_controllerExterno) {
+      _controller.dispose();
+    }
+
+    super.dispose();
+  }
+
+  void _limpiar() {
+    _controller.clear();
+    widget.onLimpiar();
+
+    if (mounted) {
+      _focusNode.requestFocus();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final enfocada = FocusNode();
+    const colorBorde = Color(0xFFB58A70);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -35,7 +97,7 @@ class BarraBusqueda extends StatelessWidget {
           color: AppColors.creamLight,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: const Color(0xFFB58A70),
+            color: colorBorde,
             width: 1.2,
           ),
           boxShadow: [
@@ -47,24 +109,27 @@ class BarraBusqueda extends StatelessWidget {
           ],
         ),
         child: TextField(
-          controller: controller,
-          focusNode: enfocada,
-          onChanged: onChanged,
+          controller: _controller,
+          focusNode: _focusNode,
+          onChanged: widget.onChanged,
+          cursorColor: AppColors.primary,
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
-          cursorColor: AppColors.primary,
           decoration: InputDecoration(
-            hintText: textoAyuda,
+            hintText: widget.textoAyuda,
             hintStyle: TextStyle(
               color: AppColors.textSecondary.withValues(alpha: 0.8),
               fontSize: 13,
               fontWeight: FontWeight.w400,
             ),
             prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 5, right: 10),
+              padding: const EdgeInsets.only(
+                left: 5,
+                right: 10,
+              ),
               child: Container(
                 margin: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
@@ -82,14 +147,19 @@ class BarraBusqueda extends StatelessWidget {
               minWidth: 55,
               minHeight: 50,
             ),
-            suffixIcon: valor.isNotEmpty
-                ? IconButton(
+            suffixIcon: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _controller,
+              builder: (context, value, child) {
+                if (value.text.isNotEmpty) {
+                  return IconButton(
                     tooltip: 'Limpiar búsqueda',
-                    onPressed: onLimpiar,
+                    onPressed: _limpiar,
                     icon: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: 0.12),
+                        color: AppColors.secondary.withValues(
+                          alpha: 0.12,
+                        ),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -98,15 +168,19 @@ class BarraBusqueda extends StatelessWidget {
                         size: 17,
                       ),
                     ),
-                  )
-                : Padding(
-                    padding: const EdgeInsets.only(right: 14),
-                    child: Icon(
-                      Icons.tune_rounded,
-                      color: AppColors.coffeeLight.withValues(alpha: 0.8),
-                      size: 21,
-                    ),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 14),
+                  child: Icon(
+                    Icons.tune_rounded,
+                    color: AppColors.coffeeLight.withValues(alpha: 0.8),
+                    size: 21,
                   ),
+                );
+              },
+            ),
             filled: true,
             fillColor: Colors.transparent,
             contentPadding: const EdgeInsets.symmetric(
@@ -123,10 +197,11 @@ class BarraBusqueda extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
-                width: 1.5,
-              ),
+              borderSide: BorderSide.none,
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(18),
+              borderSide: BorderSide.none,
             ),
           ),
         ),

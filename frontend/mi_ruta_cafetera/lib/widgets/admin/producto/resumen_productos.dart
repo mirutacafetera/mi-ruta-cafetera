@@ -21,17 +21,12 @@ class ResumenTarjetaConfig {
 }
 
 class ResumenProductos extends StatelessWidget {
-  // Datos originales de Productos. Se conservan para no romper
-  // la pantalla que ya utiliza este componente.
   final int pendientes;
   final int aprobados;
   final int rechazados;
 
-  // Configuración compartida.
   final String estadoSeleccionado;
   final ValueChanged<String>? onSeleccionar;
-
-  // Permite reutilizar las mismas tarjetas en otras pantallas.
   final List<ResumenTarjetaConfig>? tarjetas;
 
   const ResumenProductos({
@@ -44,6 +39,12 @@ class ResumenProductos extends StatelessWidget {
     this.tarjetas,
   });
 
+  static const Color _fondo = Color(0xFFFFFCF7);
+  static const Color _borde = Color(0xFFD8B69C);
+  static const Color _cafe = Color(0xFF76513B);
+  static const Color _verde = Color(0xFF285943);
+  static const Color _naranja = Color(0xFFFF783E);
+
   @override
   Widget build(BuildContext context) {
     final opciones = tarjetas ??
@@ -51,22 +52,22 @@ class ResumenProductos extends StatelessWidget {
           ResumenTarjetaConfig(
             titulo: 'Pendientes',
             cantidad: pendientes,
-            icono: Icons.inventory_2_outlined,
-            color: AppColors.primary,
+            icono: Icons.pending_actions_rounded,
+            color: _naranja,
             estado: 'pendiente_revision',
           ),
           ResumenTarjetaConfig(
             titulo: 'Aprobados',
             cantidad: aprobados,
-            icono: Icons.check_circle_outline,
-            color: Colors.green,
+            icono: Icons.check_circle_outline_rounded,
+            color: _verde,
             estado: 'aprobado',
           ),
           ResumenTarjetaConfig(
             titulo: 'Rechazados',
             cantidad: rechazados,
             icono: Icons.cancel_outlined,
-            color: Colors.red,
+            color: const Color(0xFFB9574D),
             estado: 'rechazado',
           ),
         ];
@@ -77,6 +78,7 @@ class ResumenProductos extends StatelessWidget {
         vertical: AppDimensions.spacingSm,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (var i = 0; i < opciones.length; i++) ...[
             if (i > 0)
@@ -87,11 +89,6 @@ class ResumenProductos extends StatelessWidget {
                 cantidad: opciones[i].cantidad,
                 icono: opciones[i].icono,
                 color: opciones[i].color,
-                seleccionada:
-                    estadoSeleccionado == opciones[i].estado,
-                onTap: () => onSeleccionar?.call(
-                  opciones[i].estado,
-                ),
               ),
             ),
           ],
@@ -106,79 +103,91 @@ class _TarjetaResumen extends StatelessWidget {
   final int cantidad;
   final IconData icono;
   final Color color;
-  final bool seleccionada;
-  final VoidCallback onTap;
 
   const _TarjetaResumen({
     required this.titulo,
     required this.cantidad,
     required this.icono,
     required this.color,
-    required this.seleccionada,
-    required this.onTap,
   });
+
+  static const Color _fondo = Color(0xFFFFFCF7);
+  static const Color _borde = Color(0xFFD8B69C);
+  static const Color _cafe = Color(0xFF76513B);
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: color.withValues(
-        alpha: seleccionada ? 0.16 : 0.08,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 12,
       ),
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.all(
-            AppDimensions.spacingSm,
+      decoration: BoxDecoration(
+        color: _fondo,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: _borde,
+          width: 1.1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _cafe.withValues(alpha: 0.07),
+            blurRadius: 7,
+            offset: const Offset(0, 3),
           ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: color.withValues(
-                alpha: seleccionada ? 0.65 : 0.25,
-              ),
-              width: seleccionada ? 2 : 1,
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(
+              icono,
+              color: color,
+              size: 21,
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                icono,
-                color: color,
-                size: 24,
+          const SizedBox(height: 10),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              cantidad.toString(),
+              style: const TextStyle(
+                color: Color(0xFF293D32),
+                fontSize: 23,
+                fontWeight: FontWeight.w800,
               ),
-              const SizedBox(
-                height: AppDimensions.spacingSm,
-              ),
-              Text(
-                cantidad.toString(),
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingXs,
-              ),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  titulo,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 3),
+          Text(
+            titulo,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: _cafe,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 9),
+          Container(
+            width: 30,
+            height: 3,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ],
       ),
     );
   }
