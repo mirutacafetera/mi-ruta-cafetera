@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/admin/cuenta/foto_perfil_admin_controlador.dart';
-import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import 'admin_encabezado_menu.dart';
 import 'admin_iconos_menu.dart';

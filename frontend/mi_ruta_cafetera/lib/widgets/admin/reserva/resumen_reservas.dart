@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
@@ -106,7 +107,6 @@ class _TarjetaResumenReserva extends StatelessWidget {
   final _DatoReserva dato;
 
   const _TarjetaResumenReserva({
-    super.key,
     required this.dato,
   });
 
