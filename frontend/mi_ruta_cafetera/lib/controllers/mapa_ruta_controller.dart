@@ -6,8 +6,9 @@ import '../models/ruta_predefinida_model.dart';
 import '../models/sitio_turistico_model.dart';
 import '../services/routing_service.dart';
 import '../widgets/mapa/mapa_estado_ruta.dart';
-import '../utils/text_utils.dart';
 import '../l10n/textos.dart';
+import 'mapa_ruta/itinerario_ruta_helper.dart';
+import 'mapa_ruta/seleccion_ruta_helper.dart';
 
 class MapaRutaController extends ChangeNotifier {
   MapaRutaController({
@@ -587,61 +588,10 @@ class MapaRutaController extends ChangeNotifier {
     required RutaPredefinidaModel ruta,
     required List<SitioTuristicoModel> sitios,
   }) {
-    final municipios = ruta.municipios
-        .map(TextUtils.normalizar)
-        .where(
-          (item) => item.isNotEmpty,
-        )
-        .toSet();
-
-    final categorias = ruta.categorias
-        .map(TextUtils.normalizar)
-        .where(
-          (item) => item.isNotEmpty,
-        )
-        .toSet();
-
-    if (municipios.isEmpty &&
-        categorias.isEmpty) {
-      return [];
-    }
-
-    return sitios.where((sitio) {
-      if (!sitio.activo ||
-          !sitio.enAreaTuristica) {
-        return false;
-      }
-
-      final municipio =
-          TextUtils.normalizar(
-        sitio.ciudad,
-      );
-
-      final categoria =
-          TextUtils.normalizar(
-        sitio.categoriaNombre,
-      );
-
-      final coincideMunicipio =
-          municipios.contains(municipio);
-
-      final coincideCategoria =
-          categoria.isNotEmpty &&
-              categorias.any(
-        (categoriaRuta) {
-          return categoria == categoriaRuta ||
-              categoria.contains(
-                categoriaRuta,
-              ) ||
-              categoriaRuta.contains(
-                categoria,
-              );
-        },
-      );
-
-      return coincideMunicipio ||
-          coincideCategoria;
-    }).toList();
+    return SeleccionRutaHelper.buscarSitios(
+      ruta: ruta,
+      sitios: sitios,
+    );
   }
 
   /// Elige, en orden de visita, hasta [MapaEstadoRuta.maxSitios]
@@ -658,196 +608,10 @@ class MapaRutaController extends ChangeNotifier {
     required RutaPredefinidaModel ruta,
     required List<SitioTuristicoModel> sitios,
   }) {
-    final candidatos =
-        buscarSitiosParaRutaPredefinida(
+    return SeleccionRutaHelper.seleccionarSitios(
       ruta: ruta,
       sitios: sitios,
     );
-
-    if (candidatos.isEmpty) {
-      return [];
-    }
-
-    const maximo = MapaEstadoRuta.maxSitios;
-
-    // ----------------------------------------------------------
-    // CORREDORES POR MUNICIPIO
-    // ----------------------------------------------------------
-
-    final ordenMunicipios = ruta.municipios
-        .map(TextUtils.normalizar)
-        .toList();
-
-    if (ordenMunicipios.isNotEmpty &&
-        ruta.categorias.isEmpty) {
-      final grupos = <List<SitioTuristicoModel>>[
-        for (final _ in ordenMunicipios) [],
-      ];
-
-      for (final sitio in candidatos) {
-        final indice = ordenMunicipios.indexOf(
-          TextUtils.normalizar(sitio.ciudad),
-        );
-
-        if (indice != -1) {
-          grupos[indice].add(sitio);
-        }
-      }
-
-      final elegidos =
-          <MapEntry<int, SitioTuristicoModel>>[];
-
-      var ronda = 0;
-
-      while (elegidos.length < maximo) {
-        var agregado = false;
-
-        for (var g = 0; g < grupos.length; g++) {
-          if (elegidos.length >= maximo) {
-            break;
-          }
-
-          if (ronda < grupos[g].length) {
-            elegidos.add(
-              MapEntry(g, grupos[g][ronda]),
-            );
-
-            agregado = true;
-          }
-        }
-
-        if (!agregado) {
-          break;
-        }
-
-        ronda++;
-      }
-
-      // Orden estable por municipio: Gigante, Zuluaga, Garzón...
-      final ordenados = <SitioTuristicoModel>[];
-
-      for (var g = 0; g < grupos.length; g++) {
-        ordenados.addAll(
-          elegidos
-              .where((item) => item.key == g)
-              .map((item) => item.value),
-        );
-      }
-
-      return ordenados;
-    }
-
-    // ----------------------------------------------------------
-    // POR CATEGORÍA
-    // ----------------------------------------------------------
-
-    final ordenCategorias = ruta.categorias
-        .map(TextUtils.normalizar)
-        .toList();
-
-    final gruposCategoria = <List<SitioTuristicoModel>>[
-      for (final _ in ordenCategorias) [],
-    ];
-
-    final sinGrupo = <SitioTuristicoModel>[];
-
-    for (final sitio in candidatos) {
-      final categoria = TextUtils.normalizar(
-        sitio.categoriaNombre,
-      );
-
-      final indice = ordenCategorias.indexWhere(
-        (categoriaRuta) =>
-            categoria.isNotEmpty &&
-            (categoria == categoriaRuta ||
-            categoria.contains(categoriaRuta) ||
-            categoriaRuta.contains(categoria)),
-      );
-
-      if (indice == -1) {
-        sinGrupo.add(sitio);
-      } else {
-        gruposCategoria[indice].add(sitio);
-      }
-    }
-
-    final elegidosCategoria = <SitioTuristicoModel>[];
-
-    var rondaCategoria = 0;
-
-    while (elegidosCategoria.length < maximo) {
-      var agregadoCategoria = false;
-
-      for (final grupo in gruposCategoria) {
-        if (elegidosCategoria.length >= maximo) {
-          break;
-        }
-
-        if (rondaCategoria < grupo.length) {
-          elegidosCategoria.add(grupo[rondaCategoria]);
-
-          agregadoCategoria = true;
-        }
-      }
-
-      if (!agregadoCategoria) {
-        break;
-      }
-
-      rondaCategoria++;
-    }
-
-    for (final sitio in sinGrupo) {
-      if (elegidosCategoria.length >= maximo) {
-        break;
-      }
-
-      elegidosCategoria.add(sitio);
-    }
-
-    return _ordenarPorCercania(elegidosCategoria);
-  }
-
-  // Vecino más cercano partiendo del sitio más al norte.
-  List<SitioTuristicoModel> _ordenarPorCercania(
-    List<SitioTuristicoModel> sitios,
-  ) {
-    if (sitios.length < 3) {
-      return sitios;
-    }
-
-    const distancia = Distance();
-
-    final pendientes =
-        List<SitioTuristicoModel>.from(sitios);
-
-    pendientes.sort(
-      (a, b) => b.latitud.compareTo(a.latitud),
-    );
-
-    final ordenados = <SitioTuristicoModel>[
-      pendientes.removeAt(0),
-    ];
-
-    while (pendientes.isNotEmpty) {
-      final actual = ordenados.last;
-
-      pendientes.sort(
-        (a, b) => distancia(
-          actual.ubicacion,
-          a.ubicacion,
-        ).compareTo(
-          distancia(
-            actual.ubicacion,
-            b.ubicacion,
-          ),
-        ),
-      );
-
-      ordenados.add(pendientes.removeAt(0));
-    }
-
-    return ordenados;
   }
 
   /// Selecciona los sitios de la plantilla en el modo de creación
@@ -928,17 +692,7 @@ class MapaRutaController extends ChangeNotifier {
   Map<String, int> _minutosDeParadas(
     List<ParadaRutaModel> paradas,
   ) {
-    final minutos = <String, int>{};
-
-    for (final parada in paradas) {
-      final duracion = parada.duracionMin;
-
-      if (duracion != null && parada.sitioId.isNotEmpty) {
-        minutos[parada.sitioId] = duracion;
-      }
-    }
-
-    return minutos;
+    return ItinerarioRutaHelper.minutosDeParadas(paradas);
   }
 
   /// Sitios de una ruta de la API en orden de visita (primero por
@@ -952,32 +706,10 @@ class MapaRutaController extends ChangeNotifier {
     required RutaModel ruta,
     required List<SitioTuristicoModel> sitios,
   }) {
-    final ids = ruta.paradas.isNotEmpty
-        ? ruta.paradas.map((p) => p.sitioId).toList()
-        : ruta.sitios;
-
-    if (ids.length < MapaEstadoRuta.minSitios ||
-        ids.length > MapaEstadoRuta.maxSitiosPredefinida) {
-      return const [];
-    }
-
-    final porId = {
-      for (final sitio in sitios) sitio.id: sitio,
-    };
-
-    final ordenados = <SitioTuristicoModel>[];
-
-    for (final id in ids) {
-      final sitio = porId[id];
-
-      if (sitio == null || !sitio.enAreaTuristica) {
-        return const [];
-      }
-
-      ordenados.add(sitio);
-    }
-
-    return ordenados;
+    return ItinerarioRutaHelper.sitiosDeRutaApi(
+      ruta: ruta,
+      sitios: sitios,
+    );
   }
 
   /// Selecciona los sitios de una ruta predefinida de la API en el
@@ -1100,5 +832,3 @@ class MapaRutaController extends ChangeNotifier {
     super.dispose();
   }
 }
-
-
