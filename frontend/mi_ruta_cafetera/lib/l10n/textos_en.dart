@@ -188,6 +188,7 @@ const Map<String, String> textosEnLiteral = {
   'Escuchar historia': 'Listen to story',
   'Esta acción es definitiva': 'This action is permanent',
   'Esta actividad aún no tiene imágenes': 'This activity has no images yet',
+  'Imagen no disponible': 'Image not available',
   'Establecimiento': 'Establishment',
   'Estado': 'Status',
   'Estamos preparando actividades para tu visita.': 'We are preparing activities for your visit.',

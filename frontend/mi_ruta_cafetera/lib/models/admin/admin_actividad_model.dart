@@ -1,110 +1,86 @@
-class AdminActividadModel {
+
+class ActividadAdminModel {
   final String id;
   final String nombre;
   final String descripcion;
-  final double precio;
-  final String horario;
-  final String duracion;
-  final bool activo;
-
   final String estadoPublicacion;
   final String motivoRechazo;
-
+  final String imagenPrincipal;
+  final List<String> imagenes;
   final String sitioId;
-  final String sitioNombre;
+  final String nombreSitio;
   final String ciudad;
   final String departamento;
+  final dynamic precio;
+  final String horario;
+  final String duracion;
+  final DateTime? fechaCreacion;
 
-  final String revisadoPor;
-  final DateTime? revisadoAt;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
-  const AdminActividadModel({
+  const ActividadAdminModel({
     required this.id,
     required this.nombre,
     required this.descripcion,
-    required this.precio,
-    required this.horario,
-    required this.duracion,
-    required this.activo,
     required this.estadoPublicacion,
-    required this.motivoRechazo,
-    required this.sitioId,
-    required this.sitioNombre,
-    required this.ciudad,
-    required this.departamento,
-    required this.revisadoPor,
-    required this.revisadoAt,
-    required this.createdAt,
-    required this.updatedAt,
+    this.motivoRechazo = '',
+    this.imagenPrincipal = '',
+    this.imagenes = const [],
+    this.sitioId = '',
+    this.nombreSitio = '',
+    this.ciudad = '',
+    this.departamento = '',
+    this.precio,
+    this.horario = '',
+    this.duracion = '',
+    this.fechaCreacion,
   });
 
-  factory AdminActividadModel.fromJson(
+  factory ActividadAdminModel.fromJson(
     Map<String, dynamic> json,
   ) {
     final sitio = json['sitio'];
-
-    final sitioMap = sitio is Map<String, dynamic>
-        ? sitio
+    final sitioJson = sitio is Map
+        ? Map<String, dynamic>.from(sitio)
         : <String, dynamic>{};
 
-    return AdminActividadModel(
-      id: json['_id']?.toString() ??
-          json['id']?.toString() ??
-          '',
-      nombre: json['nombre']?.toString() ?? '',
-      descripcion:
-          json['descripcion']?.toString() ?? '',
-      precio: _toDouble(json['precio']),
-      horario: json['horario']?.toString() ?? '',
-      duracion: json['duracion']?.toString() ?? '',
-      activo: json['activo'] == true,
+    final listaImagenes = json['imagenes'];
+
+    return ActividadAdminModel(
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
+      nombre: (json['nombre'] ?? '').toString(),
+      descripcion: (json['descripcion'] ?? '').toString(),
       estadoPublicacion:
-          json['estadoPublicacion']?.toString() ??
-              'borrador',
-      motivoRechazo:
-          json['motivoRechazo']?.toString() ?? '',
-      sitioId:
-          sitioMap['_id']?.toString() ??
-              sitio?.toString() ??
-              '',
-      sitioNombre:
-          sitioMap['nombre']?.toString() ?? '',
-      ciudad:
-          sitioMap['ciudad']?.toString() ?? '',
+          (json['estadoPublicacion'] ?? 'borrador').toString(),
+      motivoRechazo: (json['motivoRechazo'] ?? '').toString(),
+      imagenPrincipal: (json['imagenPrincipal'] ?? '').toString(),
+      imagenes: listaImagenes is List
+          ? listaImagenes
+              .whereType<String>()
+              .toList()
+          : [],
+      sitioId: sitio is Map
+          ? (sitioJson['_id'] ?? sitioJson['id'] ?? '').toString()
+          : (sitio ?? '').toString(),
+      nombreSitio: (sitioJson['nombre'] ?? '').toString(),
+      ciudad: (sitioJson['ciudad'] ?? '').toString(),
       departamento:
-          sitioMap['departamento']?.toString() ??
-              '',
-      revisadoPor:
-          json['revisadoPor']?.toString() ?? '',
-      revisadoAt:
-          _toDateTime(json['revisadoAt']),
-      createdAt:
-          _toDateTime(json['createdAt']),
-      updatedAt:
-          _toDateTime(json['updatedAt']),
+          (sitioJson['departamento'] ?? '').toString(),
+      precio: json['precio'],
+      horario: (json['horario'] ?? '').toString(),
+      duracion: (json['duracion'] ?? '').toString(),
+      fechaCreacion: DateTime.tryParse(
+        (json['createdAt'] ?? '').toString(),
+      ),
     );
   }
 
-  static double _toDouble(dynamic value) {
-    if (value is num) {
-      return value.toDouble();
-    }
-
-    return double.tryParse(
-          value?.toString() ?? '',
-        ) ??
-        0;
-  }
-
-  static DateTime? _toDateTime(dynamic value) {
-    if (value == null) {
-      return null;
-    }
-
-    return DateTime.tryParse(
-      value.toString(),
-    );
+  List<String> get todasLasImagenes {
+    return [
+      if (imagenPrincipal.trim().isNotEmpty) imagenPrincipal,
+      ...imagenes.where(
+        (imagen) =>
+            imagen.trim().isNotEmpty &&
+            imagen != imagenPrincipal,
+      ),
+    ];
   }
 }

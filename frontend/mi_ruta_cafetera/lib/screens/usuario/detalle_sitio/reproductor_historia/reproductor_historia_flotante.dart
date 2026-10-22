@@ -13,6 +13,7 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
     required this.cargando,
     required this.error,
     required this.onCerrar,
+    required this.onAlternarReproduccion,
   });
 
   final AudioPlayer player;
@@ -20,6 +21,7 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
   final bool cargando;
   final String? error;
   final VoidCallback onCerrar;
+  final VoidCallback onAlternarReproduccion;
 
   String _formatear(Duration duracion) {
     final minutos = duracion.inMinutes;
@@ -140,9 +142,6 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
                               final estado = snapshot.data;
                               final reproduciendo =
                                   estado?.playing ?? false;
-                              final terminado =
-                                  estado?.processingState ==
-                                      ProcessingState.completed;
 
                               return Row(
                                 mainAxisAlignment:
@@ -166,16 +165,7 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
                                     tooltip: reproduciendo
                                         ? 'Pausar'
                                         : 'Reproducir',
-                                    onPressed: () {
-                                      if (terminado) {
-                                        player.seek(Duration.zero);
-                                        player.play();
-                                      } else if (reproduciendo) {
-                                        player.pause();
-                                      } else {
-                                        player.play();
-                                      }
-                                    },
+                                    onPressed: onAlternarReproduccion,
                                     icon: Icon(
                                       reproduciendo
                                           ? Icons.pause

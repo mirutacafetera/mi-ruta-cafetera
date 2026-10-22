@@ -1,18 +1,9 @@
 const bcrypt = require('bcryptjs');
-
 const jwt = require('jsonwebtoken');
-
 const crypto = require('crypto');
-
 const mongoose = require('mongoose');
-
 const { OAuth2Client } = require('google-auth-library');
-
-const Usuario = require(
-  '../../models/usuario/usuario'
-);
-
-// Modelos con datos del usuario, usados al eliminar la cuenta.
+const Usuario = require('../../models/usuario/usuario');
 const Resena = require('../../models/sitio/resena');
 const Reserva = require('../../models/sitio/reserva');
 const Favorito = require('../../models/usuario/favorito');
@@ -21,19 +12,11 @@ const Notificacion = require('../../models/usuario/notificacion');
 const Ayuda = require('../../models/usuario/ayuda');
 const Visita = require('../../models/usuario/visita');
 const MapaOffline = require('../../models/usuario/mapaoffline');
-
-const googleClient = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID
-);
-
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const {
   enviarCodigoVerificacion,
   enviarCodigoRecuperacion
 } = require('../../utils/mailer');
-
-// =====================================================
-// AYUDAS COMUNES DEL PERFIL
-// =====================================================
 
 const CAMPOS_AVATAR = [
   'piel',
@@ -45,8 +28,6 @@ const CAMPOS_AVATAR = [
   'fondo'
 ];
 
-// Forma única con la que se devuelve el usuario al cliente.
-// No incluye contraseña, códigos ni tokens de recuperación.
 const usuarioPublico = (usuario) => {
   const avatar = usuario.avatar || {};
 
@@ -71,17 +52,12 @@ const usuarioPublico = (usuario) => {
   };
 };
 
-const esTextoSimple = (valor) =>
-  typeof valor === 'string';
+const esTextoSimple = (valor) => typeof valor === 'string';
 
-// Valida y normaliza los campos que el usuario puede editar.
-// Devuelve { cambios, error }. Solo se aceptan los campos de
-// la lista blanca; cualquier otro se ignora.
 const validarCambiosPerfil = (cuerpo, usuarioActual) => {
   const cambios = {};
   const datos = cuerpo || {};
 
-  // ---- nombre y apellido (obligatorios si se envían) ----
   for (const campo of ['nombre', 'apellido']) {
     if (datos[campo] === undefined) continue;
 
@@ -93,15 +69,13 @@ const validarCambiosPerfil = (cuerpo, usuarioActual) => {
 
     if (valor.length < 1 || valor.length > 60) {
       return {
-        error:
-          `El ${campo} debe tener entre 1 y 60 caracteres`
+        error: `El ${campo} debe tener entre 1 y 60 caracteres`
       };
     }
 
     cambios[campo] = valor;
   }
 
-  // ---- teléfono (opcional) ----
   if (datos.telefono !== undefined) {
     if (!esTextoSimple(datos.telefono)) {
       return { error: 'El teléfono no es válido' };
@@ -109,10 +83,7 @@ const validarCambiosPerfil = (cuerpo, usuarioActual) => {
 
     const valor = datos.telefono.trim();
 
-    if (
-      valor !== '' &&
-      !/^[0-9+()\-\s]{7,20}$/.test(valor)
-    ) {
+    if (valor !== '' && !/^[0-9+()\-\s]{7,20}$/.test(valor)) {
       return {
         error:
           'El teléfono solo puede tener números, espacios, + ( ) y -, entre 7 y 20 caracteres'
@@ -122,7 +93,6 @@ const validarCambiosPerfil = (cuerpo, usuarioActual) => {
     cambios.telefono = valor;
   }
 
-  // ---- ciudad (opcional) ----
   if (datos.ciudad !== undefined) {
     if (!esTextoSimple(datos.ciudad)) {
       return { error: 'La ciudad no es válida' };
@@ -139,7 +109,6 @@ const validarCambiosPerfil = (cuerpo, usuarioActual) => {
     cambios.ciudad = valor;
   }
 
-  // ---- fotografía (URL http/https o vacío) ----
   if (datos.fotoPerfil !== undefined) {
     if (!esTextoSimple(datos.fotoPerfil)) {
       return { error: 'La fotografía no es válida' };
@@ -167,7 +136,6 @@ const validarCambiosPerfil = (cuerpo, usuarioActual) => {
     cambios.fotoPerfil = valor;
   }
 
-  // ---- avatar cafetero ----
   if (datos.avatar !== undefined) {
     const avatar = datos.avatar;
 
@@ -180,9 +148,7 @@ const validarCambiosPerfil = (cuerpo, usuarioActual) => {
     }
 
     const opciones = Usuario.AVATAR_OPCIONES;
-    const avatarActual =
-      (usuarioActual && usuarioActual.avatar) || {};
-
+    const avatarActual = (usuarioActual && usuarioActual.avatar) || {};
     const resultado = {};
 
     for (const campo of CAMPOS_AVATAR) {
@@ -210,7 +176,6 @@ const validarCambiosPerfil = (cuerpo, usuarioActual) => {
       resultado.usar = avatarActual.usar === true;
     }
 
-    // Para usar el avatar, la configuración debe estar completa.
     if (
       resultado.usar &&
       CAMPOS_AVATAR.some((campo) => !resultado[campo])
@@ -231,10 +196,6 @@ const validarCambiosPerfil = (cuerpo, usuarioActual) => {
   return { cambios };
 };
 
-// =====================================================
-// REGISTRAR USUARIO
-// =====================================================
-
 const registrarUsuario = async (req, res) => {
   try {
     const {
@@ -247,37 +208,18 @@ const registrarUsuario = async (req, res) => {
       fotoPerfil
     } = req.body;
 
-    // -------------------------------------------------
-    // VALIDAR CAMPOS OBLIGATORIOS
-    // -------------------------------------------------
-
-    if (
-      !nombre ||
-      !apellido ||
-      !correo ||
-      !password
-    ) {
+    if (!nombre || !apellido || !correo || !password) {
       return res.status(400).json({
         mensaje:
           'Nombre, apellido, correo y contraseña son obligatorios'
       });
     }
 
-    // -------------------------------------------------
-    // NORMALIZAR CORREO
-    // -------------------------------------------------
+    const correoNormalizado = correo.toLowerCase().trim();
 
-    const correoNormalizado =
-      correo.toLowerCase().trim();
-
-    // -------------------------------------------------
-    // VERIFICAR SI EL CORREO YA EXISTE
-    // -------------------------------------------------
-
-    const usuarioExistente =
-      await Usuario.findOne({
-        correo: correoNormalizado
-      });
+    const usuarioExistente = await Usuario.findOne({
+      correo: correoNormalizado
+    });
 
     if (usuarioExistente) {
       return res.status(400).json({
@@ -285,35 +227,15 @@ const registrarUsuario = async (req, res) => {
       });
     }
 
-    // -------------------------------------------------
-    // ENCRIPTAR CONTRASEÑA
-    // -------------------------------------------------
+    const passwordEncriptada = await bcrypt.hash(password, 10);
 
-    const passwordEncriptada =
-      await bcrypt.hash(
-        password,
-        10
-      );
+    const codigoVerificacion = crypto
+      .randomInt(100000, 1000000)
+      .toString();
 
-    // -------------------------------------------------
-    // GENERAR CÓDIGO DE VERIFICACIÓN
-    // -------------------------------------------------
-
-    const codigoVerificacion =
-      crypto.randomInt(
-        100000,
-        1000000
-      ).toString();
-
-    const codigoVerificacionExpiracion =
-      new Date(
-        Date.now() +
-        10 * 60 * 1000
-      );
-
-    // -------------------------------------------------
-    // CREAR USUARIO
-    // -------------------------------------------------
+    const codigoVerificacionExpiracion = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
 
     const usuario = new Usuario({
       nombre,
@@ -323,19 +245,12 @@ const registrarUsuario = async (req, res) => {
       telefono,
       ciudad,
       fotoPerfil,
-
       correoVerificado: false,
-
       codigoVerificacion,
-
       codigoVerificacionExpiracion
     });
 
     await usuario.save();
-
-    // -------------------------------------------------
-    // ENVIAR CÓDIGO POR CORREO
-    // -------------------------------------------------
 
     await enviarCodigoVerificacion(
       usuario.correo,
@@ -343,14 +258,9 @@ const registrarUsuario = async (req, res) => {
       codigoVerificacion
     );
 
-    // -------------------------------------------------
-    // RESPUESTA
-    // -------------------------------------------------
-
     return res.status(201).json({
       mensaje:
         'Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.',
-
       usuario: {
         id: usuario._id,
         nombre: usuario.nombre,
@@ -359,15 +269,11 @@ const registrarUsuario = async (req, res) => {
         telefono: usuario.telefono,
         ciudad: usuario.ciudad,
         fotoPerfil: usuario.fotoPerfil,
-        correoVerificado:
-          usuario.correoVerificado
+        correoVerificado: usuario.correoVerificado
       }
     });
   } catch (error) {
-    console.error(
-      'Error al registrar usuario:',
-      error
-    );
+    console.error('Error al registrar usuario:', error);
 
     return res.status(500).json({
       mensaje: 'Error al registrar usuario',
@@ -376,178 +282,98 @@ const registrarUsuario = async (req, res) => {
   }
 };
 
-// =====================================================
-// VERIFICAR CORREO
-// =====================================================
-
 const verificarCorreo = async (req, res) => {
   try {
-    const {
-      correo,
-      codigo
-    } = req.body;
-
-    // -------------------------------------------------
-    // VALIDAR DATOS
-    // -------------------------------------------------
+    const { correo, codigo } = req.body;
 
     if (!correo || !codigo) {
       return res.status(400).json({
-        mensaje:
-          'Correo y código son obligatorios'
+        mensaje: 'Correo y código son obligatorios'
       });
     }
 
-    // -------------------------------------------------
-    // NORMALIZAR CORREO
-    // -------------------------------------------------
+    const correoNormalizado = correo.toLowerCase().trim();
 
-    const correoNormalizado =
-      correo.toLowerCase().trim();
-
-    // -------------------------------------------------
-    // BUSCAR USUARIO
-    // -------------------------------------------------
-
-    const usuario =
-      await Usuario.findOne({
-        correo: correoNormalizado
-      });
+    const usuario = await Usuario.findOne({
+      correo: correoNormalizado
+    });
 
     if (!usuario) {
       return res.status(404).json({
-        mensaje:
-          'Usuario no encontrado'
+        mensaje: 'Usuario no encontrado'
       });
     }
-
-    // -------------------------------------------------
-    // VERIFICAR SI YA ESTÁ VERIFICADO
-    // -------------------------------------------------
 
     if (
       usuario.correoVerificado === true ||
       usuario.isVerified === true
     ) {
       return res.status(400).json({
-        mensaje:
-          'El correo ya está verificado'
+        mensaje: 'El correo ya está verificado'
       });
     }
 
-    // -------------------------------------------------
-    // VERIFICAR CÓDIGO
-    // -------------------------------------------------
-
-    if (
-      usuario.codigoVerificacion !==
-      codigo
-    ) {
+    if (usuario.codigoVerificacion !== codigo) {
       return res.status(400).json({
-        mensaje:
-          'El código de verificación es incorrecto'
+        mensaje: 'El código de verificación es incorrecto'
       });
     }
-
-    // -------------------------------------------------
-    // VERIFICAR EXPIRACIÓN
-    // -------------------------------------------------
 
     if (
       !usuario.codigoVerificacionExpiracion ||
-      usuario.codigoVerificacionExpiracion <
-        new Date()
+      usuario.codigoVerificacionExpiracion < new Date()
     ) {
       return res.status(400).json({
-        mensaje:
-          'El código de verificación ha expirado'
+        mensaje: 'El código de verificación ha expirado'
       });
     }
 
-    // -------------------------------------------------
-    // CONFIRMAR CORREO
-    // -------------------------------------------------
-
     usuario.correoVerificado = true;
-
     usuario.codigoVerificacion = null;
-
     usuario.codigoVerificacionExpiracion = null;
 
     await usuario.save();
 
-    // -------------------------------------------------
-    // RESPUESTA
-    // -------------------------------------------------
-
     return res.status(200).json({
-      mensaje:
-        'Correo verificado correctamente'
+      mensaje: 'Correo verificado correctamente'
     });
   } catch (error) {
-    console.error(
-      'Error al verificar correo:',
-      error
-    );
+    console.error('Error al verificar correo:', error);
 
     return res.status(500).json({
-      mensaje:
-        'Error al verificar el correo',
+      mensaje: 'Error al verificar el correo',
       error: error.message
     });
   }
 };
 
-// =====================================================
-// INICIAR SESIÓN
-// =====================================================
-
 const iniciarSesionUsuario = async (req, res) => {
   try {
-    const {
-      correo,
-      password
-    } = req.body;
-
-    // -------------------------------------------------
-    // VALIDAR CAMPOS
-    // -------------------------------------------------
+    const { correo, password } = req.body;
 
     if (!correo || !password) {
       return res.status(400).json({
-        mensaje:
-          'Correo y contraseña son obligatorios'
+        mensaje: 'Correo y contraseña son obligatorios'
       });
     }
 
-    // -------------------------------------------------
-    // NORMALIZAR CORREO
-    // -------------------------------------------------
+    const correoNormalizado = correo.toLowerCase().trim();
 
-    const correoNormalizado =
-      correo.toLowerCase().trim();
-
-    // -------------------------------------------------
-    // BUSCAR USUARIO
-    // -------------------------------------------------
-
-    const usuario =
-      await Usuario
-        .findOne({
-          correo: correoNormalizado
-        })
-        .select('+password');
+    const usuario = await Usuario.findOne({
+      correo: correoNormalizado
+    }).select('+password');
 
     if (!usuario) {
       return res.status(401).json({
-        mensaje:
-          'Correo o contraseña incorrectos'
+        mensaje: 'Correo o contraseña incorrectos'
       });
     }
 
-    // -------------------------------------------------
-    // VERIFICAR CORREO
-    // -------------------------------------------------
+    if (usuario.activo === false || usuario.eliminadoAt) {
+      return res.status(403).json({
+        mensaje: 'Esta cuenta está desactivada o fue eliminada'
+      });
+    }
 
     const correoEstaVerificado =
       usuario.correoVerificado === true ||
@@ -555,150 +381,85 @@ const iniciarSesionUsuario = async (req, res) => {
 
     if (!correoEstaVerificado) {
       return res.status(403).json({
-        mensaje:
-          'Debes verificar tu correo antes de iniciar sesión'
+        mensaje: 'Debes verificar tu correo antes de iniciar sesión'
       });
     }
 
-    // -------------------------------------------------
-    // COMPARAR CONTRASEÑA
-    // -------------------------------------------------
-
-    const passwordCorrecta =
-      await bcrypt.compare(
-        password,
-        usuario.password
-      );
+    const passwordCorrecta = await bcrypt.compare(
+      password,
+      usuario.password
+    );
 
     if (!passwordCorrecta) {
       return res.status(401).json({
-        mensaje:
-          'Correo o contraseña incorrectos'
+        mensaje: 'Correo o contraseña incorrectos'
       });
     }
 
-    // -------------------------------------------------
-    // CREAR JWT
-    // -------------------------------------------------
-
-    const token =
-      jwt.sign(
-        {
-          id: usuario._id.toString(),
-          correo: usuario.correo,
-          rol: 'usuario'
-        },
-        process.env.JWT_SECRET,
-        {
-          expiresIn:
-            process.env.JWT_EXPIRES_IN || '1d'
-        }
-      );
-
-    // -------------------------------------------------
-    // RESPUESTA
-    // -------------------------------------------------
+    const token = jwt.sign(
+      {
+        id: usuario._id.toString(),
+        correo: usuario.correo,
+        rol: 'usuario'
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || '1d'
+      }
+    );
 
     return res.status(200).json({
-      mensaje:
-        'Inicio de sesión exitoso',
-
+      mensaje: 'Inicio de sesión exitoso',
       token,
-
       usuario: usuarioPublico(usuario)
     });
   } catch (error) {
-    console.error(
-      'Error al iniciar sesión:',
-      error
-    );
+    console.error('Error al iniciar sesión:', error);
 
     return res.status(500).json({
-      mensaje:
-        'Error al iniciar sesión',
+      mensaje: 'Error al iniciar sesión',
       error: error.message
     });
   }
 };
 
-// =====================================================
-// RECUPERAR CONTRASEÑA
-// =====================================================
-
 const recuperarPassword = async (req, res) => {
   try {
     const { correo } = req.body;
 
-    // -------------------------------------------------
-    // VALIDAR CORREO
-    // -------------------------------------------------
-
     if (!correo) {
       return res.status(400).json({
-        mensaje:
-          'El correo es obligatorio'
+        mensaje: 'El correo es obligatorio'
       });
     }
 
-    // -------------------------------------------------
-    // NORMALIZAR CORREO
-    // -------------------------------------------------
+    const correoNormalizado = correo.toLowerCase().trim();
 
-    const correoNormalizado =
-      correo.toLowerCase().trim();
-
-    // -------------------------------------------------
-    // BUSCAR USUARIO
-    // -------------------------------------------------
-
-    const usuario =
-      await Usuario.findOne({
-        correo: correoNormalizado
-      });
+    const usuario = await Usuario.findOne({
+      correo: correoNormalizado
+    });
 
     if (!usuario) {
       return res.status(404).json({
-        mensaje:
-          'No existe un usuario registrado con ese correo'
+        mensaje: 'No existe un usuario registrado con ese correo'
       });
     }
 
-    // -------------------------------------------------
-    // GENERAR CÓDIGO
-    // -------------------------------------------------
+    const codigoRecuperacion = crypto
+      .randomInt(100000, 1000000)
+      .toString();
 
-    const codigoRecuperacion =
-      crypto.randomInt(
-        100000,
-        1000000
-      ).toString();
+    const codigoRecuperacionExpiracion = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
 
-    const codigoRecuperacionExpiracion =
-      new Date(
-        Date.now() +
-        10 * 60 * 1000
-      );
-
-    // -------------------------------------------------
-    // GUARDAR CÓDIGO
-    // -------------------------------------------------
-
-    usuario.codigoRecuperacion =
-      codigoRecuperacion;
-
+    usuario.codigoRecuperacion = codigoRecuperacion;
     usuario.codigoRecuperacionExpiracion =
       codigoRecuperacionExpiracion;
-
     usuario.tokenRecuperacion = null;
-
-    usuario.tokenRecuperacionExpiracion =
-      null;
+    usuario.tokenRecuperacionExpiracion = null;
 
     await usuario.save();
-
-    // -------------------------------------------------
-    // ENVIAR CÓDIGO
-    // -------------------------------------------------
 
     await enviarCodigoRecuperacion(
       usuario.correo,
@@ -706,262 +467,129 @@ const recuperarPassword = async (req, res) => {
       codigoRecuperacion
     );
 
-    // -------------------------------------------------
-    // RESPUESTA
-    // -------------------------------------------------
-
     return res.status(200).json({
-      mensaje:
-        'Hemos enviado un código de recuperación a tu correo'
+      mensaje: 'Hemos enviado un código de recuperación a tu correo'
     });
   } catch (error) {
-    console.error(
-      'Error al recuperar contraseña:',
-      error
-    );
+    console.error('Error al recuperar contraseña:', error);
 
     return res.status(500).json({
-      mensaje:
-        'Error al solicitar recuperación de contraseña',
+      mensaje: 'Error al solicitar recuperación de contraseña',
+      error: error.message
+    });
+  }
+};
+const verificarCodigoRecuperacion = async (req, res) => {
+  try {
+    const { correo, codigo } = req.body;
+
+    if (!correo || !codigo) {
+      return res.status(400).json({
+        mensaje: 'Correo y código son obligatorios'
+      });
+    }
+
+    const correoNormalizado = correo.toLowerCase().trim();
+
+    const usuario = await Usuario.findOne({
+      correo: correoNormalizado
+    });
+
+    if (!usuario || usuario.eliminadoAt || usuario.activo === false) {
+      return res.status(404).json({
+        mensaje: 'Usuario no encontrado'
+      });
+    }
+
+    if (usuario.codigoRecuperacion !== codigo) {
+      return res.status(400).json({
+        mensaje: 'El código de recuperación es incorrecto'
+      });
+    }
+
+    if (
+      !usuario.codigoRecuperacionExpiracion ||
+      usuario.codigoRecuperacionExpiracion < new Date()
+    ) {
+      return res.status(400).json({
+        mensaje: 'El código de recuperación ha expirado'
+      });
+    }
+
+    const tokenRecuperacion = crypto.randomBytes(32).toString('hex');
+
+    const tokenRecuperacionExpiracion = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
+
+    usuario.tokenRecuperacion = tokenRecuperacion;
+    usuario.tokenRecuperacionExpiracion = tokenRecuperacionExpiracion;
+    usuario.codigoRecuperacion = null;
+    usuario.codigoRecuperacionExpiracion = null;
+
+    await usuario.save();
+
+    return res.status(200).json({
+      mensaje: 'Código verificado correctamente',
+      tokenRecuperacion
+    });
+  } catch (error) {
+    console.error('Error al verificar código de recuperación:', error);
+
+    return res.status(500).json({
+      mensaje: 'Error al verificar el código',
       error: error.message
     });
   }
 };
 
-// =====================================================
-// VERIFICAR CÓDIGO DE RECUPERACIÓN
-// =====================================================
+const restablecerPassword = async (req, res) => {
+  try {
+    const { tokenRecuperacion, nuevaPassword } = req.body;
 
-const verificarCodigoRecuperacion =
-  async (req, res) => {
-    try {
-      const {
-        correo,
-        codigo
-      } = req.body;
-
-      // ------------------------------------------------
-      // VALIDAR DATOS
-      // ------------------------------------------------
-
-      if (!correo || !codigo) {
-        return res.status(400).json({
-          mensaje:
-            'Correo y código son obligatorios'
-        });
-      }
-
-      // ------------------------------------------------
-      // NORMALIZAR CORREO
-      // ------------------------------------------------
-
-      const correoNormalizado =
-        correo.toLowerCase().trim();
-
-      // ------------------------------------------------
-      // BUSCAR USUARIO
-      // ------------------------------------------------
-
-      const usuario =
-        await Usuario.findOne({
-          correo: correoNormalizado
-        });
-
-      if (!usuario) {
-        return res.status(404).json({
-          mensaje:
-            'Usuario no encontrado'
-        });
-      }
-
-      // ------------------------------------------------
-      // VERIFICAR CÓDIGO
-      // ------------------------------------------------
-
-      if (
-        usuario.codigoRecuperacion !==
-        codigo
-      ) {
-        return res.status(400).json({
-          mensaje:
-            'El código de recuperación es incorrecto'
-        });
-      }
-
-      // ------------------------------------------------
-      // VERIFICAR EXPIRACIÓN
-      // ------------------------------------------------
-
-      if (
-        !usuario.codigoRecuperacionExpiracion ||
-        usuario.codigoRecuperacionExpiracion <
-          new Date()
-      ) {
-        return res.status(400).json({
-          mensaje:
-            'El código de recuperación ha expirado'
-        });
-      }
-
-      // ------------------------------------------------
-      // GENERAR TOKEN
-      // ------------------------------------------------
-
-      const tokenRecuperacion =
-        crypto.randomBytes(32).toString(
-          'hex'
-        );
-
-      const tokenRecuperacionExpiracion =
-        new Date(
-          Date.now() +
-          10 * 60 * 1000
-        );
-
-      // ------------------------------------------------
-      // GUARDAR TOKEN
-      // ------------------------------------------------
-
-      usuario.tokenRecuperacion =
-        tokenRecuperacion;
-
-      usuario.tokenRecuperacionExpiracion =
-        tokenRecuperacionExpiracion;
-
-      usuario.codigoRecuperacion = null;
-
-      usuario.codigoRecuperacionExpiracion =
-        null;
-
-      await usuario.save();
-
-      // ------------------------------------------------
-      // RESPUESTA
-      // ------------------------------------------------
-
-      return res.status(200).json({
-        mensaje:
-          'Código verificado correctamente',
-
-        tokenRecuperacion
-      });
-    } catch (error) {
-      console.error(
-        'Error al verificar código de recuperación:',
-        error
-      );
-
-      return res.status(500).json({
-        mensaje:
-          'Error al verificar el código',
-        error: error.message
+    if (!tokenRecuperacion || !nuevaPassword) {
+      return res.status(400).json({
+        mensaje: 'Token y nueva contraseña son obligatorios'
       });
     }
-  };
 
-// =====================================================
-// RESTABLECER CONTRASEÑA
-// =====================================================
+    const usuario = await Usuario.findOne({
+      tokenRecuperacion
+    });
 
-const restablecerPassword =
-  async (req, res) => {
-    try {
-      const {
-        tokenRecuperacion,
-        nuevaPassword
-      } = req.body;
-
-      // ------------------------------------------------
-      // VALIDAR DATOS
-      // ------------------------------------------------
-
-      if (
-        !tokenRecuperacion ||
-        !nuevaPassword
-      ) {
-        return res.status(400).json({
-          mensaje:
-            'Token y nueva contraseña son obligatorios'
-        });
-      }
-
-      // ------------------------------------------------
-      // BUSCAR USUARIO
-      // ------------------------------------------------
-
-      const usuario =
-        await Usuario.findOne({
-          tokenRecuperacion
-        });
-
-      if (!usuario) {
-        return res.status(400).json({
-          mensaje:
-            'El token de recuperación no es válido'
-        });
-      }
-
-      // ------------------------------------------------
-      // VERIFICAR EXPIRACIÓN
-      // ------------------------------------------------
-
-      if (
-        !usuario.tokenRecuperacionExpiracion ||
-        usuario.tokenRecuperacionExpiracion <
-          new Date()
-      ) {
-        return res.status(400).json({
-          mensaje:
-            'El token de recuperación ha expirado'
-        });
-      }
-
-      // ------------------------------------------------
-      // ENCRIPTAR NUEVA CONTRASEÑA
-      // ------------------------------------------------
-
-      usuario.password =
-        await bcrypt.hash(
-          nuevaPassword,
-          10
-        );
-
-      // ------------------------------------------------
-      // LIMPIAR TOKEN
-      // ------------------------------------------------
-
-      usuario.tokenRecuperacion = null;
-
-      usuario.tokenRecuperacionExpiracion =
-        null;
-
-      await usuario.save();
-
-      // ------------------------------------------------
-      // RESPUESTA
-      // ------------------------------------------------
-
-      return res.status(200).json({
-        mensaje:
-          'Contraseña restablecida correctamente'
-      });
-    } catch (error) {
-      console.error(
-        'Error al restablecer contraseña:',
-        error
-      );
-
-      return res.status(500).json({
-        mensaje:
-          'Error al restablecer la contraseña',
-        error: error.message
+    if (!usuario || usuario.eliminadoAt || usuario.activo === false) {
+      return res.status(400).json({
+        mensaje: 'El token de recuperación no es válido'
       });
     }
-  };
 
-  // =====================================================
-// OBTENER MI PERFIL
-// =====================================================
+    if (
+      !usuario.tokenRecuperacionExpiracion ||
+      usuario.tokenRecuperacionExpiracion < new Date()
+    ) {
+      return res.status(400).json({
+        mensaje: 'El token de recuperación ha expirado'
+      });
+    }
+
+    usuario.password = await bcrypt.hash(nuevaPassword, 10);
+    usuario.tokenRecuperacion = null;
+    usuario.tokenRecuperacionExpiracion = null;
+
+    await usuario.save();
+
+    return res.status(200).json({
+      mensaje: 'Contraseña restablecida correctamente'
+    });
+  } catch (error) {
+    console.error('Error al restablecer contraseña:', error);
+
+    return res.status(500).json({
+      mensaje: 'Error al restablecer la contraseña',
+      error: error.message
+    });
+  }
+};
 
 const obtenerMiPerfil = async (req, res) => {
   try {
@@ -971,13 +599,10 @@ const obtenerMiPerfil = async (req, res) => {
       });
     }
 
-    // La contraseña se carga solo para saber si la cuenta
-    // se creó con Google; nunca se envía al cliente.
-    const usuario = await Usuario
-      .findById(req.usuario.id)
+    const usuario = await Usuario.findById(req.usuario.id)
       .select('+password');
 
-    if (!usuario || usuario.eliminadoAt) {
+    if (!usuario || usuario.eliminadoAt || usuario.activo === false) {
       return res.status(404).json({
         mensaje: 'Usuario no encontrado'
       });
@@ -990,10 +615,7 @@ const obtenerMiPerfil = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(
-      'Error al obtener mi perfil:',
-      error
-    );
+    console.error('Error al obtener mi perfil:', error);
 
     return res.status(500).json({
       mensaje: 'Error al obtener el perfil'
@@ -1001,32 +623,14 @@ const obtenerMiPerfil = async (req, res) => {
   }
 };
 
-// =====================================================
-// ACTUALIZAR USUARIO
-// =====================================================
-//
-// Solo permite modificar la propia cuenta y únicamente los
-// campos de la lista blanca (nombre, apellido, teléfono,
-// ciudad, fotografía y avatar). El correo, la contraseña y
-// los datos de verificación no se pueden cambiar aquí.
-// =====================================================
-
-const actualizarUsuario = async (
-  req,
-  res
-) => {
+const actualizarUsuario = async (req, res) => {
   try {
-    // -------------------------------------------------
-    // VERIFICAR PROPIETARIO
-    // -------------------------------------------------
-
     if (
       req.usuario.rol !== 'usuario' ||
       req.usuario.id !== req.params.id
     ) {
       return res.status(403).json({
-        mensaje:
-          'No puedes modificar otro usuario'
+        mensaje: 'No puedes modificar otro usuario'
       });
     }
 
@@ -1038,16 +642,11 @@ const actualizarUsuario = async (
 
     const usuario = await Usuario.findById(req.params.id);
 
-    if (!usuario || usuario.eliminadoAt) {
+    if (!usuario || usuario.eliminadoAt || usuario.activo === false) {
       return res.status(404).json({
-        mensaje:
-          'Usuario no encontrado'
+        mensaje: 'Usuario no encontrado'
       });
     }
-
-    // -------------------------------------------------
-    // VALIDAR CAMBIOS
-    // -------------------------------------------------
 
     const { cambios, error } = validarCambiosPerfil(
       req.body,
@@ -1058,29 +657,15 @@ const actualizarUsuario = async (
       return res.status(400).json({ mensaje: error });
     }
 
-    // -------------------------------------------------
-    // GUARDAR
-    // -------------------------------------------------
-
     usuario.set(cambios);
-
     await usuario.save();
 
-    // -------------------------------------------------
-    // RESPUESTA
-    // -------------------------------------------------
-
     return res.status(200).json({
-      mensaje:
-        'Perfil actualizado correctamente',
-
+      mensaje: 'Perfil actualizado correctamente',
       usuario: usuarioPublico(usuario)
     });
   } catch (error) {
-    console.error(
-      'Error al actualizar usuario:',
-      error
-    );
+    console.error('Error al actualizar usuario:', error);
 
     if (error.name === 'ValidationError') {
       return res.status(400).json({
@@ -1089,50 +674,10 @@ const actualizarUsuario = async (
     }
 
     return res.status(500).json({
-      mensaje:
-        'Error al actualizar el perfil'
+      mensaje: 'Error al actualizar el perfil'
     });
   }
 };
-
-// =====================================================
-// ELIMINAR CUENTA
-// =====================================================
-//
-// DELETE /api/usuarios/:id
-//
-// Qué hace, según las relaciones reales de los modelos:
-//
-//   - Reseñas (y sus comentarios): BORRADO DEFINITIVO.
-//   - Favoritos, rutas, notificaciones, reportes de ayuda,
-//     visitas y mapas offline: BORRADO DEFINITIVO.
-//   - Reservas: si hay alguna ACTIVA o FUTURA (estado
-//     pendiente o confirmada con fecha de hoy en adelante)
-//     la eliminación se BLOQUEA (409) y no se toca nada.
-//     Las reservas pasadas se conservan como registro de
-//     operación, sin texto libre y sin datos personales.
-//   - Usuario: el documento queda como "lápida" anonimizada
-//     (sin datos personales, con eliminadoAt) para que las
-//     reservas conservadas no queden huérfanas.
-//
-// Exige confirmación explícita (`confirmar: true`) y
-// comprobar la identidad:
-//   - cuentas con contraseña  -> body.password
-//   - cuentas de Google       -> body.idToken reciente
-//
-// Los JWT emitidos antes de eliminar la cuenta dejan de ser
-// válidos: verificarToken comprueba que el usuario exista y
-// no tenga eliminadoAt. La cuenta eliminada no puede volver a
-// iniciar sesión (su correo ya no existe). Quien se registre
-// de nuevo con ese correo obtiene una cuenta nueva y vacía.
-//
-// Consistencia: todo ocurre en una transacción cuando el
-// servidor la permite. Sin transacciones, el documento del
-// usuario se anonimiza al FINAL: si algo falla antes, la
-// cuenta sigue activa y se puede reintentar (los borrados
-// son idempotentes).
-// =====================================================
-
 const MAX_EDAD_ID_TOKEN_SEGUNDOS = 10 * 60;
 
 const esCuentaGoogle = (usuario) =>
@@ -1190,8 +735,7 @@ const comprobarIdentidad = async (usuario, cuerpo) => {
   if (typeof datos.password !== 'string' || !datos.password) {
     return {
       codigo: 401,
-      mensaje:
-        'Escribe tu contraseña para eliminar la cuenta'
+      mensaje: 'Escribe tu contraseña para eliminar la cuenta'
     };
   }
 
@@ -1218,7 +762,6 @@ const inicioDeHoy = () => {
   return hoy;
 };
 
-// Reservas que impiden eliminar la cuenta: activas o futuras.
 const contarReservasActivas = (usuarioId, sesion) =>
   Reserva.countDocuments({
     usuario: usuarioId,
@@ -1242,21 +785,21 @@ const respuestaReservasActivas = (res, cantidad) =>
     reservasActivas: cantidad
   });
 
-const eliminarDatosYAnonimizar = async (usuario, sesion) => {
+const eliminarDatosYAnonimizar = async (
+  usuario,
+  sesion,
+  datosEliminacion
+) => {
   const opciones = sesion ? { session: sesion } : {};
   const id = usuario._id;
 
-  // Se vuelve a comprobar dentro de la transacción.
   const activas = await contarReservasActivas(id, sesion);
 
   if (activas > 0) {
     throw new ReservasActivasError(activas);
   }
 
-  // Reseñas y comentarios: borrado definitivo.
   await Resena.deleteMany({ usuario: id }, opciones);
-
-  // Información privada: se elimina.
   await Favorito.deleteMany({ usuario: id }, opciones);
   await Ruta.deleteMany({ usuario: id }, opciones);
   await Notificacion.deleteMany({ usuario: id }, opciones);
@@ -1264,16 +807,15 @@ const eliminarDatosYAnonimizar = async (usuario, sesion) => {
   await Visita.deleteMany({ usuario: id }, opciones);
   await MapaOffline.deleteMany({ usuario: id }, opciones);
 
-  // Reservas pasadas: se conservan como registro de operación,
-  // sin texto libre que pudiera contener datos personales.
   await Reserva.updateMany(
     { usuario: id },
     { $set: { observaciones: '' } },
     opciones
   );
 
-  // El documento del usuario queda anonimizado para que ya no
-  // identifique a la persona y las reservas no queden huérfanas.
+  // Conservar el historial antes de anonimizar la cuenta.
+  usuario.eliminacion = datosEliminacion;
+
   const passwordInutilizable = await bcrypt.hash(
     crypto.randomBytes(32).toString('hex'),
     10
@@ -1295,27 +837,19 @@ const eliminarDatosYAnonimizar = async (usuario, sesion) => {
   usuario.tokenRecuperacion = null;
   usuario.tokenRecuperacionExpiracion = null;
   usuario.activo = false;
-  usuario.eliminadoAt = new Date();
+  usuario.eliminadoAt = datosEliminacion.fecha;
 
   await usuario.save(opciones);
 };
 
-const eliminarUsuario = async (
-  req,
-  res
-) => {
+const eliminarUsuario = async (req, res) => {
   try {
-    // -------------------------------------------------
-    // VERIFICAR PROPIETARIO
-    // -------------------------------------------------
-
     if (
       req.usuario.rol !== 'usuario' ||
       req.usuario.id !== req.params.id
     ) {
       return res.status(403).json({
-        mensaje:
-          'No puedes eliminar otro usuario'
+        mensaje: 'No puedes eliminar otro usuario'
       });
     }
 
@@ -1325,20 +859,14 @@ const eliminarUsuario = async (
       });
     }
 
-    const usuario = await Usuario
-      .findById(req.params.id)
+    const usuario = await Usuario.findById(req.params.id)
       .select('+password');
 
     if (!usuario || usuario.eliminadoAt) {
       return res.status(404).json({
-        mensaje:
-          'Usuario no encontrado'
+        mensaje: 'Usuario no encontrado'
       });
     }
-
-    // -------------------------------------------------
-    // CONFIRMACIÓN EXPLÍCITA
-    // -------------------------------------------------
 
     if (!req.body || req.body.confirmar !== true) {
       return res.status(400).json({
@@ -1347,24 +875,13 @@ const eliminarUsuario = async (
       });
     }
 
-    // -------------------------------------------------
-    // COMPROBAR IDENTIDAD
-    // -------------------------------------------------
-
-    const fallo = await comprobarIdentidad(
-      usuario,
-      req.body
-    );
+    const fallo = await comprobarIdentidad(usuario, req.body);
 
     if (fallo) {
       return res.status(fallo.codigo).json({
         mensaje: fallo.mensaje
       });
     }
-
-    // -------------------------------------------------
-    // RESERVAS ACTIVAS O FUTURAS: BLOQUEAN LA ELIMINACIÓN
-    // -------------------------------------------------
 
     const reservasActivas = await contarReservasActivas(
       usuario._id,
@@ -1375,15 +892,29 @@ const eliminarUsuario = async (
       return respuestaReservasActivas(res, reservasActivas);
     }
 
-    // -------------------------------------------------
-    // ELIMINAR Y ANONIMIZAR (en transacción si el servidor lo permite)
-    // -------------------------------------------------
+    // Guardar el nombre original, responsable, fecha y motivo.
+    const fechaEliminacion = new Date();
+
+    const datosEliminacion = {
+     tipo: 'usuario',
+     usuarioNombre: `${usuario.nombre} ${usuario.apellido}`.trim(),
+     usuarioCorreo: usuario.correo,
+     responsableId: usuario._id,
+     responsableNombre: 'El propio usuario',  
+     fecha: fechaEliminacion,
+     motivo: 'El usuario solicitó eliminar su propia cuenta'
+     
+    };
 
     const sesion = await mongoose.startSession();
 
     try {
       await sesion.withTransaction(async () => {
-        await eliminarDatosYAnonimizar(usuario, sesion);
+        await eliminarDatosYAnonimizar(
+          usuario,
+          sesion,
+          datosEliminacion
+        );
       });
     } catch (errorTransaccion) {
       const sinTransacciones =
@@ -1395,19 +926,23 @@ const eliminarUsuario = async (
         throw errorTransaccion;
       }
 
-      // Servidor sin transacciones: se ejecuta sin sesión.
-      const recargado = await Usuario
-        .findById(req.params.id)
+      const recargado = await Usuario.findById(req.params.id)
         .select('+password');
 
-      await eliminarDatosYAnonimizar(recargado, null);
+      if (!recargado || recargado.eliminadoAt) {
+        throw new Error(
+          'No se encontró una cuenta válida para eliminar'
+        );
+      }
+
+      await eliminarDatosYAnonimizar(
+        recargado,
+        null,
+        datosEliminacion
+      );
     } finally {
       await sesion.endSession();
     }
-
-    // -------------------------------------------------
-    // RESPUESTA
-    // -------------------------------------------------
 
     return res.status(200).json({
       mensaje:
@@ -1418,10 +953,7 @@ const eliminarUsuario = async (
       return respuestaReservasActivas(res, error.cantidad);
     }
 
-    console.error(
-      'Error al eliminar usuario:',
-      error
-    );
+    console.error('Error al eliminar usuario:', error);
 
     return res.status(500).json({
       mensaje:
@@ -1429,10 +961,6 @@ const eliminarUsuario = async (
     });
   }
 };
-
-// =====================================================
-// EXPORTAR
-// =====================================================
 
 module.exports = {
   registrarUsuario,

@@ -516,19 +516,24 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
     ];
 
     if (esEscritorio) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(child: tarjetas[0]),
-          const SizedBox(
-            width: AppDimensions.sitioPanelCardGap,
-          ),
-          Expanded(child: tarjetas[1]),
-          const SizedBox(
-            width: AppDimensions.sitioPanelCardGap,
-          ),
-          Expanded(child: tarjetas[2]),
-        ],
+      // IntrinsicHeight evita el error "BoxConstraints forces an
+      // infinite height": dentro de un scroll el alto no tiene
+      // límite y CrossAxisAlignment.stretch lo pediría infinito.
+      return IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: tarjetas[0]),
+            const SizedBox(
+              width: AppDimensions.sitioPanelCardGap,
+            ),
+            Expanded(child: tarjetas[1]),
+            const SizedBox(
+              width: AppDimensions.sitioPanelCardGap,
+            ),
+            Expanded(child: tarjetas[2]),
+          ],
+        ),
       );
     }
 
@@ -773,7 +778,7 @@ class _SitioReservasScreenState extends State<SitioReservasScreen> {
     }
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         busqueda,
         const SizedBox(height: 12),

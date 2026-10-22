@@ -718,6 +718,9 @@ class _DetalleSitioUsuarioScreenState
                 cargando: _audioController.cargando,
                 error: _audioController.error,
                 onCerrar: _cerrarReproductor,
+                onAlternarReproduccion: () {
+                  _audioController.alternarReproduccion();
+                },
               ),
             ),
           );

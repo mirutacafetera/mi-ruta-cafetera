@@ -1,3 +1,4 @@
+
 class ReporteAdmin {
   final String id;
   final String asunto;
@@ -27,6 +28,9 @@ class ReporteAdmin {
 
   factory ReporteAdmin.fromJson(Map<String, dynamic> json) {
     final usuario = json['usuarioId'];
+    final usuarioMap = usuario is Map
+        ? Map<String, dynamic>.from(usuario)
+        : <String, dynamic>{};
 
     return ReporteAdmin(
       id: (json['_id'] ?? '').toString(),
@@ -34,18 +38,12 @@ class ReporteAdmin {
       mensaje: (json['mensaje'] ?? '').toString(),
       estado: (json['estado'] ?? 'pendiente').toString(),
       respuestaAdmin: json['respuestaAdmin']?.toString(),
-      usuarioId: usuario is Map<String, dynamic>
-          ? usuario['_id']?.toString()
+      usuarioId: usuarioMap.isNotEmpty
+          ? usuarioMap['_id']?.toString()
           : usuario?.toString(),
-      nombreUsuario: usuario is Map<String, dynamic>
-          ? (usuario['nombre'] ?? '').toString()
-          : '',
-      apellidoUsuario: usuario is Map<String, dynamic>
-          ? (usuario['apellido'] ?? '').toString()
-          : '',
-      correoUsuario: usuario is Map<String, dynamic>
-          ? (usuario['correo'] ?? '').toString()
-          : '',
+      nombreUsuario: (usuarioMap['nombre'] ?? '').toString(),
+      apellidoUsuario: (usuarioMap['apellido'] ?? '').toString(),
+      correoUsuario: (usuarioMap['correo'] ?? '').toString(),
       createdAt: DateTime.tryParse(
         (json['createdAt'] ?? '').toString(),
       ),
@@ -56,6 +54,7 @@ class ReporteAdmin {
   }
 
   String get nombreCompleto {
-    return '$nombreUsuario $apellidoUsuario'.trim();
+    final nombre = '$nombreUsuario $apellidoUsuario'.trim();
+    return nombre.isNotEmpty ? nombre : 'Usuario no disponible';
   }
 }

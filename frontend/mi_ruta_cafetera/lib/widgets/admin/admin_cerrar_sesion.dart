@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -30,7 +31,6 @@ class AdminCerrarSesion extends StatelessWidget {
       ),
       onTap: () {
         onOpcionSeleccionada('logout');
-        Navigator.pop(context);
       },
     );
   }

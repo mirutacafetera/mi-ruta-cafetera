@@ -14,6 +14,8 @@ class TarjetaReporte extends StatelessWidget {
     required this.onTap,
   });
 
+  static const Color _bordeCafe = Color(0xFFB58A70);
+
   Color _colorEstado() {
     switch (reporte.estado) {
       case 'pendiente':
@@ -45,15 +47,18 @@ class TarjetaReporte extends StatelessWidget {
     final colorEstado = _colorEstado();
 
     return Card(
-      color: AppColors.surface,
+      color: AppColors.creamLight,
       elevation: 2,
+      shadowColor: AppColors.coffeeDark.withValues(alpha: 0.10),
       margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
           AppDimensions.cardRadius,
         ),
-        side: BorderSide(
-          color: AppColors.border,
+        side: const BorderSide(
+          color: _bordeCafe,
+          width: 1.4,
         ),
       ),
       child: InkWell(
@@ -68,16 +73,24 @@ class TarjetaReporte extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: colorEstado.withValues(alpha: 0.15),
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: colorEstado.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: colorEstado.withValues(alpha: 0.25),
+                    width: 1.2,
+                  ),
+                ),
                 child: Icon(
                   Icons.support_agent_rounded,
                   color: colorEstado,
-                  size: 30,
+                  size: 29,
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,9 +103,10 @@ class TarjetaReporte extends StatelessWidget {
                         color: AppColors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        height: 1.25,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     Text(
                       reporte.nombreCompleto.isEmpty
                           ? 'Usuario sin nombre'
@@ -116,7 +130,7 @@ class TarjetaReporte extends StatelessWidget {
                         fontSize: 12,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     Text(
                       reporte.mensaje,
                       maxLines: 2,
@@ -124,29 +138,33 @@ class TarjetaReporte extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 13,
+                        height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: AppDimensions.spacingMd),
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
+                      spacing: AppDimensions.spacingSm,
+                      runSpacing: AppDimensions.spacingSm,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
+                            horizontal: 11,
+                            vertical: 6,
                           ),
                           decoration: BoxDecoration(
                             color: colorEstado.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: colorEstado.withValues(alpha: 0.25),
+                            ),
                           ),
                           child: Text(
                             _textoEstado(),
                             style: TextStyle(
                               color: colorEstado,
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -166,9 +184,13 @@ class TarjetaReporte extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textSecondary,
+              const Padding(
+                padding: EdgeInsets.only(top: 12),
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.secondary,
+                  size: 25,
+                ),
               ),
             ],
           ),

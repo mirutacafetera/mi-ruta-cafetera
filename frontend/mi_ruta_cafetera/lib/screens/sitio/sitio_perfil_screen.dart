@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../models/sitio/sitio_informacion_model.dart';
 import '../../services/sitio/sitio_informacion_service.dart';
@@ -381,6 +382,9 @@ class _SitioPerfilScreenState extends State<SitioPerfilScreen> {
           label: 'Teléfono',
           icono: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+          ],
           habilitado: _editando && !_guardando,
         ),
         CampoFormularioSitio(
@@ -422,7 +426,7 @@ class _SitioPerfilScreenState extends State<SitioPerfilScreen> {
             decimal: true,
             signed: true,
           ),
-          habilitado: _editando && !_guardando,
+          habilitado: false,
         ),
         CampoFormularioSitio(
           controller: _longitudController,
@@ -432,15 +436,18 @@ class _SitioPerfilScreenState extends State<SitioPerfilScreen> {
             decimal: true,
             signed: true,
           ),
-          habilitado: _editando && !_guardando,
+          habilitado: false,
         ),
         CampoFormularioSitio(
           controller: _precioController,
           label: 'Precio desde',
           icono: Icons.attach_money_rounded,
           keyboardType: const TextInputType.numberWithOptions(
-            decimal: true,
+            decimal: false,
           ),
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+          ],
           habilitado: _editando && !_guardando,
         ),
       ],

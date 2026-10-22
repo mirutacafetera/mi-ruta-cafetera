@@ -1,4 +1,6 @@
+
 import 'package:flutter/material.dart';
+
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
 
@@ -18,6 +20,19 @@ class FiltrosResenas extends StatelessWidget {
     'Inactivas',
   ];
 
+  IconData _obtenerIcono(String filtro) {
+    switch (filtro) {
+      case 'Todas':
+        return Icons.fact_check_outlined;
+      case 'Activas':
+        return Icons.check_circle_outline_rounded;
+      case 'Inactivas':
+        return Icons.pause_circle_outline_rounded;
+      default:
+        return Icons.filter_list_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -36,20 +51,42 @@ class FiltrosResenas extends StatelessWidget {
                 right: AppDimensions.spacingSm,
               ),
               child: ChoiceChip(
+                avatar: Icon(
+                  _obtenerIcono(filtro),
+                  size: AppDimensions.iconSm,
+                  color: seleccionado
+                      ? AppColors.white
+                      : AppColors.secondary,
+                ),
                 label: Text(filtro),
                 selected: seleccionado,
                 onSelected: (_) => onChanged(filtro),
+                showCheckmark: false,
                 selectedColor: AppColors.primary,
-                labelStyle: TextStyle(
-                  color: seleccionado
-                      ? Colors.white
-                      : AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
+                backgroundColor: AppColors.creamLight,
+                elevation: 0,
+                pressElevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingSm,
+                  vertical: AppDimensions.spacingXs,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.chipRadius,
+                  ),
                 ),
                 side: BorderSide(
                   color: seleccionado
                       ? AppColors.primary
-                      : AppColors.textSecondary.withValues(alpha: 0.3),
+                      : AppColors.coffeeLight.withValues(alpha: 0.65),
+                  width: 1.2,
+                ),
+                labelStyle: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: seleccionado
+                      ? AppColors.white
+                      : AppColors.textPrimary,
                 ),
               ),
             );

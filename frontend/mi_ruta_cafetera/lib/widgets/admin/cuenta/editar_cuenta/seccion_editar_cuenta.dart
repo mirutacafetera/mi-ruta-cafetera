@@ -23,32 +23,53 @@ class SeccionEditarCuenta extends StatelessWidget {
         AppDimensions.spacingLg,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(
-          AppDimensions.radiusMd,
+          AppDimensions.cardRadius,
         ),
         border: Border.all(
-          color: AppColors.borderDark,
+          color: const Color(0xFFB58A70),
+          width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6F4328).withValues(alpha: 0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                icono,
-                color: AppColors.secondary,
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.cream,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMd,
+                  ),
+                ),
+                child: Icon(
+                  icono,
+                  color: AppColors.secondary,
+                  size: AppDimensions.iconMd,
+                ),
               ),
               const SizedBox(
-                width: AppDimensions.spacingSm,
+                width: AppDimensions.spacingMd,
               ),
-              Text(
-                titulo,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  titulo,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -56,7 +77,12 @@ class SeccionEditarCuenta extends StatelessWidget {
           const SizedBox(
             height: AppDimensions.spacingLg,
           ),
-          child,
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+            ),
+            child: child,
+          ),
         ],
       ),
     );

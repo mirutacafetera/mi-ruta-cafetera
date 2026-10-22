@@ -4,12 +4,10 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/admin_menu_lateral.dart';
 import '../../widgets/admin/admin_proximamente.dart';
+import '../../controllers/admin/cuenta/foto_perfil_admin_controlador.dart';
 
 import 'admin_inicio.dart';
 import 'admin_perfil.dart';
-import 'admin_actividades_screen.dart';
-import 'admin_productos_screen.dart';
-import 'admin_contenidos_screen.dart';
 import 'admin_sitio_list_screen.dart';
 
 import '../mapa_screen_2.dart';
@@ -20,7 +18,11 @@ class AdminScreen extends StatefulWidget {
   final String nombre;
   final String email;
 
-  const AdminScreen({super.key, required this.nombre, required this.email});
+  const AdminScreen({
+    super.key,
+    required this.nombre,
+    required this.email,
+  });
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -29,9 +31,14 @@ class AdminScreen extends StatefulWidget {
 class _AdminScreenState extends State<AdminScreen> {
   String _opcionSeleccionada = 'inicio';
 
-  // ============================================================
-  // NORMALIZAR IDENTIFICADORES DEL MENÚ
-  // ============================================================
+  late final FotoPerfilAdminControlador fotoPerfilControlador;
+
+  @override
+  void initState() {
+    super.initState();
+    fotoPerfilControlador = FotoPerfilAdminControlador();
+    fotoPerfilControlador.cargarFoto();
+  }
 
   String _normalizarOpcion(String opcion) {
     switch (opcion.trim().toLowerCase()) {
@@ -101,10 +108,6 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
-  // ============================================================
-  // CAMBIAR OPCIÓN DEL MENÚ
-  // ============================================================
-
   void _cambiarOpcion(String opcion) {
     if (!mounted) return;
 
@@ -120,17 +123,15 @@ class _AdminScreenState extends State<AdminScreen> {
     });
   }
 
-  // ============================================================
-  // CONFIRMAR CIERRE DE SESIÓN
-  // ============================================================
-
   Future<void> _mostrarConfirmacionCerrarSesion() async {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Cerrar sesión'),
-          content: const Text('¿Deseas cerrar la sesión de administrador?'),
+          content: const Text(
+            '¿Deseas cerrar la sesión de administrador?',
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -151,8 +152,6 @@ class _AdminScreenState extends State<AdminScreen> {
 
     if (!mounted || confirmar != true) return;
 
-    // La sesión se limpia y la navegación se realiza en el flujo
-    // de autenticación correspondiente.
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
@@ -162,19 +161,13 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  // ============================================================
-  // ABRIR MAPA TURÍSTICO
-  // ============================================================
-
   void _abrirMapa() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const MapaScreen2()));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const MapaScreen2(),
+      ),
+    );
   }
-
-  // ============================================================
-  // BUILD
-  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -188,15 +181,13 @@ class _AdminScreenState extends State<AdminScreen> {
       drawer: AdminMenuLateral(
         nombre: widget.nombre,
         email: widget.email,
+        fotoPerfilControlador: fotoPerfilControlador,
         onOpcionSeleccionada: _cambiarOpcion,
+        opcionSeleccionada: _opcionSeleccionada,
       ),
       body: _crearContenido(),
     );
   }
-
-  // ============================================================
-  // TÍTULO DE LA PANTALLA
-  // ============================================================
 
   String _tituloPantalla() {
     switch (_opcionSeleccionada) {
@@ -241,10 +232,6 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
-  // ============================================================
-  // CONTENIDO SEGÚN LA OPCIÓN SELECCIONADA
-  // ============================================================
-
   Widget _crearContenido() {
     switch (_opcionSeleccionada) {
       case 'inicio':
@@ -253,23 +240,26 @@ class _AdminScreenState extends State<AdminScreen> {
       case 'sitios':
         return _sitios();
 
-      case 'actividades':
-        return const AdminActividadesScreen();
-
       case 'productos':
-        return const AdminProductosScreen();
-
-      case 'contenido':
-        return const AdminContenidosScreen();
+        return const AdminProximamente(nombre: 'Productos');
 
       case 'perfil':
-        return AdminPerfil(nombre: widget.nombre, email: widget.email);
+        return AdminPerfil(
+          nombre: widget.nombre,
+          email: widget.email,
+        );
 
       case 'estadisticas':
         return const AdminProximamente(nombre: 'Estadísticas');
 
       case 'categorias':
         return const AdminProximamente(nombre: 'Categorías');
+
+      case 'actividades':
+        return const AdminProximamente(nombre: 'Actividades');
+
+      case 'contenido':
+        return const AdminProximamente(nombre: 'Moderación de contenidos');
 
       case 'resenas':
         return const AdminProximamente(nombre: 'Reseñas');
@@ -288,10 +278,6 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
-  // ============================================================
-  // INICIO DEL PANEL
-  // ============================================================
-
   Widget _inicio() {
     return AdminInicio(
       nombre: widget.nombre,
@@ -303,11 +289,13 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  // ============================================================
-  // GESTIÓN DE SITIOS TURÍSTICOS
-  // ============================================================
-
   Widget _sitios() {
     return const AdminSitioListScreen();
+  }
+
+  @override
+  void dispose() {
+    fotoPerfilControlador.dispose();
+    super.dispose();
   }
 }

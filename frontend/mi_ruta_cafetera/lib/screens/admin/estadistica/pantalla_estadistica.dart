@@ -19,6 +19,7 @@ class PantallaEstadistica extends StatefulWidget {
 
 class _PantallaEstadisticaState extends State<PantallaEstadistica> {
   late final EstadisticaController _controller;
+
   final TextEditingController _busquedaController =
       TextEditingController();
 
@@ -111,7 +112,7 @@ class _PantallaEstadisticaState extends State<PantallaEstadistica> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Column(
           children: [
