@@ -1,9 +1,9 @@
-
 import 'package:flutter/material.dart';
 
 import '../../models/contenido_model.dart';
 import '../../theme/app_dimensions.dart';
 import '../../l10n/textos.dart';
+import 'detalle_sitio/panel_detalle_adaptable.dart';
 
 class SeccionContenidoSitio extends StatelessWidget {
   const SeccionContenidoSitio({
@@ -234,13 +234,15 @@ class _ContenidoCard extends StatelessWidget {
     BuildContext context,
     List<String> imagenes,
   ) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _DetalleContenidoScreen(
-          contenido: contenido,
-          imagenes: imagenes,
-          onReproducirAudioguia: onReproducirAudioguia,
-        ),
+    PanelDetalleAdaptable.mostrar<void>(
+      context: context,
+      titulo: contenido.titulo,
+      icono: Icons.auto_stories_rounded,
+      maxWidth: 820,
+      builder: (_) => _DetalleContenidoScreen(
+        contenido: contenido,
+        imagenes: imagenes,
+        onReproducirAudioguia: onReproducirAudioguia,
       ),
     );
   }
@@ -334,161 +336,151 @@ class _DetalleContenidoScreenState
   Widget build(BuildContext context) {
     final imagenes = widget.imagenes;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F0E6),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF214F3D),
-        foregroundColor: Colors.white,
-        title: const Tr('Historia y experiencias'),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (imagenes.isNotEmpty) ...[
-              AspectRatio(
-                aspectRatio: 4 / 3,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    PageView.builder(
-                      controller: _pageController,
-                      itemCount: imagenes.length,
-                      onPageChanged: (index) {
-                        setState(() => _indice = index);
-                      },
-                      itemBuilder: (context, index) {
-                        return Image.network(
-                          imagenes[index],
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => Container(
-                            color: const Color(0xFFE8F0E9),
-                            alignment: Alignment.center,
-                            child: const Icon(
-                              Icons.broken_image_outlined,
-                              size: 44,
-                              color: Color(0xFF214F3D),
-                            ),
-                          ),
-                        );
-                      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (imagenes.isNotEmpty) ...[
+          AspectRatio(
+            aspectRatio: 4 / 3,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                PageView.builder(
+                  controller: _pageController,
+                  itemCount: imagenes.length,
+                  onPageChanged: (index) {
+                    setState(() => _indice = index);
+                  },
+                  itemBuilder: (context, index) {
+                    return Image.network(
+                      imagenes[index],
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        color: const Color(0xFFE8F0E9),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.broken_image_outlined,
+                          size: 44,
+                          color: Color(0xFF214F3D),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                if (imagenes.length > 1)
+                  Positioned(
+                    bottom: 14,
+                    right: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${_indice + 1} / ${imagenes.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
-                    if (imagenes.length > 1)
-                      Positioned(
-                        bottom: 14,
-                        right: 14,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.65),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            '${_indice + 1} / ${imagenes.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
+                  ),
+              ],
+            ),
+          ),
+          if (imagenes.length > 1)
+            SizedBox(
+              height: 76,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                scrollDirection: Axis.horizontal,
+                itemCount: imagenes.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                    child: Container(
+                      width: 72,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _indice == index
+                              ? const Color(0xFF214F3D)
+                              : const Color(0xFFDED5C8),
+                          width: _indice == index ? 3 : 1,
+                        ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Image.network(
+                        imagenes[index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const ColoredBox(
+                          color: Color(0xFFE8F0E9),
+                          child: Icon(
+                            Icons.broken_image_outlined,
+                            color: Color(0xFF214F3D),
                           ),
                         ),
                       ),
-                  ],
-                ),
-              ),
-              if (imagenes.length > 1)
-                SizedBox(
-                  height: 76,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
                     ),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: imagenes.length,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          _pageController.animateToPage(
-                            index,
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeOut,
-                          );
-                        },
-                        child: Container(
-                          width: 72,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _indice == index
-                                  ? const Color(0xFF214F3D)
-                                  : const Color(0xFFDED5C8),
-                              width: _indice == index ? 3 : 1,
-                            ),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: Image.network(
-                            imagenes[index],
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const ColoredBox(
-                              color: Color(0xFFE8F0E9),
-                              child: Icon(
-                                Icons.broken_image_outlined,
-                                color: Color(0xFF214F3D),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-            ],
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.contenido.titulo,
-                    style: const TextStyle(
-                      color: Color(0xFF214F3D),
-                      fontSize: 25,
-                      fontWeight: FontWeight.w800,
-                      height: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    widget.contenido.descripcion.trim().isEmpty
-                        ? Textos.t('No hay una descripción adicional disponible.')
-                        : widget.contenido.descripcion.trim(),
-                    style: const TextStyle(
-                      color: Color(0xFF535B54),
-                      fontSize: 15,
-                      height: 1.7,
-                    ),
-                  ),
-                  if (_tieneAudio) ...[
-                    const SizedBox(height: 24),
-                    _BotonEscucharHistoria(
-                      onPressed: widget.onReproducirAudioguia == null
-                          ? null
-                          : () => widget.onReproducirAudioguia!(
-                                widget.contenido,
-                              ),
-                    ),
-                  ],
-                ],
+                  );
+                },
               ),
             ),
-          ],
+        ],
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.contenido.titulo,
+                style: const TextStyle(
+                  color: Color(0xFF214F3D),
+                  fontSize: 25,
+                  fontWeight: FontWeight.w800,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                widget.contenido.descripcion.trim().isEmpty
+                    ? Textos.t('No hay una descripción adicional disponible.')
+                    : widget.contenido.descripcion.trim(),
+                style: const TextStyle(
+                  color: Color(0xFF535B54),
+                  fontSize: 15,
+                  height: 1.7,
+                ),
+              ),
+              if (_tieneAudio) ...[
+                const SizedBox(height: 24),
+                _BotonEscucharHistoria(
+                  onPressed: widget.onReproducirAudioguia == null
+                      ? null
+                      : () => widget.onReproducirAudioguia!(
+                            widget.contenido,
+                          ),
+                ),
+              ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

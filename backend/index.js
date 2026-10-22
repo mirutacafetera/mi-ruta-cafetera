@@ -1,4 +1,3 @@
-
 const dns = require('dns');
 
 dns.setServers([
@@ -212,6 +211,14 @@ app.use(
 app.use(
   '/api/categorias',
   categoriaRoutes
+);
+
+// IMPORTANTE: debe ir ANTES de '/api/sitios'. Si no, sitioRoutes
+// interpreta "ayuda" como el id de un sitio (GET /api/sitios/:id)
+// y responde "Error al obtener sitio turístico".
+app.use(
+  '/api/sitios/ayuda',
+  ayudaSitioRoutes
 );
 
 app.use(
@@ -434,11 +441,6 @@ app.use(
 app.use(
   '/api/sitiosturisticos/productos',
   productosRoutes
-);
-
-app.use(
-  '/api/sitios/ayuda',
-  ayudaSitioRoutes
 );
 
 // ======================================================

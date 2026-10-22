@@ -10,7 +10,7 @@ const storageImagenes = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: 'mi-ruta-cafetera/sitios',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
     transformation: [
       { width: 1200, height: 1200, crop: 'limit' },
     ],
@@ -22,9 +22,10 @@ const TIPOS_IMAGEN = [
   'image/jpg',
   'image/png',
   'image/webp',
+  'image/avif',
 ];
 
-const EXTENSIONES_IMAGEN = ['jpg', 'jpeg', 'png', 'webp'];
+const EXTENSIONES_IMAGEN = ['jpg', 'jpeg', 'png', 'webp', 'avif'];
 
 const filtroImagenes = (req, file, cb) => {
   const tipo = (file.mimetype || '').toLowerCase();
@@ -45,7 +46,7 @@ const filtroImagenes = (req, file, cb) => {
   }
 
   return cb(
-    new Error('Formato no permitido. Usa JPG, PNG o WEBP.'),
+    new Error('Formato no permitido. Usa JPG, AVIF, PNG o WEBP.'),
   );
 };
 
@@ -53,7 +54,7 @@ const upload = multer({
   storage: storageImagenes,
   fileFilter: filtroImagenes,
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: 10 * 1024 * 1024,
     files: 10,
   },
 });
