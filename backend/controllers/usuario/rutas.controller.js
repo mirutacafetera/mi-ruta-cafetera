@@ -108,6 +108,7 @@ const obtenerRutasPredefinidas = async (req, res) => {
       activa: true
     })
       .populate('sitios')
+      .populate('paradas.sitio')
       .sort({
         nombre: 1
       });
@@ -147,6 +148,23 @@ const crearRuta = async (req, res) => {
     // El usuario nunca se toma del body.
     // Para rutas personalizadas se obtiene del token.
     let usuario = null;
+
+    // SEGURIDAD: las rutas predefinidas son públicas y permanentes,
+    // por lo que NO pueden crearse desde este endpoint de usuario.
+    if (tipo === 'predefinida') {
+      return res.status(403).json({
+        ok: false,
+        mensaje:
+          'Las rutas predefinidas solo pueden ser administradas por un administrador.'
+      });
+    }
+
+    if (typeof activa !== 'boolean') {
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'El campo activa debe ser verdadero o falso.'
+      });
+    }
 
     // --------------------------------------------------------
     // VALIDAR TIPO
@@ -725,3 +743,4 @@ module.exports = {
   actualizarRuta,
   eliminarRuta
 };
+

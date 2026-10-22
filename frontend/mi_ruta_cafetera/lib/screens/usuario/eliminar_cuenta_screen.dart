@@ -5,6 +5,7 @@ import '../../services/usuario/perfil_usuario_service.dart';
 import '../../services/usuario/usuario_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 // ============================================================
 // ELIMINAR CUENTA
@@ -71,7 +72,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
         _errorCarga = (resultado['mensaje'] ?? '').toString();
 
         if (_errorCarga!.isEmpty) {
-          _errorCarga = 'No fue posible verificar tu cuenta.';
+          _errorCarga = Textos.t('No fue posible verificar tu cuenta.');
         }
       }
     });
@@ -102,7 +103,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
         idToken = await GoogleAuthService.instance.obtenerIdToken();
       } catch (_) {
         _mostrar(
-          'No se pudo confirmar tu identidad con Google.',
+          Textos.t('No se pudo confirmar tu identidad con Google.'),
           error: true,
         );
         return;
@@ -110,7 +111,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
 
       if (idToken == null || idToken.isEmpty) {
         _mostrar(
-          'Google no proporcionó una confirmación válida.',
+          Textos.t('Google no proporcionó una confirmación válida.'),
           error: true,
         );
         return;
@@ -119,7 +120,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
       password = _passwordController.text;
 
       if (password.isEmpty) {
-        _mostrar('Escribe tu contraseña para continuar.', error: true);
+        _mostrar(Textos.t('Escribe tu contraseña para continuar.'), error: true);
         return;
       }
     }
@@ -155,7 +156,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
 
       messenger.showSnackBar(
         const SnackBar(
-          content: Text('Tu cuenta fue eliminada.'),
+          content: Tr('Tu cuenta fue eliminada.'),
         ),
       );
 
@@ -176,7 +177,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
     }
 
     _mostrar(
-      mensaje.isEmpty ? 'No fue posible eliminar la cuenta.' : mensaje,
+      mensaje.isEmpty ? Textos.t('No fue posible eliminar la cuenta.') : mensaje,
       error: true,
     );
   }
@@ -186,17 +187,16 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Aún no puedes eliminar tu cuenta'),
+          title: const Tr('Aún no puedes eliminar tu cuenta'),
           content: Text(
             mensaje.isEmpty
-                ? 'Tienes reservas activas o próximas. Cancélalas o '
-                    'espera a que se completen y vuelve a intentarlo.'
+                ? Textos.t('Tienes reservas activas o próximas. Cancélalas o espera a que se completen y vuelve a intentarlo.')
                 : mensaje,
           ),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Entendido'),
+              child: const Tr('Entendido'),
             ),
           ],
         );
@@ -209,22 +209,21 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('¿Eliminar tu cuenta?'),
-          content: const Text(
-            'Se borrarán tu cuenta, tus reseñas y tus datos. '
-            'Esta acción no se puede deshacer.',
+          title: const Tr('¿Eliminar tu cuenta?'),
+          content: const Tr(
+            'Se borrarán tu cuenta, tus reseñas y tus datos. Esta acción no se puede deshacer.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Cancelar'),
+              child: const Tr('Cancelar'),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.error,
               ),
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Eliminar'),
+              child: const Tr('Eliminar'),
             ),
           ],
         );
@@ -250,7 +249,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Eliminar cuenta'),
+        title: const Tr('Eliminar cuenta'),
       ),
       body: SafeArea(
         child: _cargando
@@ -288,7 +287,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
                 _cargarTipoCuenta();
               },
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Reintentar'),
+              label: const Tr('Reintentar'),
             ),
           ],
         ),
@@ -323,7 +322,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
                     ),
                     SizedBox(width: AppDimensions.spacingMd),
                     Expanded(
-                      child: Text(
+                      child: Tr(
                         'Esta acción es definitiva',
                         style: TextStyle(
                           color: AppColors.textPrimary,
@@ -335,17 +334,8 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
                   ],
                 ),
                 SizedBox(height: AppDimensions.spacingMd),
-                Text(
-                  'Dejarás de poder entrar y tus datos personales '
-                  '(nombre, correo, teléfono, ciudad y avatar) se '
-                  'borrarán.\n\n'
-                  'Se eliminarán de forma definitiva tus reseñas y '
-                  'comentarios, favoritos, rutas, notificaciones, '
-                  'reportes de ayuda y mapas sin conexión.\n\n'
-                  'Si tienes reservas activas o próximas no podrás '
-                  'eliminar la cuenta hasta cancelarlas o completarlas. '
-                  'Las reservas anteriores se conservan como registro, '
-                  'sin tus datos personales.',
+                Tr(
+                  'Dejarás de poder entrar y tus datos personales (nombre, correo, teléfono, ciudad y avatar) se borrarán.\n\nSe eliminarán de forma definitiva tus reseñas y comentarios, favoritos, rutas, notificaciones, reportes de ayuda y mapas sin conexión.\n\nSi tienes reservas activas o próximas no podrás eliminar la cuenta hasta cancelarlas o completarlas. Las reservas anteriores se conservan como registro, sin tus datos personales.',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 14,
@@ -364,7 +354,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
             controlAffinity: ListTileControlAffinity.leading,
             contentPadding: EdgeInsets.zero,
             activeColor: AppColors.primary,
-            title: const Text(
+            title: const Tr(
               'Entiendo que no podré recuperar mi cuenta.',
               style: TextStyle(
                 color: AppColors.textPrimary,
@@ -375,9 +365,8 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           if (_cuentaGoogle)
-            const Text(
-              'Tu cuenta usa Google. Para continuar te pediremos '
-              'confirmar tu identidad con Google.',
+            const Tr(
+              'Tu cuenta usa Google. Para continuar te pediremos confirmar tu identidad con Google.',
               style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,
@@ -392,7 +381,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
               autocorrect: false,
               enableSuggestions: false,
               decoration: InputDecoration(
-                labelText: 'Contraseña',
+                labelText: Textos.t('Contraseña'),
                 prefixIcon: const Icon(Icons.lock_rounded),
                 suffixIcon: IconButton(
                   onPressed: () => setState(() => _ocultar = !_ocultar),
@@ -421,7 +410,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
                     )
                   : const Icon(Icons.delete_forever_rounded),
               label: Text(
-                _eliminando ? 'Eliminando…' : 'Eliminar mi cuenta',
+                _eliminando ? Textos.t('Eliminando…') : Textos.t('Eliminar mi cuenta'),
               ),
             ),
           ),

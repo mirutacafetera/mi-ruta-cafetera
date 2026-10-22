@@ -22,6 +22,10 @@ class AdminServicioAutenticacion {
     return '${ApiConfig.baseUrl}/admin/administradores/login';
   }
 
+  static String get urlInicioSesionGoogle {
+    return '${ApiConfig.baseUrl}/admin/administradores/login-google';
+  }
+
   static String get urlRecuperarPassword {
     return '${ApiConfig.baseUrl}/admin/administradores/recuperar-password';
   }
@@ -42,26 +46,51 @@ class AdminServicioAutenticacion {
         preferencias.getString(_claveIdAdministrador);
   }
 
+  // Correo y contraseña (flujo tradicional, sin cambios).
   static Future<Map<String, dynamic>> iniciarSesion({
     required String correo,
     required String password,
+  }) {
+    return _autenticar(
+      url: urlInicioSesion,
+      cuerpo: {
+        'correo': correo.trim().toLowerCase(),
+        'password': password,
+      },
+    );
+  }
+
+  // Google: el backend valida el idToken y solo admite cuentas de
+  // administrador que ya existen. Guarda la sesión igual que el
+  // flujo tradicional.
+  static Future<Map<String, dynamic>> iniciarSesionConGoogle({
+    required String idToken,
+  }) {
+    return _autenticar(
+      url: urlInicioSesionGoogle,
+      cuerpo: {
+        'idToken': idToken,
+      },
+    );
+  }
+
+  static Future<Map<String, dynamic>> _autenticar({
+    required String url,
+    required Map<String, dynamic> cuerpo,
   }) async {
     try {
       debugPrint(
-        'URL LOGIN: $urlInicioSesion',
+        'URL LOGIN: $url',
       );
 
       final response = await http
           .post(
-            Uri.parse(urlInicioSesion),
+            Uri.parse(url),
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
-            body: jsonEncode({
-              'correo': correo.trim().toLowerCase(),
-              'password': password,
-            }),
+            body: jsonEncode(cuerpo),
           )
           .timeout(
             const Duration(seconds: 15),

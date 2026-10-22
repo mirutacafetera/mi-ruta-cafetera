@@ -67,6 +67,13 @@ abstract class AppColors {
   static const Color surfaceGreen = Color(0xFF1B4A34);
   static const Color orangeSoft = Color(0xFFFFE4D0);
 
+  // FONDO DE LAS PANTALLAS DE INICIO
+  // Degradado de verde a naranja tostado. Todos los tonos mantienen
+  // contraste suficiente con el texto blanco (mínimo 4,5:1).
+  static const Color homeGradientTop = Color(0xFF2D7A55);
+  static const Color homeGradientMid = Color(0xFF2F7D57);
+  static const Color homeGradientBottom = Color(0xFFB85C28);
+
   // TEXTOS
   static const Color textPrimary = Color(0xFF172019);
   static const Color textSecondary = Color(0xFF657069);

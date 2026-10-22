@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/contenido_model.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class SeccionContenidoSitio extends StatelessWidget {
   const SeccionContenidoSitio({
@@ -152,8 +153,8 @@ class _ContenidoCard extends StatelessWidget {
                                         size: 15,
                                       ),
                                       const SizedBox(width: 5),
-                                      Text(
-                                        '${imagenes.length} fotos',
+                                      Tr(
+                                        '{0} fotos', args: [imagenes.length],
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
@@ -196,7 +197,7 @@ class _ContenidoCard extends StatelessWidget {
                       const SizedBox(height: 10),
                       const Row(
                         children: [
-                          Text(
+                          Tr(
                             'Leer historia completa',
                             style: TextStyle(
                               color: Color(0xFF214F3D),
@@ -273,7 +274,7 @@ class _BotonEscucharHistoria extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           const Expanded(
-            child: Text(
+            child: Tr(
               'Escuchar esta historia',
               style: TextStyle(
                 color: Color(0xFF214F3D),
@@ -283,7 +284,7 @@ class _BotonEscucharHistoria extends StatelessWidget {
             ),
           ),
           IconButton.filled(
-            tooltip: 'Escuchar historia',
+            tooltip: Textos.t('Escuchar historia'),
             onPressed: onPressed,
             style: IconButton.styleFrom(
               backgroundColor: const Color(0xFF214F3D),
@@ -338,7 +339,7 @@ class _DetalleContenidoScreenState
       appBar: AppBar(
         backgroundColor: const Color(0xFF214F3D),
         foregroundColor: Colors.white,
-        title: const Text('Historia y experiencias'),
+        title: const Tr('Historia y experiencias'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -464,7 +465,7 @@ class _DetalleContenidoScreenState
                   const SizedBox(height: 14),
                   Text(
                     widget.contenido.descripcion.trim().isEmpty
-                        ? 'No hay una descripción adicional disponible.'
+                        ? Textos.t('No hay una descripción adicional disponible.')
                         : widget.contenido.descripcion.trim(),
                     style: const TextStyle(
                       color: Color(0xFF535B54),

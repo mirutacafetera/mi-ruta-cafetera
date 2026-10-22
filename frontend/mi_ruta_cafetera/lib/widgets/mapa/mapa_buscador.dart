@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/sitio_turistico_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class MapaBuscador extends StatelessWidget {
   final TextEditingController controller;
@@ -60,7 +61,7 @@ class MapaBuscador extends StatelessWidget {
               onChanged: onChanged,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                hintText: 'Buscar sitio turístico...',
+                hintText: Textos.t('Buscar sitio turístico...'),
                 hintStyle: const TextStyle(
                   color: AppColors.textLight,
                 ),
@@ -75,7 +76,7 @@ class MapaBuscador extends StatelessWidget {
                         icon: const Icon(
                           Icons.close,
                         ),
-                        tooltip: 'Limpiar búsqueda',
+                        tooltip: Textos.t('Limpiar búsqueda'),
                         color: AppColors.textSecondary,
                       )
                     : null,

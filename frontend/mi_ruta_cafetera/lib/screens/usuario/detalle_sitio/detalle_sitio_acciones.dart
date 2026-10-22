@@ -8,6 +8,7 @@ import '../../../theme/app_dimensions.dart';
 import '../../../widgets/mapa/mapa_detalle_sitio.dart';
 import '../../mapa_screen_2.dart';
 import '../reservar_actividad_screen.dart';
+import '../../../l10n/textos.dart';
 
 class DetalleSitioAcciones {
   DetalleSitioAcciones._();
@@ -23,7 +24,7 @@ class DetalleSitioAcciones {
     if (!sitio.tieneCoordenadas) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'Este sitio todavía no tiene una ubicación válida.',
           ),
         ),
@@ -68,7 +69,7 @@ class DetalleSitioAcciones {
   static void agregarRuta(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
+        content: Tr(
           'La selección de sitios para tu ruta estará disponible aquí.',
         ),
       ),
@@ -188,7 +189,7 @@ class DetalleSitioAcciones {
                                 color: AppColors.sitioPrimary,
                               ),
                               SizedBox(width: 6),
-                              Text(
+                              Tr(
                                 'EXPERIENCIA TURÍSTICA',
                                 style: TextStyle(
                                   color: AppColors.sitioPrimary,
@@ -226,8 +227,7 @@ class DetalleSitioAcciones {
                         Text(
                           actividad.descripcion.trim().isNotEmpty
                               ? actividad.descripcion
-                              : 'No hay una descripción disponible '
-                                  'para esta actividad.',
+                              : Textos.t('No hay una descripción disponible para esta actividad.'),
                           style: Theme.of(sheetContext)
                               .textTheme
                               .bodyLarge
@@ -251,7 +251,7 @@ class DetalleSitioAcciones {
                           const SizedBox(
                             height: AppDimensions.spacingLg,
                           ),
-                          const Text(
+                          const Tr(
                             'Información de la actividad',
                             style: TextStyle(
                               color: AppColors.sitioPrimaryDark,
@@ -266,7 +266,7 @@ class DetalleSitioAcciones {
                           if (actividad.duracion.trim().isNotEmpty)
                             _DatoActividad(
                               icono: Icons.schedule_rounded,
-                              titulo: 'Duración',
+                              titulo: Textos.t('Duración'),
                               valor: actividad.duracion,
                             ),
 
@@ -276,7 +276,7 @@ class DetalleSitioAcciones {
                             ),
                             _DatoActividad(
                               icono: Icons.access_time_rounded,
-                              titulo: 'Horario',
+                              titulo: Textos.t('Horario'),
                               valor: actividad.horario,
                             ),
                           ],
@@ -287,7 +287,7 @@ class DetalleSitioAcciones {
                             ),
                             _DatoActividad(
                               icono: Icons.payments_outlined,
-                              titulo: 'Precio',
+                              titulo: Textos.t('Precio'),
                               valor: actividad.precio
                                   .toStringAsFixed(
                                     actividad.precio % 1 == 0 ? 0 : 2,
@@ -316,9 +316,8 @@ class DetalleSitioAcciones {
                               if (sesion == null) {
                                 mensajes.showSnackBar(
                                   const SnackBar(
-                                    content: Text(
-                                      'Inicia sesión para solicitar '
-                                      'una reserva.',
+                                    content: Tr(
+                                      'Inicia sesión para solicitar una reserva.',
                                     ),
                                   ),
                                 );
@@ -352,7 +351,7 @@ class DetalleSitioAcciones {
                             icon: const Icon(
                               Icons.event_available_rounded,
                             ),
-                            label: const Text(
+                            label: const Tr(
                               'Solicitar reserva',
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
@@ -387,7 +386,7 @@ class DetalleSitioAcciones {
                                 ),
                               ),
                             ),
-                            child: const Text(
+                            child: const Tr(
                               'Cerrar detalle',
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
@@ -488,7 +487,7 @@ class _CarruselImagenesActividadState
                             color: AppColors.sitioTextSecondary,
                           ),
                           SizedBox(height: 8),
-                          Text(
+                          Tr(
                             'No se pudo cargar esta imagen',
                             style: TextStyle(
                               color: AppColors.sitioTextSecondary,
@@ -516,8 +515,8 @@ class _CarruselImagenesActividadState
                 color: AppColors.sitioTextSecondary,
               ),
               const SizedBox(width: 6),
-              Text(
-                '${_paginaActual + 1} de ${widget.imagenes.length}',
+              Tr(
+                '{0} de {1}', args: [_paginaActual + 1, widget.imagenes.length],
                 style: const TextStyle(
                   color: AppColors.sitioTextSecondary,
                   fontSize: 12,
@@ -573,7 +572,7 @@ class _ImagenActividadVacia extends StatelessWidget {
             color: AppColors.sitioPrimary,
           ),
           SizedBox(height: 8),
-          Text(
+          Tr(
             'Esta actividad aún no tiene imágenes',
             style: TextStyle(
               color: AppColors.sitioTextSecondary,

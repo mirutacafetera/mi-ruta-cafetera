@@ -4,6 +4,7 @@ import '../../models/usuario/reserva_usuario_model.dart';
 import '../../services/usuario/reserva_usuario_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 // ============================================================
 // MIS RESERVAS
@@ -60,7 +61,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
   }
 
   String _fecha(DateTime? fecha) {
-    if (fecha == null) return 'Fecha no disponible';
+    if (fecha == null) return Textos.t('Fecha no disponible');
 
     final local = fecha.toLocal();
     final dia = local.day.toString().padLeft(2, '0');
@@ -89,19 +90,18 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Cancelar reserva'),
-          content: const Text(
-            '¿Deseas cancelar esta solicitud? El establecimiento '
-            'será avisado.',
+          title: const Tr('Cancelar reserva'),
+          content: const Tr(
+            '¿Deseas cancelar esta solicitud? El establecimiento será avisado.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Volver'),
+              child: const Tr('Volver'),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Cancelar reserva'),
+              child: const Tr('Cancelar reserva'),
             ),
           ],
         );
@@ -116,7 +116,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reserva cancelada.')),
+        const SnackBar(content: Tr('Reserva cancelada.')),
       );
 
       await _cargar();
@@ -151,7 +151,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
               children: [
                 Text(
                   reserva.nombreActividad.isEmpty
-                      ? 'Actividad'
+                      ? Textos.t('Actividad')
                       : reserva.nombreActividad,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
@@ -162,28 +162,27 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   reserva.nombreSitio.isEmpty
-                      ? 'Establecimiento'
+                      ? Textos.t('Establecimiento')
                       : reserva.nombreSitio,
                   style: const TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: AppDimensions.spacingLg),
-                _fila('Estado', reserva.estadoLegible,
+                _fila(Textos.t('Estado'), reserva.estadoLegible,
                     color: _color(reserva.estado)),
-                _fila('Fecha', _fecha(reserva.fecha)),
-                _fila('Personas', '${reserva.cantidadPersonas}'),
-                _fila('Total estimado', _dinero(reserva.precioTotal)),
-                _fila('Solicitada', _fecha(reserva.creadaEn)),
+                _fila(Textos.t('Fecha'), _fecha(reserva.fecha)),
+                _fila(Textos.t('Personas'), '${reserva.cantidadPersonas}'),
+                _fila(Textos.t('Total estimado'), _dinero(reserva.precioTotal)),
+                _fila(Textos.t('Solicitada'), _fecha(reserva.creadaEn)),
                 if (reserva.observaciones.isNotEmpty)
-                  _fila('Tus observaciones', reserva.observaciones),
+                  _fila(Textos.t('Tus observaciones'), reserva.observaciones),
                 if (reserva.respuestaSitio.isNotEmpty)
-                  _fila('Respuesta del establecimiento',
+                  _fila(Textos.t('Respuesta del establecimiento'),
                       reserva.respuestaSitio),
                 if (reserva.esConfirmada)
                   const Padding(
                     padding: EdgeInsets.only(top: AppDimensions.spacingSm),
-                    child: Text(
-                      'El establecimiento se pondrá en contacto contigo '
-                      'para coordinar el pago.',
+                    child: Tr(
+                      'El establecimiento se pondrá en contacto contigo para coordinar el pago.',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         height: 1.4,
@@ -203,7 +202,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                         foregroundColor: AppColors.error,
                       ),
                       icon: const Icon(Icons.close_rounded),
-                      label: const Text('Cancelar reserva'),
+                      label: const Tr('Cancelar reserva'),
                     ),
                   ),
                 ],
@@ -265,7 +264,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                   children: [
                     Text(
                       reserva.nombreActividad.isEmpty
-                          ? 'Actividad'
+                          ? Textos.t('Actividad')
                           : reserva.nombreActividad,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
@@ -349,7 +348,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
             child: OutlinedButton.icon(
               onPressed: _cargar,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Intentar de nuevo'),
+              label: const Tr('Intentar de nuevo'),
             ),
           ),
         ],
@@ -367,7 +366,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
             color: AppColors.textSecondary,
           ),
           SizedBox(height: AppDimensions.spacingMd),
-          Text(
+          Tr(
             'Aún no tienes reservas',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -377,9 +376,8 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
             ),
           ),
           SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            'Entra al detalle de un sitio, elige una actividad y '
-            'solicita tu reserva.',
+          Tr(
+            'Entra al detalle de un sitio, elige una actividad y solicita tu reserva.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.textSecondary, height: 1.4),
           ),
@@ -401,7 +399,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Mis reservas')),
+      appBar: AppBar(title: const Tr('Mis reservas')),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _cargar,

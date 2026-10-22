@@ -2,6 +2,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../config/mapa_corredor.dart';
+import '../l10n/textos.dart';
 
 /// Coordenadas del usuario.
 class UbicacionUsuario {
@@ -36,16 +37,13 @@ class ResultadoUbicacion {
       case EstadoUbicacion.disponible:
         return '';
       case EstadoUbicacion.servicioDesactivado:
-        return 'Activa la ubicación del dispositivo '
-            'para ver el clima de tu zona.';
+        return Textos.t('Activa la ubicación del dispositivo para ver el clima de tu zona.');
       case EstadoUbicacion.permisoDenegado:
-        return 'Permite el acceso a tu ubicación '
-            'para ver el clima de tu zona.';
+        return Textos.t('Permite el acceso a tu ubicación para ver el clima de tu zona.');
       case EstadoUbicacion.permisoBloqueado:
-        return 'El permiso de ubicación está bloqueado. '
-            'Habilítalo en los ajustes de la aplicación.';
+        return Textos.t('El permiso de ubicación está bloqueado. Habilítalo en los ajustes de la aplicación.');
       case EstadoUbicacion.error:
-        return 'No fue posible obtener tu ubicación.';
+        return Textos.t('No fue posible obtener tu ubicación.');
     }
   }
 }
@@ -139,27 +137,23 @@ class UbicacionService {
 
     switch (resultado.estado) {
       case EstadoUbicacion.servicioDesactivado:
-        return const OrigenRuta(
-          aviso: 'La ubicación del dispositivo está desactivada. '
-              'La ruta empieza en el primer sitio.',
+        return OrigenRuta(
+          aviso: Textos.t('La ubicación del dispositivo está desactivada. La ruta empieza en el primer sitio.'),
         );
 
       case EstadoUbicacion.permisoDenegado:
-        return const OrigenRuta(
-          aviso: 'No diste permiso de ubicación. '
-              'La ruta empieza en el primer sitio.',
+        return OrigenRuta(
+          aviso: Textos.t('No diste permiso de ubicación. La ruta empieza en el primer sitio.'),
         );
 
       case EstadoUbicacion.permisoBloqueado:
-        return const OrigenRuta(
-          aviso: 'El permiso de ubicación está bloqueado. '
-              'La ruta empieza en el primer sitio.',
+        return OrigenRuta(
+          aviso: Textos.t('El permiso de ubicación está bloqueado. La ruta empieza en el primer sitio.'),
         );
 
       case EstadoUbicacion.error:
-        return const OrigenRuta(
-          aviso: 'No fue posible obtener tu ubicación. '
-              'La ruta empieza en el primer sitio.',
+        return OrigenRuta(
+          aviso: Textos.t('No fue posible obtener tu ubicación. La ruta empieza en el primer sitio.'),
         );
 
       case EstadoUbicacion.disponible:
@@ -169,9 +163,8 @@ class UbicacionService {
     final ubicacion = resultado.ubicacion;
 
     if (ubicacion == null) {
-      return const OrigenRuta(
-        aviso: 'No fue posible obtener tu ubicación. '
-            'La ruta empieza en el primer sitio.',
+      return OrigenRuta(
+        aviso: Textos.t('No fue posible obtener tu ubicación. La ruta empieza en el primer sitio.'),
       );
     }
 
@@ -184,9 +177,7 @@ class UbicacionService {
       final km = MapaCorredor.distanciaAlCentroKm(punto);
 
       return OrigenRuta(
-        aviso: 'Estás fuera del corredor Garzón–Gigante '
-            '(a unos ${km.round()} km). '
-            'La ruta empieza en el primer sitio.',
+        aviso: Textos.t('Estás fuera del corredor Garzón–Gigante (a unos {0} km). La ruta empieza en el primer sitio.', [km.round()]),
       );
     }
 

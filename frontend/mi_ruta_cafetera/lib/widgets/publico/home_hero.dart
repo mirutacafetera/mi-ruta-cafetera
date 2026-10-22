@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class HomeHero extends StatefulWidget {
   final VoidCallback onLogin;
@@ -36,12 +37,12 @@ class _HomeHeroState extends State<HomeHero> {
 
   // ------------------------------------------------------------
   // IMÁGENES DEL VISITANTE (se conserva el carrusel original,
-  // corrigiendo la extensión real de cafe.jpeg).
+  // corrigiendo la extensión real de cafe.jpg).
   // ------------------------------------------------------------
 
   static const List<_HeroImagen> _imagenesPublicas = [
     _HeroImagen(
-      imagen: 'assets/images/sitios/cafe.jpeg',
+      imagen: 'assets/images/sitios/cafe.jpg',
       titulo: 'Descubre la magia del café',
       subtitulo: 'Sabores, fincas y experiencias que nacen en el Huila.',
     ),
@@ -66,7 +67,7 @@ class _HomeHeroState extends State<HomeHero> {
       subtitulo: 'Experiencias diferentes para descubrir nuevos lugares.',
     ),
     _HeroImagen(
-      imagen: 'assets/images/sitios/familiares.jpeg',
+      imagen: 'assets/images/sitios/familiares.png',
       titulo: 'Experiencias para compartir',
       subtitulo: 'Lugares para disfrutar en familia y con amigos.',
     ),
@@ -102,12 +103,12 @@ class _HomeHeroState extends State<HomeHero> {
       subtitulo: 'Tradiciones que se sienten en cada rincón.',
     ),
     _HeroImagen(
-      imagen: 'assets/images/bienvenida/experiencia.jpg',
+      imagen: 'assets/images/bienvenida/experiencia.png',
       titulo: 'Vive la experiencia',
       subtitulo: 'Planes pensados para recordar mucho tiempo.',
     ),
     _HeroImagen(
-      imagen: 'assets/images/sitios/cafe.jpeg',
+      imagen: 'assets/images/sitios/cafe.jpg',
       titulo: 'Descubre la magia del café',
       subtitulo: 'Sabores, fincas y experiencias que nacen en el Huila.',
     ),
@@ -132,7 +133,7 @@ class _HomeHeroState extends State<HomeHero> {
       subtitulo: 'Experiencias diferentes para descubrir nuevos lugares.',
     ),
     _HeroImagen(
-      imagen: 'assets/images/sitios/familiares.jpeg',
+      imagen: 'assets/images/sitios/familiares.png',
       titulo: 'Experiencias para compartir',
       subtitulo: 'Lugares para disfrutar en familia y con amigos.',
     ),
@@ -185,10 +186,10 @@ class _HomeHeroState extends State<HomeHero> {
     final nombre = widget.nombre?.trim() ?? '';
 
     if (widget.usuarioAutenticado && nombre.isNotEmpty) {
-      return 'Hola, $nombre 👋';
+      return Textos.t('Hola, {0} 👋', [nombre]);
     }
 
-    return 'Hola, explorador 👋';
+    return Textos.t('Hola, explorador 👋');
   }
 
   @override
@@ -348,7 +349,7 @@ class _HomeHeroState extends State<HomeHero> {
                       const SizedBox(height: AppDimensions.spacingSm),
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 350),
-                        child: Text(
+                        child: Tr(
                           _imagenes[_paginaActual].titulo,
                           key: ValueKey(_paginaActual),
                           style: const TextStyle(
@@ -362,7 +363,7 @@ class _HomeHeroState extends State<HomeHero> {
                       const SizedBox(height: AppDimensions.spacingSm + 2),
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 350),
-                        child: Text(
+                        child: Tr(
                           _imagenes[_paginaActual].subtitulo,
                           key: ValueKey('sub$_paginaActual'),
                           maxLines: 2,
@@ -418,7 +419,7 @@ class _HomeHeroState extends State<HomeHero> {
                   right: AppDimensions.spacingSm + 4,
                 ),
                 child: IconButton(
-                  tooltip: 'Iniciar sesión',
+                  tooltip: Textos.t('Iniciar sesión'),
                   onPressed: widget.onLogin,
                   icon: const Icon(Icons.person_outline_rounded),
                 ),
@@ -478,12 +479,12 @@ class _TarjetaLogo extends StatelessWidget {
         height: alto,
         fit: BoxFit.contain,
         filterQuality: FilterQuality.high,
-        semanticLabel: 'Mi Ruta Cafetera, Huila, Colombia',
+        semanticLabel: Textos.t('Mi Ruta Cafetera, Huila, Colombia'),
         errorBuilder: (context, error, stackTrace) {
           return SizedBox(
             height: alto,
             child: const Center(
-              child: Text(
+              child: Tr(
                 'Mi Ruta Cafetera',
                 style: TextStyle(
                   color: AppColors.primary,

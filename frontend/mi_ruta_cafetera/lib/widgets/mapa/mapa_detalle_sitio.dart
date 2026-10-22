@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/sitio_turistico_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class MapaDetalleSitio extends StatelessWidget {
   final SitioTuristicoModel sitio;
@@ -120,7 +121,7 @@ class MapaDetalleSitio extends StatelessWidget {
                     const SizedBox(
                       height: AppDimensions.spacingLg,
                     ),
-                    const Text(
+                    const Tr(
                       'Descripción',
                       style: TextStyle(
                         fontSize: 16,
@@ -218,7 +219,7 @@ class MapaDetalleSitio extends StatelessWidget {
                       icon: const Icon(
                         Icons.map_outlined,
                       ),
-                      label: const Text(
+                      label: const Tr(
                         'Ver en el mapa',
                       ),
                     ),
@@ -239,7 +240,7 @@ class MapaDetalleSitio extends StatelessWidget {
                       icon: const Icon(
                         Icons.add_road,
                       ),
-                      label: const Text(
+                      label: const Tr(
                         'Agregar a mi ruta',
                       ),
                     ),

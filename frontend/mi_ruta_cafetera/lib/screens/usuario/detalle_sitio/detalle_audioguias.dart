@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../models/contenido_model.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
+import '../../../l10n/textos.dart';
 
 class DetalleAudioguias extends StatelessWidget {
   const DetalleAudioguias({
@@ -44,7 +45,7 @@ class DetalleAudioguias extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          Tr(
             'Audioguías',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: AppColors.primary,
@@ -52,7 +53,7 @@ class DetalleAudioguias extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
-          Text(
+          Tr(
             'Escucha las historias y descubre los detalles de este lugar.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
@@ -104,7 +105,7 @@ class DetalleAudioguias extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Escuchar audioguía',
+                      tooltip: Textos.t('Escuchar audioguía'),
                       onPressed: () => onReproducir(audio),
                       icon: const Icon(
                         Icons.play_circle_fill,

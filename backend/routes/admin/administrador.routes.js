@@ -3,6 +3,10 @@ const express = require('express');
 const router = express.Router();
 
 const {
+  loginAdministradorConGoogle
+} = require('../../controllers/auth/googleCuentas.controller');
+
+const {
   registrarAdministrador,
   verificarCodigoVerificacionAdministrador,
   iniciarSesionAdministrador,
@@ -37,6 +41,12 @@ router.post(
 router.post(
   '/login',
   iniciarSesionAdministrador
+);
+
+// Iniciar sesión con Google (solo cuentas de administrador existentes)
+router.post(
+  '/login-google',
+  loginAdministradorConGoogle
 );
 
 

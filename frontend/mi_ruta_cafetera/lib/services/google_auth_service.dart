@@ -21,6 +21,30 @@ class GoogleAuthService {
 
   bool _initialized = false;
 
+  // ------------------------------------------------------------
+  // ACCESOS PRIVADOS (ADMINISTRADOR / SITIO)
+  // ------------------------------------------------------------
+  //
+  // En Web el resultado de Google llega por un flujo de eventos
+  // compartido. Mientras una pantalla de acceso privado usa Google,
+  // el login de visitantes no debe atender ese mismo evento (para
+  // no iniciar sesión como usuario con la cuenta de un administrador
+  // o de un sitio).
+  // ------------------------------------------------------------
+  int _accesosPrivadosActivos = 0;
+
+  bool get accesoPrivadoActivo => _accesosPrivadosActivos > 0;
+
+  void iniciarAccesoPrivado() {
+    _accesosPrivadosActivos++;
+  }
+
+  void terminarAccesoPrivado() {
+    if (_accesosPrivadosActivos > 0) {
+      _accesosPrivadosActivos--;
+    }
+  }
+
   GoogleSignInAccount? _usuarioActual;
 
   StreamSubscription<GoogleSignInAuthenticationEvent>?

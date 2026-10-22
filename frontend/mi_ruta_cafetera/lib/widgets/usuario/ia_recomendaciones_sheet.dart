@@ -9,6 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../utils/categoria_utils.dart';
 import 'icono_ia.dart';
+import '../../l10n/textos.dart';
 
 /// Panel inferior con las recomendaciones de "Mi Ruta Cafetera IA".
 ///
@@ -140,7 +141,7 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
       }
 
       setState(() {
-        _error = 'No fue posible obtener recomendaciones.';
+        _error = Textos.t('No fue posible obtener recomendaciones.');
         _cargando = false;
       });
     }
@@ -222,7 +223,7 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
             ),
             SizedBox(width: AppDimensions.spacingSm),
             Expanded(
-              child: Text(
+              child: Tr(
                 'Mi Ruta Cafetera IA',
                 style: TextStyle(
                   color: AppColors.textPrimary,
@@ -259,7 +260,7 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
         scrollDirection: Axis.horizontal,
         children: [
           _chip(
-            etiqueta: 'Todas',
+            etiqueta: Textos.t('Todas'),
             seleccionado: _categoriaSeleccionada == null,
             onTap: () => _seleccionarCategoria(null),
           ),
@@ -310,7 +311,7 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
           children: [
             CircularProgressIndicator(),
             SizedBox(height: AppDimensions.spacingLg),
-            Text(
+            Tr(
               '☕ Preparando recomendaciones...',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -338,8 +339,7 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
       return _construirEstado(
         icono: Icons.travel_explore_rounded,
         mensaje:
-            'Todavía no hay lugares para recomendarte con '
-            'este filtro.',
+            Textos.t('Todavía no hay lugares para recomendarte con este filtro.'),
         reintentar: _categoriaSeleccionada != null,
       );
     }
@@ -355,10 +355,8 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
               color: AppColors.orangeSoft,
               borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             ),
-            child: const Text(
-              'El asistente no estuvo disponible; estas son '
-              'sugerencias del catálogo según el clima y tu '
-              'ubicación.',
+            child: const Tr(
+              'El asistente no estuvo disponible; estas son sugerencias del catálogo según el clima y tu ubicación.',
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 12,
@@ -403,7 +401,7 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
           if (reintentar)
             TextButton(
               onPressed: _cargar,
-              child: const Text('Intentar nuevamente'),
+              child: const Tr('Intentar nuevamente'),
             ),
         ],
       ),
@@ -420,10 +418,10 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
 
     final datos = <String>[
       if (recomendacion.distanciaKm != null)
-        '≈ ${recomendacion.distanciaKm!.toStringAsFixed(1)} km en línea recta',
+        Textos.t('≈ {0} km en línea recta', [recomendacion.distanciaKm!.toStringAsFixed(1)]),
       if (recomendacion.horario.isNotEmpty) recomendacion.horario,
       if (recomendacion.precioDesde > 0)
-        'Desde ${_precio(recomendacion.precioDesde)}',
+        Textos.t('Desde {0}', [_precio(recomendacion.precioDesde)]),
     ];
 
     return Container(
@@ -544,8 +542,8 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Actividad: ${actividad.nombre}',
+          Tr(
+            'Actividad: {0}', args: [actividad.nombre],
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 13,
@@ -575,14 +573,14 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
         OutlinedButton.icon(
           onPressed: () => widget.onVerSitio(recomendacion.sitio),
           icon: const Icon(Icons.place_outlined, size: AppDimensions.iconSm),
-          label: const Text('Ver sitio'),
+          label: const Tr('Ver sitio'),
         ),
         OutlinedButton.icon(
           onPressed: recomendacion.sitio.tieneCoordenadas
               ? () => widget.onVerRuta(recomendacion.sitio)
               : null,
           icon: const Icon(Icons.route_rounded, size: AppDimensions.iconSm),
-          label: const Text('Ver ruta'),
+          label: const Tr('Ver ruta'),
         ),
         if (puedeReservar)
           ElevatedButton.icon(
@@ -591,7 +589,7 @@ class _IaRecomendacionesSheetState extends State<IaRecomendacionesSheet> {
               Icons.event_available_rounded,
               size: AppDimensions.iconSm,
             ),
-            label: const Text('Reservar'),
+            label: const Tr('Reservar'),
           ),
       ],
     );

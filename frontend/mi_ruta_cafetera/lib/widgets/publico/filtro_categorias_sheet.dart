@@ -4,6 +4,7 @@ import '../../models/categoria_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../utils/text_utils.dart';
+import '../../l10n/textos.dart';
 
 class CategoriaFiltroSheet extends StatelessWidget {
   final List<CategoriaModel> categorias;
@@ -108,7 +109,7 @@ class CategoriaFiltroSheet extends StatelessWidget {
               crossAxisAlignment:
                   CrossAxisAlignment.start,
               children: [
-                Text(
+                Tr(
                   'Filtrar experiencias',
                   style: TextStyle(
                     color: AppColors.textPrimary,
@@ -119,7 +120,7 @@ class CategoriaFiltroSheet extends StatelessWidget {
                 SizedBox(
                   height: AppDimensions.spacingXs,
                 ),
-                Text(
+                Tr(
                   'Encuentra lugares según lo que quieras vivir.',
                   style: TextStyle(
                     color: AppColors.textSecondary,
@@ -131,7 +132,7 @@ class CategoriaFiltroSheet extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Cerrar',
+            tooltip: Textos.t('Cerrar'),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -213,7 +214,7 @@ class CategoriaFiltroSheet extends StatelessWidget {
                 width: AppDimensions.spacingMd,
               ),
               Expanded(
-                child: Text(
+                child: Tr(
                   'Todas las experiencias',
                   style: TextStyle(
                     color: seleccionada

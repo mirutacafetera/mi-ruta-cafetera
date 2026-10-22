@@ -44,6 +44,17 @@ const authSitioSchema = new mongoose.Schema(
       default: ''
     },
 
+    // Identificador estable ("sub") de la cuenta de Google vinculada.
+    // Es opcional: solo existe si la cuenta inició sesión con Google.
+    // El índice único y disperso impide que dos cuentas compartan la
+    // misma identidad de Google sin afectar a las cuentas sin vincular.
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true
+    },
+
     activo: {
       type: Boolean,
       default: true

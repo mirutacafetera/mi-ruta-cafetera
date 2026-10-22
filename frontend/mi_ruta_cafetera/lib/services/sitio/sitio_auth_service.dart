@@ -9,19 +9,44 @@ import 'sitio_sesion_service.dart';
 class SitioAuthService {
   final SitioSesionService _sesionService = SitioSesionService();
 
+  // Correo y contraseña (flujo tradicional, sin cambios).
   Future<SitioSesionModel> iniciarSesion({
     required String correo,
     required String password,
+  }) {
+    return _autenticar(
+      ruta: 'login',
+      cuerpo: {
+        'correo': correo.trim(),
+        'password': password,
+      },
+    );
+  }
+
+  // Google: el backend valida el idToken y solo admite cuentas de
+  // sitio que ya existen. Guarda la sesión igual que el flujo
+  // tradicional.
+  Future<SitioSesionModel> iniciarSesionConGoogle({
+    required String idToken,
+  }) {
+    return _autenticar(
+      ruta: 'login-google',
+      cuerpo: {
+        'idToken': idToken,
+      },
+    );
+  }
+
+  Future<SitioSesionModel> _autenticar({
+    required String ruta,
+    required Map<String, dynamic> cuerpo,
   }) async {
     final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/sitios/auth/login'),
+      Uri.parse('${ApiConfig.baseUrl}/sitios/auth/$ruta'),
       headers: {
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({
-        'correo': correo.trim(),
-        'password': password,
-      }),
+      body: jsonEncode(cuerpo),
     );
 
     if (response.statusCode == 200) {

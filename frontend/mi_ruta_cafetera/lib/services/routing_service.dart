@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
 import '../config/api_config.dart';
+import '../l10n/textos.dart';
 
 /// Error controlado del cálculo de rutas.
 ///
@@ -87,8 +88,8 @@ class RoutingService {
     List<LatLng> puntos,
   ) async {
     if (puntos.length < 2) {
-      throw const RoutingException(
-        'Se necesitan al menos dos puntos para calcular una ruta.',
+      throw RoutingException(
+        Textos.t('Se necesitan al menos dos puntos para calcular una ruta.'),
       );
     }
 
@@ -105,7 +106,7 @@ class RoutingService {
 
       if (!valido) {
         throw RoutingException(
-          'El punto ${i + 1} de la ruta tiene coordenadas inválidas.',
+          Textos.t('El punto {0} de la ruta tiene coordenadas inválidas.', [i + 1]),
         );
       }
     }
@@ -137,18 +138,16 @@ class RoutingService {
           )
           .timeout(_tiempoMaximo);
     } on TimeoutException {
-      throw const RoutingException(
-        'El servicio de rutas tardó demasiado en responder. '
-        'Inténtalo de nuevo.',
+      throw RoutingException(
+        Textos.t('El servicio de rutas tardó demasiado en responder. Inténtalo de nuevo.'),
       );
     } on http.ClientException {
-      throw const RoutingException(
-        'No hay conexión con el servidor. '
-        'Revisa tu conexión e inténtalo de nuevo.',
+      throw RoutingException(
+        Textos.t('No hay conexión con el servidor. Revisa tu conexión e inténtalo de nuevo.'),
       );
     } catch (_) {
-      throw const RoutingException(
-        'No fue posible comunicarse con el servicio de rutas.',
+      throw RoutingException(
+        Textos.t('No fue posible comunicarse con el servicio de rutas.'),
       );
     }
 
@@ -173,22 +172,21 @@ class RoutingService {
 
       throw RoutingException(
         mensaje?.toString() ??
-            'El servicio de rutas respondió con el código '
-                '${response.statusCode}.',
+            Textos.t('El servicio de rutas respondió con el código {0}.', [response.statusCode]),
       );
     }
 
     if (decoded is! Map || decoded['ok'] != true) {
-      throw const RoutingException(
-        'El servicio de rutas devolvió una respuesta inválida.',
+      throw RoutingException(
+        Textos.t('El servicio de rutas devolvió una respuesta inválida.'),
       );
     }
 
     final ruta = decoded['ruta'];
 
     if (ruta is! Map) {
-      throw const RoutingException(
-        'El servicio de rutas no devolvió ninguna ruta.',
+      throw RoutingException(
+        Textos.t('El servicio de rutas no devolvió ninguna ruta.'),
       );
     }
 
@@ -202,8 +200,8 @@ class RoutingService {
         geometria is Map ? geometria['coordinates'] : null;
 
     if (coordinates is! List || coordinates.length < 2) {
-      throw const RoutingException(
-        'La ruta no contiene una geometría válida.',
+      throw RoutingException(
+        Textos.t('La ruta no contiene una geometría válida.'),
       );
     }
 
@@ -227,8 +225,8 @@ class RoutingService {
     }
 
     if (puntosRuta.length < 2) {
-      throw const RoutingException(
-        'La geometría de la ruta es insuficiente.',
+      throw RoutingException(
+        Textos.t('La geometría de la ruta es insuficiente.'),
       );
     }
 
@@ -240,8 +238,8 @@ class RoutingService {
     final duracion = ruta['duracion'];
 
     if (distancia is! num || duracion is! num) {
-      throw const RoutingException(
-        'La ruta no incluye distancia y duración.',
+      throw RoutingException(
+        Textos.t('La ruta no incluye distancia y duración.'),
       );
     }
 
@@ -283,9 +281,8 @@ class RoutingService {
     }
 
     if (tramos.length != puntos.length - 1) {
-      throw const RoutingException(
-        'El servidor no devolvió los tramos completos de la ruta. '
-        'Verifica que el backend esté actualizado.',
+      throw RoutingException(
+        Textos.t('El servidor no devolvió los tramos completos de la ruta. Verifica que el backend esté actualizado.'),
       );
     }
 

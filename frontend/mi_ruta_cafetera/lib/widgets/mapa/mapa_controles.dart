@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class MapaControles extends StatelessWidget {
   /// Centra el mapa en la posición GPS real del usuario.
@@ -23,7 +24,7 @@ class MapaControles extends StatelessWidget {
       children: [
         _boton(
           icono: Icons.my_location,
-          tooltip: 'Mi ubicación',
+          tooltip: Textos.t('Mi ubicación'),
           onPressed: onCentrar,
         ),
 
@@ -33,7 +34,7 @@ class MapaControles extends StatelessWidget {
 
         _boton(
           icono: Icons.map_outlined,
-          tooltip: 'Ver corredor Garzón–Gigante',
+          tooltip: Textos.t('Ver corredor Garzón–Gigante'),
           onPressed: onMostrarTodos,
         ),
       ],

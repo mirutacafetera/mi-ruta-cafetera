@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/clima_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 enum EstadoClima {
   cargando,
@@ -70,7 +71,7 @@ class ClimaCard extends StatelessWidget {
               width: AppDimensions.spacingMd,
             ),
             Expanded(
-              child: Text(
+              child: Tr(
                 'Consultando el clima en tu zona...',
                 style: TextStyle(
                   color: AppColors.textSecondary,
@@ -94,7 +95,7 @@ class ClimaCard extends StatelessWidget {
         return _construirAviso(
           icono: Icons.cloud_off_rounded,
           mensaje:
-              'No pudimos consultar el clima en este momento.',
+              Textos.t('No pudimos consultar el clima en este momento.'),
         );
     }
   }
@@ -124,7 +125,7 @@ class ClimaCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              const Tr(
                 'Clima en tu zona',
                 style: TextStyle(
                   color: AppColors.textSecondary,
@@ -135,9 +136,8 @@ class ClimaCard extends StatelessWidget {
               const SizedBox(
                 height: AppDimensions.spacingXs,
               ),
-              Text(
-                '${clima.temperatura.round()}°C · '
-                '${clima.descripcion}',
+              Tr(
+                '{0}°C · {1}', args: [clima.temperatura.round(), clima.descripcion],
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 17,
@@ -148,8 +148,8 @@ class ClimaCard extends StatelessWidget {
                 const SizedBox(
                   height: AppDimensions.spacingXs,
                 ),
-                Text(
-                  'Probabilidad de lluvia: $probabilidad%',
+                Tr(
+                  'Probabilidad de lluvia: {0}%', args: [probabilidad],
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
@@ -178,7 +178,7 @@ class ClimaCard extends StatelessWidget {
           width: AppDimensions.spacingMd,
         ),
         Expanded(
-          child: Text(
+          child: Tr(
             mensaje,
             style: const TextStyle(
               color: AppColors.textSecondary,
@@ -189,7 +189,7 @@ class ClimaCard extends StatelessWidget {
         ),
         TextButton(
           onPressed: onReintentar,
-          child: const Text('Reintentar'),
+          child: const Tr('Reintentar'),
         ),
       ],
     );

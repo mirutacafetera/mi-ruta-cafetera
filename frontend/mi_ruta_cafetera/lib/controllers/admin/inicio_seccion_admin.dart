@@ -32,6 +32,23 @@ class InicioSesionAdmin extends ChangeNotifier {
     }
   }
 
+  // Inicio de sesión con Google (el backend valida el idToken).
+  Future<Map<String, dynamic>> iniciarSesionConGoogle(
+    String idToken,
+  ) async {
+    cargando = true;
+    notifyListeners();
+
+    try {
+      return await AdminServicioAutenticacion.iniciarSesionConGoogle(
+        idToken: idToken,
+      );
+    } finally {
+      cargando = false;
+      notifyListeners();
+    }
+  }
+
   void cambiarPassword() {
     mostrarPassword = !mostrarPassword;
     notifyListeners();

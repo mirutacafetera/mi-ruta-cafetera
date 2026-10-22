@@ -5,6 +5,7 @@ import '../../../models/sitio/sitio_producto_model.dart';
 import '../../../services/sitio/sitio_productos_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
+import '../../../l10n/textos.dart';
 
 class DetalleProductos extends StatefulWidget {
   const DetalleProductos({
@@ -46,7 +47,7 @@ class _DetalleProductosState extends State<DetalleProductos> {
     if (sitioId.isEmpty) {
       setState(() {
         _productos = [];
-        _error = 'No se pudo identificar el sitio turístico.';
+        _error = Textos.t('No se pudo identificar el sitio turístico.');
         _cargando = false;
       });
       return;
@@ -108,7 +109,7 @@ class _DetalleProductosState extends State<DetalleProductos> {
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               const Expanded(
-                child: Text(
+                child: Tr(
                   'Productos de este sitio',
                   style: TextStyle(
                     fontSize: 20,
@@ -128,7 +129,7 @@ class _DetalleProductosState extends State<DetalleProductos> {
             ],
           ),
           const SizedBox(height: AppDimensions.spacingSm),
-          const Text(
+          const Tr(
             'Descubre los productos que ofrece este establecimiento.',
             style: TextStyle(
               fontSize: 14,
@@ -146,17 +147,16 @@ class _DetalleProductosState extends State<DetalleProductos> {
           else if (_error != null)
             _mensajeEstado(
               icono: Icons.cloud_off_outlined,
-              mensaje: 'No pudimos cargar los productos.',
+              mensaje: Textos.t('No pudimos cargar los productos.'),
               detalle: _error!,
               mostrarReintento: true,
             )
           else if (_productos.isEmpty)
             _mensajeEstado(
               icono: Icons.inventory_2_outlined,
-              mensaje: 'Todavía no hay productos publicados.',
+              mensaje: Textos.t('Todavía no hay productos publicados.'),
               detalle:
-                  'Cuando el establecimiento publique sus productos '
-                  'aprobados, aparecerán aquí.',
+                  Textos.t('Cuando el establecimiento publique sus productos aprobados, aparecerán aquí.'),
             )
           else
             SizedBox(
@@ -237,7 +237,7 @@ class _DetalleProductosState extends State<DetalleProductos> {
                       Expanded(
                         child: Text(
                           producto.descripcion.trim().isEmpty
-                              ? 'Producto del establecimiento.'
+                              ? Textos.t('Producto del establecimiento.')
                               : producto.descripcion.trim(),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -250,8 +250,8 @@ class _DetalleProductosState extends State<DetalleProductos> {
                       Row(
                         children: [
                           Expanded(
-                            child: Text(
-                              '\$ ${producto.precio.toStringAsFixed(0)} COP',
+                            child: Tr(
+                              '\$ {0} COP', args: [producto.precio.toStringAsFixed(0)],
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -321,7 +321,7 @@ class _DetalleProductosState extends State<DetalleProductos> {
             OutlinedButton.icon(
               onPressed: _cargarProductos,
               icon: const Icon(Icons.refresh),
-              label: const Text('Intentar de nuevo'),
+              label: const Tr('Intentar de nuevo'),
             ),
           ],
         ],
@@ -383,7 +383,7 @@ class _DetalleProductoScreenState extends State<_DetalleProductoScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.sitioPrimaryDark,
         foregroundColor: Colors.white,
-        title: const Text('Detalle del producto'),
+        title: const Tr('Detalle del producto'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -474,7 +474,7 @@ class _DetalleProductoScreenState extends State<_DetalleProductoScreen> {
                               size: 22,
                             ),
                             SizedBox(width: AppDimensions.spacingSm),
-                            Text(
+                            Tr(
                               'Precio',
                               style: TextStyle(
                                 color: AppColors.sitioTextSecondary,
@@ -485,8 +485,8 @@ class _DetalleProductoScreenState extends State<_DetalleProductoScreen> {
                           ],
                         ),
                         const SizedBox(height: AppDimensions.spacingXs),
-                        Text(
-                          '\$ ${producto.precio.toStringAsFixed(0)} COP',
+                        Tr(
+                          '\$ {0} COP', args: [producto.precio.toStringAsFixed(0)],
                           style: const TextStyle(
                             color: AppColors.sitioPrimary,
                             fontSize: 25,
@@ -506,7 +506,7 @@ class _DetalleProductoScreenState extends State<_DetalleProductoScreen> {
                       ),
                       SizedBox(width: AppDimensions.spacingSm),
                       Expanded(
-                        child: Text(
+                        child: Tr(
                           'Descripción del producto',
                           style: TextStyle(
                             color: AppColors.sitioPrimary,
@@ -520,7 +520,7 @@ class _DetalleProductoScreenState extends State<_DetalleProductoScreen> {
                   const SizedBox(height: AppDimensions.spacingSm),
                   Text(
                     producto.descripcion.trim().isEmpty
-                        ? 'No hay una descripción adicional disponible.'
+                        ? Textos.t('No hay una descripción adicional disponible.')
                         : producto.descripcion.trim(),
                     style: const TextStyle(
                       color: AppColors.sitioTextSecondary,

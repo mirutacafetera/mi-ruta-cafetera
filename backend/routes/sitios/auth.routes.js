@@ -3,6 +3,10 @@ const express = require('express');
 const router = express.Router();
 
 const {
+  loginSitioConGoogle
+} = require('../../controllers/auth/googleCuentas.controller');
+
+const {
   iniciarSesion,
   recuperarPassword,
   verificarCodigoRecuperacion,
@@ -17,6 +21,12 @@ const {
 router.post(
   '/login',
   iniciarSesion
+);
+
+// Iniciar sesión con Google (solo cuentas de sitio existentes)
+router.post(
+  '/login-google',
+  loginSitioConGoogle
 );
 
 

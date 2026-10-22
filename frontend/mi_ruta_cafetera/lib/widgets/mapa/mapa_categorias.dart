@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/categoria_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class MapaCategorias extends StatelessWidget {
   final List<CategoriaModel> categorias;
@@ -51,7 +52,7 @@ class MapaCategorias extends StatelessWidget {
                     ? AppColors.white
                     : AppColors.textSecondary,
               ),
-              label: const Text('Todas'),
+              label: const Tr('Todas'),
               selected: seleccionada,
               onSelected: (_) {
                 onCategoriaSeleccionada(null);

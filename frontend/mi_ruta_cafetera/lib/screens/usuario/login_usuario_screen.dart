@@ -16,6 +16,7 @@ import '../../theme/app_dimensions.dart';
 import '../publico/public_shell_screen.dart';
 import 'recuperar_password_screen.dart';
 import 'registro_usuario_screen.dart';
+import '../../l10n/textos.dart';
 
 class LoginUsuarioScreen extends StatefulWidget {
   const LoginUsuarioScreen({super.key});
@@ -68,7 +69,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
           if (!mounted) return;
 
           setState(() => _iniciandoGoogle = false);
-          _mostrarMensaje('No fue posible iniciar sesión con Google.');
+          _mostrarMensaje(Textos.t('No fue posible iniciar sesión con Google.'));
         },
       );
     }
@@ -87,12 +88,12 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
     final password = passwordController.text;
 
     if (correo.isEmpty) {
-      _mostrarMensaje('Ingresa tu correo electrónico');
+      _mostrarMensaje(Textos.t('Ingresa tu correo electrónico'));
       return;
     }
 
     if (password.isEmpty) {
-      _mostrarMensaje('Ingresa tu contraseña');
+      _mostrarMensaje(Textos.t('Ingresa tu contraseña'));
       return;
     }
 
@@ -120,7 +121,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
       final token = resultado['token'];
 
       if (usuario is! Map || token == null) {
-        _mostrarMensaje('El servidor no devolvió los datos de usuario');
+        _mostrarMensaje(Textos.t('El servidor no devolvió los datos de usuario'));
         return;
       }
 
@@ -137,7 +138,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
 
       _irAlInicio();
     } else {
-      _mostrarMensaje(resultado['mensaje'] ?? 'No fue posible iniciar sesión');
+      _mostrarMensaje(resultado['mensaje'] ?? Textos.t('No fue posible iniciar sesión'));
     }
   }
 
@@ -167,7 +168,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
 
     if (idToken == null || idToken.isEmpty) {
       if (mounted) {
-        _mostrarMensaje('No se pudo obtener el token de Google.');
+        _mostrarMensaje(Textos.t('No se pudo obtener el token de Google.'));
       }
       return false;
     }
@@ -184,7 +185,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
       if (mounted) {
         _mostrarMensaje(
           resultado['mensaje']?.toString() ??
-              'No fue posible iniciar sesión con Google.',
+              Textos.t('No fue posible iniciar sesión con Google.'),
         );
       }
       return false;
@@ -219,7 +220,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
 
       if (cuenta == null) {
         setState(() => _iniciandoGoogle = false);
-        _mostrarMensaje('Google no devolvió ninguna cuenta.');
+        _mostrarMensaje(Textos.t('Google no devolvió ninguna cuenta.'));
         return;
       }
 
@@ -246,8 +247,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
       }
 
       _mostrarMensaje(
-        'No fue posible iniciar sesión con Google: '
-        '${e.description ?? e.code.name}',
+        Textos.t('No fue posible iniciar sesión con Google: {0}', [e.description ?? e.code.name]),
       );
     } catch (e) {
       debugPrint('[LoginGoogle] error inesperado: $e');
@@ -255,7 +255,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
       if (!mounted) return;
 
       setState(() => _iniciandoGoogle = false);
-      _mostrarMensaje('No fue posible iniciar sesión con Google.');
+      _mostrarMensaje(Textos.t('No fue posible iniciar sesión con Google.'));
     }
   }
 
@@ -436,7 +436,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                           height: 96,
                           fit: BoxFit.contain,
                           filterQuality: FilterQuality.high,
-                          semanticLabel: 'Logo de Mi Ruta Cafetera',
+                          semanticLabel: Textos.t('Logo de Mi Ruta Cafetera'),
                           errorBuilder: (context, error, stackTrace) {
                             return const SizedBox(height: 96);
                           },
@@ -448,7 +448,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                       // ==================================================
                       // TÍTULO
                       // ==================================================
-                      const Text(
+                      const Tr(
                         'Mi Ruta Cafetera',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -460,7 +460,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
 
                       const SizedBox(height: AppDimensions.spacingSm),
 
-                      const Text(
+                      const Tr(
                         'Descubre la Ruta cafetera del Huila',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -481,8 +481,8 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                         autofillHints: const [AutofillHints.email],
                         enabled: !_ocupado,
                         decoration: _decoracionCampo(
-                          etiqueta: 'Correo electrónico',
-                          ayuda: 'Ingresa tu correo',
+                          etiqueta: Textos.t('Correo electrónico'),
+                          ayuda: Textos.t('Ingresa tu correo'),
                           icono: Icons.email_outlined,
                         ),
                       ),
@@ -500,13 +500,13 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                         enabled: !_ocupado,
                         onSubmitted: (_) => _iniciarSesion(),
                         decoration: _decoracionCampo(
-                          etiqueta: 'Contraseña',
-                          ayuda: 'Ingresa tu contraseña',
+                          etiqueta: Textos.t('Contraseña'),
+                          ayuda: Textos.t('Ingresa tu contraseña'),
                           icono: Icons.lock_outline,
                           sufijo: IconButton(
                             tooltip: ocultarPassword
-                                ? 'Mostrar contraseña'
-                                : 'Ocultar contraseña',
+                                ? Textos.t('Mostrar contraseña')
+                                : Textos.t('Ocultar contraseña'),
                             icon: Icon(
                               ocultarPassword
                                   ? Icons.visibility_off
@@ -539,7 +539,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Text(
+                              : const Tr(
                                   'Iniciar sesión',
                                   style: TextStyle(fontSize: 16),
                                 ),
@@ -563,7 +563,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                                   ),
                                 );
                               },
-                        child: const Text('¿Olvidaste tu contraseña?'),
+                        child: const Tr('¿Olvidaste tu contraseña?'),
                       ),
 
                       // ==================================================
@@ -584,7 +584,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                       // ==================================================
                       // REGISTRO
                       // ==================================================
-                      const Text(
+                      const Tr(
                         '¿Aún no tienes una cuenta?',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -610,7 +610,7 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
                                     ),
                                   );
                                 },
-                          child: const Text(
+                          child: const Tr(
                             'Crear una cuenta',
                             style: TextStyle(fontSize: 16),
                           ),
@@ -706,8 +706,8 @@ class _LoginUsuarioScreenState extends State<LoginUsuarioScreen> {
             const SizedBox(width: AppDimensions.spacingMd),
             Text(
               _iniciandoGoogle
-                  ? 'Conectando con Google...'
-                  : 'Continuar con Google',
+                  ? Textos.t('Conectando con Google...')
+                  : Textos.t('Continuar con Google'),
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,

@@ -19,6 +19,7 @@ import 'detalle_sitio/detalle_sitio_acciones.dart';
 import 'detalle_sitio/detalle_productos.dart';
 import 'detalle_sitio/reproductor_historia/reproductor_historia_flotante.dart';
 import 'detalle_sitio/seccion_resenas_sitio.dart';
+import '../../l10n/textos.dart';
 
 class DetalleSitioUsuarioScreen extends StatefulWidget {
   const DetalleSitioUsuarioScreen({
@@ -218,12 +219,12 @@ class _DetalleSitioUsuarioScreenState
         ),
         child: _tarjetaEstado(
           icono: Icons.cloud_off_outlined,
-          titulo: 'No pudimos cargar el contenido',
+          titulo: Textos.t('No pudimos cargar el contenido'),
           descripcion: _errorContenido!,
           accion: OutlinedButton.icon(
             onPressed: _cargarContenido,
             icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Intentar de nuevo'),
+            label: const Tr('Intentar de nuevo'),
           ),
         ),
       );
@@ -237,10 +238,9 @@ class _DetalleSitioUsuarioScreenState
         ),
         child: _tarjetaEstado(
           icono: Icons.auto_stories_outlined,
-          titulo: 'Próximamente habrá nuevas historias',
+          titulo: Textos.t('Próximamente habrá nuevas historias'),
           descripcion:
-              'Estamos preparando más contenido para que descubras '
-              'las tradiciones y experiencias de ${widget.sitio.nombre}.',
+              Textos.t('Estamos preparando más contenido para que descubras las tradiciones y experiencias de {0}.', [widget.sitio.nombre]),
         ),
       );
     }
@@ -385,7 +385,7 @@ class _DetalleSitioUsuarioScreenState
             onPressed: () =>
                 DetalleSitioAcciones.agregarRuta(context),
             icon: const Icon(Icons.route_rounded),
-            label: const Text('Agregar a mi ruta'),
+            label: const Tr('Agregar a mi ruta'),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -414,7 +414,7 @@ class _DetalleSitioUsuarioScreenState
               );
             },
             icon: const Icon(Icons.location_on_outlined),
-            label: const Text('Ver detalles de ubicación'),
+            label: const Tr('Ver detalles de ubicación'),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primary,
               side: BorderSide(
@@ -534,14 +534,14 @@ class _DetalleSitioUsuarioScreenState
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         leading: const BotonRegresar(),
-        title: const Text('Detalle del sitio'),
+        title: const Tr('Detalle del sitio'),
         centerTitle: false,
         actions: [
           IconButton(
             onPressed: _procesandoFavorito ? null : _cambiarFavorito,
             tooltip: _esFavorito
-                ? 'Quitar de favoritos'
-                : 'Agregar a favoritos',
+                ? Textos.t('Quitar de favoritos')
+                : Textos.t('Agregar a favoritos'),
             icon: _procesandoFavorito
                 ? const SizedBox(
                     width: AppDimensions.iconMd,
@@ -615,10 +615,9 @@ class _DetalleSitioUsuarioScreenState
                   ),
                   child: _construirEncabezadoSeccion(
                     icono: Icons.explore_outlined,
-                    titulo: 'Experiencias para disfrutar',
+                    titulo: Textos.t('Experiencias para disfrutar'),
                     descripcion:
-                        'Conoce las actividades que puedes vivir '
-                        'durante tu visita.',
+                        Textos.t('Conoce las actividades que puedes vivir durante tu visita.'),
                   ),
                 ),
                 DetalleActividades(
@@ -646,10 +645,9 @@ class _DetalleSitioUsuarioScreenState
                 ),
                 child: _construirEncabezadoSeccion(
                   icono: Icons.auto_stories_outlined,
-                  titulo: 'Historias y contenido',
+                  titulo: Textos.t('Historias y contenido'),
                   descripcion:
-                      'Descubre las historias, tradiciones y '
-                      'experiencias que hacen especial a este lugar.',
+                      Textos.t('Descubre las historias, tradiciones y experiencias que hacen especial a este lugar.'),
                 ),
               ),
               _construirSeccionContenido(),
@@ -665,10 +663,9 @@ class _DetalleSitioUsuarioScreenState
                   ),
                   child: _construirEncabezadoSeccion(
                     icono: Icons.photo_library_outlined,
-                    titulo: 'Galería del sitio',
+                    titulo: Textos.t('Galería del sitio'),
                     descripcion:
-                        'Explora en imágenes los espacios y '
-                        'rincones de este destino.',
+                        Textos.t('Explora en imágenes los espacios y rincones de este destino.'),
                   ),
                 ),
                 DetalleGaleria(
@@ -685,10 +682,9 @@ class _DetalleSitioUsuarioScreenState
                 ),
                 child: _construirEncabezadoSeccion(
                   icono: Icons.star_outline_rounded,
-                  titulo: 'Opiniones de viajeros',
+                  titulo: Textos.t('Opiniones de viajeros'),
                   descripcion:
-                      'Consulta las experiencias y valoraciones '
-                      'de otros visitantes.',
+                      Textos.t('Consulta las experiencias y valoraciones de otros visitantes.'),
                 ),
               ),
               SeccionResenasSitio(

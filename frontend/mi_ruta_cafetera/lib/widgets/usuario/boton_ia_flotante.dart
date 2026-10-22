@@ -7,13 +7,14 @@ import '../../screens/usuario/chat_ia_screen.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import 'icono_ia.dart';
+import '../../l10n/textos.dart';
 
 /// Botón flotante de café que abre el chat de Mi Ruta Cafetera IA.
 ///
 /// Es la única implementación del acceso al chat: el contenedor
-/// principal ([PublicShellScreen]) lo coloca sobre Mapa, Favoritos
-/// y Rutas. El Inicio no lo usa porque ya tiene su propia tarjeta
-/// de IA.
+/// principal ([PublicShellScreen]) lo coloca sobre las 5 secciones
+/// (Inicio, Mapa, Favoritos, Rutas y Perfil) cuando hay sesión.
+/// El Inicio conserva además su tarjeta de IA.
 ///
 /// La persona puede arrastrarlo a cualquier punto de la pantalla.
 /// La posición se guarda como fracción del área disponible (por lo
@@ -164,7 +165,7 @@ class _BotonIaFlotanteState extends State<BotonIaFlotante> {
 
   Widget _construirBoton(BuildContext context) {
     return Tooltip(
-      message: 'Mi Ruta Cafetera IA (mantén y arrastra para moverlo)',
+      message: Textos.t('Mi Ruta Cafetera IA (mantén y arrastra para moverlo)'),
       child: Material(
         color: AppColors.secondary,
         elevation: AppDimensions.elevationHigh,

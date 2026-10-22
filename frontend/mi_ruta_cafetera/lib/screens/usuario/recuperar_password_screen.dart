@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/usuario/auth_usuario_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class RecuperarPasswordScreen extends StatefulWidget {
   const RecuperarPasswordScreen({
@@ -51,7 +52,7 @@ class _RecuperarPasswordScreenState
 
     if (correo.isEmpty) {
       _mostrarMensaje(
-        'Ingresa tu correo electrónico',
+        Textos.t('Ingresa tu correo electrónico'),
       );
       return;
     }
@@ -98,14 +99,14 @@ class _RecuperarPasswordScreenState
 
     if (codigo.isEmpty) {
       _mostrarMensaje(
-        'Ingresa el código recibido',
+        Textos.t('Ingresa el código recibido'),
       );
       return;
     }
 
     if (codigo.length != 6) {
       _mostrarMensaje(
-        'El código debe tener 6 dígitos',
+        Textos.t('El código debe tener 6 dígitos'),
       );
       return;
     }
@@ -156,28 +157,28 @@ class _RecuperarPasswordScreenState
 
     if (password.isEmpty || confirmar.isEmpty) {
       _mostrarMensaje(
-        'Completa todos los campos',
+        Textos.t('Completa todos los campos'),
       );
       return;
     }
 
     if (password != confirmar) {
       _mostrarMensaje(
-        'Las contraseñas no coinciden',
+        Textos.t('Las contraseñas no coinciden'),
       );
       return;
     }
 
     if (password.length < 6) {
       _mostrarMensaje(
-        'La contraseña debe tener mínimo 6 caracteres',
+        Textos.t('La contraseña debe tener mínimo 6 caracteres'),
       );
       return;
     }
 
     if (tokenRecuperacion.isEmpty) {
       _mostrarMensaje(
-        'El proceso de recuperación no es válido',
+        Textos.t('El proceso de recuperación no es válido'),
       );
       return;
     }
@@ -262,7 +263,7 @@ class _RecuperarPasswordScreenState
           height: AppDimensions.spacingLg + 4,
         ),
 
-        const Text(
+        const Tr(
           '¿Olvidaste tu contraseña?',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -276,9 +277,8 @@ class _RecuperarPasswordScreenState
           height: AppDimensions.spacingSm + 2,
         ),
 
-        const Text(
-          'Ingresa tu correo y te enviaremos '
-          'un código para recuperar tu cuenta.',
+        const Tr(
+          'Ingresa tu correo y te enviaremos un código para recuperar tu cuenta.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 15,
@@ -293,13 +293,13 @@ class _RecuperarPasswordScreenState
         TextField(
           controller: correoController,
           keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            labelText: 'Correo electrónico',
-            hintText: 'Ingresa tu correo',
-            prefixIcon: Icon(
+          decoration: InputDecoration(
+            labelText: Textos.t('Correo electrónico'),
+            hintText: Textos.t('Ingresa tu correo'),
+            prefixIcon: const Icon(
               Icons.email_outlined,
             ),
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
         ),
 
@@ -308,7 +308,7 @@ class _RecuperarPasswordScreenState
         ),
 
         _boton(
-          texto: 'Enviar código',
+          texto: Textos.t('Enviar código'),
           onPressed: _enviarCodigo,
         ),
       ],
@@ -332,7 +332,7 @@ class _RecuperarPasswordScreenState
           height: AppDimensions.spacingLg + 4,
         ),
 
-        const Text(
+        const Tr(
           'Verifica tu código',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -346,9 +346,8 @@ class _RecuperarPasswordScreenState
           height: AppDimensions.spacingSm + 2,
         ),
 
-        Text(
-          'Enviamos un código de 6 dígitos a\n'
-          '${correoController.text}',
+        Tr(
+          'Enviamos un código de 6 dígitos a\n{0}', args: [correoController.text],
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 15,
@@ -365,13 +364,13 @@ class _RecuperarPasswordScreenState
           keyboardType: TextInputType.number,
           maxLength: 6,
           textAlign: TextAlign.center,
-          decoration: const InputDecoration(
-            labelText: 'Código',
+          decoration: InputDecoration(
+            labelText: Textos.t('Código'),
             hintText: '000000',
-            prefixIcon: Icon(
+            prefixIcon: const Icon(
               Icons.pin_outlined,
             ),
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
         ),
 
@@ -380,7 +379,7 @@ class _RecuperarPasswordScreenState
         ),
 
         _boton(
-          texto: 'Verificar código',
+          texto: Textos.t('Verificar código'),
           onPressed: _verificarCodigo,
         ),
 
@@ -392,7 +391,7 @@ class _RecuperarPasswordScreenState
           onPressed: cargando
               ? null
               : _enviarCodigo,
-          child: const Text(
+          child: const Tr(
             'Enviar código nuevamente',
           ),
         ),
@@ -417,7 +416,7 @@ class _RecuperarPasswordScreenState
           height: AppDimensions.spacingLg + 4,
         ),
 
-        const Text(
+        const Tr(
           'Nueva contraseña',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -431,9 +430,8 @@ class _RecuperarPasswordScreenState
           height: AppDimensions.spacingSm + 2,
         ),
 
-        const Text(
-          'Crea una nueva contraseña para '
-          'volver a acceder a tu cuenta.',
+        const Tr(
+          'Crea una nueva contraseña para volver a acceder a tu cuenta.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 15,
@@ -449,7 +447,7 @@ class _RecuperarPasswordScreenState
           controller: passwordController,
           obscureText: ocultarPassword,
           decoration: InputDecoration(
-            labelText: 'Nueva contraseña',
+            labelText: Textos.t('Nueva contraseña'),
             prefixIcon: const Icon(
               Icons.lock_outline,
             ),
@@ -478,7 +476,7 @@ class _RecuperarPasswordScreenState
           controller: confirmarPasswordController,
           obscureText: ocultarConfirmacion,
           decoration: InputDecoration(
-            labelText: 'Confirmar contraseña',
+            labelText: Textos.t('Confirmar contraseña'),
             prefixIcon: const Icon(
               Icons.lock_outline,
             ),
@@ -504,7 +502,7 @@ class _RecuperarPasswordScreenState
         ),
 
         _boton(
-          texto: 'Cambiar contraseña',
+          texto: Textos.t('Cambiar contraseña'),
           onPressed: _cambiarPassword,
         ),
       ],
@@ -600,7 +598,7 @@ class _RecuperarPasswordScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: const Tr(
           'Recuperar contraseña',
         ),
       ),
