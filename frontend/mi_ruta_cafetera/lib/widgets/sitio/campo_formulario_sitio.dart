@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
@@ -11,6 +12,7 @@ class CampoFormularioSitio extends StatelessWidget {
   final bool obligatorio;
   final bool habilitado;
   final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CampoFormularioSitio({
     super.key,
@@ -21,6 +23,7 @@ class CampoFormularioSitio extends StatelessWidget {
     this.obligatorio = false,
     this.habilitado = true,
     this.keyboardType,
+    this.inputFormatters,
   });
 
   @override
@@ -50,6 +53,7 @@ class CampoFormularioSitio extends StatelessWidget {
       enabled: habilitado,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: TextStyle(
         color: habilitado
             ? AppColors.sitioTextPrimary

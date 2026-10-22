@@ -47,11 +47,7 @@ class AdminMenuLateral extends StatelessWidget {
                 bottom: AppDimensions.spacingSm,
               ),
               children: [
-                _opcion(
-                  Icons.dashboard_rounded,
-                  'Inicio',
-                  'inicio',
-                ),
+                _opcion(Icons.dashboard_rounded, 'Inicio', 'inicio'),
                 _opcion(
                   Icons.bar_chart_rounded,
                   'Estadísticas',
@@ -67,61 +63,32 @@ class AdminMenuLateral extends StatelessWidget {
                   'Cuentas de sitios',
                   'cuentasitio',
                 ),
-                _opcion(
-                  Icons.category_rounded,
-                  'Categorías',
-                  'categorias',
-                ),
+                _opcion(Icons.category_rounded, 'Categorías', 'categorias'),
                 _opcion(
                   Icons.event_available_rounded,
                   'Actividades',
                   'actividades',
                 ),
+                _opcion(Icons.inventory_2_rounded, 'Productos', 'productos'),
+                _opcion(Icons.article_rounded, 'Contenido', 'contenido'),
+                _opcion(Icons.smart_toy_rounded, 'Chatbot IA', 'chatbot_ia'),
+                _opcion(Icons.star_rounded, 'Reseñas', 'resenas'),
+                _opcion(Icons.calendar_month_rounded, 'Reservas', 'reservas'),
+                _opcion(Icons.campaign_rounded, 'Reportes', 'reportes'),
+
                 _opcion(
-                  Icons.inventory_2_rounded,
-                  'Productos',
-                  'productos',
+                  Icons.report_problem_rounded,
+                  'Reportes de sitios',
+                  'reportes_sitios',
                 ),
-                _opcion(
-                  Icons.article_rounded,
-                  'Contenido',
-                  'contenido',
-                ),
-                _opcion(
-                  Icons.smart_toy_rounded,
-                  'Chatbot IA',
-                  'chatbot_ia',
-                ),
-                _opcion(
-                  Icons.star_rounded,
-                  'Reseñas',
-                  'resenas',
-                ),
-                _opcion(
-                  Icons.calendar_month_rounded,
-                  'Reservas',
-                  'reservas',
-                ),
-                _opcion(
-                  Icons.campaign_rounded,
-                  'Reportes',
-                  'reportes',
-                ),
-                _opcion(
-                  Icons.people_alt_rounded,
-                  'Usuarios',
-                  'usuarios',
-                ),
+
+                _opcion(Icons.people_alt_rounded, 'Usuarios', 'usuarios'),
                 const Divider(
                   color: coffeeLight,
                   thickness: 1,
                   height: AppDimensions.spacingLg,
                 ),
-                _opcion(
-                  Icons.person_rounded,
-                  'Mi cuenta',
-                  'perfil',
-                ),
+                _opcion(Icons.person_rounded, 'Mi cuenta', 'perfil'),
               ],
             ),
           ),
@@ -135,12 +102,7 @@ class AdminMenuLateral extends StatelessWidget {
               ),
               decoration: const BoxDecoration(
                 color: background,
-                border: Border(
-                  top: BorderSide(
-                    color: coffeeLight,
-                    width: 1,
-                  ),
-                ),
+                border: Border(top: BorderSide(color: coffeeLight, width: 1)),
               ),
               child: AdminCerrarSesion(
                 onOpcionSeleccionada: onOpcionSeleccionada,
@@ -152,11 +114,7 @@ class AdminMenuLateral extends StatelessWidget {
     );
   }
 
-  Widget _opcion(
-    IconData icono,
-    String titulo,
-    String opcion,
-  ) {
+  Widget _opcion(IconData icono, String titulo, String opcion) {
     return AdminIconoMenu(
       icon: icono,
       titulo: titulo,

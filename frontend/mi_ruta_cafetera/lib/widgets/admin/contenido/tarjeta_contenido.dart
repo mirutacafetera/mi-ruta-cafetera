@@ -269,7 +269,7 @@ class TarjetaContenido extends StatelessWidget {
                 : Image.network(
                     url,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       color: _beige,
                       child: const Icon(
                         Icons.image_not_supported_outlined,

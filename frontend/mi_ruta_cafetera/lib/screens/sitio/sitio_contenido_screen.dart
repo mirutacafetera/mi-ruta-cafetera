@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -89,6 +88,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
           required String descripcion,
           XFile? imagenPrincipal,
           required List<XFile> imagenes,
+          required List<String> imagenesAConservar,
           List<AudioGuiaBorrador>? audiosNuevos,
           List<String>? audiosAEliminar,
         }) {
@@ -176,6 +176,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
           required String descripcion,
           XFile? imagenPrincipal,
           required List<XFile> imagenes,
+          required List<String> imagenesAConservar,
           List<AudioGuiaBorrador>? audiosNuevos,
           List<String>? audiosAEliminar,
         }) {
@@ -185,6 +186,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
             descripcion: descripcion,
             imagenPrincipal: imagenPrincipal,
             imagenes: imagenes,
+            imagenesAConservar: imagenesAConservar,
             audiosNuevos: audiosNuevos ?? [],
             audiosAEliminar: audiosAEliminar ?? [],
           );
@@ -199,6 +201,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
     required String descripcion,
     XFile? imagenPrincipal,
     required List<XFile> imagenes,
+    required List<String> imagenesAConservar,
     List<AudioGuiaBorrador> audiosNuevos = const [],
     List<String> audiosAEliminar = const [],
   }) async {
@@ -214,6 +217,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
         contenidoId: contenido.id,
         titulo: titulo,
         descripcion: descripcion,
+        imagenes: imagenesAConservar,
       );
 
       if (imagenPrincipal != null || imagenes.isNotEmpty) {

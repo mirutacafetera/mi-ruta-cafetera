@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -13,6 +12,7 @@ typedef GuardarContenidoCallback = Future<bool> Function({
   required String descripcion,
   XFile? imagenPrincipal,
   required List<XFile> imagenes,
+  required List<String> imagenesAConservar,
   List<AudioGuiaBorrador>? audiosNuevos,
   List<String>? audiosAEliminar,
 });
@@ -45,6 +45,7 @@ class _FormularioContenidoSitioState
 
   XFile? _imagenPrincipalSeleccionada;
   final List<XFile> _imagenesSeleccionadas = [];
+  final Set<String> _imagenesAEliminar = {};
 
   final List<AudioGuiaBorrador> _audiosNuevos = [];
   final Set<String> _audiosAEliminar = {};
@@ -374,9 +375,13 @@ class _FormularioContenidoSitioState
   }
 
   Widget _construirGaleriaExistente() {
-    final imagenes = widget.contenidoExistente?.imagenes ?? [];
+    final imagenes = (widget.contenidoExistente?.imagenes ?? [])
+        .where((url) => !_imagenesAEliminar.contains(url))
+        .toList();
 
-    if (imagenes.isEmpty) return const SizedBox.shrink();
+    if (imagenes.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -397,17 +402,52 @@ class _FormularioContenidoSitioState
             childAspectRatio: 0.88,
           ),
           itemBuilder: (context, index) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(
-                AppDimensions.sitioItemImageRadius,
-              ),
-              child: Image.network(
-                imagenes[index],
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _marcoImagenVacia(
-                  icono: Icons.broken_image_outlined,
+            final url = imagenes[index];
+
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.sitioItemImageRadius,
+                  ),
+                  child: Image.network(
+                    url,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => _marcoImagenVacia(
+                      icono: Icons.broken_image_outlined,
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(
+                  top: 5,
+                  right: 5,
+                  child: IconButton(
+                    tooltip: 'Eliminar imagen',
+                    onPressed: _guardando
+                        ? null
+                        : () {
+                            setState(() {
+                              _imagenesAEliminar.add(url);
+                            });
+                          },
+                    constraints: const BoxConstraints(
+                      minWidth: 34,
+                      minHeight: 34,
+                    ),
+                    padding: EdgeInsets.zero,
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.sitioPrimaryDark
+                          .withValues(alpha: 0.88),
+                      foregroundColor: Colors.white,
+                    ),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ],
             );
           },
         );
@@ -740,6 +780,9 @@ class _FormularioContenidoSitioState
         descripcion: _descripcionController.text.trim(),
         imagenPrincipal: _imagenPrincipalSeleccionada,
         imagenes: List<XFile>.from(_imagenesSeleccionadas),
+        imagenesAConservar: (widget.contenidoExistente?.imagenes ?? [])
+            .where((url) => !_imagenesAEliminar.contains(url))
+            .toList(),
         audiosNuevos: List<AudioGuiaBorrador>.from(_audiosNuevos),
         audiosAEliminar: List<String>.from(_audiosAEliminar),
       );
