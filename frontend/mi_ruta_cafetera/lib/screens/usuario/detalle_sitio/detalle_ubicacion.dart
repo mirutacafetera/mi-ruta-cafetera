@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../models/sitio_turistico_model.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
+import '../../../l10n/textos.dart';
 
 class DetalleUbicacion extends StatelessWidget {
   const DetalleUbicacion({
@@ -73,7 +74,7 @@ class DetalleUbicacion extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    Tr(
                       'Cómo llegar',
                       style: TextStyle(
                         color: AppColors.textPrimary,
@@ -82,7 +83,7 @@ class DetalleUbicacion extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 3),
-                    Text(
+                    Tr(
                       'Encuentra este destino',
                       style: TextStyle(
                         color: AppColors.textSecondary,
@@ -123,7 +124,7 @@ class DetalleUbicacion extends StatelessWidget {
                   child: Text(
                     ubicacion.isNotEmpty
                         ? ubicacion
-                        : 'Ubicación no disponible',
+                        : Textos.t('Ubicación no disponible'),
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 14,
@@ -147,7 +148,7 @@ class DetalleUbicacion extends StatelessWidget {
                 Icons.map_outlined,
                 size: 21,
               ),
-              label: const Text(
+              label: const Tr(
                 'Ver ubicación en el mapa',
                 textAlign: TextAlign.center,
               ),

@@ -5,6 +5,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import 'verificar_correo_screen.dart';
 import 'login_usuario_screen.dart';
+import '../../l10n/textos.dart';
 
 class RegistroUsuarioScreen extends StatefulWidget {
   const RegistroUsuarioScreen({
@@ -73,21 +74,21 @@ class _RegistroUsuarioScreenState
         password.isEmpty ||
         confirmarPassword.isEmpty) {
       mostrarMensaje(
-        'Completa todos los campos',
+        Textos.t('Completa todos los campos'),
       );
       return;
     }
 
     if (password.length < 6) {
       mostrarMensaje(
-        'La contraseña debe tener mínimo 6 caracteres',
+        Textos.t('La contraseña debe tener mínimo 6 caracteres'),
       );
       return;
     }
 
     if (password != confirmarPassword) {
       mostrarMensaje(
-        'Las contraseñas no coinciden',
+        Textos.t('Las contraseñas no coinciden'),
       );
       return;
     }
@@ -122,7 +123,7 @@ class _RegistroUsuarioScreenState
     } else {
       mostrarMensaje(
         resultado['mensaje'] ??
-            'No fue posible crear la cuenta',
+            Textos.t('No fue posible crear la cuenta'),
       );
     }
   }
@@ -135,7 +136,7 @@ class _RegistroUsuarioScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: const Tr(
           'Crear cuenta',
         ),
         centerTitle: true,
@@ -167,7 +168,7 @@ class _RegistroUsuarioScreenState
                 height: AppDimensions.spacingLg + 4,
               ),
 
-              const Text(
+              const Tr(
                 'Crea tu cuenta',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -181,9 +182,8 @@ class _RegistroUsuarioScreenState
                 height: AppDimensions.spacingSm,
               ),
 
-              const Text(
-                'Regístrate para comenzar a descubrir '
-                'Mi Ruta Cafetera',
+              const Tr(
+                'Regístrate para comenzar a descubrir Mi Ruta Cafetera',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
@@ -203,12 +203,12 @@ class _RegistroUsuarioScreenState
                 controller: nombreController,
                 textInputAction:
                     TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre',
-                  prefixIcon: Icon(
+                decoration: InputDecoration(
+                  labelText: Textos.t('Nombre'),
+                  prefixIcon: const Icon(
                     Icons.person_outline,
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
 
@@ -224,12 +224,12 @@ class _RegistroUsuarioScreenState
                 controller: apellidoController,
                 textInputAction:
                     TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Apellido',
-                  prefixIcon: Icon(
+                decoration: InputDecoration(
+                  labelText: Textos.t('Apellido'),
+                  prefixIcon: const Icon(
                     Icons.person_outline,
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
 
@@ -247,12 +247,12 @@ class _RegistroUsuarioScreenState
                     TextInputType.emailAddress,
                 textInputAction:
                     TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'Correo electrónico',
-                  prefixIcon: Icon(
+                decoration: InputDecoration(
+                  labelText: Textos.t('Correo electrónico'),
+                  prefixIcon: const Icon(
                     Icons.email_outlined,
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
 
@@ -270,7 +270,7 @@ class _RegistroUsuarioScreenState
                 textInputAction:
                     TextInputAction.next,
                 decoration: InputDecoration(
-                  labelText: 'Contraseña',
+                  labelText: Textos.t('Contraseña'),
                   prefixIcon: const Icon(
                     Icons.lock_outline,
                   ),
@@ -313,7 +313,7 @@ class _RegistroUsuarioScreenState
                 },
                 decoration: InputDecoration(
                   labelText:
-                      'Confirmar contraseña',
+                      Textos.t('Confirmar contraseña'),
                   prefixIcon: const Icon(
                     Icons.lock_outline,
                   ),
@@ -357,7 +357,7 @@ class _RegistroUsuarioScreenState
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
+                      : const Tr(
                           'Crear cuenta',
                           style: TextStyle(
                             fontSize: 16,
@@ -385,7 +385,7 @@ class _RegistroUsuarioScreenState
                     MaterialPageRoute(builder: (_) => const LoginUsuarioScreen()),
                   );
                       },
-                child: const Text(
+                child: const Tr(
                   'Ya tengo una cuenta',
                 ),
               ),

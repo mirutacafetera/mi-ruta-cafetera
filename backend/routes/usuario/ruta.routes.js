@@ -3,7 +3,8 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  verificarToken
+  verificarToken,
+  verificarUsuario
 } = require('../../middlewares/authmiddleware');
 
 // ============================================================
@@ -78,6 +79,7 @@ router.get(
 router.get(
   '/:usuarioId',
   verificarToken,
+  verificarUsuario,
   obtenerRutas
 );
 
@@ -95,6 +97,7 @@ router.get(
 router.post(
   '/',
   verificarToken,
+  verificarUsuario,
   crearRuta
 );
 
@@ -113,6 +116,7 @@ router.post(
 router.put(
   '/:id',
   verificarToken,
+  verificarUsuario,
   actualizarRuta
 );
 
@@ -131,6 +135,7 @@ router.put(
 router.delete(
   '/:id',
   verificarToken,
+  verificarUsuario,
   eliminarRuta
 );
 
@@ -139,3 +144,4 @@ router.delete(
 // ============================================================
 
 module.exports = router;
+

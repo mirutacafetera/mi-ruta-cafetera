@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../models/sitio_turistico_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
+import 'mapa_estado_ruta.dart';
 
 class MapaSelectorRuta extends StatelessWidget {
   final bool activo;
@@ -11,6 +13,10 @@ class MapaSelectorRuta extends StatelessWidget {
   final VoidCallback onCancelar;
   final VoidCallback onCalcular;
 
+  /// Máximo de sitios de la ruta en curso: 4 para rutas personales y
+  /// hasta 9 para rutas predefinidas (lo define MapaEstadoRuta).
+  final int limite;
+
   const MapaSelectorRuta({
     super.key,
     required this.activo,
@@ -18,6 +24,7 @@ class MapaSelectorRuta extends StatelessWidget {
     required this.onIniciar,
     required this.onCancelar,
     required this.onCalcular,
+    this.limite = MapaEstadoRuta.maxSitios,
   });
 
   @override
@@ -26,7 +33,7 @@ class MapaSelectorRuta extends StatelessWidget {
       return ElevatedButton.icon(
         onPressed: onIniciar,
         icon: const Icon(Icons.alt_route),
-        label: const Text(
+        label: const Tr(
           'Crear mi ruta',
           style: TextStyle(
             fontWeight: FontWeight.w600,
@@ -72,7 +79,7 @@ class MapaSelectorRuta extends StatelessWidget {
                   width: AppDimensions.spacingSm,
                 ),
                 const Expanded(
-                  child: Text(
+                  child: Tr(
                     'Crear mi ruta',
                     style: TextStyle(
                       fontSize: 17,
@@ -82,7 +89,7 @@ class MapaSelectorRuta extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '$cantidad/4',
+                  '$cantidad/$limite',
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
@@ -97,10 +104,14 @@ class MapaSelectorRuta extends StatelessWidget {
 
             Text(
               cantidad == 0
-                  ? 'Selecciona entre 2 y 4 sitios del mapa.'
+                  ? (limite == MapaEstadoRuta.maxSitios
+                      ? Textos.t('Selecciona entre 2 y 4 sitios del mapa.')
+                      : Textos.t(
+                          'Selecciona mínimo 2 sitios para calcular la ruta.',
+                        ))
                   : cantidad == 1
-                      ? 'Selecciona al menos un sitio más.'
-                      : '$cantidad sitios seleccionados.',
+                      ? Textos.t('Selecciona al menos un sitio más.')
+                      : Textos.t('{0} sitios seleccionados.', [cantidad]),
               style: const TextStyle(
                 color: AppColors.textSecondary,
               ),
@@ -189,7 +200,7 @@ class MapaSelectorRuta extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: onCancelar,
-                    child: const Text('Cancelar'),
+                    child: const Tr('Cancelar'),
                   ),
                 ),
 
@@ -204,7 +215,7 @@ class MapaSelectorRuta extends StatelessWidget {
                         ? onCalcular
                         : null,
                     icon: const Icon(Icons.route),
-                    label: const Text(
+                    label: const Tr(
                       'Calcular ruta',
                     ),
                   ),

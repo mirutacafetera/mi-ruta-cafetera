@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class MarcaPrincipal extends StatelessWidget {
   final bool compacto;
@@ -16,7 +17,7 @@ class MarcaPrincipal extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
+        Tr(
           'Mi Ruta Cafetera',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -30,7 +31,7 @@ class MarcaPrincipal extends StatelessWidget {
         const SizedBox(
           height: AppDimensions.spacingSm,
         ),
-        Text(
+        Tr(
           'Descubre · Explora · Vive',
           textAlign: TextAlign.center,
           style: TextStyle(

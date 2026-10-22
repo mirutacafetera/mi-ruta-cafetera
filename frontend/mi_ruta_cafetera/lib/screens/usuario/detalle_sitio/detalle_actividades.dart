@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../models/sitio/sitio_actividad_model.dart';
 import '../../../../theme/app_dimensions.dart';
+import '../../../l10n/textos.dart';
 
 class DetalleActividades extends StatelessWidget {
   final List<SitioActividadModel> actividades;
@@ -50,7 +51,7 @@ class DetalleActividades extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      Tr(
                         'Actividades para disfrutar',
                         style: TextStyle(
                           color: Color(0xFF292D29),
@@ -59,7 +60,7 @@ class DetalleActividades extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 4),
-                      Text(
+                      Tr(
                         'Explora las experiencias de este lugar.',
                         style: TextStyle(
                           color: Color(0xFF6C746D),
@@ -105,7 +106,7 @@ class DetalleActividades extends StatelessWidget {
                       color: Color(0xFF98651E),
                     ),
                     SizedBox(height: 10),
-                    Text(
+                    Tr(
                       'Próximamente nuevas experiencias',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -114,7 +115,7 @@ class DetalleActividades extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 5),
-                    Text(
+                    Tr(
                       'Estamos preparando actividades para tu visita.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -231,7 +232,7 @@ class DetalleActividades extends StatelessWidget {
                                     const SizedBox(height: 6),
                                     Text(
                                       actividad.descripcion.trim().isEmpty
-                                          ? 'Descubre esta experiencia.'
+                                          ? Textos.t('Descubre esta experiencia.')
                                           : actividad.descripcion.trim(),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -244,7 +245,7 @@ class DetalleActividades extends StatelessWidget {
                                     const SizedBox(height: 8),
                                     const Row(
                                       children: [
-                                        Text(
+                                        Tr(
                                           'Ver experiencia',
                                           style: TextStyle(
                                             color: Color(0xFF214F3D),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/sitio_turistico_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 // ============================================================
 // PANEL RESPONSIVE DE RUTA
@@ -203,9 +204,8 @@ class MapaRutaPanel extends StatelessWidget {
 
               Text(
                 sitios.isEmpty
-                    ? 'Sin sitios seleccionados'
-                    : '${sitios.length} '
-                        '${sitios.length == 1 ? 'sitio' : 'sitios'} seleccionados',
+                    ? Textos.t('Sin sitios seleccionados')
+                    : Textos.t('{0} {1} seleccionados', [sitios.length, Textos.t(sitios.length == 1 ? 'sitio' : 'sitios')]),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -222,7 +222,7 @@ class MapaRutaPanel extends StatelessWidget {
         ),
 
         IconButton(
-          tooltip: 'Cerrar ruta',
+          tooltip: Textos.t('Cerrar ruta'),
           visualDensity: VisualDensity.compact,
           onPressed: onCerrar,
           icon: Icon(
@@ -274,7 +274,7 @@ class MapaRutaPanel extends StatelessWidget {
               ),
 
               Expanded(
-                child: Text(
+                child: Tr(
                   'Recorrido',
                   style: TextStyle(
                     fontSize: pantallaPequena ? 11 : 12,
@@ -364,7 +364,7 @@ class MapaRutaPanel extends StatelessWidget {
             ),
 
             Expanded(
-              child: Text(
+              child: Tr(
                 'Calculando recorrido por carretera...',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -393,7 +393,7 @@ class MapaRutaPanel extends StatelessWidget {
           child: _datoRuta(
             icono: Icons.route,
             valor: distancia,
-            titulo: 'Distancia',
+            titulo: Textos.t('Distancia'),
             color: colorRuta,
             pantallaPequena: pantallaPequena,
           ),
@@ -407,7 +407,7 @@ class MapaRutaPanel extends StatelessWidget {
           child: _datoRuta(
             icono: Icons.access_time,
             valor: duracion,
-            titulo: 'Tiempo estimado',
+            titulo: Textos.t('Tiempo estimado'),
             color: colorRuta,
             pantallaPequena: pantallaPequena,
           ),
@@ -524,8 +524,8 @@ class MapaRutaPanel extends StatelessWidget {
           Icons.route,
           size: pantallaPequena ? 18 : 20,
         ),
-        label: Text(
-          'GENERAR RUTA (${sitios.length} sitios)',
+        label: Tr(
+          'GENERAR RUTA ({0} sitios)', args: [sitios.length],
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(

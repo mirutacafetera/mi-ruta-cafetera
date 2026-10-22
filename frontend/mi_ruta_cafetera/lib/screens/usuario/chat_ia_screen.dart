@@ -14,6 +14,7 @@ import '../../utils/categoria_utils.dart';
 import '../../widgets/usuario/icono_ia.dart';
 import '../mapa_screen_2.dart';
 import 'detalle_sitio_usuario_screen.dart';
+import '../../l10n/textos.dart';
 
 // ============================================================
 // CHAT DE MI RUTA CAFETERA IA
@@ -107,7 +108,7 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
 
       _mostrarMensaje(
         resultado.mensaje.isEmpty
-            ? 'No fue posible obtener tu ubicación.'
+            ? Textos.t('No fue posible obtener tu ubicación.')
             : resultado.mensaje,
       );
       return;
@@ -216,9 +217,9 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
 
       setState(() {
         _mensajes.add(
-          const ChatMensaje(
+          ChatMensaje(
             rol: ChatRol.asistente,
-            texto: 'No fue posible enviar tu mensaje.',
+            texto: Textos.t('No fue posible enviar tu mensaje.'),
             esError: true,
           ),
         );
@@ -262,7 +263,7 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
           esFavorito: recomendacion.esFavorito,
           onRequiereCuenta: () {
             _mostrarMensaje(
-              'Guarda tus favoritos desde la pantalla de Inicio.',
+              Textos.t('Guarda tus favoritos desde la pantalla de Inicio.'),
             );
           },
         ),
@@ -286,7 +287,7 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Mi Ruta Cafetera IA')),
+      appBar: AppBar(title: const Tr('Mi Ruta Cafetera IA')),
       body: Column(
         children: [
           Expanded(
@@ -317,7 +318,7 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingMd),
-        const Text(
+        const Tr(
           '¡Hola! ¿Qué te provoca hoy?',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -327,10 +328,8 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingSm),
-        const Text(
-          'Te sugiero sitios reales del Huila. Si activas tu '
-          'ubicación, tendré en cuenta qué tan cerca están y el '
-          'clima de tu zona.',
+        const Tr(
+          'Te sugiero sitios reales del Huila. Si activas tu ubicación, tendré en cuenta qué tan cerca están y el clima de tu zona.',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textSecondary,
@@ -346,7 +345,7 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
           children: [
             for (final sugerencia in _sugerencias)
               ActionChip(
-                label: Text(sugerencia),
+                label: Tr(sugerencia),
                 backgroundColor: AppColors.cream,
                 side: const BorderSide(color: AppColors.border),
                 onPressed: _enviando ? null : () => _enviar(sugerencia),
@@ -383,7 +382,7 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
       alignment: Alignment.centerLeft,
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
-        child: Text(
+        child: Tr(
           'Escribiendo…',
           style: TextStyle(
             color: AppColors.textSecondary,
@@ -452,8 +451,7 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
       if (categoria.isNotEmpty) categoria,
       if (sitio.ciudad.isNotEmpty) sitio.ciudad,
       if (recomendacion.distanciaKm != null)
-        '≈ ${recomendacion.distanciaKm!.toStringAsFixed(1)} km '
-            'en línea recta',
+        Textos.t('≈ {0} km en línea recta', [recomendacion.distanciaKm!.toStringAsFixed(1)]),
     ];
 
     return ConstrainedBox(
@@ -507,12 +505,12 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
                 TextButton.icon(
                   onPressed: () => _verDetalle(recomendacion),
                   icon: const Icon(Icons.info_outline_rounded),
-                  label: const Text('Ver detalle'),
+                  label: const Tr('Ver detalle'),
                 ),
                 TextButton.icon(
                   onPressed: () => _verEnMapa(recomendacion),
                   icon: const Icon(Icons.map_rounded),
-                  label: const Text('Ver en el mapa'),
+                  label: const Tr('Ver en el mapa'),
                 ),
               ],
             ),
@@ -536,8 +534,8 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
           Expanded(
             child: Text(
               _usarUbicacion
-                  ? 'Usando tu ubicación (distancias en línea recta)'
-                  : 'Usar mi ubicación para sugerencias cercanas',
+                  ? Textos.t('Usando tu ubicación (distancias en línea recta)')
+                  : Textos.t('Usar mi ubicación para sugerencias cercanas'),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13,
@@ -588,8 +586,8 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
                 maxLines: 4,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _enviar(),
-                decoration: const InputDecoration(
-                  hintText: 'Escribe tu mensaje',
+                decoration: InputDecoration(
+                  hintText: Textos.t('Escribe tu mensaje'),
                   counterText: '',
                 ),
               ),
@@ -598,7 +596,7 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
             IconButton.filled(
               onPressed: _enviando ? null : () => _enviar(),
               icon: const Icon(Icons.send_rounded),
-              tooltip: 'Enviar',
+              tooltip: Textos.t('Enviar'),
             ),
           ],
         ),

@@ -5,6 +5,7 @@ import '../../services/usuario/perfil_usuario_service.dart';
 import '../../services/usuario/usuario_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 // ============================================================
 // EDITAR PERFIL
@@ -72,11 +73,11 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     final texto = (valor ?? '').trim();
 
     if (texto.isEmpty) {
-      return 'Escribe tu $campo';
+      return Textos.t('Escribe tu {0}', [Textos.t(campo)]);
     }
 
     if (texto.length > 60) {
-      return 'Máximo 60 caracteres';
+      return Textos.t('Máximo 60 caracteres');
     }
 
     return null;
@@ -90,7 +91,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     }
 
     if (!_regexTelefono.hasMatch(texto)) {
-      return 'Usa solo números, espacios, + ( ) y - (7 a 20 caracteres)';
+      return Textos.t('Usa solo números, espacios, + ( ) y - (7 a 20 caracteres)');
     }
 
     return null;
@@ -98,7 +99,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
 
   String? _validarCiudad(String? valor) {
     if ((valor ?? '').trim().length > 60) {
-      return 'Máximo 60 caracteres';
+      return Textos.t('Máximo 60 caracteres');
     }
 
     return null;
@@ -140,7 +141,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            mensaje.isEmpty ? 'Perfil actualizado.' : mensaje,
+            mensaje.isEmpty ? Textos.t('Perfil actualizado.') : mensaje,
           ),
         ),
       );
@@ -154,7 +155,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
         backgroundColor: AppColors.error,
         content: Text(
           mensaje.isEmpty
-              ? 'No fue posible guardar los cambios.'
+              ? Textos.t('No fue posible guardar los cambios.')
               : mensaje,
         ),
       ),
@@ -170,7 +171,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Editar perfil'),
+        title: const Tr('Editar perfil'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -184,9 +185,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   controller: _nombre,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    prefixIcon: Icon(Icons.person_rounded),
+                  decoration: InputDecoration(
+                    labelText: Textos.t('Nombre'),
+                    prefixIcon: const Icon(Icons.person_rounded),
                   ),
                   validator: (v) => _validarObligatorio(v, 'nombre'),
                 ),
@@ -195,9 +196,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   controller: _apellido,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Apellido',
-                    prefixIcon: Icon(Icons.badge_rounded),
+                  decoration: InputDecoration(
+                    labelText: Textos.t('Apellido'),
+                    prefixIcon: const Icon(Icons.badge_rounded),
                   ),
                   validator: (v) => _validarObligatorio(v, 'apellido'),
                 ),
@@ -206,9 +207,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   controller: _telefono,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Teléfono (opcional)',
-                    prefixIcon: Icon(Icons.phone_rounded),
+                  decoration: InputDecoration(
+                    labelText: Textos.t('Teléfono (opcional)'),
+                    prefixIcon: const Icon(Icons.phone_rounded),
                   ),
                   validator: _validarTelefono,
                 ),
@@ -217,9 +218,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   controller: _ciudad,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.done,
-                  decoration: const InputDecoration(
-                    labelText: 'Ciudad (opcional)',
-                    prefixIcon: Icon(Icons.location_city_rounded),
+                  decoration: InputDecoration(
+                    labelText: Textos.t('Ciudad (opcional)'),
+                    prefixIcon: const Icon(Icons.location_city_rounded),
                   ),
                   validator: _validarCiudad,
                   onFieldSubmitted: (_) => _guardar(),
@@ -228,10 +229,10 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                 TextFormField(
                   initialValue: _correo,
                   enabled: false,
-                  decoration: const InputDecoration(
-                    labelText: 'Correo',
-                    helperText: 'El correo no se puede modificar.',
-                    prefixIcon: Icon(Icons.email_rounded),
+                  decoration: InputDecoration(
+                    labelText: Textos.t('Correo'),
+                    helperText: Textos.t('El correo no se puede modificar.'),
+                    prefixIcon: const Icon(Icons.email_rounded),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.sectionGap),
@@ -249,7 +250,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                           )
                         : const Icon(Icons.check_rounded),
                     label: Text(
-                      _guardando ? 'Guardando…' : 'Guardar cambios',
+                      _guardando ? Textos.t('Guardando…') : Textos.t('Guardar cambios'),
                     ),
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import 'icono_ia.dart';
+import '../../l10n/textos.dart';
 
 /// Tarjeta de entrada a "Mi Ruta Cafetera IA".
 ///
@@ -50,7 +51,7 @@ class IaCard extends StatelessWidget {
                         ),
                         SizedBox(width: AppDimensions.spacingSm),
                         Expanded(
-                          child: Text(
+                          child: Tr(
                             'Mi Ruta Cafetera IA',
                             style: TextStyle(
                               color: AppColors.white,
@@ -62,10 +63,8 @@ class IaCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: AppDimensions.spacingSm),
-                    Text(
-                      'Te recomiendo lugares y experiencias '
-                      'reales del Huila según tu ubicación, '
-                      'la hora y el clima.',
+                    Tr(
+                      'Te recomiendo lugares y experiencias reales del Huila según tu ubicación, la hora y el clima.',
                       style: TextStyle(
                         color: AppColors.white.withValues(alpha: 0.88),
                         fontSize: 13,
@@ -96,7 +95,7 @@ class IaCard extends StatelessWidget {
                             size: AppDimensions.iconSm,
                           ),
                           SizedBox(width: AppDimensions.spacingSm),
-                          Text(
+                          Tr(
                             'Recomiéndame algo',
                             style: TextStyle(
                               color: AppColors.white,

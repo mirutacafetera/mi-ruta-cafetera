@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../l10n/textos.dart';
 
 /// Icono de "Mi Ruta Cafetera IA" (assets/img/iconoia.png).
 ///
@@ -33,7 +34,7 @@ class IconoIa extends StatelessWidget {
         ruta,
         fit: BoxFit.contain,
         filterQuality: FilterQuality.high,
-        semanticLabel: 'Mi Ruta Cafetera IA',
+        semanticLabel: Textos.t('Mi Ruta Cafetera IA'),
         errorBuilder: (context, error, stackTrace) {
           return Icon(iconoRespaldo, size: size, color: colorRespaldo);
         },

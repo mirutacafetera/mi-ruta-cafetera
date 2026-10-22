@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class BannerCuenta extends StatefulWidget {
   final VoidCallback onLogin;
@@ -107,7 +108,7 @@ class _BannerCuentaState
                   crossAxisAlignment:
                       CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    const Tr(
                       'Vive la experiencia completa',
                       style:
                           TextStyle(
@@ -125,12 +126,8 @@ class _BannerCuentaState
                           AppDimensions.spacingSm,
                     ),
 
-                    Text(
-                      'Inicia sesión para guardar '
-                      'tus lugares favoritos, '
-                      'organizar tus rutas y '
-                      'disfrutar una experiencia '
-                      'más personalizada.',
+                    Tr(
+                      'Inicia sesión para guardar tus lugares favoritos, organizar tus rutas y disfrutar una experiencia más personalizada.',
                       style:
                           TextStyle(
                         color:
@@ -199,7 +196,7 @@ class _BannerCuentaState
                               19,
                         ),
                         label:
-                            const Text(
+                            const Tr(
                           'Iniciar sesión',
                           style:
                               TextStyle(
@@ -289,7 +286,7 @@ class _BannerCuentaState
                 height:
                     2,
               ),
-              Text(
+              Tr(
                 'MI RUTA',
                 style:
                     TextStyle(

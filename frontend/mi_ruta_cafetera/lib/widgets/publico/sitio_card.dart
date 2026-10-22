@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/sitio_turistico_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class SitioCard extends StatefulWidget {
   final SitioTuristicoModel sitio;
@@ -310,7 +311,7 @@ class _SitioCardState extends State<SitioCard> {
                 ),
               ),
               icon: const Icon(Icons.explore_outlined, size: 17),
-              label: const Text(
+              label: const Tr(
                 'Ver lugar',
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
@@ -342,6 +343,6 @@ class _SitioCardState extends State<SitioCard> {
       return departamento;
     }
 
-    return 'Huila, Colombia';
+    return Textos.t('Huila, Colombia');
   }
 }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../controllers/admin/inicio_seccion_admin.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../widgets/auth/boton_google_login.dart';
+import '../../widgets/auth/escenario_login.dart';
 import 'pantalla_administrador.dart';
 
 class AdminInicioSesion extends StatefulWidget {
@@ -42,17 +44,8 @@ class _AdminInicioSesionState extends State<AdminInicioSesion> {
         return;
       }
 
-      final admin = resultado['administrador'] as Map<String, dynamic>;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PantallaAdministrador(
-            nombre: admin['nombre']?.toString() ?? 'Administrador',
-            email: admin['correo']?.toString() ??
-                controlador.correoController.text.trim(),
-          ),
-        ),
+      _abrirPanel(
+        resultado['administrador'] as Map<String, dynamic>,
       );
     } catch (e) {
       if (!mounted) {
@@ -70,165 +63,140 @@ class _AdminInicioSesionState extends State<AdminInicioSesion> {
     }
   }
 
+  void _abrirPanel(Map<String, dynamic> admin) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PantallaAdministrador(
+          nombre: admin['nombre']?.toString() ?? 'Administrador',
+          email: admin['correo']?.toString() ??
+              controlador.correoController.text.trim(),
+        ),
+      ),
+    );
+  }
+
+  // Google: el backend valida el token y solo admite cuentas de
+  // administrador que ya existen. Los errores se muestran en el
+  // botón de Google.
+  Future<void> _iniciarConGoogle(String idToken) async {
+    final resultado = await controlador.iniciarSesionConGoogle(idToken);
+
+    if (!mounted) {
+      return;
+    }
+
+    _abrirPanel(
+      resultado['administrador'] as Map<String, dynamic>,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.coffeeDark,
-              AppColors.secondary,
-              AppColors.coffeeLight,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(
-                AppDimensions.pageHorizontal,
+    return EscenarioLogin(
+      titulo: 'Acceso de administrador',
+      descripcion:
+          'Esta sección está destinada únicamente a administradores autorizados.',
+      children: [
+        Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: controlador.correoController,
+                enabled: !controlador.cargando,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                decoration: decoracionCampoLogin(
+                  etiqueta: 'Correo',
+                  ayuda: 'Ingresa tu correo',
+                  icono: Icons.email_outlined,
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Ingresa tu correo';
+                  }
+
+                  if (!value.contains('@')) {
+                    return 'Ingresa un correo válido';
+                  }
+
+                  return null;
+                },
               ),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(
-                    AppDimensions.spacingXxl,
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.admin_panel_settings,
-                          size: AppDimensions.categoryIconLarge,
-                          color: AppColors.secondary,
-                        ),
-                        const SizedBox(
-                          height: AppDimensions.spacingLg,
-                        ),
-                        const Text(
-                          'Acceso de administrador',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.coffeeDark,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: AppDimensions.spacingSection,
-                        ),
-                        TextFormField(
-                          controller: controlador.correoController,
-                          enabled: !controlador.cargando,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Correo',
-                            prefixIcon: Icon(
-                              Icons.email_outlined,
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty) {
-                              return 'Ingresa tu correo';
-                            }
-
-                            if (!value.contains('@')) {
-                              return 'Ingresa un correo válido';
-                            }
-
-                            return null;
-                          },
-                        ),
-                        const SizedBox(
-                          height: AppDimensions.spacingLg,
-                        ),
-                        TextFormField(
-                          controller: controlador.passwordController,
-                          enabled: !controlador.cargando,
-                          obscureText: !controlador.mostrarPassword,
-                          decoration: InputDecoration(
-                            labelText: 'Contraseña',
-                            prefixIcon: const Icon(
-                              Icons.lock_outline,
-                            ),
-                            suffixIcon: IconButton(
-                              onPressed: controlador.cambiarPassword,
-                              icon: Icon(
-                                controlador.mostrarPassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                              ),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Ingresa tu contraseña';
-                            }
-
-                            return null;
-                          },
-                          onFieldSubmitted: (_) {
-                            if (!controlador.cargando) {
-                              _iniciarSesion();
-                            }
-                          },
-                        ),
-                        const SizedBox(
-                          height: AppDimensions.spacingSection,
-                        ),
-                        SizedBox(
-                          width: double.infinity,
-                          height: AppDimensions.buttonHeightLarge,
-                          child: ElevatedButton(
-                            onPressed: controlador.cargando
-                                ? null
-                                : _iniciarSesion,
-                            child: controlador.cargando
-                                ? const SizedBox(
-                                    width: AppDimensions.iconLg,
-                                    height: AppDimensions.iconLg,
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.white,
-                                    ),
-                                  )
-                                : const Text(
-                                    'Iniciar sesión',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: AppDimensions.spacingSm,
-                        ),
-                        TextButton.icon(
-                          onPressed: controlador.cargando
-                              ? null
-                              : () => Navigator.pop(context),
-                          icon: const Icon(
-                            Icons.arrow_back,
-                          ),
-                          label: const Text(
-                            'Volver',
-                          ),
-                        ),
-                      ],
+              const SizedBox(height: AppDimensions.spacingLg),
+              TextFormField(
+                controller: controlador.passwordController,
+                enabled: !controlador.cargando,
+                obscureText: !controlador.mostrarPassword,
+                textInputAction: TextInputAction.done,
+                decoration: decoracionCampoLogin(
+                  etiqueta: 'Contraseña',
+                  ayuda: 'Ingresa tu contraseña',
+                  icono: Icons.lock_outline,
+                  sufijo: IconButton(
+                    tooltip: controlador.mostrarPassword
+                        ? 'Ocultar contraseña'
+                        : 'Mostrar contraseña',
+                    onPressed: controlador.cambiarPassword,
+                    icon: Icon(
+                      controlador.mostrarPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                     ),
                   ),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Ingresa tu contraseña';
+                  }
+
+                  return null;
+                },
+                onFieldSubmitted: (_) {
+                  if (!controlador.cargando) {
+                    _iniciarSesion();
+                  }
+                },
               ),
-            ),
+              const SizedBox(height: AppDimensions.spacingXl),
+              SizedBox(
+                width: double.infinity,
+                height: AppDimensions.buttonHeightLarge,
+                child: ElevatedButton(
+                  onPressed: controlador.cargando ? null : _iniciarSesion,
+                  child: controlador.cargando
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text(
+                          'Iniciar sesión',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                ),
+              ),
+              BotonGoogleLogin(
+                onIdToken: _iniciarConGoogle,
+                bloqueado: controlador.cargando,
+              ),
+              const SizedBox(height: AppDimensions.spacingXs),
+              TextButton.icon(
+                onPressed: controlador.cargando
+                    ? null
+                    : () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Volver'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                ),
+              ),
+            ],
           ),
         ),
-      ),
+      ],
     );
   }
 

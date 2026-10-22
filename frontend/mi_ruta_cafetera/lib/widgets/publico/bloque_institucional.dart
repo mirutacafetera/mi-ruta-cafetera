@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 /// Bloque institucional del Home: qué es Mi Ruta Cafetera,
 /// para qué sirve y qué busca aportar.
@@ -29,7 +30,7 @@ class BloqueInstitucional extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Center(
-          child: Text(
+          child: Tr(
             'Sobre Mi Ruta Cafetera',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -113,7 +114,7 @@ class _Parrafo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
+    return Tr(
       texto,
       style: const TextStyle(
         color: AppColors.textSecondary,
@@ -152,7 +153,7 @@ class _Pilar extends StatelessWidget {
             color: color,
           ),
           const SizedBox(width: AppDimensions.spacingXs + 2),
-          Text(
+          Tr(
             nombre,
             style: TextStyle(
               color: color,

@@ -103,6 +103,10 @@ const adminUsuariosRoutes = require(
   './routes/admin/usuarios.routes'
 );
 
+const adminRutasPredefinidasRoutes = require(
+  './routes/admin/rutasPredefinidas.routes'
+);
+
 const adminResenasRoutes = require(
   './routes/admin/resenas.routes'
 );
@@ -292,6 +296,15 @@ app.use(
 app.use(
   '/api/admin/usuarios',
   adminUsuariosRoutes
+);
+
+// ------------------------------------------------------
+// RUTAS TURÍSTICAS PREDEFINIDAS (solo administrador)
+// ------------------------------------------------------
+
+app.use(
+  '/api/admin/rutas',
+  adminRutasPredefinidasRoutes
 );
 
 // ------------------------------------------------------

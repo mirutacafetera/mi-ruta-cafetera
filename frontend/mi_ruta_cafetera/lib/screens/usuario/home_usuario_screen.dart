@@ -10,6 +10,7 @@ import '../../services/usuario/usuario_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../utils/text_utils.dart';
+import '../../widgets/publico/fondo_cafetero.dart';
 import '../../widgets/publico/banner_cuenta.dart';
 import '../../widgets/publico/categoria_card.dart';
 import '../../widgets/publico/home_hero.dart';
@@ -18,6 +19,7 @@ import '../../widgets/publico/sitio_card.dart';
 import '../usuario/detalle_sitio_usuario_screen.dart';
 import '../usuario/login_usuario_screen.dart';
 import '../usuario/registro_usuario_screen.dart';
+import '../../l10n/textos.dart';
 
 /// Home de la aplicación.
 ///
@@ -148,7 +150,7 @@ class _HomePublicoScreenState
     }
 
     _mostrarMensaje(
-      'Tu sesión expiró. Inicia sesión nuevamente.',
+      Textos.t('Tu sesión expiró. Inicia sesión nuevamente.'),
     );
   }
 
@@ -255,7 +257,7 @@ class _HomePublicoScreenState
         });
 
         _mostrarMensaje(
-          'Sitio eliminado de favoritos.',
+          Textos.t('Sitio eliminado de favoritos.'),
         );
       } else {
         final favorito =
@@ -278,7 +280,7 @@ class _HomePublicoScreenState
         }
 
         _mostrarMensaje(
-          'Sitio agregado a favoritos.',
+          Textos.t('Sitio agregado a favoritos.'),
         );
       }
     } catch (error) {
@@ -364,7 +366,7 @@ class _HomePublicoScreenState
         _categorias = [];
         _cargandoCategorias = false;
         _errorCategorias =
-            'No fue posible cargar las categorías.';
+            Textos.t('No fue posible cargar las categorías.');
       });
 
       debugPrint(
@@ -405,7 +407,7 @@ class _HomePublicoScreenState
         _sitios = [];
         _cargandoSitios = false;
         _errorSitios =
-            'No fue posible cargar los sitios turísticos.';
+            Textos.t('No fue posible cargar los sitios turísticos.');
       });
 
       debugPrint(
@@ -542,8 +544,7 @@ class _HomePublicoScreenState
 
     if (sesion != null) {
       _mostrarMensaje(
-        'Ya iniciaste sesión como ${sesion.nombre}. '
-        'Tus datos están en la pestaña Perfil.',
+        Textos.t('Ya iniciaste sesión como {0}. Tus datos están en la pestaña Perfil.', [sesion.nombre]),
       );
       return;
     }
@@ -598,10 +599,9 @@ class _HomePublicoScreenState
     if (_sesion == null) {
       RequiereCuentaSheet.mostrar(
         context: context,
-        titulo: 'Explora todo el mapa',
+        titulo: Textos.t('Explora todo el mapa'),
         mensaje:
-            'Inicia sesión para ver todos los sitios en el '
-            'mapa, filtrar por categoría y crear tus rutas.',
+            Textos.t('Inicia sesión para ver todos los sitios en el mapa, filtrar por categoría y crear tus rutas.'),
         icono: Icons.map_rounded,
         onIniciarSesion: _irLoginUsuario,
         onCrearCuenta: _irRegistroUsuario,
@@ -727,8 +727,9 @@ class _HomePublicoScreenState
   ) {
     return Scaffold(
       backgroundColor:
-          AppColors.surfaceGreen,
-      body: RefreshIndicator(
+          AppColors.homeGradientTop,
+      body: FondoCafetero(
+        child: RefreshIndicator(
         onRefresh: _recargar,
         color: AppColors.secondary,
         child: CustomScrollView(
@@ -826,6 +827,7 @@ class _HomePublicoScreenState
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -846,7 +848,7 @@ class _HomePublicoScreenState
       crossAxisAlignment:
           CrossAxisAlignment.start,
       children: [
-        const Text(
+        const Tr(
           'Explora por experiencia',
           style: TextStyle(
             fontSize: 21,
@@ -915,7 +917,7 @@ class _HomePublicoScreenState
         Row(
           children: [
             const Expanded(
-              child: Text(
+              child: Tr(
                 'Descubre lugares',
                 style: TextStyle(
                   fontSize: 21,
@@ -937,7 +939,7 @@ class _HomePublicoScreenState
                     AppDimensions.iconSm,
               ),
               label:
-                  const Text(
+                  const Tr(
                 'Ver mapa',
               ),
             ),
@@ -1020,7 +1022,7 @@ class _HomePublicoScreenState
     );
 
     if (categoria.contains('cafe')) {
-      return 'assets/images/sitios/cafe.jpeg';
+      return 'assets/images/sitios/cafe.jpg';
     }
 
     if (categoria.contains('artesania')) {
@@ -1038,7 +1040,7 @@ class _HomePublicoScreenState
     }
 
     if (categoria.contains('famil')) {
-      return 'assets/images/sitios/familiares.jpeg';
+      return 'assets/images/sitios/familiares.png';
     }
 
     if (categoria.contains('naturaleza') ||
@@ -1075,7 +1077,7 @@ class _HomePublicoScreenState
       crossAxisAlignment:
           CrossAxisAlignment.start,
       children: [
-        const Text(
+        const Tr(
           'Rutas para inspirarte',
           style: TextStyle(
             fontSize: 21,
@@ -1165,7 +1167,7 @@ class _HomePublicoScreenState
               crossAxisAlignment:
                   CrossAxisAlignment.start,
               children: [
-                Text(
+                Tr(
                   'Muy pronto',
                   style:
                       TextStyle(
@@ -1182,10 +1184,8 @@ class _HomePublicoScreenState
                       AppDimensions.spacingXs,
                 ),
 
-                Text(
-                  'Estamos preparando rutas '
-                  'especiales para que descubras '
-                  'el Huila paso a paso.',
+                Tr(
+                  'Estamos preparando rutas especiales para que descubras el Huila paso a paso.',
                   style:
                       TextStyle(
                     color:
@@ -1223,9 +1223,8 @@ class _HomePublicoScreenState
                 AppDimensions.spacingSm + 2,
           ),
 
-          const Text(
-            'En cada taza hay una historia, '
-            'un paisaje y un corazón que late.',
+          const Tr(
+            'En cada taza hay una historia, un paisaje y un corazón que late.',
             textAlign:
                 TextAlign.center,
             style: TextStyle(
@@ -1251,7 +1250,7 @@ class _HomePublicoScreenState
       crossAxisAlignment:
           CrossAxisAlignment.start,
       children: [
-        const Text(
+        const Tr(
           'Explora por experiencia',
           style: TextStyle(
             fontSize: 21,
@@ -1364,7 +1363,7 @@ class _HomePublicoScreenState
           Expanded(
             child: Text(
               _errorCategorias ??
-                  'No se pudieron cargar las categorías.',
+                  Textos.t('No se pudieron cargar las categorías.'),
               style:
                   const TextStyle(
                 color:
@@ -1378,7 +1377,7 @@ class _HomePublicoScreenState
             onPressed:
                 _recargar,
             child:
-                const Text(
+                const Tr(
               'Reintentar',
             ),
           ),
@@ -1426,7 +1425,7 @@ class _HomePublicoScreenState
                 AppDimensions.spacingMd,
           ),
 
-          const Text(
+          const Tr(
             'No pudimos cargar los sitios.',
             textAlign:
                 TextAlign.center,
@@ -1446,8 +1445,7 @@ class _HomePublicoScreenState
 
           Text(
             _errorSitios ??
-                'Ocurrió un problema al obtener '
-                'los sitios turísticos.',
+                Textos.t('Ocurrió un problema al obtener los sitios turísticos.'),
             textAlign:
                 TextAlign.center,
             style:
@@ -1467,7 +1465,7 @@ class _HomePublicoScreenState
             onPressed:
                 _recargar,
             child:
-                const Text(
+                const Tr(
               'Intentar nuevamente',
             ),
           ),
@@ -1519,9 +1517,8 @@ class _HomePublicoScreenState
 
           Text(
             hayFiltro
-                ? 'No encontramos lugares '
-                  'para esta categoría.'
-                : 'Todavía no hay lugares disponibles.',
+                ? Textos.t('No encontramos lugares para esta categoría.')
+                : Textos.t('Todavía no hay lugares disponibles.'),
             textAlign:
                 TextAlign.center,
             style:
@@ -1539,7 +1536,7 @@ class _HomePublicoScreenState
               onPressed:
                   _limpiarCategoria,
               child:
-                  const Text(
+                  const Tr(
                 'Mostrar todos',
               ),
             ),

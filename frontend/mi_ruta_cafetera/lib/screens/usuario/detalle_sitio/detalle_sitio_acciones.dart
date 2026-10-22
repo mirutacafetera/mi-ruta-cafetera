@@ -9,6 +9,7 @@ import '../../../widgets/mapa/mapa_detalle_sitio.dart';
 import '../../../widgets/usuario/detalle_sitio/panel_detalle_adaptable.dart';
 import '../../mapa_screen_2.dart';
 import '../reservar_actividad_screen.dart';
+import '../../../l10n/textos.dart';
 
 class DetalleSitioAcciones {
   DetalleSitioAcciones._();
@@ -24,7 +25,7 @@ class DetalleSitioAcciones {
     if (!sitio.tieneCoordenadas) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'Este sitio todavía no tiene una ubicación válida.',
           ),
         ),
@@ -67,7 +68,7 @@ class DetalleSitioAcciones {
   static void agregarRuta(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
+        content: Tr(
           'La selección de sitios para tu ruta estará disponible aquí.',
         ),
       ),
@@ -120,7 +121,7 @@ class DetalleSitioAcciones {
           if (sesion == null) {
             mensajes.showSnackBar(
               const SnackBar(
-                content: Text(
+                content: Tr(
                   'Inicia sesión para solicitar una reserva.',
                 ),
               ),
@@ -216,7 +217,7 @@ class _ContenidoDetalleActividadState
                 color: AppColors.sitioPrimary,
               ),
               SizedBox(width: 6),
-              Text(
+              Tr(
                 'EXPERIENCIA TURÍSTICA',
                 style: TextStyle(
                   color: AppColors.sitioPrimary,
@@ -247,7 +248,9 @@ class _ContenidoDetalleActividadState
         // Descripción.
         Text(
           actividad.descripcion.trim().isEmpty
-              ? 'No hay una descripción disponible para esta actividad.'
+              ? Textos.t(
+                  'No hay una descripción disponible para esta actividad.',
+                )
               : actividad.descripcion.trim(),
           style: const TextStyle(
             color: AppColors.sitioTextPrimary,
@@ -269,7 +272,7 @@ class _ContenidoDetalleActividadState
 
           const SizedBox(height: AppDimensions.spacingLg),
 
-          const Text(
+          const Tr(
             'Información de la actividad',
             style: TextStyle(
               color: AppColors.sitioPrimaryDark,
@@ -283,7 +286,7 @@ class _ContenidoDetalleActividadState
           if (actividad.duracion.trim().isNotEmpty)
             _DatoActividad(
               icono: Icons.schedule_rounded,
-              titulo: 'Duración',
+              titulo: Textos.t('Duración'),
               valor: actividad.duracion,
             ),
 
@@ -291,7 +294,7 @@ class _ContenidoDetalleActividadState
             const SizedBox(height: AppDimensions.spacingMd),
             _DatoActividad(
               icono: Icons.access_time_rounded,
-              titulo: 'Horario',
+              titulo: Textos.t('Horario'),
               valor: actividad.horario,
             ),
           ],
@@ -300,7 +303,7 @@ class _ContenidoDetalleActividadState
             const SizedBox(height: AppDimensions.spacingMd),
             _DatoActividad(
               icono: Icons.payments_outlined,
-              titulo: 'Precio',
+              titulo: Textos.t('Precio'),
               valor: actividad.precio.toStringAsFixed(
                 actividad.precio % 1 == 0 ? 0 : 2,
               ),
@@ -331,7 +334,7 @@ class _ContenidoDetalleActividadState
             icon: const Icon(
               Icons.event_available_rounded,
             ),
-            label: const Text(
+            label: const Tr(
               'Solicitar reserva',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
@@ -491,7 +494,7 @@ class _ContenidoDetalleActividadState
             color: AppColors.sitioPrimary,
           ),
           SizedBox(height: 8),
-          Text(
+          Tr(
             'Imagen no disponible',
             style: TextStyle(
               color: AppColors.sitioTextSecondary,

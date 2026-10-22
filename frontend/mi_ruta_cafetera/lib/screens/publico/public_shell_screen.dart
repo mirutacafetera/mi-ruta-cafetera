@@ -11,6 +11,7 @@ import '../usuario/favoritos_usuario_screen.dart';
 import '../usuario/rutas_usuario_screen.dart';
 import 'home_publico_screen.dart';
 import 'perfil_publico_screen.dart';
+import '../../l10n/textos.dart';
 
 /// Contenedor principal de la aplicación.
 ///
@@ -137,7 +138,10 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
   //
   // * Con sesión y en Mapa/Favoritos/Rutas/Perfil: atrás vuelve
   //   al Inicio.
-  // * En el Inicio (con o sin sesión): pide confirmar la salida.
+  // * Visitante que llegó desde la bienvenida: vuelve a ella, que es
+  //   la que pide confirmar la salida.
+  // * En el Inicio sin pantalla anterior a la que volver: pide
+  //   confirmar la salida.
   //
   // Solo se ejecuta cuando el Shell es la ruta visible; los
   // diálogos, hojas y pantallas apiladas se cierran con normalidad.
@@ -151,20 +155,27 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
       return;
     }
 
+    // Visitante que llegó desde la pantalla de bienvenida: "atrás"
+    // vuelve a ella (allí se pregunta si desea salir de la app).
+    if (_sesion == null && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+
     final salir = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Salir'),
-          content: const Text('¿Deseas salir de Mi Ruta Cafetera?'),
+          title: const Tr('Salir'),
+          content: const Tr('¿Deseas salir de Mi Ruta Cafetera?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Cancelar'),
+              child: const Tr('Cancelar'),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Salir'),
+              child: const Tr('Salir'),
             ),
           ],
         );
@@ -301,27 +312,22 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
   // BOTÓN FLOTANTE DE IA
   // ============================================================
   //
-  // Un único botón (BotonIaFlotante) sobre Mapa, Favoritos y Rutas.
-  // No aparece en Inicio (ya tiene su tarjeta de IA) ni en Perfil.
+  // Un único botón (BotonIaFlotante) sobre las 5 secciones: Inicio,
+  // Mapa, Favoritos, Rutas y Perfil. Esta función solo se usa en el
+  // modo con sesión, así que el visitante nunca lo ve. En Inicio
+  // convive con la tarjeta de IA, que se conserva.
   // La persona puede arrastrarlo donde quiera dentro del cuerpo
-  // (queda por encima del menú inferior); su posición se recuerda.
+  // (queda por encima del menú inferior); su posición se recuerda
+  // y es la misma en todas las secciones.
   // La primera vez aparece a la izquierda en el Mapa (a la derecha
   // están sus controles) y a la derecha en las demás. Se oculta con
   // el teclado.
   // ============================================================
 
-  static const int _indiceFavoritos = 2;
-  static const int _indiceRutas = 3;
-
   Widget _construirBotonIa() {
-    final admiteBoton =
-        _indiceActual == _indiceMapa ||
-        _indiceActual == _indiceFavoritos ||
-        _indiceActual == _indiceRutas;
-
     final tecladoVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    if (!admiteBoton || tecladoVisible) {
+    if (tecladoVisible) {
       // IMPORTANTE: debe ser un hijo POSICIONADO. Un hijo sin
       // posición (como un SizedBox.shrink suelto) hace que el Stack
       // tome su tamaño (cero) y las pestañas quedarían con 0x0.
@@ -469,7 +475,7 @@ class _ItemNavegacion extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingXs),
-              Text(
+              Tr(
                 etiqueta,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

@@ -10,6 +10,11 @@ class MapaEstadoRuta extends ChangeNotifier {
   static const int minSitios = 2;
   static const int maxSitios = 4;
 
+  // Las rutas predefinidas de la API pueden tener hasta 9 paradas
+  // (9 paradas + el origen del usuario = 10 puntos, el máximo que
+  // admite el cálculo de rutas del backend).
+  static const int maxSitiosPredefinida = 9;
+
   // =====================================================
   // ESTADO INTERNO
   // =====================================================
@@ -17,6 +22,7 @@ class MapaEstadoRuta extends ChangeNotifier {
   final List<SitioTuristicoModel> _sitiosSeleccionados = [];
 
   bool _modoCrearRuta = false;
+  int _limiteSitios = maxSitios;
 
   // =====================================================
   // GETTERS
@@ -33,8 +39,12 @@ class MapaEstadoRuta extends ChangeNotifier {
   bool get puedeCalcular =>
       cantidadSeleccionada >= minSitios;
 
+  /// Límite de sitios vigente: [maxSitios] para rutas personales o
+  /// [maxSitiosPredefinida] cuando se abre una ruta predefinida.
+  int get limiteSitios => _limiteSitios;
+
   bool get limiteAlcanzado =>
-      cantidadSeleccionada >= maxSitios;
+      cantidadSeleccionada >= _limiteSitios;
 
   // =====================================================
   // CONSULTAS DE SELECCIÓN
@@ -62,14 +72,16 @@ class MapaEstadoRuta extends ChangeNotifier {
   // CONTROL DEL MODO CREAR RUTA
   // =====================================================
 
-  void iniciar() {
+  void iniciar({int limite = maxSitios}) {
     _modoCrearRuta = true;
+    _limiteSitios = limite;
     _sitiosSeleccionados.clear();
     notifyListeners();
   }
 
   void cancelar() {
     _modoCrearRuta = false;
+    _limiteSitios = maxSitios;
     _sitiosSeleccionados.clear();
     notifyListeners();
   }
@@ -126,3 +138,4 @@ class MapaEstadoRuta extends ChangeNotifier {
     notifyListeners();
   }
 }
+

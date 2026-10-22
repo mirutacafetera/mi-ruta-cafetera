@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/usuario/usuario_sesion_model.dart';
 import '../../services/favorito_service.dart';
 import '../../services/ruta_service.dart';
@@ -7,6 +8,7 @@ import '../../services/usuario/usuario_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/sitio/sitio_avatar_perfil.dart';
+import '../usuario/ayuda_soporte_screen.dart';
 import '../usuario/crear_avatar_screen.dart';
 import '../usuario/editar_perfil_screen.dart';
 import '../usuario/eliminar_cuenta_screen.dart';
@@ -30,8 +32,8 @@ class PerfilPublicoScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text(
-          'Mi perfil',
+        title: Text(
+          context.t('perfil.titulo'),
         ),
       ),
       body: SafeArea(
@@ -97,10 +99,10 @@ class PerfilPublicoScreen extends StatelessWidget {
               const SizedBox(
                 height: AppDimensions.spacingLg,
               ),
-              const Text(
-                'Tu perfil de viajero',
+              Text(
+                context.t('perfil.pub.cabecera'),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.textOnDark,
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -109,11 +111,10 @@ class PerfilPublicoScreen extends StatelessWidget {
               const SizedBox(
                 height: AppDimensions.spacingSm,
               ),
-              const Text(
-                'Inicia sesión para disfrutar '
-                'una experiencia personalizada.',
+              Text(
+                context.t('perfil.pub.cabecera.desc'),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.textOnDarkSecondary,
                   fontSize: 15,
                   height: 1.4,
@@ -125,9 +126,9 @@ class PerfilPublicoScreen extends StatelessWidget {
         const SizedBox(
           height: AppDimensions.sectionGap,
         ),
-        const Text(
-          'Accede a tu cuenta',
-          style: TextStyle(
+        Text(
+          context.t('perfil.pub.acceso'),
+          style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 22,
             fontWeight: FontWeight.w800,
@@ -136,10 +137,9 @@ class PerfilPublicoScreen extends StatelessWidget {
         const SizedBox(
           height: AppDimensions.spacingSm,
         ),
-        const Text(
-          'Guarda tus experiencias y disfruta '
-          'tu recorrido por el Huila.',
-          style: TextStyle(
+        Text(
+          context.t('perfil.pub.acceso.desc'),
+          style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 15,
             height: 1.45,
@@ -160,8 +160,8 @@ class PerfilPublicoScreen extends StatelessWidget {
             icon: const Icon(
               Icons.login_rounded,
             ),
-            label: const Text(
-              'Iniciar sesión',
+            label: Text(
+              context.t('perfil.pub.entrar'),
             ),
           ),
         ),
@@ -180,8 +180,8 @@ class PerfilPublicoScreen extends StatelessWidget {
             icon: const Icon(
               Icons.person_add_alt_1_rounded,
             ),
-            label: const Text(
-              'Crear una cuenta',
+            label: Text(
+              context.t('perfil.pub.crear'),
             ),
           ),
         ),
@@ -201,23 +201,21 @@ class PerfilPublicoScreen extends StatelessWidget {
               color: AppColors.border,
             ),
           ),
-          child: const Row(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
+              const Icon(
                 Icons.explore_rounded,
                 color: AppColors.secondary,
                 size: AppDimensions.iconLg,
               ),
-              SizedBox(
+              const SizedBox(
                 width: AppDimensions.spacingMd,
               ),
               Expanded(
                 child: Text(
-                  'Explora lugares, descubre nuevas '
-                  'experiencias y construye tu propia '
-                  'ruta por el Huila.',
-                  style: TextStyle(
+                  context.t('perfil.pub.explora'),
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
                     height: 1.45,
@@ -368,27 +366,27 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Cerrar sesión',
+          title: Text(
+            dialogContext.t('perfil.cerrarSesion'),
           ),
-          content: const Text(
-            '¿Deseas cerrar tu sesión?',
+          content: Text(
+            dialogContext.t('perfil.cerrarSesion.pregunta'),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext, false);
               },
-              child: const Text(
-                'Cancelar',
+              child: Text(
+                dialogContext.t('comun.cancelar'),
               ),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(dialogContext, true);
               },
-              child: const Text(
-                'Cerrar sesión',
+              child: Text(
+                dialogContext.t('perfil.cerrarSesion'),
               ),
             ),
           ],
@@ -416,7 +414,7 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
     final sesion = widget.sesion;
 
     final nombre = sesion.nombreCompleto.isEmpty
-        ? 'Viajero'
+        ? context.t('perfil.viajero')
         : sesion.nombreCompleto;
 
     return RefreshIndicator(
@@ -438,7 +436,7 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
                 Expanded(
                   child: _TarjetaResumen(
                     icono: Icons.favorite_rounded,
-                    titulo: 'Favoritos',
+                    titulo: context.t('perfil.favoritos'),
                     valor: _favoritos,
                     onTap: _abrirFavoritos,
                   ),
@@ -449,7 +447,7 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
                 Expanded(
                   child: _TarjetaResumen(
                     icono: Icons.route_rounded,
-                    titulo: 'Rutas creadas',
+                    titulo: context.t('perfil.rutasCreadas'),
                     valor: _rutas,
                     onTap: _abrirRutas,
                   ),
@@ -459,14 +457,14 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
             const SizedBox(
               height: AppDimensions.sectionGap,
             ),
-            const _TituloSeccion('Mi cuenta'),
+            _TituloSeccion(context.t('perfil.miCuenta')),
             const SizedBox(
               height: AppDimensions.spacingMd,
             ),
             _OpcionCuenta(
               icono: Icons.favorite_rounded,
-              titulo: 'Mis favoritos',
-              descripcion: 'Los lugares que guardaste.',
+              titulo: context.t('perfil.misFavoritos'),
+              descripcion: context.t('perfil.misFavoritos.desc'),
               onTap: _abrirFavoritos,
             ),
             const SizedBox(
@@ -474,8 +472,8 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
             ),
             _OpcionCuenta(
               icono: Icons.route_rounded,
-              titulo: 'Mis rutas',
-              descripcion: 'Tus recorridos por el Huila.',
+              titulo: context.t('perfil.misRutas'),
+              descripcion: context.t('perfil.misRutas.desc'),
               onTap: _abrirRutas,
             ),
             const SizedBox(
@@ -483,8 +481,8 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
             ),
             _OpcionCuenta(
               icono: Icons.event_available_rounded,
-              titulo: 'Mis reservas',
-              descripcion: 'Tus solicitudes y su estado.',
+              titulo: context.t('perfil.misReservas'),
+              descripcion: context.t('perfil.misReservas.desc'),
               onTap: () => _abrir(const MisReservasScreen()),
             ),
             const SizedBox(
@@ -492,8 +490,8 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
             ),
             _OpcionCuenta(
               icono: Icons.edit_rounded,
-              titulo: 'Editar perfil',
-              descripcion: 'Nombre, teléfono y ciudad.',
+              titulo: context.t('perfil.editar'),
+              descripcion: context.t('perfil.editar.desc'),
               onTap: () => _abrir(const EditarPerfilScreen()),
             ),
             const SizedBox(
@@ -501,22 +499,31 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
             ),
             _OpcionCuenta(
               icono: Icons.face_retouching_natural_rounded,
-              titulo: 'Mi avatar cafetero',
-              descripcion: 'Crea y personaliza tu avatar.',
+              titulo: context.t('perfil.avatar'),
+              descripcion: context.t('perfil.avatar.desc'),
               onTap: () => _abrir(const CrearAvatarScreen()),
             ),
             const SizedBox(
               height: AppDimensions.sectionGap,
             ),
-            const _TituloSeccion('Aplicación'),
+            _TituloSeccion(context.t('perfil.aplicacion')),
             const SizedBox(
               height: AppDimensions.spacingMd,
             ),
             _OpcionCuenta(
               icono: Icons.text_fields_rounded,
-              titulo: 'Preferencias',
-              descripcion: 'Tamaño del texto.',
+              titulo: context.t('pref.titulo'),
+              descripcion: context.t('perfil.preferencias.desc'),
               onTap: () => _abrir(const PreferenciasScreen()),
+            ),
+            const SizedBox(
+              height: AppDimensions.spacingMd,
+            ),
+            _OpcionCuenta(
+              icono: Icons.support_agent_rounded,
+              titulo: AyudaTextos.titulo,
+              descripcion: AyudaTextos.descripcion,
+              onTap: () => _abrir(const AyudaSoporteScreen()),
             ),
             const SizedBox(
               height: AppDimensions.sectionGap,
@@ -528,8 +535,8 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
                 icon: const Icon(
                   Icons.logout_rounded,
                 ),
-                label: const Text(
-                  'Cerrar sesión',
+                label: Text(
+                  context.t('perfil.cerrarSesion'),
                 ),
               ),
             ),
@@ -544,8 +551,8 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
               icon: const Icon(
                 Icons.delete_outline_rounded,
               ),
-              label: const Text(
-                'Eliminar mi cuenta',
+              label: Text(
+                context.t('perfil.eliminarCuenta'),
               ),
             ),
           ],
@@ -866,3 +873,4 @@ class _OpcionCuenta extends StatelessWidget {
     );
   }
 }
+

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/ruta_model.dart';
+import '../l10n/textos.dart';
 
 class RutaService {
   // ============================================================
@@ -28,8 +29,7 @@ class RutaService {
 
       throw Exception(
         mensaje ??
-            'Error al obtener las rutas predefinidas '
-            '(${response.statusCode}).',
+            Textos.t('Error al obtener las rutas predefinidas ({0}).', [response.statusCode]),
       );
     }
 
@@ -84,8 +84,7 @@ class RutaService {
 
       throw Exception(
         mensaje ??
-            'Error al obtener las rutas del usuario '
-            '(${response.statusCode}).',
+            Textos.t('Error al obtener las rutas del usuario ({0}).', [response.statusCode]),
       );
     }
 
@@ -180,8 +179,7 @@ class RutaService {
 
       throw Exception(
         mensaje ??
-            'No fue posible crear la ruta '
-            '(${response.statusCode}).',
+            Textos.t('No fue posible crear la ruta ({0}).', [response.statusCode]),
       );
     }
 
@@ -241,8 +239,7 @@ class RutaService {
 
       throw Exception(
         mensaje ??
-            'Error al eliminar la ruta '
-            '(${response.statusCode}).',
+            Textos.t('Error al eliminar la ruta ({0}).', [response.statusCode]),
       );
     }
   }

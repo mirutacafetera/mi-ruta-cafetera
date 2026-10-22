@@ -7,6 +7,7 @@ import '../config/api_config.dart';
 import '../models/clima_model.dart';
 import '../models/ia_recomendacion_model.dart';
 import 'ubicacion_service.dart';
+import '../l10n/textos.dart';
 
 /// Error legible para el usuario.
 class IaException implements Exception {
@@ -69,7 +70,7 @@ class IaRecomendacionesService {
 
       if (response.statusCode == 401) {
         throw IaException(
-          mensaje ?? 'Tu sesión expiró. Inicia sesión nuevamente.',
+          mensaje ?? Textos.t('Tu sesión expiró. Inicia sesión nuevamente.'),
           sesionInvalida: true,
         );
       }
@@ -77,34 +78,31 @@ class IaRecomendacionesService {
       if (response.statusCode == 429) {
         throw IaException(
           mensaje ??
-              'Has pedido muchas recomendaciones seguidas. '
-                  'Intenta de nuevo en unos minutos.',
+              Textos.t('Has pedido muchas recomendaciones seguidas. Intenta de nuevo en unos minutos.'),
         );
       }
 
       throw IaException(
         mensaje ??
-            'No fue posible obtener recomendaciones '
-                '(${response.statusCode}).',
+            Textos.t('No fue posible obtener recomendaciones ({0}).', [response.statusCode]),
       );
     } on IaException {
       rethrow;
     } on TimeoutException {
-      throw const IaException(
-        'El asistente tardó demasiado en responder. '
-        'Intenta de nuevo.',
+      throw IaException(
+        Textos.t('El asistente tardó demasiado en responder. Intenta de nuevo.'),
       );
     } on http.ClientException {
-      throw const IaException(
-        'No fue posible conectarse con el servidor.',
+      throw IaException(
+        Textos.t('No fue posible conectarse con el servidor.'),
       );
     } on FormatException {
-      throw const IaException(
-        'La respuesta del servidor no tiene el formato esperado.',
+      throw IaException(
+        Textos.t('La respuesta del servidor no tiene el formato esperado.'),
       );
     } catch (_) {
-      throw const IaException(
-        'No fue posible obtener recomendaciones.',
+      throw IaException(
+        Textos.t('No fue posible obtener recomendaciones.'),
       );
     }
   }

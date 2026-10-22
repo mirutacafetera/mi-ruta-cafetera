@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/textos.dart';
 import '../../services/usuario/preferencias_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
@@ -8,7 +9,7 @@ import '../../theme/app_dimensions.dart';
 // PREFERENCIAS
 // ============================================================
 //
-// Tamaño de texto y tipo de letra de toda la aplicación. Los
+// Idioma, tamaño de texto y tipo de letra de toda la aplicación. Los
 // cambios se aplican al instante y se conservan al cerrar la app.
 // ============================================================
 
@@ -22,7 +23,7 @@ class PreferenciasScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Preferencias'),
+        title: Text(context.t('pref.titulo')),
       ),
       body: SafeArea(
         child: ValueListenableBuilder<TamanoTexto>(
@@ -33,18 +34,65 @@ class PreferenciasScreen extends StatelessWidget {
                 AppDimensions.pageHorizontal,
               ),
               children: [
-                const Text(
-                  'Tamaño del texto',
-                  style: TextStyle(
+                Text(
+                  context.t('pref.idioma'),
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
-                const Text(
-                  'Elige qué tan grande quieres leer la aplicación.',
-                  style: TextStyle(
+                Text(
+                  context.t('pref.idioma.desc'),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 15,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingXl),
+                ValueListenableBuilder<IdiomaApp>(
+                  valueListenable: PreferenciasService.instance.idioma,
+                  builder: (context, idiomaActual, _) {
+                    return Column(
+                      children: [
+                        for (final idioma in IdiomaApp.values) ...[
+                          _OpcionIdioma(
+                            idioma: idioma,
+                            seleccionada: idioma == idiomaActual,
+                            onTap: () => PreferenciasService.instance
+                                .cambiarIdioma(idioma),
+                          ),
+                          const SizedBox(
+                            height: AppDimensions.spacingMd,
+                          ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+                Text(
+                  context.t('pref.idioma.nota'),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingSection),
+                Text(
+                  context.t('pref.tamano'),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                Text(
+                  context.t('pref.tamano.desc'),
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 15,
                     height: 1.45,
@@ -61,18 +109,18 @@ class PreferenciasScreen extends StatelessWidget {
                   const SizedBox(height: AppDimensions.spacingMd),
                 ],
                 const SizedBox(height: AppDimensions.spacingSection),
-                const Text(
-                  'Tipo de letra',
-                  style: TextStyle(
+                Text(
+                  context.t('pref.fuente'),
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
-                const Text(
-                  'Cambia la letra de toda la aplicación.',
-                  style: TextStyle(
+                Text(
+                  context.t('pref.fuente.desc'),
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 15,
                     height: 1.45,
@@ -109,22 +157,21 @@ class PreferenciasScreen extends StatelessWidget {
                     ),
                     border: Border.all(color: AppColors.border),
                   ),
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Así se verá',
-                        style: TextStyle(
+                        context.t('pref.vista'),
+                        style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      SizedBox(height: AppDimensions.spacingXs),
+                      const SizedBox(height: AppDimensions.spacingXs),
                       Text(
-                        'Descubre fincas, miradores y sabores del '
-                        'Huila a tu propio ritmo.',
-                        style: TextStyle(
+                        context.t('pref.vista.texto'),
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 14,
                           height: 1.45,
@@ -183,7 +230,7 @@ class _OpcionTamano extends StatelessWidget {
               const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Text(
-                  tamano.etiqueta,
+                  context.t('pref.tamano.${tamano.id}'),
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -246,9 +293,71 @@ class _OpcionFuente extends StatelessWidget {
               Expanded(
                 // Cada opción se muestra con su propia letra.
                 child: Text(
-                  fuente.etiqueta,
+                  context.t('pref.fuente.${fuente.id}'),
                   style: TextStyle(
                     fontFamily: fuente.familia,
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              if (seleccionada)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OpcionIdioma extends StatelessWidget {
+  final IdiomaApp idioma;
+  final bool seleccionada;
+  final VoidCallback onTap;
+
+  const _OpcionIdioma({
+    required this.idioma,
+    required this.seleccionada,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.cream,
+      borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
+        child: Container(
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              AppDimensions.cardRadius,
+            ),
+            border: Border.all(
+              color:
+                  seleccionada ? AppColors.secondary : AppColors.border,
+              width: seleccionada ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Text(
+                idioma.bandera,
+                style: const TextStyle(fontSize: 26),
+              ),
+              const SizedBox(width: AppDimensions.spacingMd),
+              Expanded(
+                // Cada idioma se escribe en su propio idioma.
+                child: Text(
+                  idioma.etiqueta,
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w800,

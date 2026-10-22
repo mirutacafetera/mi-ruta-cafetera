@@ -9,6 +9,7 @@ import '../../theme/app_dimensions.dart';
 import '../../widgets/navegacion/boton_regresar.dart';
 import '../../controllers/mapa_ruta_controller.dart';
 import '../mapa_screen_2.dart';
+import '../../l10n/textos.dart';
 
 class CrearRutaUsuarioScreen extends StatefulWidget {
   const CrearRutaUsuarioScreen({
@@ -103,7 +104,7 @@ class _CrearRutaUsuarioScreenState
       setState(() {
         _cargando = false;
         _error =
-            'No fue posible cargar los sitios turísticos.';
+            Textos.t('No fue posible cargar los sitios turísticos.');
       });
     }
   }
@@ -124,7 +125,7 @@ class _CrearRutaUsuarioScreenState
     if (!resultado && !seleccionado) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'Ya alcanzaste el máximo de sitios para la ruta.',
           ),
         ),
@@ -147,7 +148,7 @@ class _CrearRutaUsuarioScreenState
     if (seleccionados.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'Selecciona mínimo 2 sitios para calcular la ruta.',
           ),
         ),
@@ -162,7 +163,7 @@ class _CrearRutaUsuarioScreenState
     if (nombre.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'Escribe un nombre para tu ruta.',
           ),
         ),
@@ -174,7 +175,7 @@ class _CrearRutaUsuarioScreenState
     if (widget.usuarioId.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'No se encontró el usuario actual.',
           ),
         ),
@@ -221,7 +222,7 @@ class _CrearRutaUsuarioScreenState
         SnackBar(
           content: Text(
             _rutaController.mensaje ??
-                'No fue posible calcular la ruta.',
+                Textos.t('No fue posible calcular la ruta.'),
           ),
         ),
       );
@@ -285,7 +286,7 @@ class _CrearRutaUsuarioScreenState
     if (sitiosIds.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'No fue posible identificar los sitios de la ruta.',
           ),
         ),
@@ -327,8 +328,8 @@ class _CrearRutaUsuarioScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'La ruta se calculó, pero no pudo guardarse: $e',
+          content: Tr(
+            'La ruta se calculó, pero no pudo guardarse: {0}', args: [e],
           ),
         ),
       );
@@ -462,7 +463,7 @@ class _CrearRutaUsuarioScreenState
                       ),
                       Text(
                         sitio.categoriaNombre.isEmpty
-                            ? 'Sitio turístico'
+                            ? Textos.t('Sitio turístico')
                             : sitio.categoriaNombre,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -568,15 +569,15 @@ class _CrearRutaUsuarioScreenState
             width: AppDimensions.spacingSm,
           ),
           Expanded(
-            child: Text(
-              '${seleccionados.length} sitios seleccionados',
+            child: Tr(
+              '{0} sitios seleccionados', args: [seleccionados.length],
               style: const TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
-          Text(
+          Tr(
             'Máx. 4',
             style: TextStyle(
               color: AppColors.primary.withValues(
@@ -622,8 +623,8 @@ class _CrearRutaUsuarioScreenState
               ),
         label: Text(
           _calculando
-              ? 'Calculando ruta...'
-              : 'Calcular mi ruta',
+              ? Textos.t('Calculando ruta...')
+              : Textos.t('Calcular mi ruta'),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -689,7 +690,7 @@ class _CrearRutaUsuarioScreenState
             ),
             Text(
               _error ??
-                  'No fue posible cargar los sitios.',
+                  Textos.t('No fue posible cargar los sitios.'),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textPrimary,
@@ -704,7 +705,7 @@ class _CrearRutaUsuarioScreenState
               icon: const Icon(
                 Icons.refresh_rounded,
               ),
-              label: const Text(
+              label: const Tr(
                 'Intentar nuevamente',
               ),
             ),
@@ -726,7 +727,7 @@ class _CrearRutaUsuarioScreenState
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: const BotonRegresar(),
-        title: const Text(
+        title: const Tr(
           'Crear mi ruta',
           style: TextStyle(
             color: AppColors.textPrimary,
@@ -751,7 +752,7 @@ class _CrearRutaUsuarioScreenState
                             AppDimensions.spacingXl,
                           ),
                           children: [
-                            const Text(
+                            const Tr(
                               'Diseña tu recorrido',
                               style: TextStyle(
                                 color:
@@ -763,7 +764,7 @@ class _CrearRutaUsuarioScreenState
                             const SizedBox(
                               height: AppDimensions.spacingXs,
                             ),
-                            const Text(
+                            const Tr(
                               'Elige los lugares que quieres visitar y calcularemos el recorrido por carretera.',
                               style: TextStyle(
                                 color:
@@ -783,9 +784,9 @@ class _CrearRutaUsuarioScreenState
                               decoration:
                                   InputDecoration(
                                 labelText:
-                                    'Nombre de tu ruta',
+                                    Textos.t('Nombre de tu ruta'),
                                 hintText:
-                                    'Ej. Mi día cafetero',
+                                    Textos.t('Ej. Mi día cafetero'),
                                 prefixIcon:
                                     const Icon(
                                   Icons.edit_rounded,
@@ -809,7 +810,7 @@ class _CrearRutaUsuarioScreenState
                             const SizedBox(
                               height: AppDimensions.spacingLg,
                             ),
-                            const Text(
+                            const Tr(
                               'Selecciona los lugares',
                               style: TextStyle(
                                 color:
@@ -881,10 +882,10 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
   String _formatearDistancia(double kilometros) {
     if (kilometros < 1) {
       final metros = kilometros * 1000;
-      return '${metros.round()} m';
+      return Textos.t('{0} m', [metros.round()]);
     }
 
-    return '${kilometros.toStringAsFixed(1)} km';
+    return Textos.t('{0} km', [kilometros.toStringAsFixed(1)]);
   }
 
   // ============================================================
@@ -895,17 +896,17 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
     final totalMinutos = minutos.round();
 
     if (totalMinutos < 60) {
-      return '$totalMinutos min';
+      return Textos.t('{0} min', [totalMinutos]);
     }
 
     final horas = totalMinutos ~/ 60;
     final minutosRestantes = totalMinutos % 60;
 
     if (minutosRestantes == 0) {
-      return '$horas h';
+      return Textos.t('{0} h', [horas]);
     }
 
-    return '$horas h $minutosRestantes min';
+    return Textos.t('{0} h {1} min', [horas, minutosRestantes]);
   }
 
   // ============================================================
@@ -985,10 +986,7 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
     }
 
     final texto = tramo != null
-        ? 'Tu ubicación actual · '
-            '${_formatearDistancia(tramo.distanciaKm)} · '
-            '${_formatearDuracion(tramo.duracionMinutos)} '
-            'hasta el primer sitio'
+        ? Textos.t('Tu ubicación actual · {0} · {1} hasta el primer sitio', [_formatearDistancia(tramo.distanciaKm), _formatearDuracion(tramo.duracionMinutos)])
         : aviso!;
 
     return Container(
@@ -1271,7 +1269,7 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: const BotonRegresar(),
-        title: const Text(
+        title: const Tr(
           'Resumen de tu ruta',
           style: TextStyle(
             color: AppColors.textPrimary,
@@ -1303,7 +1301,7 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
                   const SizedBox(
                     height: AppDimensions.spacingXs,
                   ),
-                  const Text(
+                  const Tr(
                     'Revisa tu recorrido antes de guardarlo.',
                     style: TextStyle(
                       color: AppColors.textSecondary,
@@ -1325,7 +1323,7 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
                         icono:
                             Icons.route_rounded,
                         titulo:
-                            'Distancia total',
+                            Textos.t('Distancia total'),
                         valor:
                             _formatearDistancia(
                           distanciaTotal,
@@ -1339,7 +1337,7 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
                         icono:
                             Icons.schedule_rounded,
                         titulo:
-                            'Tiempo estimado',
+                            Textos.t('Tiempo estimado'),
                         valor:
                             _formatearDuracion(
                           duracionTotal,
@@ -1377,8 +1375,8 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
                               AppDimensions.spacingSm,
                         ),
                         Expanded(
-                          child: Text(
-                            '${sitios.length} sitios en tu recorrido',
+                          child: Tr(
+                            '{0} sitios en tu recorrido', args: [sitios.length],
                             style:
                                 const TextStyle(
                               color:
@@ -1396,7 +1394,7 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
                     height: AppDimensions.spacingXl,
                   ),
 
-                  const Text(
+                  const Tr(
                     'Orden del recorrido',
                     style: TextStyle(
                       color: AppColors.textPrimary,
@@ -1458,7 +1456,7 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
                               AppDimensions.spacingSm,
                         ),
                         Expanded(
-                          child: Text(
+                          child: Tr(
                             'Al confirmar, esta ruta se guardará en tu cuenta durante 24 horas. También podrás eliminarla manualmente antes de que expire.',
                             style: TextStyle(
                               color:
@@ -1513,7 +1511,7 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
                       icon: const Icon(
                         Icons.check_circle_outline_rounded,
                       ),
-                      label: const Text(
+                      label: const Tr(
                         'Confirmar y guardar ruta',
                       ),
                       style:
@@ -1552,7 +1550,7 @@ class RutaResumenUsuarioScreen extends StatelessWidget {
                       icon: const Icon(
                         Icons.edit_location_alt_outlined,
                       ),
-                      label: const Text(
+                      label: const Tr(
                         'Cambiar selección',
                       ),
                       style:

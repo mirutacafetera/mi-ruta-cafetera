@@ -6,6 +6,7 @@ import '../../services/usuario/reserva_usuario_service.dart';
 import '../../services/usuario/usuario_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 // ============================================================
 // SOLICITAR RESERVA DE UNA ACTIVIDAD
@@ -71,9 +72,9 @@ class _ReservarActividadScreenState
       initialDate: _fecha ?? hoy.add(const Duration(days: 1)),
       firstDate: hoy,
       lastDate: hoy.add(const Duration(days: 365)),
-      helpText: 'Fecha de la actividad',
-      cancelText: 'Cancelar',
-      confirmText: 'Aceptar',
+      helpText: Textos.t('Fecha de la actividad'),
+      cancelText: Textos.t('Cancelar'),
+      confirmText: Textos.t('Aceptar'),
     );
 
     if (elegida != null && mounted) {
@@ -85,11 +86,11 @@ class _ReservarActividadScreenState
     final n = int.tryParse((valor ?? '').trim());
 
     if (n == null || n < 1) {
-      return 'Escribe al menos 1 persona';
+      return Textos.t('Escribe al menos 1 persona');
     }
 
     if (n > 50) {
-      return 'Máximo 50 personas por solicitud';
+      return Textos.t('Máximo 50 personas por solicitud');
     }
 
     return null;
@@ -102,7 +103,7 @@ class _ReservarActividadScreenState
 
     if (_fecha == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Elige la fecha de la actividad.')),
+        const SnackBar(content: Tr('Elige la fecha de la actividad.')),
       );
       return;
     }
@@ -149,7 +150,7 @@ class _ReservarActividadScreenState
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Solicitar reserva')),
+      appBar: AppBar(title: const Tr('Solicitar reserva')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppDimensions.pageHorizontal),
@@ -189,8 +190,8 @@ class _ReservarActividadScreenState
                       ],
                       if (actividad.precio > 0) ...[
                         const SizedBox(height: AppDimensions.spacingSm),
-                        Text(
-                          '${_dinero(actividad.precio)} por persona',
+                        Tr(
+                          '{0} por persona', args: [_dinero(actividad.precio)],
                           style: const TextStyle(
                             color: AppColors.secondary,
                             fontWeight: FontWeight.w700,
@@ -206,8 +207,8 @@ class _ReservarActividadScreenState
                   icon: const Icon(Icons.calendar_today_rounded),
                   label: Text(
                     _fecha == null
-                        ? 'Elegir fecha'
-                        : 'Fecha: ${_formatearFecha(_fecha!)}',
+                        ? Textos.t('Elegir fecha')
+                        : Textos.t('Fecha: {0}', [_formatearFecha(_fecha!)]),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingLg),
@@ -215,9 +216,9 @@ class _ReservarActividadScreenState
                   controller: _cantidad,
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Número de personas',
-                    prefixIcon: Icon(Icons.groups_rounded),
+                  decoration: InputDecoration(
+                    labelText: Textos.t('Número de personas'),
+                    prefixIcon: const Icon(Icons.groups_rounded),
                   ),
                   validator: _validarCantidad,
                   onChanged: (_) => setState(() {}),
@@ -228,16 +229,16 @@ class _ReservarActividadScreenState
                   maxLength: 500,
                   maxLines: 3,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Observaciones (opcional)',
+                  decoration: InputDecoration(
+                    labelText: Textos.t('Observaciones (opcional)'),
                     alignLabelWithHint: true,
-                    prefixIcon: Icon(Icons.notes_rounded),
+                    prefixIcon: const Icon(Icons.notes_rounded),
                   ),
                 ),
                 if (actividad.precio > 0 && _personas > 0) ...[
                   const SizedBox(height: AppDimensions.spacingSm),
-                  Text(
-                    'Total estimado: ${_dinero(_total)}',
+                  Tr(
+                    'Total estimado: {0}', args: [_dinero(_total)],
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
@@ -257,10 +258,8 @@ class _ReservarActividadScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'El establecimiento revisará tu solicitud y te '
-                        'responderá. Si la confirma, se pondrá en contacto '
-                        'contigo para coordinar el pago.',
+                      const Tr(
+                        'El establecimiento revisará tu solicitud y te responderá. Si la confirma, se pondrá en contacto contigo para coordinar el pago.',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           height: 1.4,
@@ -268,9 +267,8 @@ class _ReservarActividadScreenState
                       ),
                       if (sesion != null) ...[
                         const SizedBox(height: AppDimensions.spacingSm),
-                        Text(
-                          'Te contactarán a: ${sesion.correo}'
-                          '${sesion.telefono.isEmpty ? '' : ' · ${sesion.telefono}'}',
+                        Tr(
+                          'Te contactarán a: {0}{1}', args: [sesion.correo, sesion.telefono.isEmpty ? '' : ' · ${sesion.telefono}'],
                           style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w600,
@@ -281,9 +279,8 @@ class _ReservarActividadScreenState
                             padding: EdgeInsets.only(
                               top: AppDimensions.spacingXs,
                             ),
-                            child: Text(
-                              'Agrega tu teléfono en Editar perfil para '
-                              'que puedan llamarte.',
+                            child: Tr(
+                              'Agrega tu teléfono en Editar perfil para que puedan llamarte.',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 13,
@@ -309,7 +306,7 @@ class _ReservarActividadScreenState
                           )
                         : const Icon(Icons.send_rounded),
                     label: Text(
-                      _enviando ? 'Enviando…' : 'Enviar solicitud',
+                      _enviando ? Textos.t('Enviando…') : Textos.t('Enviar solicitud'),
                     ),
                   ),
                 ),

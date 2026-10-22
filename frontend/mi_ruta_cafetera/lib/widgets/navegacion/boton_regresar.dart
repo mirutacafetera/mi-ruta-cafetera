@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../../l10n/textos.dart';
 
 class BotonRegresar extends StatelessWidget {
   const BotonRegresar({
@@ -10,7 +11,7 @@ class BotonRegresar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: 'Regresar',
+      tooltip: Textos.t('Regresar'),
       icon: const Icon(
         Icons.arrow_back,
         color: AppColors.textPrimary,
