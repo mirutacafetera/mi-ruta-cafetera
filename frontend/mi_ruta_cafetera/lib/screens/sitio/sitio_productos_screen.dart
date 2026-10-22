@@ -1,43 +1,43 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+ 
 import '../../models/sitio/sitio_producto_model.dart';
 import '../../services/sitio/sitio_productos_service.dart';
 import '../../services/sitio/sitio_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../utils/avisos_sitio.dart';
 import '../../widgets/sitio/formulario_producto_sitio.dart';
 import '../../widgets/sitio/tarjeta_resumen_sitio.dart';
 import '../../widgets/sitio/tarjeta_seccion_sitio.dart';
-
+ 
 class SitioProductosScreen extends StatefulWidget {
   const SitioProductosScreen({super.key});
-
+ 
   @override
   State<SitioProductosScreen> createState() =>
       _SitioProductosScreenState();
 }
-
+ 
 class _SitioProductosScreenState extends State<SitioProductosScreen> {
   final SitioProductosService _productosService =
       SitioProductosService();
-
+ 
   final SitioSesionService _sesionService = SitioSesionService();
-
+ 
   List<SitioProductoModel> _productos = [];
   bool _cargando = true;
   bool _guardando = false;
   String? _error;
   String _token = '';
   String _sitioId = '';
-
+ 
   @override
   void initState() {
     super.initState();
     _cargarProductos();
   }
-
+ 
   Future<void> _cargarProductos() async {
     if (mounted) {
       setState(() {
@@ -45,30 +45,30 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         _error = null;
       });
     }
-
+ 
     try {
       final sesion = await _sesionService.obtenerSesion();
-
+ 
       if (sesion == null ||
           sesion.token.isEmpty ||
           sesion.sitioId.isEmpty) {
         throw Exception('No se encontró una sesión activa del sitio.');
       }
-
+ 
       if (!sesion.activo) {
         throw Exception('La cuenta del sitio está inactiva.');
       }
-
+ 
       _token = sesion.token;
       _sitioId = sesion.sitioId;
-
+ 
       final productos = await _productosService.obtenerProductos(
         token: _token,
         sitioId: _sitioId,
       );
-
+ 
       if (!mounted) return;
-
+ 
       setState(() {
         _productos = productos;
         _cargando = false;
@@ -76,22 +76,22 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
       });
     } catch (error) {
       if (!mounted) return;
-
+ 
       setState(() {
         _error = error.toString().replaceFirst('Exception: ', '');
         _cargando = false;
       });
     }
   }
-
+ 
   int get _cantidadPublicados => _productos
       .where((p) => p.estadoPublicacion == 'aprobado' && p.activo)
       .length;
-
+ 
   int get _cantidadEnRevision => _productos
       .where((p) => p.estadoPublicacion == 'pendiente_revision')
       .length;
-
+ 
   Future<void> _mostrarFormulario({
     SitioProductoModel? producto,
   }) async {
@@ -122,12 +122,12 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         },
       ),
     );
-
+ 
     if (mounted) {
       await _cargarProductos();
     }
   }
-
+ 
   Future<void> _guardarProducto({
     SitioProductoModel? producto,
     required String nombre,
@@ -141,20 +141,20 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
     if (_token.isEmpty || _sitioId.isEmpty) {
       throw Exception('No hay una sesión activa del sitio.');
     }
-
+ 
     if (mounted) {
       setState(() => _guardando = true);
     }
-
+ 
     try {
       final imagenesOriginales = <String>{
         if (producto != null && producto.imagenPrincipal.isNotEmpty)
           producto.imagenPrincipal,
         ...?producto?.imagenes,
       };
-
+ 
       late SitioProductoModel guardado;
-
+ 
       if (producto == null) {
         guardado = await _productosService.crearProducto(
           token: _token,
@@ -175,7 +175,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
           categoria: categoria,
         );
       }
-
+ 
       if (imagenes.isNotEmpty) {
         guardado = await _productosService.subirImagenes(
           token: _token,
@@ -184,7 +184,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
           archivos: imagenes,
         );
       }
-
+ 
       Set<String> obtenerUrls(SitioProductoModel productoActual) {
         return {
           if (productoActual.imagenPrincipal.isNotEmpty)
@@ -192,19 +192,19 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
           ...productoActual.imagenes.where((url) => url.isNotEmpty),
         };
       }
-
+ 
       var urlsDisponibles = obtenerUrls(guardado);
-
+ 
       final imagenesNuevas = urlsDisponibles
           .where((url) => !imagenesOriginales.contains(url))
           .toList();
-
+ 
       var principalDeseada = imagenPrincipalActual.trim();
-
+ 
       if (principalDeseada.isEmpty ||
           !urlsDisponibles.contains(principalDeseada)) {
         principalDeseada = '';
-
+ 
         for (final url in imagenesConservar) {
           if (urlsDisponibles.contains(url)) {
             principalDeseada = url;
@@ -212,41 +212,41 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
           }
         }
       }
-
+ 
       if (principalDeseada.isEmpty && imagenesNuevas.isNotEmpty) {
         principalDeseada = imagenesNuevas.first;
       }
-
+ 
       if (principalDeseada.isEmpty && urlsDisponibles.isNotEmpty) {
         principalDeseada = urlsDisponibles.first;
       }
-
+ 
       if (principalDeseada.isEmpty) {
         throw Exception('El producto debe tener al menos una imagen.');
       }
-
+ 
       if (guardado.imagenPrincipal != principalDeseada) {
         if (!guardado.imagenes.contains(principalDeseada)) {
           throw Exception(
             'No se pudo establecer la imagen principal seleccionada.',
           );
         }
-
+ 
         guardado = await _productosService.establecerImagenPrincipal(
           token: _token,
           sitioId: _sitioId,
           productoId: guardado.id,
           url: principalDeseada,
         );
-
+ 
         urlsDisponibles = obtenerUrls(guardado);
       }
-
+ 
       if (producto != null) {
         final urlsPorEliminar = imagenesOriginales
             .where((url) => !imagenesConservar.contains(url))
             .toList();
-
+ 
         for (final url in urlsPorEliminar) {
           if (url == guardado.imagenPrincipal) {
             throw Exception(
@@ -254,22 +254,22 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
               'la principal. Selecciona otra imagen principal.',
             );
           }
-
+ 
           if (!urlsDisponibles.contains(url)) {
             continue;
           }
-
+ 
           guardado = await _productosService.eliminarImagen(
             token: _token,
             sitioId: _sitioId,
             productoId: guardado.id,
             url: url,
           );
-
+ 
           urlsDisponibles = obtenerUrls(guardado);
         }
       }
-
+ 
       if (mounted) {
         _mostrarMensaje(
           producto == null
@@ -284,7 +284,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
           esError: true,
         );
       }
-
+ 
       rethrow;
     } finally {
       if (mounted) {
@@ -292,33 +292,33 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
       }
     }
   }
-
+ 
   Future<void> _enviarARevision(
     SitioProductoModel producto,
   ) async {
     if (_token.isEmpty || _sitioId.isEmpty) return;
-
+ 
     try {
       await _productosService.enviarARevision(
         token: _token,
         sitioId: _sitioId,
         productoId: producto.id,
       );
-
+ 
       if (!mounted) return;
-
+ 
       _mostrarMensaje('El producto fue enviado a revisión.');
       await _cargarProductos();
     } catch (error) {
       if (!mounted) return;
-
+ 
       _mostrarMensaje(
         error.toString().replaceFirst('Exception: ', ''),
         esError: true,
       );
     }
   }
-
+ 
   Future<void> _eliminarProducto(
     SitioProductoModel producto,
   ) async {
@@ -364,25 +364,25 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         ],
       ),
     );
-
+ 
     if (confirmar != true || !mounted) return;
-
+ 
     setState(() => _guardando = true);
-
+ 
     try {
       await _productosService.eliminarProducto(
         token: _token,
         sitioId: _sitioId,
         productoId: producto.id,
       );
-
+ 
       if (!mounted) return;
-
+ 
       _mostrarMensaje('Producto eliminado correctamente.');
       await _cargarProductos();
     } catch (error) {
       if (!mounted) return;
-
+ 
       _mostrarMensaje(
         error.toString().replaceFirst('Exception: ', ''),
         esError: true,
@@ -393,32 +393,28 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
       }
     }
   }
-
+ 
   void _mostrarMensaje(
     String mensaje, {
     bool esError = false,
   }) {
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text(mensaje),
-          backgroundColor: esError
-              ? AppColors.sitioError
-              : AppColors.sitioPrimary,
-        ),
-      );
+ 
+    // Aviso en el overlay raíz: siempre queda encima de los
+    // formularios y diálogos.
+    if (esError) {
+      AvisosSitio.error(context, mensaje);
+    } else {
+      AvisosSitio.exito(context, mensaje);
+    }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final esDesktop = constraints.maxWidth >= 900;
-
+ 
         return Container(
           color: AppColors.sitioBackground,
           child: RefreshIndicator(
@@ -495,7 +491,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
       },
     );
   }
-
+ 
   Widget _encabezado(bool esDesktop) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -535,7 +531,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
       ],
     );
   }
-
+ 
   Widget _resumen(bool esDesktop) {
     final tarjetas = [
       TarjetaResumenSitio(
@@ -557,7 +553,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         icono: Icons.hourglass_empty_rounded,
       ),
     ];
-
+ 
     if (esDesktop) {
       return Row(
         children: [
@@ -569,7 +565,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         ],
       );
     }
-
+ 
     if (MediaQuery.sizeOf(context).width >= 600) {
       return Wrap(
         spacing: 12,
@@ -582,7 +578,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         }).toList(),
       );
     }
-
+ 
     return Column(
       children: [
         tarjetas[0],
@@ -593,7 +589,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
       ],
     );
   }
-
+ 
   Widget _contenidoProductos(bool esDesktop) {
     if (_cargando) {
       return const Center(
@@ -605,7 +601,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         ),
       );
     }
-
+ 
     if (_error != null) {
       return _estadoCatalogo(
         icono: Icons.cloud_off_rounded,
@@ -622,7 +618,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         ),
       );
     }
-
+ 
     if (_productos.isEmpty) {
       return _estadoCatalogo(
         icono: Icons.inventory_2_outlined,
@@ -641,7 +637,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         ),
       );
     }
-
+ 
     return Column(
       children: _productos.map((producto) {
         return Padding(
@@ -651,7 +647,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
       }).toList(),
     );
   }
-
+ 
   Widget _estadoCatalogo({
     required IconData icono,
     required String titulo,
@@ -710,7 +706,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
       ),
     );
   }
-
+ 
   Widget _tarjetaProducto(
     SitioProductoModel producto,
     bool esDesktop,
@@ -719,7 +715,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
     final publicado = estado == 'aprobado' && producto.activo;
     final pendiente = estado == 'pendiente_revision';
     final rechazado = estado == 'rechazado';
-
+ 
     final etiquetaEstado = publicado
         ? 'Publicado'
         : pendiente
@@ -727,7 +723,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
             : rechazado
                 ? 'Rechazado'
                 : 'Borrador';
-
+ 
     final colorEstado = publicado
         ? AppColors.sitioSuccess
         : pendiente
@@ -735,7 +731,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
             : rechazado
                 ? AppColors.sitioError
                 : AppColors.sitioTextSecondary;
-
+ 
     final fondoEstado = publicado
         ? AppColors.sitioSuccessSoft
         : pendiente
@@ -743,7 +739,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
             : rechazado
                 ? AppColors.sitioErrorSoft
                 : AppColors.sitioSurfaceSoft;
-
+ 
     final acciones = Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -793,7 +789,7 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
         ),
       ],
     );
-
+ 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -962,10 +958,10 @@ class _SitioProductosScreenState extends State<SitioProductosScreen> {
     );
   }
 }
-
+ 
 class _ImagenProductoVacia extends StatelessWidget {
   const _ImagenProductoVacia();
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -979,3 +975,4 @@ class _ImagenProductoVacia extends StatelessWidget {
     );
   }
 }
+ 

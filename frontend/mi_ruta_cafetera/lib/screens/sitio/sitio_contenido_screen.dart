@@ -1,39 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+ 
 import '../../models/sitio/sitio_contenido_model.dart';
 import '../../services/sitio/sitio_contenido_service.dart';
 import '../../services/sitio/sitio_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../utils/avisos_sitio.dart';
 import '../../widgets/sitio/audio_guia_borrador.dart';
 import '../../widgets/sitio/formulario_contenido_sitio.dart';
 import '../../widgets/sitio/tarjeta_contenido_sitio.dart';
-
+ 
 class SitioContenidoScreen extends StatefulWidget {
   const SitioContenidoScreen({super.key});
-
+ 
   @override
   State<SitioContenidoScreen> createState() =>
       _SitioContenidoScreenState();
 }
-
+ 
 class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   final SitioContenidoService _contenidoService =
       SitioContenidoService();
-
+ 
   final SitioSesionService _sesionService = SitioSesionService();
-
+ 
   List<SitioContenidoModel> _contenidos = [];
   bool _cargando = true;
   String? _error;
-
+ 
   @override
   void initState() {
     super.initState();
     _cargarContenidos();
   }
-
+ 
   Future<void> _cargarContenidos() async {
     if (mounted) {
       setState(() {
@@ -41,20 +42,20 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
         _error = null;
       });
     }
-
+ 
     try {
       final sesion = await _sesionService.obtenerSesion();
-
+ 
       if (sesion == null || sesion.token.isEmpty) {
         throw Exception('No hay una sesión activa.');
       }
-
+ 
       final contenidos = await _contenidoService.obtenerMisContenidos(
         token: sesion.token,
       );
-
+ 
       if (!mounted) return;
-
+ 
       setState(() {
         _contenidos = contenidos;
         _cargando = false;
@@ -62,20 +63,20 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
     } catch (error, stackTrace) {
       debugPrint('Error al cargar contenidos: $error');
       debugPrint('$stackTrace');
-
+ 
       if (!mounted) return;
-
+ 
       setState(() {
         _cargando = false;
         _error = _limpiarError(error);
       });
     }
   }
-
+ 
   String _limpiarError(Object error) {
     return error.toString().replaceFirst('Exception: ', '');
   }
-
+ 
   void _mostrarFormularioNuevo() {
     showDialog<bool>(
       context: context,
@@ -103,7 +104,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       ),
     );
   }
-
+ 
   Future<bool> _crearContenido({
     required String titulo,
     required String descripcion,
@@ -113,17 +114,17 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   }) async {
     try {
       final sesion = await _sesionService.obtenerSesion();
-
+ 
       if (sesion == null || sesion.token.isEmpty) {
         throw Exception('No hay una sesión activa.');
       }
-
+ 
       final contenido = await _contenidoService.crearContenido(
         token: sesion.token,
         titulo: titulo,
         descripcion: descripcion,
       );
-
+ 
       if (imagenPrincipal != null || imagenes.isNotEmpty) {
         await _contenidoService.subirImagenesContenido(
           token: sesion.token,
@@ -132,12 +133,12 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
           imagenes: imagenes,
         );
       }
-
+ 
       for (final audio in audiosNuevos) {
         if (audio.titulo.trim().isEmpty) {
           throw Exception('Cada audioguía debe tener un título.');
         }
-
+ 
         await _contenidoService.subirAudioGuia(
           token: sesion.token,
           contenidoId: contenido.id,
@@ -146,24 +147,24 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
           descripcion: audio.descripcion.trim(),
         );
       }
-
+ 
       await _cargarContenidos();
-
+ 
       if (!mounted) return false;
-
+ 
       _mostrarMensaje('Contenido creado correctamente.');
       return true;
     } catch (error, stackTrace) {
       debugPrint('ERROR AL CREAR CONTENIDO: $error');
       debugPrint('$stackTrace');
-
+ 
       if (!mounted) return false;
-
+ 
       _mostrarMensaje(_limpiarError(error), esError: true);
       return false;
     }
   }
-
+ 
   void _mostrarFormularioEditar(SitioContenidoModel contenido) {
     showDialog<bool>(
       context: context,
@@ -194,7 +195,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       ),
     );
   }
-
+ 
   Future<bool> _actualizarContenido(
     SitioContenidoModel contenido, {
     required String titulo,
@@ -207,11 +208,11 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
   }) async {
     try {
       final sesion = await _sesionService.obtenerSesion();
-
+ 
       if (sesion == null || sesion.token.isEmpty) {
         throw Exception('No hay una sesión activa.');
       }
-
+ 
       await _contenidoService.actualizarContenido(
         token: sesion.token,
         contenidoId: contenido.id,
@@ -219,7 +220,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
         descripcion: descripcion,
         imagenes: imagenesAConservar,
       );
-
+ 
       if (imagenPrincipal != null || imagenes.isNotEmpty) {
         await _contenidoService.subirImagenesContenido(
           token: sesion.token,
@@ -228,7 +229,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
           imagenes: imagenes,
         );
       }
-
+ 
       for (final audioId in audiosAEliminar) {
         await _contenidoService.eliminarAudioGuia(
           token: sesion.token,
@@ -236,12 +237,12 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
           audioId: audioId,
         );
       }
-
+ 
       for (final audio in audiosNuevos) {
         if (audio.titulo.trim().isEmpty) {
           throw Exception('Cada audioguía debe tener un título.');
         }
-
+ 
         await _contenidoService.subirAudioGuia(
           token: sesion.token,
           contenidoId: contenido.id,
@@ -250,58 +251,58 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
           descripcion: audio.descripcion.trim(),
         );
       }
-
+ 
       await _cargarContenidos();
-
+ 
       if (!mounted) return false;
-
+ 
       _mostrarMensaje('Contenido actualizado correctamente.');
       return true;
     } catch (error, stackTrace) {
       debugPrint('ERROR AL ACTUALIZAR CONTENIDO: $error');
       debugPrint('$stackTrace');
-
+ 
       if (!mounted) return false;
-
+ 
       _mostrarMensaje(_limpiarError(error), esError: true);
       return false;
     }
   }
-
+ 
   Future<void> _enviarRevision(
     SitioContenidoModel contenido,
   ) async {
     if (contenido.estadoPublicacion == 'pendiente_revision') {
       return;
     }
-
+ 
     try {
       final sesion = await _sesionService.obtenerSesion();
-
+ 
       if (sesion == null || sesion.token.isEmpty) {
         throw Exception('No hay una sesión activa.');
       }
-
+ 
       await _contenidoService.enviarContenidoRevision(
         token: sesion.token,
         contenidoId: contenido.id,
       );
-
+ 
       await _cargarContenidos();
-
+ 
       if (!mounted) return;
-
+ 
       _mostrarMensaje('Contenido enviado a revisión correctamente.');
     } catch (error, stackTrace) {
       debugPrint('ERROR AL ENVIAR A REVISIÓN: $error');
       debugPrint('$stackTrace');
-
+ 
       if (!mounted) return;
-
+ 
       _mostrarMensaje(_limpiarError(error), esError: true);
     }
   }
-
+ 
   Future<void> _eliminarContenido(
     SitioContenidoModel contenido,
   ) async {
@@ -366,40 +367,40 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
         ],
       ),
     );
-
+ 
     if (confirmar != true || !mounted) return;
-
+ 
     try {
       final sesion = await _sesionService.obtenerSesion();
-
+ 
       if (sesion == null || sesion.token.isEmpty) {
         throw Exception('No hay una sesión activa.');
       }
-
+ 
       await _contenidoService.eliminarContenido(
         token: sesion.token,
         contenidoId: contenido.id,
       );
-
+ 
       if (!mounted) return;
-
+ 
       setState(() {
         _contenidos.removeWhere(
           (item) => item.id == contenido.id,
         );
       });
-
+ 
       _mostrarMensaje('Contenido eliminado correctamente.');
     } catch (error, stackTrace) {
       debugPrint('ERROR AL ELIMINAR CONTENIDO: $error');
       debugPrint('$stackTrace');
-
+ 
       if (!mounted) return;
-
+ 
       _mostrarMensaje(_limpiarError(error), esError: true);
     }
   }
-
+ 
   Widget _estadoVacio() {
     return Center(
       child: SingleChildScrollView(
@@ -478,7 +479,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       ),
     );
   }
-
+ 
   Widget _estadoError() {
     return Center(
       child: SingleChildScrollView(
@@ -545,7 +546,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       ),
     );
   }
-
+ 
   Widget _construirEncabezado() {
     return Container(
       width: double.infinity,
@@ -593,7 +594,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
             icon: const Icon(Icons.add_rounded, size: 20),
             label: const Text('Nuevo contenido'),
           );
-
+ 
           final informacion = Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -642,7 +643,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
               ),
             ],
           );
-
+ 
           if (constraints.maxWidth < 520) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -656,7 +657,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
               ],
             );
           }
-
+ 
           return Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -669,7 +670,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       ),
     );
   }
-
+ 
   Widget _construirLista() {
     return RefreshIndicator(
       color: AppColors.sitioPrimary,
@@ -685,7 +686,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
         separatorBuilder: (_, _) => const SizedBox(height: 16),
         itemBuilder: (_, index) {
           final contenido = _contenidos[index];
-
+ 
           return TarjetaContenidoSitio(
             contenido: contenido,
             onEditar: () => _mostrarFormularioEditar(contenido),
@@ -696,7 +697,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       ),
     );
   }
-
+ 
   Widget _construirContenidoPrincipal() {
     if (_cargando) {
       return const Center(
@@ -705,36 +706,29 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
         ),
       );
     }
-
+ 
     if (_error != null) return _estadoError();
-
+ 
     if (_contenidos.isEmpty) return _estadoVacio();
-
+ 
     return _construirLista();
   }
-
+ 
   void _mostrarMensaje(
     String mensaje, {
     bool esError = false,
   }) {
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(mensaje),
-          backgroundColor: esError
-              ? AppColors.sitioError
-              : AppColors.sitioPrimary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
+ 
+    // Aviso en el overlay raíz: siempre queda encima de los
+    // formularios y diálogos.
+    if (esError) {
+      AvisosSitio.error(context, mensaje);
+    } else {
+      AvisosSitio.exito(context, mensaje);
+    }
   }
-
+ 
   ButtonStyle _estiloBotonPrincipal() {
     return ElevatedButton.styleFrom(
       backgroundColor: AppColors.sitioPrimary,
@@ -753,7 +747,7 @@ class _SitioContenidoScreenState extends State<SitioContenidoScreen> {
       ),
     );
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(

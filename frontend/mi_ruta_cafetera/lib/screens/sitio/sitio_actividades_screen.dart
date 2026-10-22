@@ -1,42 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+ 
 import '../../models/sitio/sitio_actividad_model.dart';
 import '../../services/sitio/sitio_actividades_service.dart';
 import '../../services/sitio/sitio_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../utils/avisos_sitio.dart';
 import '../../widgets/sitio/formulario_actividad_sitio.dart';
 import '../../widgets/sitio/tarjeta_actividad_sitio.dart';
 import '../../widgets/sitio/tarjeta_resumen_sitio.dart';
 import '../../widgets/sitio/tarjeta_seccion_sitio.dart';
-
+ 
 class SitioActividadesScreen extends StatefulWidget {
   const SitioActividadesScreen({super.key});
-
+ 
   @override
   State<SitioActividadesScreen> createState() =>
       _SitioActividadesScreenState();
 }
-
+ 
 class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
   final SitioActividadesService _actividadesService =
       SitioActividadesService();
   final SitioSesionService _sesionService = SitioSesionService();
-
+ 
   List<SitioActividadModel> _actividades = [];
   bool _cargando = true;
   bool _guardando = false;
   String? _error;
   String _token = '';
   String _sitioId = '';
-
+ 
   @override
   void initState() {
     super.initState();
     _cargarActividades();
   }
-
+ 
   Future<void> _cargarActividades() async {
     if (mounted) {
       setState(() {
@@ -44,52 +45,52 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
         _error = null;
       });
     }
-
+ 
     try {
       final sesion = await _sesionService.obtenerSesion();
-
+ 
       if (sesion == null ||
           sesion.token.isEmpty ||
           sesion.sitioId.isEmpty) {
         throw Exception('No se encontró una sesión activa del sitio.');
       }
-
+ 
       if (!sesion.activo) {
         throw Exception('La cuenta del sitio está inactiva.');
       }
-
+ 
       _token = sesion.token;
       _sitioId = sesion.sitioId;
-
+ 
       final actividades = await _actividadesService.obtenerActividades(
         token: _token,
         sitioId: _sitioId,
       );
-
+ 
       if (!mounted) return;
-
+ 
       setState(() {
         _actividades = actividades;
         _cargando = false;
       });
     } catch (error) {
       if (!mounted) return;
-
+ 
       setState(() {
         _error = error.toString().replaceFirst('Exception: ', '');
         _cargando = false;
       });
     }
   }
-
+ 
   int get _cantidadPublicadas => _actividades
       .where((a) => a.estadoPublicacion == 'aprobado' && a.activo)
       .length;
-
+ 
   int get _cantidadEnRevision => _actividades
       .where((a) => a.estadoPublicacion == 'pendiente_revision')
       .length;
-
+ 
   Future<void> _mostrarFormulario({
     SitioActividadModel? actividad,
   }) async {
@@ -123,12 +124,12 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
         },
       ),
     );
-
+ 
     if (resultado == true && mounted) {
       await _cargarActividades();
     }
   }
-
+ 
   Future<void> _guardarActividad({
     SitioActividadModel? actividad,
     required String nombre,
@@ -144,20 +145,20 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
     if (_token.isEmpty || _sitioId.isEmpty) {
       throw Exception('No hay una sesión activa del sitio.');
     }
-
+ 
     if (mounted) {
       setState(() => _guardando = true);
     }
-
+ 
     try {
       final imagenesOriginales = <String>{
         if (actividad != null && actividad.imagenPrincipal.isNotEmpty)
           actividad.imagenPrincipal,
         ...?actividad?.imagenes,
       };
-
+ 
       late SitioActividadModel guardada;
-
+ 
       if (actividad == null) {
         guardada = await _actividadesService.crearActividad(
           token: _token,
@@ -180,7 +181,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
           duracion: duracion,
         );
       }
-
+ 
       if (imagenes.isNotEmpty) {
         guardada = await _actividadesService.subirImagenes(
           token: _token,
@@ -189,48 +190,48 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
           archivos: imagenes,
         );
       }
-
+ 
       List<String> obtenerUrls(SitioActividadModel item) {
         return {
           if (item.imagenPrincipal.isNotEmpty) item.imagenPrincipal,
           ...item.imagenes.where((url) => url.isNotEmpty),
         }.toList();
       }
-
+ 
       var urlsDisponibles = obtenerUrls(guardada);
-
+ 
       final urlsNuevas = urlsDisponibles
           .where((url) => !imagenesOriginales.contains(url))
           .toList();
-
+ 
       var principalDeseada = imagenPrincipalUrl.trim();
-
+ 
       if (imagenPrincipalNueva != null) {
         final indiceSeleccionado = imagenes.indexWhere(
           (imagen) => imagen.path == imagenPrincipalNueva,
         );
-
+ 
         if (indiceSeleccionado < 0) {
           throw Exception(
             'No se encontró la fotografía seleccionada como portada.',
           );
         }
-
+ 
         if (indiceSeleccionado >= urlsNuevas.length) {
           throw Exception(
             'El servidor no devolvió una URL para la fotografía elegida. '
             'No se eliminarán las imágenes existentes.',
           );
         }
-
+ 
         principalDeseada = urlsNuevas[indiceSeleccionado];
       }
-
+ 
       if (principalDeseada.isEmpty ||
           imagenesEliminar.contains(principalDeseada) ||
           !urlsDisponibles.contains(principalDeseada)) {
         principalDeseada = '';
-
+ 
         for (final url in urlsDisponibles) {
           if (!imagenesEliminar.contains(url)) {
             principalDeseada = url;
@@ -238,13 +239,13 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
           }
         }
       }
-
+ 
       if (principalDeseada.isEmpty) {
         throw Exception(
           'La actividad debe conservar al menos una imagen.',
         );
       }
-
+ 
       if (guardada.imagenPrincipal != principalDeseada) {
         if (!guardada.imagenes.contains(principalDeseada)) {
           throw Exception(
@@ -252,17 +253,17 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
             'en la galería del servidor.',
           );
         }
-
+ 
         guardada = await _actividadesService.establecerImagenPrincipal(
           token: _token,
           sitioId: _sitioId,
           actividadId: guardada.id,
           url: principalDeseada,
         );
-
+ 
         urlsDisponibles = obtenerUrls(guardada);
       }
-
+ 
       for (final url in imagenesEliminar.toSet()) {
         if (url == guardada.imagenPrincipal) {
           throw Exception(
@@ -270,21 +271,21 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
             'Selecciona otra portada antes de continuar.',
           );
         }
-
+ 
         if (!urlsDisponibles.contains(url)) {
           continue;
         }
-
+ 
         guardada = await _actividadesService.eliminarImagen(
           token: _token,
           sitioId: _sitioId,
           actividadId: guardada.id,
           url: url,
         );
-
+ 
         urlsDisponibles = obtenerUrls(guardada);
       }
-
+ 
       if (mounted) {
         _mostrarMensaje(
           actividad == null
@@ -299,7 +300,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
           esError: true,
         );
       }
-
+ 
       rethrow;
     } finally {
       if (mounted) {
@@ -307,7 +308,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
       }
     }
   }
-
+ 
   Future<void> _enviarARevision(
     SitioActividadModel actividad,
   ) async {
@@ -317,21 +318,21 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
         sitioId: _sitioId,
         actividadId: actividad.id,
       );
-
+ 
       if (!mounted) return;
-
+ 
       _mostrarMensaje('La actividad fue enviada a revisión.');
       await _cargarActividades();
     } catch (error) {
       if (!mounted) return;
-
+ 
       _mostrarMensaje(
         error.toString().replaceFirst('Exception: ', ''),
         esError: true,
       );
     }
   }
-
+ 
   Future<void> _eliminarActividad(
     SitioActividadModel actividad,
   ) async {
@@ -384,25 +385,25 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
         ],
       ),
     );
-
+ 
     if (confirmar != true || !mounted) return;
-
+ 
     setState(() => _guardando = true);
-
+ 
     try {
       await _actividadesService.eliminarActividad(
         token: _token,
         sitioId: _sitioId,
         actividadId: actividad.id,
       );
-
+ 
       if (!mounted) return;
-
+ 
       _mostrarMensaje('Actividad eliminada correctamente.');
       await _cargarActividades();
     } catch (error) {
       if (!mounted) return;
-
+ 
       _mostrarMensaje(
         error.toString().replaceFirst('Exception: ', ''),
         esError: true,
@@ -413,33 +414,29 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
       }
     }
   }
-
+ 
   void _mostrarMensaje(
     String mensaje, {
     bool esError = false,
   }) {
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text(mensaje),
-          backgroundColor: esError
-              ? AppColors.sitioError
-              : AppColors.sitioPrimary,
-        ),
-      );
+ 
+    // Aviso en el overlay raíz: siempre queda encima de los
+    // formularios y diálogos.
+    if (esError) {
+      AvisosSitio.error(context, mensaje);
+    } else {
+      AvisosSitio.exito(context, mensaje);
+    }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final ancho = constraints.maxWidth;
         final esDesktop = ancho >= 900;
-
+ 
         return SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.symmetric(
@@ -520,7 +517,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
       },
     );
   }
-
+ 
   Widget _encabezado(bool esDesktop) {
     return Container(
       width: double.infinity,
@@ -614,7 +611,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
       ),
     );
   }
-
+ 
   Widget _resumen(bool esDesktop, double ancho) {
     final tarjetas = [
       TarjetaResumenSitio(
@@ -636,13 +633,13 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
         icono: Icons.hourglass_empty_rounded,
       ),
     ];
-
+ 
     final columnas = esDesktop
         ? 3
         : ancho >= 520
             ? 3
             : 1;
-
+ 
     if (columnas == 1) {
       return Column(
         children: [
@@ -656,7 +653,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
         ],
       );
     }
-
+ 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -670,7 +667,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
       itemBuilder: (context, index) => tarjetas[index],
     );
   }
-
+ 
   Widget _contenidoActividades() {
     if (_cargando) {
       return const Center(
@@ -684,7 +681,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
         ),
       );
     }
-
+ 
     if (_error != null) {
       return Container(
         width: double.infinity,
@@ -729,7 +726,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
         ),
       );
     }
-
+ 
     if (_actividades.isEmpty) {
       return Container(
         width: double.infinity,
@@ -777,7 +774,7 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
         ),
       );
     }
-
+ 
     return Column(
       children: _actividades.map((actividad) {
         return Padding(

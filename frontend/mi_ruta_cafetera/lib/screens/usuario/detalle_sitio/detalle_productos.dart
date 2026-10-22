@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../models/sitio/sitio_producto_model.dart';
@@ -6,6 +5,7 @@ import '../../../services/sitio/sitio_productos_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../l10n/textos.dart';
+import '../../../widgets/usuario/detalle_sitio/panel_detalle_adaptable.dart';
 
 class DetalleProductos extends StatefulWidget {
   const DetalleProductos({
@@ -83,9 +83,13 @@ class _DetalleProductosState extends State<DetalleProductos> {
   }
 
   void _abrirDetalle(SitioProductoModel producto) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _DetalleProductoScreen(producto: producto),
+    PanelDetalleAdaptable.mostrar<void>(
+      context: context,
+      titulo: producto.nombre,
+      icono: Icons.storefront_rounded,
+      maxWidth: 820,
+      builder: (_) => _DetalleProductoContenido(
+        producto: producto,
       ),
     );
   }
@@ -330,19 +334,19 @@ class _DetalleProductosState extends State<DetalleProductos> {
   }
 }
 
-class _DetalleProductoScreen extends StatefulWidget {
-  const _DetalleProductoScreen({
+class _DetalleProductoContenido extends StatefulWidget {
+  const _DetalleProductoContenido({
     required this.producto,
   });
 
   final SitioProductoModel producto;
 
   @override
-  State<_DetalleProductoScreen> createState() =>
-      _DetalleProductoScreenState();
+  State<_DetalleProductoContenido> createState() =>
+      _DetalleProductoContenidoState();
 }
 
-class _DetalleProductoScreenState extends State<_DetalleProductoScreen> {
+class _DetalleProductoContenidoState extends State<_DetalleProductoContenido> {
   final PageController _pageController = PageController();
 
   int _indiceActual = 0;
@@ -378,163 +382,153 @@ class _DetalleProductoScreenState extends State<_DetalleProductoScreen> {
     final imagenes = _imagenes;
     final categoria = producto.categoria.trim();
 
-    return Scaffold(
-      backgroundColor: AppColors.sitioBackground,
-      appBar: AppBar(
-        backgroundColor: AppColors.sitioPrimaryDark,
-        foregroundColor: Colors.white,
-        title: const Tr('Detalle del producto'),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (imagenes.isNotEmpty)
-              _carrusel(imagenes)
-            else
-              AspectRatio(
-                aspectRatio: 4 / 3,
-                child: _imagenAlternativaDetalle(),
-              ),
-            Padding(
-              padding: const EdgeInsets.all(
-                AppDimensions.pageHorizontal,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (categoria.isNotEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (imagenes.isNotEmpty)
+          _carrusel(imagenes)
+        else
+          AspectRatio(
+            aspectRatio: 4 / 3,
+            child: _imagenAlternativaDetalle(),
+          ),
+        Padding(
+          padding: const EdgeInsets.all(
+            AppDimensions.pageHorizontal,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (categoria.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.sitioSurfaceGreen,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: AppColors.sitioPrimary.withValues(
+                        alpha: 0.22,
                       ),
-                      decoration: BoxDecoration(
-                        color: AppColors.sitioSurfaceGreen,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: AppColors.sitioPrimary.withValues(
-                            alpha: 0.22,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.local_cafe_outlined,
-                            size: 16,
-                            color: AppColors.sitioPrimary,
-                          ),
-                          const SizedBox(width: 7),
-                          Text(
-                            categoria,
-                            style: const TextStyle(
-                              color: AppColors.sitioPrimary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingMd),
-                  ],
-                  Text(
-                    producto.nombre,
-                    style: const TextStyle(
-                      color: AppColors.sitioTextPrimary,
-                      fontSize: 27,
-                      fontWeight: FontWeight.w800,
-                      height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingMd),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(
-                      AppDimensions.spacingLg,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.sitioSurface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.sitioBorder,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.sell_outlined,
-                              color: AppColors.sitioAccent,
-                              size: 22,
-                            ),
-                            SizedBox(width: AppDimensions.spacingSm),
-                            Tr(
-                              'Precio',
-                              style: TextStyle(
-                                color: AppColors.sitioTextSecondary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        Tr(
-                          '\$ {0} COP', args: [producto.precio.toStringAsFixed(0)],
-                          style: const TextStyle(
-                            color: AppColors.sitioPrimary,
-                            fontSize: 25,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  const Row(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.description_outlined,
+                      const Icon(
+                        Icons.local_cafe_outlined,
+                        size: 16,
                         color: AppColors.sitioPrimary,
-                        size: 23,
                       ),
-                      SizedBox(width: AppDimensions.spacingSm),
-                      Expanded(
-                        child: Tr(
-                          'Descripción del producto',
-                          style: TextStyle(
-                            color: AppColors.sitioPrimary,
-                            fontSize: 19,
-                            fontWeight: FontWeight.w800,
-                          ),
+                      const SizedBox(width: 7),
+                      Text(
+                        categoria,
+                        style: const TextStyle(
+                          color: AppColors.sitioPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppDimensions.spacingSm),
-                  Text(
-                    producto.descripcion.trim().isEmpty
-                        ? Textos.t('No hay una descripción adicional disponible.')
-                        : producto.descripcion.trim(),
-                    style: const TextStyle(
-                      color: AppColors.sitioTextSecondary,
-                      fontSize: 15,
-                      height: 1.7,
+                ),
+                const SizedBox(height: AppDimensions.spacingMd),
+              ],
+              Text(
+                producto.nombre,
+                style: const TextStyle(
+                  color: AppColors.sitioTextPrimary,
+                  fontSize: 27,
+                  fontWeight: FontWeight.w800,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingMd),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(
+                  AppDimensions.spacingLg,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.sitioSurface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.sitioBorder,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.sell_outlined,
+                          color: AppColors.sitioAccent,
+                          size: 22,
+                        ),
+                        SizedBox(width: AppDimensions.spacingSm),
+                        Tr(
+                          'Precio',
+                          style: TextStyle(
+                            color: AppColors.sitioTextSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Tr(
+                      '\$ {0} COP', args: [producto.precio.toStringAsFixed(0)],
+                      style: const TextStyle(
+                        color: AppColors.sitioPrimary,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingXl),
+              const Row(
+                children: [
+                  Icon(
+                    Icons.description_outlined,
+                    color: AppColors.sitioPrimary,
+                    size: 23,
+                  ),
+                  SizedBox(width: AppDimensions.spacingSm),
+                  Expanded(
+                    child: Tr(
+                      'Descripción del producto',
+                      style: TextStyle(
+                        color: AppColors.sitioPrimary,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingXl),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: AppDimensions.spacingSm),
+              Text(
+                producto.descripcion.trim().isEmpty
+                    ? Textos.t('No hay una descripción adicional disponible.')
+                    : producto.descripcion.trim(),
+                style: const TextStyle(
+                  color: AppColors.sitioTextSecondary,
+                  fontSize: 15,
+                  height: 1.7,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingXl),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
