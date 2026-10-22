@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../../theme/app_colors.dart';
@@ -30,13 +31,11 @@ class SitioInformacionTuristica extends StatelessWidget {
             titulo: 'Información turística',
             subtitulo: 'Información útil para los visitantes',
           ),
-
           CampoFormularioSitio(
             controlador: horarioController,
             etiqueta: 'Horario de atención',
             icono: Icons.schedule_rounded,
           ),
-
           CampoFormularioSitio(
             controlador: precioController,
             etiqueta: 'Precio desde',
@@ -45,29 +44,29 @@ class SitioInformacionTuristica extends StatelessWidget {
               decimal: true,
             ),
           ),
-
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingMd,
               vertical: AppDimensions.spacingSm,
             ),
             decoration: BoxDecoration(
-              color: AppColors.creamLight,
+              color: const Color(0xFFF0EFEB),
               borderRadius: BorderRadius.circular(
                 AppDimensions.radiusMd,
               ),
               border: Border.all(
-                color: AppColors.border,
+                color: AppColors.adminBorder,
               ),
             ),
             child: SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              activeThumbColor: AppColors.secondary,
+              activeThumbColor: AppColors.coffee,
+              activeTrackColor: const Color(0xFFD9C2AE),
               title: const Text(
                 'Sitio activo',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.secondary,
+                  color: AppColors.coffee,
                 ),
               ),
               subtitle: Text(

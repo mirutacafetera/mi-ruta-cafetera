@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../models/admin/admin_contenido_model.dart';
@@ -221,10 +222,6 @@ class TarjetaContenido extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // MOSTRAR UNA SOLA REVISIÓN
-  // ============================================================
-
   Widget _revision() {
     if (contenido.tieneRevisionManual) {
       return RevisionAdministrador(
@@ -269,7 +266,7 @@ class TarjetaContenido extends StatelessWidget {
                 : Image.network(
                     url,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       color: _beige,
                       child: const Icon(
                         Icons.image_not_supported_outlined,

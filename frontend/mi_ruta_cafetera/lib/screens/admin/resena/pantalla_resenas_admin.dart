@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
@@ -95,106 +94,106 @@ class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        EncabezadoLista(
-          titulo: '',
-          descripcion: 'reseñas registradas',
-          textoNuevo: '',
-          cantidad: _controller.totalResenas,
-          cargando: _controller.cargando,
-          mostrarBotonNuevo: false,
-          onActualizar: _controller.cargarResenas,
-          onNuevo: () {},
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.pageHorizontalSmall,
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          EncabezadoLista(
+            titulo: '',
+            descripcion: 'reseñas registradas',
+            textoNuevo: '',
+            cantidad: _controller.totalResenas,
+            cargando: _controller.cargando,
+            mostrarBotonNuevo: false,
+            onActualizar: _controller.cargarResenas,
+            onNuevo: () {},
           ),
-          child: ResumenUsuarios(
-            columnas: 3,
-            tarjetas: [
-              ResumenTarjeta(
-                titulo: 'Total de reseñas',
-                cantidad: _controller.totalResenas,
-                icono: Icons.rate_review_rounded,
-                color: AppColors.primary,
-              ),
-              ResumenTarjeta(
-                titulo: 'Reseñas activas',
-                cantidad: _controller.resenasActivas,
-                icono: Icons.check_circle_rounded,
-                color: AppColors.primary,
-              ),
-              ResumenTarjeta(
-                titulo: 'Reseñas inactivas',
-                cantidad: _controller.resenasInactivas,
-                icono: Icons.cancel_rounded,
-                color: AppColors.secondary,
-              ),
-            ],
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.pageHorizontalSmall,
+            ),
+            child: ResumenUsuarios(
+              columnas: 3,
+              tarjetas: [
+                ResumenTarjeta(
+                  titulo: 'Total de reseñas',
+                  cantidad: _controller.totalResenas,
+                  icono: Icons.rate_review_rounded,
+                  color: AppColors.primary,
+                ),
+                ResumenTarjeta(
+                  titulo: 'Reseñas activas',
+                  cantidad: _controller.resenasActivas,
+                  icono: Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                ),
+                ResumenTarjeta(
+                  titulo: 'Reseñas inactivas',
+                  cantidad: _controller.resenasInactivas,
+                  icono: Icons.cancel_rounded,
+                  color: AppColors.secondary,
+                ),
+              ],
+            ),
           ),
-        ),
-        BarraBusqueda(
-          valor: _controller.busqueda,
-          controller: _busquedaController,
-          textoAyuda: 'Buscar usuario, sitio o comentario',
-          onChanged: _controller.cambiarBusqueda,
-          onLimpiar: () {
-            _busquedaController.clear();
-            _controller.cambiarBusqueda('');
-          },
-        ),
-        FiltrosResenas(
-          filtroSeleccionado: _controller.filtroEstado,
-          onChanged: _controller.cambiarFiltro,
-        ),
-        Expanded(
-          child: _controller.cargando
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : _controller.error != null
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(_controller.error!),
-                          const SizedBox(
-                            height: AppDimensions.spacingSm,
-                          ),
-                          FilledButton(
-                            onPressed: _controller.cargarResenas,
-                            child: const Text('Reintentar'),
-                          ),
-                        ],
-                      ),
-                    )
-                  : _controller.resenasFiltradas.isEmpty
-                      ? const Center(
-                          child: Text('No se encontraron reseñas'),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(
-                            bottom: AppDimensions.spacingLg,
-                          ),
-                          itemCount:
-                              _controller.resenasFiltradas.length,
-                          itemBuilder: (context, index) {
-                            final resena =
-                                _controller.resenasFiltradas[index];
+          BarraBusqueda(
+            valor: _controller.busqueda,
+            controller: _busquedaController,
+            textoAyuda: 'Buscar usuario, sitio o comentario',
+            onChanged: _controller.cambiarBusqueda,
+            onLimpiar: () {
+              _busquedaController.clear();
+              _controller.cambiarBusqueda('');
+            },
+          ),
+          FiltrosResenas(
+            filtroSeleccionado: _controller.filtroEstado,
+            onChanged: _controller.cambiarFiltro,
+          ),
+          if (_controller.cargando)
+            const Padding(
+              padding: EdgeInsets.all(AppDimensions.spacingLg),
+              child: CircularProgressIndicator(),
+            )
+          else if (_controller.error != null)
+            Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_controller.error!),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  FilledButton(
+                    onPressed: _controller.cargarResenas,
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            )
+          else if (_controller.resenasFiltradas.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(AppDimensions.spacingLg),
+              child: Text('No se encontraron reseñas'),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(
+                bottom: AppDimensions.spacingLg,
+              ),
+              itemCount: _controller.resenasFiltradas.length,
+              itemBuilder: (context, index) {
+                final resena = _controller.resenasFiltradas[index];
 
-                            return TarjetaResena(
-                              resena: resena,
-                              onCambiarEstado: () =>
-                                  _cambiarEstado(resena),
-                              onEliminar: () =>
-                                  _eliminarResena(resena.id),
-                            );
-                          },
-                        ),
-        ),
-      ],
+                return TarjetaResena(
+                  resena: resena,
+                  onCambiarEstado: () => _cambiarEstado(resena),
+                  onEliminar: () => _eliminarResena(resena.id),
+                );
+              },
+            ),
+        ],
+      ),
     );
   }
 }

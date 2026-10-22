@@ -77,31 +77,30 @@ class FiltrosUsuarios extends StatelessWidget {
     final seleccionado = filtroSeleccionado == valor;
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 180),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
-        color: seleccionado ? AppColors.primary : AppColors.creamLight,
-        borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+        color: seleccionado
+            ? colorIcono.withValues(alpha: 0.12)
+            : AppColors.creamLight,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.chipRadius,
+        ),
         border: Border.all(
           color: seleccionado
-              ? AppColors.primary
+              ? colorIcono
               : AppColors.adminBorder,
-          width: seleccionado ? 1.5 : 1.2,
+          width: seleccionado ? 1.3 : 1.1,
         ),
-        boxShadow: seleccionado
-            ? [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.14),
-                  blurRadius: 7,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : [],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.chipRadius,
+          ),
+          splashColor: colorIcono.withValues(alpha: 0.08),
+          highlightColor: colorIcono.withValues(alpha: 0.05),
           onTap: () {
             if (!seleccionado) {
               onFiltroSeleccionado(valor);
@@ -118,27 +117,19 @@ class FiltrosUsuarios extends StatelessWidget {
                 Icon(
                   icono,
                   size: 17,
-                  color: seleccionado ? AppColors.white : colorIcono,
+                  color: colorIcono,
                 ),
                 const SizedBox(width: 7),
                 Text(
                   texto,
                   style: TextStyle(
                     color: seleccionado
-                        ? AppColors.white
+                        ? colorIcono
                         : AppColors.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (seleccionado) ...[
-                  const SizedBox(width: 5),
-                  const Icon(
-                    Icons.check_rounded,
-                    size: 15,
-                    color: AppColors.white,
-                  ),
-                ],
               ],
             ),
           ),

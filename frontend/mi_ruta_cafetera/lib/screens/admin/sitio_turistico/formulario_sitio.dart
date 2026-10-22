@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../controllers/admin/sitio/formulario_admin_sitio.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
+import '../../../widgets/admin/fondo_admin.dart';
 import '../../../widgets/admin/sitio_turistico/sitio_formulario/boton_cancelar_sitio.dart';
 import '../../../widgets/admin/sitio_turistico/sitio_formulario/boton_guardar_sitio.dart';
 import '../../../widgets/admin/sitio_turistico/sitio_formulario/contacto_sitio.dart';
@@ -34,7 +35,6 @@ class _FormularioSitioState extends State<FormularioSitio> {
   late final FormularioAdminSitio controlador;
 
   final _formKey = GlobalKey<FormState>();
-
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
@@ -50,9 +50,7 @@ class _FormularioSitioState extends State<FormularioSitio> {
   }
 
   void _actualizar() {
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
   void _mostrarError(String mensaje) {
@@ -63,9 +61,7 @@ class _FormularioSitioState extends State<FormularioSitio> {
           content: Text(mensaje),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(
-            AppDimensions.spacingMd,
-          ),
+          margin: const EdgeInsets.all(AppDimensions.spacingMd),
           duration: const Duration(seconds: 4),
         ),
       );
@@ -78,7 +74,6 @@ class _FormularioSitioState extends State<FormularioSitio> {
       await controlador.guardar();
 
       if (!mounted) return;
-
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
@@ -101,143 +96,123 @@ class _FormularioSitioState extends State<FormularioSitio> {
       key: _messengerKey,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: Container(
-            height: MediaQuery.of(context).size.height * .94,
-            decoration: BoxDecoration(
-              color: AppColors.natureDark,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(
-                  AppDimensions.radiusXxl,
+        body: FondoAdmin(
+          child: SafeArea(
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.94,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(AppDimensions.radiusXxl),
                 ),
               ),
-            ),
-            child: Column(
-              children: [
-                EncabezadoFormularioSitio(
-                  edicion: edicion,
-                  guardando: controlador.guardando,
-                  onCerrar: () => Navigator.pop(context),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingLg,
-                      vertical: AppDimensions.spacingLg,
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          // DATOS DE ACCESO:
-                          // Solo se muestran al crear un sitio.
-                          if (!edicion) ...[
-                            SitioDatosAcceso(
-                              esEdicion: false,
-                              controladorNombre:
-                                  controlador.nombreCuentaController,
-                              controladorApellido:
-                                  controlador.apellidoCuentaController,
-                              controladorCorreo:
-                                  controlador.correoController,
-                              controladorContrasena:
-                                  controlador.passwordController,
+              child: Column(
+                children: [
+                  EncabezadoFormularioSitio(
+                    edicion: edicion,
+                    guardando: controlador.guardando,
+                    onCerrar: () => Navigator.pop(context),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingLg,
+                        vertical: AppDimensions.spacingLg,
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            if (!edicion)
+                              SitioDatosAcceso(
+                                esEdicion: false,
+                                controladorNombre:
+                                    controlador.nombreCuentaController,
+                                controladorApellido:
+                                    controlador.apellidoCuentaController,
+                                controladorCorreo:
+                                    controlador.correoController,
+                                controladorContrasena:
+                                    controlador.passwordController,
+                                controladorTelefono:
+                                    controlador.telefonoCuentaController,
+                              ),
+                            SitioInformacion(
+                              nombreController:
+                                  controlador.nombreController,
+                              descripcionController:
+                                  controlador.descripcionController,
+                              etiquetasController:
+                                  controlador.etiquetasController,
+                              categorias: widget.categorias,
+                              categoriaSeleccionada:
+                                  controlador.categoriaSeleccionada,
+                              onCategoriaChanged:
+                                  controlador.cambiarCategoria,
+                              iconoCategoria:
+                                  controlador.obtenerIconoCategoria(),
+                            ),
+                            SitioUbicacion(
+                              direccionController:
+                                  controlador.direccionController,
+                              ciudadController:
+                                  controlador.ciudadController,
+                              departamentoController:
+                                  controlador.departamentoController,
+                              latitudController:
+                                  controlador.latitudController,
+                              longitudController:
+                                  controlador.longitudController,
+                            ),
+                            ContactoSitio(
                               controladorTelefono:
-                                  controlador.telefonoCuentaController,
+                                  controlador.telefonoController,
+                              controladorCorreos:
+                                  controlador.correosController,
+                              controladorSitioWeb:
+                                  controlador.sitioWebController,
+                            ),
+                            SitioInformacionTuristica(
+                              horarioController:
+                                  controlador.horarioController,
+                              precioController:
+                                  controlador.precioDesdeController,
+                              activo: controlador.activo,
+                              onActivoChanged:
+                                  controlador.cambiarActivo,
+                            ),
+                            SitioImagen(
+                              imagenBytes: controlador.imagenBytes,
+                              imagenesExistentes:
+                                  controlador.imagenesExistentes,
+                              onSeleccionarImagen:
+                                  controlador.seleccionarImagen,
+                            ),
+                            const SizedBox(
+                              height: AppDimensions.spacingXl,
+                            ),
+                            BotonGuardarSitio(
+                              guardando: controlador.guardando,
+                              edicion: edicion,
+                              onPressed: _guardar,
+                            ),
+                            const SizedBox(
+                              height: AppDimensions.spacingSm,
+                            ),
+                            BotonCancelarSitio(
+                              deshabilitado: controlador.guardando,
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            const SizedBox(
+                              height: AppDimensions.spacingLg,
                             ),
                           ],
-
-                          // INFORMACIÓN DEL SITIO
-                          SitioInformacion(
-                            nombreController:
-                                controlador.nombreController,
-                            descripcionController:
-                                controlador.descripcionController,
-                            etiquetasController:
-                                controlador.etiquetasController,
-                            categorias: widget.categorias,
-                            categoriaSeleccionada:
-                                controlador.categoriaSeleccionada,
-                            onCategoriaChanged:
-                                controlador.cambiarCategoria,
-                            iconoCategoria:
-                                controlador.obtenerIconoCategoria(),
-                          ),
-
-                          // UBICACIÓN
-                          SitioUbicacion(
-                            direccionController:
-                                controlador.direccionController,
-                            ciudadController:
-                                controlador.ciudadController,
-                            departamentoController:
-                                controlador.departamentoController,
-                            latitudController:
-                                controlador.latitudController,
-                            longitudController:
-                                controlador.longitudController,
-                          ),
-
-                          // CONTACTO
-                          ContactoSitio(
-                            controladorTelefono:
-                                controlador.telefonoController,
-                            controladorCorreos:
-                                controlador.correosController,
-                            controladorSitioWeb:
-                                controlador.sitioWebController,
-                          ),
-
-                          // INFORMACIÓN TURÍSTICA
-                          SitioInformacionTuristica(
-                            horarioController:
-                                controlador.horarioController,
-                            precioController:
-                                controlador.precioDesdeController,
-                            activo: controlador.activo,
-                            onActivoChanged:
-                                controlador.cambiarActivo,
-                          ),
-
-                          // IMAGEN
-                          SitioImagen(
-                            imagenBytes: controlador.imagenBytes,
-                            imagenesExistentes:
-                                controlador.imagenesExistentes,
-                            onSeleccionarImagen:
-                                controlador.seleccionarImagen,
-                          ),
-
-                          const SizedBox(
-                            height: AppDimensions.spacingXl,
-                          ),
-
-                          // GUARDAR
-                          BotonGuardarSitio(
-                            guardando: controlador.guardando,
-                            edicion: edicion,
-                            onPressed: _guardar,
-                          ),
-
-                          const SizedBox(
-                            height: AppDimensions.spacingSm,
-                          ),
-
-                          // CANCELAR
-                          BotonCancelarSitio(
-                            deshabilitado: controlador.guardando,
-                            onPressed: () => Navigator.pop(context),
-                          ),
-
-                          const SizedBox(
-                            height: AppDimensions.spacingLg,
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

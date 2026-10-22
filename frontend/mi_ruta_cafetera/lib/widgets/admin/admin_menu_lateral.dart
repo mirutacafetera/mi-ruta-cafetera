@@ -88,11 +88,6 @@ class AdminMenuLateral extends StatelessWidget {
                   'contenido',
                 ),
                 _opcion(
-                  Icons.smart_toy_rounded,
-                  'Chatbot IA',
-                  'chatbot_ia',
-                ),
-                _opcion(
                   Icons.star_rounded,
                   'Reseñas',
                   'resenas',

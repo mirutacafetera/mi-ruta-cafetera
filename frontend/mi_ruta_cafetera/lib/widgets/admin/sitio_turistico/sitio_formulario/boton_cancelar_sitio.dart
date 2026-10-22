@@ -21,9 +21,13 @@ class BotonCancelarSitio extends StatelessWidget {
       child: OutlinedButton(
         onPressed: deshabilitado ? null : onPressed,
         style: OutlinedButton.styleFrom(
+          backgroundColor: AppColors.white,
           foregroundColor: AppColors.secondary,
+          disabledBackgroundColor: AppColors.white,
+          disabledForegroundColor: AppColors.textLight,
           side: const BorderSide(
-            color: AppColors.secondary,
+            color: AppColors.adminBorder,
+            width: 1.5,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(

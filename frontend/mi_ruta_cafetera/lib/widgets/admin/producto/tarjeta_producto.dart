@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../models/admin/admin_producto_model.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
+import '../fondo_admin.dart';
 import '../chatbot/evaluacion_ia.dart';
 import '../chatbot/revision_administrador.dart';
 import '../contenido/galeria_imagenes.dart';
@@ -147,9 +148,8 @@ class TarjetaProducto extends StatelessWidget {
         children: [
           Expanded(
             child: OutlinedButton.icon(
-              onPressed: procesando
-                  ? null
-                  : () => _mostrarDialogoRechazo(context),
+              onPressed:
+                  procesando ? null : () => _mostrarDialogoRechazo(context),
               icon: const Icon(Icons.close_rounded),
               label: const Text('Rechazar'),
               style: OutlinedButton.styleFrom(
@@ -183,17 +183,30 @@ class TarjetaProducto extends StatelessWidget {
     final motivo = await showDialog<String>(
       context: context,
       barrierDismissible: false,
+      barrierColor: Colors.transparent,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Rechazar producto'),
+        backgroundColor: const Color(0xFFFFFCF7),
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Rechazar producto',
+          style: TextStyle(
+            color: Color(0xFF244C36),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: TextField(
           controller: controlador,
           autofocus: true,
           maxLines: 4,
           maxLength: 500,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Motivo del rechazo',
             hintText: 'Explica por qué se rechaza el producto...',
-            border: OutlineInputBorder(),
+            filled: true,
+            fillColor: const Color(0xFFFFF8EC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
         actions: [
@@ -213,10 +226,12 @@ class TarjetaProducto extends StatelessWidget {
                 );
                 return;
               }
+
               Navigator.pop(dialogContext, controlador.text.trim());
             },
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFFF9800),
+              foregroundColor: Colors.white,
             ),
             child: const Text('Confirmar rechazo'),
           ),
@@ -241,130 +256,134 @@ class TarjetaProducto extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (ctx) => Scaffold(
-          backgroundColor: const Color(0xFF101411),
-          appBar: AppBar(
-            backgroundColor: const Color(0xFF174D36),
-            foregroundColor: Colors.white,
-            title: const Text(
-              'Detalle del producto',
-              style: TextStyle(fontWeight: FontWeight.bold),
+        builder: (ctx) => FondoAdmin(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              title: const Text(
+                'Detalle del producto',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          body: ListView(
-            padding: const EdgeInsets.all(18),
-            children: [
-              _imagen(producto.imagenPrincipal, double.infinity, 220),
-              const SizedBox(height: 20),
-              Text(
-                producto.nombre,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFFFF9800),
+            body: ListView(
+              padding: const EdgeInsets.all(18),
+              children: [
+                Text(
+                  producto.nombre,
+                  style: const TextStyle(
+                    color: Color(0xFF244C36),
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(width: 5),
-                  Expanded(
-                    child: Text(
-                      [producto.ciudad, producto.departamento]
-                          .where((e) => e.isNotEmpty)
-                          .join(', '),
-                      style: const TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      color: Color(0xFFFF9800),
                     ),
-                  ),
-                  EstadoProducto(
-                    estado: producto.estadoPublicacion,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              _panel('PRECIO DEL PRODUCTO', _precio(producto.precio)),
-              const SizedBox(height: 22),
-              _seccion('Descripción', producto.descripcion),
-              const SizedBox(height: 18),
-              const Text(
-                'Información del producto',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        [producto.ciudad, producto.departamento]
+                            .where((e) => e.isNotEmpty)
+                            .join(', '),
+                        style: const TextStyle(
+                          color: Color(0xFF655F55),
+                        ),
+                      ),
+                    ),
+                    EstadoProducto(
+                      estado: producto.estadoPublicacion,
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 12),
-              _informacion(
-                Icons.category_outlined,
-                'Categoría',
-                producto.categoria,
-              ),
-              _informacion(
-                Icons.storefront_outlined,
-                'Sitio turístico',
-                producto.sitioNombre,
-              ),
-              _informacion(
-                Icons.check_circle_outline,
-                'Disponibilidad',
-                producto.activo ? 'Activo' : 'Inactivo',
-              ),
-              _informacion(
-                Icons.calendar_month_outlined,
-                'Fecha de creación',
-                _fecha(producto.createdAt),
-              ),
-              const SizedBox(height: 20),
-              _evaluacion(),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Fotografías',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                const SizedBox(height: 18),
+                _panel('PRECIO DEL PRODUCTO', _precio(producto.precio)),
+                const SizedBox(height: 22),
+                _seccion('Descripción', producto.descripcion),
+                const SizedBox(height: 18),
+                const Text(
+                  'Información del producto',
+                  style: TextStyle(
+                    color: Color(0xFF244C36),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _informacion(
+                  Icons.category_outlined,
+                  'Categoría',
+                  producto.categoria,
+                ),
+                _informacion(
+                  Icons.storefront_outlined,
+                  'Sitio turístico',
+                  producto.sitioNombre,
+                ),
+                _informacion(
+                  Icons.check_circle_outline,
+                  'Disponibilidad',
+                  producto.activo ? 'Activo' : 'Inactivo',
+                ),
+                _informacion(
+                  Icons.calendar_month_outlined,
+                  'Fecha de creación',
+                  _fecha(producto.createdAt),
+                ),
+                const SizedBox(height: 20),
+                _evaluacion(),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Fotografías',
+                        style: TextStyle(
+                          color: Color(0xFF244C36),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${fotos.length} imágenes',
+                      style: const TextStyle(
+                        color: Color(0xFF655F55),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                if (fotos.isEmpty)
+                  const Text(
+                    'No hay fotografías disponibles.',
+                    style: TextStyle(color: Color(0xFF655F55)),
+                  )
+                else
+                  SizedBox(
+                    height: 125,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: fotos.length,
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(width: 12),
+                      itemBuilder: (_, i) => GestureDetector(
+                        onTap: () => GaleriaImagenes.mostrar(ctx, fotos, i),
+                        child: _imagen(fotos[i], 125, 125),
                       ),
                     ),
                   ),
-                  Text(
-                    '${fotos.length} imágenes',
-                    style: const TextStyle(color: Colors.white60),
-                  ),
+                if (producto.estaPendiente) ...[
+                  const SizedBox(height: 26),
+                  _botones(ctx),
                 ],
-              ),
-              const SizedBox(height: 14),
-              if (fotos.isEmpty)
-                const Text(
-                  'No hay fotografías disponibles.',
-                  style: TextStyle(color: Colors.white70),
-                )
-              else
-                SizedBox(
-                  height: 125,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: fotos.length,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(width: 12),
-                    itemBuilder: (_, i) => GestureDetector(
-                      onTap: () => GaleriaImagenes.mostrar(ctx, fotos, i),
-                      child: _imagen(fotos[i], 125, 125),
-                    ),
-                  ),
-                ),
-              if (producto.estaPendiente) ...[
-                const SizedBox(height: 26),
-                _botones(ctx),
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -387,7 +406,7 @@ class TarjetaProducto extends StatelessWidget {
   Widget _imagenVacia(double ancho, double alto) => Container(
         width: ancho,
         height: alto,
-        color: const Color(0xFF1D2921),
+        color: const Color(0xFFFFF8EC),
         alignment: Alignment.center,
         child: const Icon(
           Icons.image_not_supported_outlined,
@@ -417,7 +436,7 @@ class TarjetaProducto extends StatelessWidget {
           Text(
             titulo,
             style: const TextStyle(
-              color: Color(0xFFFF9800),
+              color: Color(0xFFB86B00),
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -426,7 +445,7 @@ class TarjetaProducto extends StatelessWidget {
           Text(
             contenido.isEmpty ? 'Sin información disponible' : contenido,
             style: const TextStyle(
-              color: Colors.white70,
+              color: Color(0xFF655F55),
               fontSize: 15,
               height: 1.5,
             ),
@@ -437,10 +456,10 @@ class TarjetaProducto extends StatelessWidget {
   Widget _panel(String titulo, String valor) => Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: const Color(0xFF1D2921),
+          color: const Color(0xEFFFFFF7),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFFFF9800).withValues(alpha: 0.6),
+            color: const Color(0xFFFF9800).withValues(alpha: 0.7),
           ),
         ),
         child: Column(
@@ -449,7 +468,7 @@ class TarjetaProducto extends StatelessWidget {
             Text(
               titulo,
               style: const TextStyle(
-                color: Colors.white70,
+                color: Color(0xFF655F55),
                 fontSize: 12,
                 letterSpacing: 1,
               ),
@@ -476,8 +495,9 @@ class TarjetaProducto extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF1D2921),
+          color: const Color(0xEFFFFFF7),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.adminBorder),
         ),
         child: Row(
           children: [
@@ -494,7 +514,7 @@ class TarjetaProducto extends StatelessWidget {
                   Text(
                     titulo,
                     style: const TextStyle(
-                      color: Colors.white60,
+                      color: Color(0xFF655F55),
                       fontSize: 12,
                     ),
                   ),
@@ -502,9 +522,9 @@ class TarjetaProducto extends StatelessWidget {
                   Text(
                     contenido.isEmpty ? 'No disponible' : contenido,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF244C36),
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],

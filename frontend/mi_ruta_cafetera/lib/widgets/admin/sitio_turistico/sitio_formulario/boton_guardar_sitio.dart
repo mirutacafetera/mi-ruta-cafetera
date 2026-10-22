@@ -43,7 +43,7 @@ class BotonGuardarSitio extends StatelessWidget {
                   : 'Crear sitio turístico',
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.secondary,
+          backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
           minimumSize: const Size(
             double.infinity,

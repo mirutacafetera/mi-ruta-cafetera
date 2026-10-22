@@ -60,9 +60,7 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   }
 
   void _actualizar() {
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
   Future<void> _cargarCuenta() async {
@@ -70,11 +68,10 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
     if (!mounted) return;
 
-    final idAdministrador =
-        AdminServicioAutenticacion.idAdministrador;
+    final id = AdminServicioAutenticacion.idAdministrador;
 
-    if (idAdministrador != null && idAdministrador.isNotEmpty) {
-      await cuentaAdminController.cargarCuenta(idAdministrador);
+    if (id != null && id.isNotEmpty) {
+      await cuentaAdminController.cargarCuenta(id);
     }
   }
 
@@ -92,24 +89,22 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   Future<void> _confirmarCerrarSesion() async {
     final confirmar = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Cerrar sesión'),
-          content: const Text(
-            '¿Deseas cerrar la sesión de administrador?',
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cerrar sesión'),
+        content: const Text(
+          '¿Deseas cerrar la sesión de administrador?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Cerrar sesión'),
-            ),
-          ],
-        );
-      },
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
     );
 
     if (confirmar == true && mounted) {
@@ -118,10 +113,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   }
 
   void _manejarOpcion(String opcion) {
-    final opcionNormalizada = opcion.trim().toLowerCase();
+    final valor = opcion.trim().toLowerCase();
 
-    if (opcionNormalizada == 'logout' ||
-        opcionNormalizada == 'cerrar_sesion') {
+    if (valor == 'logout' || valor == 'cerrar_sesion') {
       _confirmarCerrarSesion();
       return;
     }
@@ -138,11 +132,22 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     );
   }
 
+  void _abrirUsuarios() {
+    controlador.cambiarOpcion('usuarios');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final titulo = switch (controlador.opcion) {
+      'contenido' => 'Contenidos',
+      'productos' => 'Productos',
+      'usuarios' => 'Usuarios',
+      _ => controlador.titulo,
+    };
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(controlador.titulo),
+        title: Text(titulo),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         elevation: AppDimensions.elevationNone,
@@ -176,8 +181,6 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
       case 'contenido':
         return const PantallaContenido();
-
-      
 
       case 'perfil':
         return AdminCuenta(
@@ -214,16 +217,22 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     }
   }
 
-  Widget _inicio() {
-    return AdminInicio(
-      nombre: widget.nombre,
-      email: widget.email,
-      onAbrirMapa: _abrirMapa,
-      onGestionarSitios: () {
-        controlador.cambiarOpcion('sitios');
-      },
-    );
-  }
+  
+Widget _inicio() {
+  return AdminInicio(
+    nombre: widget.nombre,
+    email: widget.email,
+    fotoPerfilControlador: fotoPerfilControlador,
+    onAbrirMapa: _abrirMapa,
+    onGestionarSitios: () {
+      controlador.cambiarOpcion('sitios');
+    },
+    onGestionarUsuarios: _abrirUsuarios,
+    onAbrirCuenta: () {
+      controlador.cambiarOpcion('perfil');
+    },
+  );
+}
 
   @override
   void dispose() {
