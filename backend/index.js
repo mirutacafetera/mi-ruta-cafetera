@@ -148,6 +148,10 @@ const adminChatbotRoutes = require(
   './routes/admin/chatbot.routes'
 );
 
+const reportesSitiosAdminRoutes = require(
+  './routes/admin/reportesSitios.routes'
+);
+
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
@@ -186,6 +190,10 @@ const informacionSitioRoutes = require(
 
 const productosRoutes = require(
   './routes/sitios/productos.routes'
+);
+
+const ayudaSitioRoutes = require(
+  './routes/sitios/ayuda.routes'
 );
 
 // ======================================================
@@ -361,6 +369,11 @@ app.use(
   adminProductosRoutes
 );
 
+app.use(
+  '/api/admin/reportes-sitios',
+  reportesSitiosAdminRoutes
+);
+
 // ======================================================
 // SUBRUTAS DE SITIOS TURÍSTICOS
 // ======================================================
@@ -408,6 +421,11 @@ app.use(
 app.use(
   '/api/sitiosturisticos/productos',
   productosRoutes
+);
+
+app.use(
+  '/api/sitios/ayuda',
+  ayudaSitioRoutes
 );
 
 // ======================================================

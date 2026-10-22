@@ -1,7 +1,5 @@
-
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/sitio/sitio_producto_model.dart';
@@ -305,6 +303,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
     required String? Function(String?) validator,
     int maxLines = 1,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
     String? ayuda,
     IconData? icono,
   }) {
@@ -313,6 +312,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       enabled: !_guardando,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       validator: validator,
       style: const TextStyle(
         color: AppColors.sitioTextPrimary,
@@ -876,11 +876,13 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
                         icono: Icons.payments_outlined,
                         keyboardType:
                             const TextInputType.numberWithOptions(
-                          decimal: true,
+                          decimal: false,
                         ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         validator: (valor) {
-                          final texto =
-                              (valor ?? '').trim().replaceAll(',', '.');
+                          final texto = (valor ?? '').trim();
                           final precio = double.tryParse(texto);
 
                           if (texto.isEmpty || precio == null) {

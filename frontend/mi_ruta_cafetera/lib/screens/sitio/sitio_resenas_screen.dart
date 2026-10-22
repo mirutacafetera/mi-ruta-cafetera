@@ -127,7 +127,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1200),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _encabezado(context, ancho),
                 const SizedBox(
@@ -244,7 +244,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
 
     if (esEscritorio) {
       return Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (int i = 0; i < tarjetas.length; i++) ...[
             if (i > 0)
@@ -277,7 +277,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
           'Consulta los comentarios y filtra las reseñas por calificación.',
       icono: Icons.forum_rounded,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _filtros(esEscritorio),
           const SizedBox(
@@ -389,7 +389,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
     }
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         orden,
         const SizedBox(height: AppDimensions.sitioFormFieldGap),
