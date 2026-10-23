@@ -56,6 +56,7 @@ abstract class AppColors {
   static const Color nature = Color(0xFF397A55);
   static const Color natureLight = Color(0xFF8EB89A);
   static const Color natureDark = Color(0xFF123D2A);
+  static const Color cafeOscuro = Color(0xFF4E342E);
 
   // BORDES DEL PANEL ADMINISTRATIVO
   static const Color adminBorder = Color(0xFFB58A70);

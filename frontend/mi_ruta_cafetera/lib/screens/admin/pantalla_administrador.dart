@@ -20,7 +20,7 @@ import 'cuenta_sitio/pantalla_cuenta_sitio.dart';
 import 'estadistica/pantalla_estadistica.dart';
 import 'producto/pantalla_producto.dart';
 import 'reporte/pantalla_reporte_admin.dart';
-import 'reporte/pantalla_reportes_sitios_admin.dart';
+import 'reportes_sitios/pantalla_reportes_sitios_admin.dart';
 import 'reserva/pantalla_reserva_admin.dart';
 import 'resena/pantalla_resenas_admin.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
@@ -232,21 +232,23 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     }
   }
 
-  Widget _inicio() {
-    return AdminInicio(
-      nombre: widget.nombre,
-      email: widget.email,
-      fotoPerfilControlador: fotoPerfilControlador,
-      onAbrirMapa: _abrirMapa,
-      onGestionarSitios: () {
-        controlador.cambiarOpcion('sitios');
-      },
-      onGestionarUsuarios: _abrirUsuarios,
-      onAbrirCuenta: () {
-        controlador.cambiarOpcion('perfil');
-      },
-    );
-  }
+  
+Widget _inicio() {
+  return AdminInicio(
+    nombre: widget.nombre,
+    email: widget.email,
+    fotoPerfilControlador: fotoPerfilControlador,
+    onAbrirMapa: _abrirMapa,
+    onGestionarSitios: () {
+      controlador.cambiarOpcion('sitios');
+    },
+    onGestionarUsuarios: _abrirUsuarios,
+    onAbrirCuenta: () {
+      controlador.cambiarOpcion('perfil');
+    },
+  );
+}
+
 
   @override
   void dispose() {
