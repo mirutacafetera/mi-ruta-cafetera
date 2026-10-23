@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 
+import 'l10n/textos.dart';
 import 'screens/admin/pantalla_administrador.dart';
 import 'screens/mapa_screen_2.dart';
 import 'screens/publico/bienvenida_screen.dart';
@@ -20,6 +21,9 @@ Future<void> main() async {
   await AdminServicioAutenticacion.cargarToken();
   await UsuarioSesionService.instance.restaurar();
   await PreferenciasService.instance.restaurar();
+
+  // Al cambiar el idioma se repinta todo el árbol (ver Textos).
+  PreferenciasService.instance.idioma.addListener(Textos.reconstruirArbol);
 
   runApp(const MiRutaCafeteraApp());
 }
@@ -44,21 +48,31 @@ class MiRutaCafeteraApp extends StatelessWidget {
       theme: AppTheme.construir(fontFamily: fuente.familia),
 
       builder: (context, child) {
-        return ValueListenableBuilder<TamanoTexto>(
-          valueListenable: PreferenciasService.instance.tamanoTexto,
-          builder: (context, tamano, _) {
-            final media = MediaQuery.of(context);
-            final escalaSistema = media.textScaler.scale(1.0);
+        // Idioma elegido en Preferencias: lo publica IdiomaScope para
+        // que solo se reconstruyan los widgets que usan context.t.
+        return ValueListenableBuilder<IdiomaApp>(
+          valueListenable: PreferenciasService.instance.idioma,
+          builder: (context, idioma, _) {
+            return IdiomaScope(
+              idioma: idioma,
+              child: ValueListenableBuilder<TamanoTexto>(
+                valueListenable: PreferenciasService.instance.tamanoTexto,
+                builder: (context, tamano, _) {
+                  final media = MediaQuery.of(context);
+                  final escalaSistema = media.textScaler.scale(1.0);
 
-            return MediaQuery(
-              data: media.copyWith(
-                textScaler: TextScaler.linear(
-                  (escalaSistema * tamano.factor)
-                      .clamp(0.8, 1.8)
-                      .toDouble(),
-                ),
+                  return MediaQuery(
+                    data: media.copyWith(
+                      textScaler: TextScaler.linear(
+                        (escalaSistema * tamano.factor)
+                            .clamp(0.8, 1.8)
+                            .toDouble(),
+                      ),
+                    ),
+                    child: child ?? const SizedBox.shrink(),
+                  );
+                },
               ),
-              child: child ?? const SizedBox.shrink(),
             );
           },
         );
@@ -105,3 +119,4 @@ class MiRutaCafeteraApp extends StatelessWidget {
     );
   }
 }
+

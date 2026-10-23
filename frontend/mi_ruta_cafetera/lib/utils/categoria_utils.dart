@@ -10,7 +10,7 @@ class CategoriaUtils {
     );
 
     if (categoria.contains('cafe')) {
-      return 'assets/images/sitios/cafe.jpeg';
+      return 'assets/images/sitios/cafe.jpg';
     }
 
     if (categoria.contains('artesania')) {
@@ -28,7 +28,7 @@ class CategoriaUtils {
     }
 
     if (categoria.contains('famil')) {
-      return 'assets/images/sitios/familiares.jpeg';
+      return 'assets/images/sitios/familiares.png';
     }
 
     if (categoria.contains('naturaleza') ||

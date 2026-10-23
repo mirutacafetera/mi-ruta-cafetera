@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/ruta_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class RutaCard extends StatefulWidget {
   final RutaModel ruta;
@@ -164,7 +165,7 @@ class _RutaCardState extends State<RutaCard> {
           ),
           _construirDato(
             icono: Icons.straighten_rounded,
-            texto: '${distancia.toStringAsFixed(1)} km',
+            texto: Textos.t('{0} km', [distancia.toStringAsFixed(1)]),
           ),
         ],
       ],
@@ -228,12 +229,9 @@ class _RutaCardState extends State<RutaCard> {
     final cantidadSitios = widget.ruta.sitios.length;
 
     if (cantidadSitios == 0) {
-      return 'Ruta turística del Huila';
+      return Textos.t('Ruta turística del Huila');
     }
 
-    return 'Una experiencia para descubrir '
-        '$cantidadSitios '
-        '${cantidadSitios == 1 ? 'lugar' : 'lugares'} '
-        'del Huila.';
+    return Textos.t('Una experiencia para descubrir {0} {1} del Huila.', [cantidadSitios, Textos.t(cantidadSitios == 1 ? 'lugar' : 'lugares')]);
   }
 }

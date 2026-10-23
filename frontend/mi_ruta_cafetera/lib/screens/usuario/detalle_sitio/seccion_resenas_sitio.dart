@@ -9,6 +9,7 @@ import '../../../services/usuario/usuario_sesion_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../widgets/sitio/sitio_avatar_perfil.dart';
+import '../../../l10n/textos.dart';
 
 class SeccionResenasSitio extends StatefulWidget {
   const SeccionResenasSitio({
@@ -111,7 +112,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
 
       setState(() {
         _cargando = false;
-        _error = 'Este sitio no tiene un identificador válido.';
+        _error = Textos.t('Este sitio no tiene un identificador válido.');
       });
       return;
     }
@@ -147,7 +148,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
     final comentario = _comentarioController.text.trim();
 
     if (comentario.isEmpty) {
-      _mostrarMensaje('Escribe tu opinión antes de publicar.');
+      _mostrarMensaje(Textos.t('Escribe tu opinión antes de publicar.'));
       return;
     }
 
@@ -172,7 +173,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
 
       if (!mounted) return;
 
-      _mostrarMensaje('¡Tu reseña se publicó correctamente!');
+      _mostrarMensaje(Textos.t('¡Tu reseña se publicó correctamente!'));
     } catch (e) {
       if (!mounted) return;
 
@@ -197,21 +198,20 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Eliminar reseña'),
-          content: const Text(
-            '¿Quieres eliminar tu opinión? '
-            'Esta acción no se puede deshacer.',
+          title: const Tr('Eliminar reseña'),
+          content: const Tr(
+            '¿Quieres eliminar tu opinión? Esta acción no se puede deshacer.',
           ),
           actions: [
             TextButton(
               onPressed: () =>
                   Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancelar'),
+              child: const Tr('Cancelar'),
             ),
             FilledButton(
               onPressed: () =>
                   Navigator.of(dialogContext).pop(true),
-              child: const Text('Eliminar'),
+              child: const Tr('Eliminar'),
             ),
           ],
         );
@@ -240,7 +240,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
         _eliminandoId = null;
       });
 
-      _mostrarMensaje('Reseña eliminada correctamente.');
+      _mostrarMensaje(Textos.t('Reseña eliminada correctamente.'));
     } catch (e) {
       if (!mounted) return;
 
@@ -276,7 +276,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          Tr(
             'Opiniones de los visitantes',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: AppColors.textPrimary,
@@ -284,7 +284,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                 ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
-          Text(
+          Tr(
             'Conoce las experiencias de otros viajeros y comparte la tuya.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
@@ -324,7 +324,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
               children: [
                 Text(
                   _resenas.isEmpty
-                      ? 'Sin calificaciones'
+                      ? Textos.t('Sin calificaciones')
                       : _promedio.toStringAsFixed(1),
                   style:
                       Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -359,14 +359,14 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          Tr(
             'Comparte tu experiencia',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
           ),
           const SizedBox(height: AppDimensions.spacingMd),
-          const Text('¿Qué calificación le das a este lugar?'),
+          const Tr('¿Qué calificación le das a este lugar?'),
           const SizedBox(height: AppDimensions.spacingSm),
           LayoutBuilder(
             builder: (context, constraints) {
@@ -384,7 +384,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                         minWidth: 0,
                         minHeight: 48,
                       ),
-                      tooltip: '$numero estrellas',
+                      tooltip: Textos.t('{0} estrellas', [numero]),
                       onPressed: _publicando
                           ? null
                           : () => setState(
@@ -412,9 +412,9 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
             maxLength: 1000,
             keyboardType: TextInputType.multiline,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              hintText: 'Cuéntanos qué te gustó de este lugar...',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: Textos.t('Cuéntanos qué te gustó de este lugar...'),
+              border: const OutlineInputBorder(),
               alignLabelWithHint: true,
             ),
           ),
@@ -433,7 +433,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                     )
                   : const Icon(Icons.send_rounded),
               label: Text(
-                _publicando ? 'Publicando...' : 'Publicar reseña',
+                _publicando ? Textos.t('Publicando...') : Textos.t('Publicar reseña'),
               ),
             ),
           ),
@@ -455,7 +455,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
           OutlinedButton.icon(
             onPressed: _cargarResenas,
             icon: const Icon(Icons.refresh),
-            label: const Text('Intentar de nuevo'),
+            label: const Tr('Intentar de nuevo'),
           ),
         ],
       );
@@ -474,12 +474,12 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
           children: [
             Icon(Icons.rate_review_outlined, size: 42),
             SizedBox(height: AppDimensions.spacingMd),
-            Text(
+            Tr(
               'Todavía no hay reseñas',
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppDimensions.spacingXs),
-            Text(
+            Tr(
               'Sé la primera persona en compartir su experiencia.',
               textAlign: TextAlign.center,
             ),
@@ -500,7 +500,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
 
   Widget _tarjetaResena(SitioResenaModel resena) {
     final nombre = resena.nombreUsuario.trim().isEmpty
-        ? 'Visitante'
+        ? Textos.t('Visitante')
         : resena.nombreUsuario.trim();
 
     final fecha = resena.creadaEn;
@@ -578,7 +578,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                   ),
                   if (esPropia)
                     PopupMenuButton<String>(
-                      tooltip: 'Opciones de mi reseña',
+                      tooltip: Textos.t('Opciones de mi reseña'),
                       padding: EdgeInsets.zero,
                       onSelected: (opcion) {
                         if (opcion == 'eliminar') {
@@ -595,7 +595,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                                 color: Colors.red,
                               ),
                               SizedBox(width: 8),
-                              Text('Eliminar reseña'),
+                              Tr('Eliminar reseña'),
                             ],
                           ),
                         ),
@@ -608,7 +608,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             resena.comentario.trim().isEmpty
-                ? 'Sin comentario escrito.'
+                ? Textos.t('Sin comentario escrito.')
                 : resena.comentario,
             softWrap: true,
           ),

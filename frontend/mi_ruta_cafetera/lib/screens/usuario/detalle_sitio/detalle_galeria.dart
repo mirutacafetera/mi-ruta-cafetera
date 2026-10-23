@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_dimensions.dart';
+import '../../../l10n/textos.dart';
 
 class DetalleGaleria extends StatelessWidget {
   final List<String> imagenes;
@@ -67,7 +68,7 @@ class DetalleGaleria extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    Tr(
                       'Galería de imágenes',
                       style: TextStyle(
                         color: Color(0xFF292D29),
@@ -76,7 +77,7 @@ class DetalleGaleria extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 4),
-                    Text(
+                    Tr(
                       'Conoce cada rincón de este lugar.',
                       style: TextStyle(
                         color: Color(0xFF6C746D),
@@ -126,7 +127,7 @@ class DetalleGaleria extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.grid_view_rounded),
-              label: Text('Ver toda la galería (${fotos.length})'),
+              label: Tr('Ver toda la galería ({0})', args: [fotos.length]),
             ),
           ),
         ],
@@ -251,8 +252,8 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF214F3D),
         foregroundColor: Colors.white,
-        title: Text(
-          'Galería · ${_indiceActual + 1} de ${widget.imagenes.length}',
+        title: Tr(
+          'Galería · {0} de {1}', args: [_indiceActual + 1, widget.imagenes.length],
         ),
       ),
       body: widget.modoCarrusel
@@ -341,7 +342,7 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
         ),
         Padding(
           padding: const EdgeInsets.all(18),
-          child: Text(
+          child: Tr(
             'Desliza para ver las demás fotografías',
             style: const TextStyle(
               color: Color(0xFF6C746D),

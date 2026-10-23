@@ -1,4 +1,3 @@
-
 const dns = require('dns');
 
 dns.setServers([
@@ -103,6 +102,10 @@ const adminUsuariosRoutes = require(
   './routes/admin/usuarios.routes'
 );
 
+const adminRutasPredefinidasRoutes = require(
+  './routes/admin/rutasPredefinidas.routes'
+);
+
 const adminResenasRoutes = require(
   './routes/admin/resenas.routes'
 );
@@ -148,6 +151,10 @@ const adminChatbotRoutes = require(
   './routes/admin/chatbot.routes'
 );
 
+const reportesSitiosAdminRoutes = require(
+  './routes/admin/reportesSitios.routes'
+);
+
 // ------------------------------------------------------
 // RUTAS DE CUENTAS Y SITIOS
 // ------------------------------------------------------
@@ -188,6 +195,10 @@ const productosRoutes = require(
   './routes/sitios/productos.routes'
 );
 
+const ayudaSitioRoutes = require(
+  './routes/sitios/ayuda.routes'
+);
+
 // ======================================================
 // REGISTRO DE RUTAS DE USUARIOS
 // ======================================================
@@ -200,6 +211,14 @@ app.use(
 app.use(
   '/api/categorias',
   categoriaRoutes
+);
+
+// IMPORTANTE: debe ir ANTES de '/api/sitios'. Si no, sitioRoutes
+// interpreta "ayuda" como el id de un sitio (GET /api/sitios/:id)
+// y responde "Error al obtener sitio turístico".
+app.use(
+  '/api/sitios/ayuda',
+  ayudaSitioRoutes
 );
 
 app.use(
@@ -287,6 +306,15 @@ app.use(
 );
 
 // ------------------------------------------------------
+// RUTAS TURÍSTICAS PREDEFINIDAS (solo administrador)
+// ------------------------------------------------------
+
+app.use(
+  '/api/admin/rutas',
+  adminRutasPredefinidasRoutes
+);
+
+// ------------------------------------------------------
 // RESEÑAS
 // ------------------------------------------------------
 
@@ -359,6 +387,11 @@ app.use(
 app.use(
   '/api/admin/productos',
   adminProductosRoutes
+);
+
+app.use(
+  '/api/admin/reportes-sitios',
+  reportesSitiosAdminRoutes
 );
 
 // ======================================================

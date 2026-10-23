@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../models/sitio_turistico_model.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
+import '../../../l10n/textos.dart';
 
 class DetallePortada extends StatelessWidget {
   const DetallePortada({
@@ -90,7 +91,7 @@ class DetallePortada extends StatelessWidget {
                       color: AppColors.primary,
                     ),
                     SizedBox(width: 7),
-                    Text(
+                    Tr(
                       'EXPERIENCIA CAFETERA',
                       style: TextStyle(
                         color: AppColors.primary,
@@ -114,8 +115,8 @@ class DetallePortada extends StatelessWidget {
                   elevation: 3,
                   child: IconButton(
                     tooltip: esFavorito
-                        ? 'Quitar de favoritos'
-                        : 'Agregar a favoritos',
+                        ? Textos.t('Quitar de favoritos')
+                        : Textos.t('Agregar a favoritos'),
                     onPressed: procesandoFavorito ? null : onFavorito,
                     icon: procesandoFavorito
                         ? const SizedBox(

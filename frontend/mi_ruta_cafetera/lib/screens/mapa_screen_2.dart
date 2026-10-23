@@ -6,7 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import '../config/mapa_corredor.dart';
 import '../controllers/mapa_controller.dart';
 import '../controllers/mapa_ruta_controller.dart';
-import '../models/ruta_predefinida_model.dart';
+import '../models/ruta_model.dart';
 import '../models/sitio_turistico_model.dart';
 import '../services/ruta_service.dart';
 import '../services/ubicacion_service.dart';
@@ -21,6 +21,7 @@ import '../widgets/mapa/mapa_detalle_sitio.dart';
 import '../widgets/mapa/mapa_ruta_panel.dart';
 import '../widgets/mapa/mapa_rutas_predefinidas.dart';
 import '../widgets/mapa/mapa_selector_ruta.dart';
+import '../l10n/textos.dart';
 
 class MapaScreen2 extends StatefulWidget {
   const MapaScreen2({
@@ -265,7 +266,7 @@ void initState() {
         !_rutaController.estado.estaSeleccionado(sitio)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'Puedes seleccionar máximo 4 sitios.',
           ),
         ),
@@ -320,7 +321,7 @@ void initState() {
     if (_rutaController.sitiosSeleccionados.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'Selecciona mínimo 2 sitios para calcular la ruta.',
           ),
         ),
@@ -331,7 +332,7 @@ void initState() {
 
     // Punto de partida: ubicación real del usuario (si es posible).
     _mostrarMensajeUbicacion(
-      'Obteniendo tu ubicación para iniciar la ruta...',
+      Textos.t('Obteniendo tu ubicación para iniciar la ruta...'),
     );
 
     final origen =
@@ -433,6 +434,12 @@ void initState() {
       return;
     }
 
+    // Las rutas predefinidas ya están disponibles para todos en la
+    // sección Rutas: no se guardan como ruta personal.
+    if (_rutaController.esRutaPredefinida) {
+      return;
+    }
+
     final sitios = _rutaController.rutaGuardadaSitios;
 
     if (sitios.length < 2) {
@@ -446,7 +453,7 @@ void initState() {
         sesion.id.trim().isEmpty ||
         sesion.token.trim().isEmpty) {
       _mostrarMensajeUbicacion(
-        'Inicia sesión para guardar tus rutas.',
+        Textos.t('Inicia sesión para guardar tus rutas.'),
       );
 
       return;
@@ -486,7 +493,7 @@ void initState() {
       );
 
       _mostrarMensajeUbicacion(
-        'Ruta guardada. Encuéntrala en la sección Rutas.',
+        Textos.t('Ruta guardada. Encuéntrala en la sección Rutas.'),
       );
     } catch (error) {
       if (!mounted) {
@@ -498,8 +505,7 @@ void initState() {
           .replaceFirst('Exception: ', '');
 
       _mostrarMensajeUbicacion(
-        'La ruta se muestra en el mapa, pero no se guardó: '
-        '$detalle',
+        Textos.t('La ruta se muestra en el mapa, pero no se guardó: {0}', [detalle]),
       );
     } finally {
       if (mounted) {
@@ -521,15 +527,14 @@ void initState() {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Guardar ruta'),
+          title: const Tr('Guardar ruta'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment:
                 CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Guárdala para recuperarla desde la '
-                'sección Rutas. Se conserva 24 horas.',
+              const Tr(
+                'Guárdala para recuperarla desde la sección Rutas. Se conserva 24 horas.',
               ),
               const SizedBox(
                 height: AppDimensions.spacingMd,
@@ -539,8 +544,8 @@ void initState() {
                 maxLength: 60,
                 textCapitalization:
                     TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de la ruta',
+                decoration: InputDecoration(
+                  labelText: Textos.t('Nombre de la ruta'),
                 ),
               ),
             ],
@@ -550,7 +555,7 @@ void initState() {
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
-              child: const Text('Solo ver'),
+              child: const Tr('Solo ver'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -562,7 +567,7 @@ void initState() {
 
                 Navigator.of(dialogContext).pop(nombre);
               },
-              child: const Text('Guardar'),
+              child: const Tr('Guardar'),
             ),
           ],
         );
@@ -611,15 +616,28 @@ void initState() {
   }
 
   Future<void> _seleccionarRutaPredefinida(
-    RutaPredefinidaModel ruta,
+    RutaModel ruta,
   ) async {
-    await _rutaController.seleccionarRutaPredefinida(
+    final seleccionada =
+        await _rutaController.seleccionarRutaApi(
       ruta: ruta,
       sitios:
           _mapaController.todosLosSitios,
     );
 
     if (!mounted) {
+      return;
+    }
+
+    if (!seleccionada) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _rutaController.mensaje ??
+                Textos.t('No fue posible abrir la ruta.'),
+          ),
+        ),
+      );
       return;
     }
 
@@ -872,11 +890,10 @@ void initState() {
       switch (resultado.estado) {
         case EstadoUbicacion.servicioDesactivado:
           await _mostrarDialogoUbicacion(
-            titulo: 'Ubicación desactivada',
+            titulo: Textos.t('Ubicación desactivada'),
             mensaje:
-                'Para centrar el mapa en tu ubicación actual, '
-                'activa la ubicación del dispositivo.',
-            accionTexto: 'Abrir ubicación',
+                Textos.t('Para centrar el mapa en tu ubicación actual, activa la ubicación del dispositivo.'),
+            accionTexto: Textos.t('Abrir ubicación'),
             accion: Geolocator.openLocationSettings,
           );
 
@@ -884,18 +901,17 @@ void initState() {
 
         case EstadoUbicacion.permisoDenegado:
           _mostrarMensajeUbicacion(
-            'Se necesita permiso de ubicación para centrar el mapa.',
+            Textos.t('Se necesita permiso de ubicación para centrar el mapa.'),
           );
 
           return;
 
         case EstadoUbicacion.permisoBloqueado:
           await _mostrarDialogoUbicacion(
-            titulo: 'Permiso de ubicación requerido',
+            titulo: Textos.t('Permiso de ubicación requerido'),
             mensaje:
-                'El permiso de ubicación está bloqueado. '
-                'Puedes habilitarlo desde la configuración de la aplicación.',
-            accionTexto: 'Abrir configuración',
+                Textos.t('El permiso de ubicación está bloqueado. Puedes habilitarlo desde la configuración de la aplicación.'),
+            accionTexto: Textos.t('Abrir configuración'),
             accion: Geolocator.openAppSettings,
           );
 
@@ -903,8 +919,7 @@ void initState() {
 
         case EstadoUbicacion.error:
           _mostrarMensajeUbicacion(
-            'No fue posible obtener tu ubicación actual. '
-            'Se muestra el corredor Garzón–Gigante.',
+            Textos.t('No fue posible obtener tu ubicación actual. Se muestra el corredor Garzón–Gigante.'),
           );
 
           _verCorredor();
@@ -919,7 +934,7 @@ void initState() {
 
       if (ubicacion == null) {
         _mostrarMensajeUbicacion(
-          'No fue posible obtener tu ubicación actual.',
+          Textos.t('No fue posible obtener tu ubicación actual.'),
         );
 
         return;
@@ -938,9 +953,7 @@ void initState() {
             MapaCorredor.distanciaAlCentroKm(ubicacionActual);
 
         _mostrarMensajeUbicacion(
-          'Estás fuera del corredor Garzón–Gigante '
-          '(a unos ${km.round()} km). '
-          'Se muestra el área turística.',
+          Textos.t('Estás fuera del corredor Garzón–Gigante (a unos {0} km). Se muestra el área turística.', [km.round()]),
         );
 
         _verCorredor();
@@ -996,7 +1009,7 @@ void initState() {
                 Navigator.of(context).pop();
               },
               child:
-                  const Text('Cancelar'),
+                  const Tr('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -1133,8 +1146,8 @@ void initState() {
                   Text(
                     _rutaController
                             .mostrarRutaGuardada
-                        ? 'Ocultar ruta'
-                        : 'Ver ruta',
+                        ? Textos.t('Ocultar ruta')
+                        : Textos.t('Ver ruta'),
                     style:
                         const TextStyle(
                       fontWeight:
@@ -1166,12 +1179,12 @@ void initState() {
           _rutaController.rutaResultado ==
                   null
               ? ''
-              : '${_rutaController.rutaResultado!.distanciaKm.toStringAsFixed(2)} km',
+              : Textos.t('{0} km', [_rutaController.rutaResultado!.distanciaKm.toStringAsFixed(2)]),
       duracion:
           _rutaController.rutaResultado ==
                   null
               ? ''
-              : '${_rutaController.rutaResultado!.duracionMinutos.toStringAsFixed(0)} min',
+              : Textos.t('{0} min', [_rutaController.rutaResultado!.duracionMinutos.toStringAsFixed(0)]),
       mensaje:
           _rutaController.mensaje ?? '',
       calculando:
@@ -1187,6 +1200,111 @@ void initState() {
                   .sitiosSeleccionados
                   .length >=
               2,
+    );
+  }
+
+  // ============================================================
+  // ZONA INFERIOR: PANEL DE RUTA + BARRA "CREAR MI RUTA"
+  // ============================================================
+  //
+  // El panel de la ruta (título, sitios y cierre) y la barra
+  // "Crear mi ruta" se muestran a la vez al abrir una ruta
+  // predefinida. Antes eran dos Positioned anclados a la misma
+  // altura y se tapaban entre sí. Ahora van juntos en una sola
+  // columna: el panel arriba, la barra debajo y un espacio entre
+  // ambos. Si falta altura, el panel se encoge y se desplaza por
+  // dentro; en pantallas muy bajas se desplaza toda la zona.
+  // ============================================================
+
+  static const double _alturaMinimaZonaInferior = 320;
+
+  bool get _mostrarPanelRuta =>
+      !_mostrarResumenRuta &&
+      _rutaController.modoCrearRuta &&
+      (_rutaController.calculando ||
+          _rutaController.mensaje != null ||
+          _rutaController.rutaResultado != null);
+
+  bool get _mostrarBarraInferior =>
+      !_modoSitioPublico && !_mostrarResumenRuta;
+
+  Widget _zonaInferiorRuta(double topReservado) {
+    final bottom = _rutaController.modoCrearRuta
+        ? AppDimensions.mapaBarraRutaBottom
+        : AppDimensions.spacingXl;
+
+    if (!_mostrarPanelRuta) {
+      return Positioned(
+        left: AppDimensions.spacingMd,
+        right: AppDimensions.spacingMd,
+        bottom: bottom,
+        child: SafeArea(
+          top: false,
+          child: _barraInferior(),
+        ),
+      );
+    }
+
+    final panel = _panelRuta();
+    final barra = _mostrarBarraInferior ? _barraInferior() : null;
+
+    return Positioned(
+      left: AppDimensions.spacingMd,
+      right: AppDimensions.spacingMd,
+      top: topReservado,
+      bottom: bottom,
+      child: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, restricciones) {
+            final hijos = <Widget>[
+              panel,
+              if (barra != null) ...[
+                const SizedBox(
+                  height: AppDimensions.spacingMd,
+                ),
+                barra,
+              ],
+            ];
+
+            // Poca altura (pantalla baja o horizontal): todo se
+            // desplaza, con los botones siempre al final.
+            if (restricciones.maxHeight <
+                _alturaMinimaZonaInferior) {
+              return Align(
+                alignment: Alignment.bottomCenter,
+                child: SingleChildScrollView(
+                  reverse: true,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.stretch,
+                    children: hijos,
+                  ),
+                ),
+              );
+            }
+
+            // Altura suficiente: la barra conserva su tamaño y el
+            // panel usa el espacio restante (con desplazamiento
+            // interno si su contenido no cabe).
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment:
+                  CrossAxisAlignment.stretch,
+              children: [
+                Flexible(child: panel),
+                if (barra != null) ...[
+                  const SizedBox(
+                    height: AppDimensions.spacingMd,
+                  ),
+                  barra,
+                ],
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -1250,7 +1368,7 @@ void initState() {
                             AppDimensions.spacingSm,
                       ),
                       const Expanded(
-                        child: Text(
+                        child: Tr(
                           'RUTA CALCULADA',
                           style:
                               TextStyle(
@@ -1274,25 +1392,26 @@ void initState() {
                         child:
                             _datoResumenRuta(
                           Icons.location_on,
-                          '${sitios.length} sitios',
+                          Textos.t('{0} sitios', [sitios.length]),
                         ),
                       ),
                       Expanded(
                         child:
                             _datoResumenRuta(
                           Icons.alt_route,
-                          '${_rutaController.distanciaTotalKm.toStringAsFixed(1)} km',
+                          Textos.t('{0} km', [_rutaController.distanciaTotalKm.toStringAsFixed(1)]),
                         ),
                       ),
                       Expanded(
                         child:
                             _datoResumenRuta(
                           Icons.schedule,
-                          '${_rutaController.duracionTotalMinutos.toStringAsFixed(0)} min',
+                          Textos.t('{0} de viaje', [_formatoMinutos(_rutaController.duracionTotalMinutos.round())]),
                         ),
                       ),
                     ],
                   ),
+                  ..._bloqueActividadesResumen(),
 
                   const SizedBox(
                     height:
@@ -1354,13 +1473,34 @@ void initState() {
                               ),
 
                               Expanded(
-                                child: Text(
-                                  sitio.nombre,
-                                  style:
-                                      const TextStyle(
-                                    fontWeight:
-                                        FontWeight.w700,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .start,
+                                  children: [
+                                    Text(
+                                      sitio.nombre,
+                                      style:
+                                          const TextStyle(
+                                        fontWeight:
+                                            FontWeight.w700,
+                                      ),
+                                    ),
+                                    if (_rutaController
+                                            .minutosActividadDeSitio(
+                                          sitio.id,
+                                        ) !=
+                                        null)
+                                      Tr(
+                                        '{0} en el sitio', args: [_formatoMinutos(_rutaController.minutosActividadDeSitio(sitio.id)!)],
+                                        style:
+                                            const TextStyle(
+                                          color: AppColors
+                                              .textSecondary,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -1392,9 +1532,8 @@ void initState() {
                                         AppDimensions.spacingSm,
                                   ),
 
-                                  Text(
-                                    '↓ ${tramos[index].distanciaKm.toStringAsFixed(1)} km · '
-                                    '${tramos[index].duracionMinutos.toStringAsFixed(0)} min',
+                                  Tr(
+                                    '↓ {0} km · {1} min', args: [tramos[index].distanciaKm.toStringAsFixed(1), tramos[index].duracionMinutos.toStringAsFixed(0)],
                                     style:
                                         const TextStyle(
                                       color:
@@ -1425,7 +1564,7 @@ void initState() {
                           onPressed:
                               _cancelarRuta,
                           child:
-                              const Text(
+                              const Tr(
                             'Cancelar',
                           ),
                         ),
@@ -1446,7 +1585,7 @@ void initState() {
                             Icons.check,
                           ),
                           label:
-                              const Text(
+                              const Tr(
                             'Confirmar ruta',
                           ),
                         ),
@@ -1460,6 +1599,60 @@ void initState() {
         ),
       ),
     );
+  }
+
+  // ============================================================
+  // TIEMPOS: VIAJE vs ACTIVIDADES EN LOS SITIOS
+  // ============================================================
+  //
+  // El tiempo de viaje sale del cálculo por carretera. El tiempo en
+  // los sitios es el planificado en el itinerario de la ruta
+  // predefinida (estimado). Se muestran por separado y también se
+  // da la jornada total estimada (viaje + sitios).
+  // ============================================================
+
+  String _formatoMinutos(int minutos) {
+    final horas = minutos ~/ 60;
+    final resto = minutos % 60;
+
+    if (horas == 0) {
+      return Textos.t('{0} min', [resto]);
+    }
+
+    if (resto == 0) {
+      return Textos.t('{0} h', [horas]);
+    }
+
+    return Textos.t('{0} h {1} min', [horas, resto]);
+  }
+
+  List<Widget> _bloqueActividadesResumen() {
+    final actividades =
+        _rutaController.duracionActividadesMinutos;
+
+    if (actividades == null) {
+      return const [];
+    }
+
+    final viaje =
+        _rutaController.duracionTotalMinutos.round();
+
+    return [
+      const SizedBox(
+        height: AppDimensions.spacingSm,
+      ),
+      _datoResumenRuta(
+        Icons.timer_outlined,
+        Textos.t('{0} en los sitios (estimado)', [_formatoMinutos(actividades)]),
+      ),
+      const SizedBox(
+        height: AppDimensions.spacingXs,
+      ),
+      _datoResumenRuta(
+        Icons.hourglass_bottom,
+        Textos.t('Jornada total aprox. {0}', [_formatoMinutos(viaje + actividades)]),
+      ),
+    ];
   }
 
   // ============================================================
@@ -1480,9 +1673,7 @@ void initState() {
     }
 
     final texto = tramo != null
-        ? 'Desde tu ubicación · '
-            '${tramo.distanciaKm.toStringAsFixed(1)} km · '
-            '${tramo.duracionMinutos.toStringAsFixed(0)} min'
+        ? Textos.t('Desde tu ubicación · {0} km · {1} min', [tramo.distanciaKm.toStringAsFixed(1), tramo.duracionMinutos.toStringAsFixed(0)])
         : aviso!;
 
     return Padding(
@@ -1567,6 +1758,10 @@ void initState() {
             _cancelarRuta,
         onCalcular:
             _calcularRuta,
+        limite:
+            _rutaController
+                .estado
+                .limiteSitios,
       );
     }
 
@@ -1630,7 +1825,7 @@ void initState() {
                                 2,
                   ),
 
-                  const Text(
+                  const Tr(
                     'Rutas',
                     style:
                         TextStyle(
@@ -1664,21 +1859,21 @@ void initState() {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                tooltip: 'Volver',
+                tooltip: Textos.t('Volver'),
                 icon: const Icon(Icons.arrow_back),
               )
             : null,
         title: Text(
           _modoSitioPublico
-              ? 'Sitio turístico'
-              : 'Mi Ruta Cafetera',
+              ? Textos.t('Sitio turístico')
+              : Textos.t('Mi Ruta Cafetera'),
         ),
         centerTitle: true,
         actions: [
           if (!_modoSitioPublico)
             IconButton(
               onPressed: _mapaController.cargarDatos,
-              tooltip: 'Actualizar',
+              tooltip: Textos.t('Actualizar'),
               icon: const Icon(Icons.refresh),
             ),
         ],
@@ -1872,56 +2067,14 @@ void initState() {
                 _resumenRutaCalculada(),
 
               // ==================================================
-              // PANEL DE RUTA
+              // PANEL DE RUTA + BARRA INFERIOR
               // ==================================================
+              //
+              // Van en una misma columna para que no se superpongan.
 
-              if (!_mostrarResumenRuta &&
-                  _rutaController
-                      .modoCrearRuta &&
-                  (_rutaController
-                          .calculando ||
-                      _rutaController
-                              .mensaje !=
-                          null ||
-                      _rutaController
-                              .rutaResultado !=
-                          null))
-                Positioned(
-                  left:
-                      AppDimensions.spacingMd,
-                  right:
-                      AppDimensions.spacingMd,
-                  bottom:
-                      AppDimensions
-                          .mapaPanelBottom,
-                  child:
-                      _panelRuta(),
-                ),
-
-              // ==================================================
-              // BARRA INFERIOR
-              // ==================================================
-
-              if (!_modoSitioPublico &&
-                  !_mostrarResumenRuta)
-                Positioned(
-                  left:
-                      AppDimensions.spacingMd,
-                  right:
-                      AppDimensions.spacingMd,
-                  bottom:
-                      _rutaController
-                              .modoCrearRuta
-                          ? AppDimensions
-                              .mapaBarraRutaBottom
-                          : AppDimensions
-                              .spacingXl,
-                  child: SafeArea(
-                    top: false,
-                    child:
-                        _barraInferior(),
-                  ),
-                ),
+              if (_mostrarPanelRuta ||
+                  _mostrarBarraInferior)
+                _zonaInferiorRuta(controlesTop),
 
               // ==================================================
               // CARGANDO
@@ -1969,7 +2122,7 @@ void initState() {
                             ),
 
                             Expanded(
-                              child: Text(
+                              child: Tr(
                                 'Cargando sitios turísticos...',
                               ),
                             ),
@@ -2029,7 +2182,7 @@ void initState() {
                                 ),
 
                                 Expanded(
-                                  child: Text(
+                                  child: Tr(
                                     'No se pudieron cargar los datos',
                                     style:
                                         TextStyle(
@@ -2081,7 +2234,7 @@ void initState() {
                                 Icons.refresh,
                               ),
                               label:
-                                  const Text(
+                                  const Tr(
                                 'Reintentar',
                               ),
                             ),
@@ -2098,3 +2251,5 @@ void initState() {
     );
   }
 }
+
+

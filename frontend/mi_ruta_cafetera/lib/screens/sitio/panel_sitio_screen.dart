@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -8,6 +7,7 @@ import '../../widgets/sitio/navegacion_sitio.dart';
 
 import 'sitio_actividades_screen.dart';
 import 'sitio_contenido_screen.dart';
+import 'sitio_cuenta_screen.dart';
 import 'sitio_dashboard_screen.dart';
 import 'sitio_multimedia_screen.dart';
 import 'sitio_perfil_screen.dart';
@@ -28,6 +28,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
   static const List<String> _titulos = [
     'Inicio',
     'Mi sitio',
+    'Cuenta',
     'Contenido',
     'Multimedia',
     'Actividades',
@@ -39,6 +40,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
   static const List<IconData> _iconos = [
     Icons.dashboard_rounded,
     Icons.storefront_rounded,
+    Icons.manage_accounts_rounded,
     Icons.article_rounded,
     Icons.photo_library_rounded,
     Icons.local_activity_rounded,
@@ -50,6 +52,7 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
   late final List<Widget> _pantallas = [
     const SitioDashboardScreen(),
     const SitioPerfilScreen(),
+    const SitioCuentaScreen(),
     const SitioContenidoScreen(),
     const SitioMultimediaScreen(),
     const SitioActividadesScreen(),

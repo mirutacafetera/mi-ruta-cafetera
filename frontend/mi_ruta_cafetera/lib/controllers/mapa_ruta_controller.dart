@@ -1,11 +1,14 @@
 ﻿import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../models/ruta_model.dart';
 import '../models/ruta_predefinida_model.dart';
 import '../models/sitio_turistico_model.dart';
 import '../services/routing_service.dart';
 import '../widgets/mapa/mapa_estado_ruta.dart';
-import '../utils/text_utils.dart';
+import '../l10n/textos.dart';
+import 'mapa_ruta/itinerario_ruta_helper.dart';
+import 'mapa_ruta/seleccion_ruta_helper.dart';
 
 class MapaRutaController extends ChangeNotifier {
   MapaRutaController({
@@ -54,6 +57,20 @@ class MapaRutaController extends ChangeNotifier {
 
   String? _avisoOrigen;
 
+  // ------------------------------------------------------------
+  // ITINERARIO DE UNA RUTA PREDEFINIDA (API)
+  // ------------------------------------------------------------
+  //
+  // Tiempo planificado de la ACTIVIDAD en cada sitio, por id de
+  // sitio. Es independiente del tiempo de viaje por carretera, que
+  // viene del cálculo de la ruta. Vacío en rutas personales.
+  // ------------------------------------------------------------
+  Map<String, int> _minutosActividadPorSitio = {};
+
+  // true cuando la ruta mostrada es una ruta predefinida de la API
+  // (administrada, no guardable como ruta personal).
+  bool _esRutaPredefinida = false;
+
   // Identificador de la ruta ya guardada en la API (si existe).
   // Evita guardar dos veces la misma ruta.
   String? _rutaPersistidaId;
@@ -86,6 +103,41 @@ class MapaRutaController extends ChangeNotifier {
   /// Explica por qué la ruta no empieza en la ubicación del
   /// usuario (GPS desactivado, permiso denegado, fuera del área).
   String? get avisoOrigen => _avisoOrigen;
+
+  /// true si la ruta es una predefinida de la API. Estas rutas ya
+  /// existen para todos los usuarios, por lo que no se ofrecen para
+  /// guardar como ruta personal.
+  bool get esRutaPredefinida => _esRutaPredefinida;
+
+  /// Minutos planificados en el sitio [sitioId] (ruta predefinida),
+  /// o null si la ruta no define ese dato.
+  int? minutosActividadDeSitio(String sitioId) =>
+      _minutosActividadPorSitio[sitioId];
+
+  /// Suma de los minutos planificados en los sitios de la ruta
+  /// mostrada, o null si no hay itinerario con duraciones.
+  ///
+  /// NO incluye el tiempo de viaje: [duracionTotalMinutos] es solo
+  /// el desplazamiento por carretera.
+  int? get duracionActividadesMinutos {
+    if (_minutosActividadPorSitio.isEmpty) {
+      return null;
+    }
+
+    var total = 0;
+    var hayDatos = false;
+
+    for (final sitio in _rutaGuardadaSitios) {
+      final minutos = _minutosActividadPorSitio[sitio.id];
+
+      if (minutos != null) {
+        total += minutos;
+        hayDatos = true;
+      }
+    }
+
+    return hayDatos ? total : null;
+  }
 
   /// Identificador de la ruta guardada en la API, o null si la
   /// ruta mostrada todavía no se ha guardado.
@@ -181,7 +233,7 @@ class MapaRutaController extends ChangeNotifier {
 
     if (seleccionados.length < 2) {
       _mensaje =
-          'Selecciona mínimo 2 sitios para calcular la ruta.';
+          Textos.t('Selecciona mínimo 2 sitios para calcular la ruta.');
 
       notifyListeners();
 
@@ -192,8 +244,7 @@ class MapaRutaController extends ChangeNotifier {
       (sitio) => !sitio.enAreaTuristica,
     )) {
       _mensaje =
-          'Hay sitios sin coordenadas válidas dentro del '
-          'corredor Garzón–Gigante.';
+          Textos.t('Hay sitios sin coordenadas válidas dentro del corredor Garzón–Gigante.');
 
       notifyListeners();
 
@@ -202,7 +253,7 @@ class MapaRutaController extends ChangeNotifier {
 
     _calculando = true;
     _mensaje =
-        'Calculando el mejor recorrido por carretera.';
+        Textos.t('Calculando el mejor recorrido por carretera.');
 
     notifyListeners();
 
@@ -241,7 +292,7 @@ class MapaRutaController extends ChangeNotifier {
       _mostrarRutaGuardada = false;
 
       _calculando = false;
-      _mensaje = 'Ruta calculada correctamente.';
+      _mensaje = Textos.t('Ruta calculada correctamente.');
 
       // NO cancelamos aquí el modo de creación.
       // El usuario debe poder ver el resumen y decidir
@@ -252,7 +303,7 @@ class MapaRutaController extends ChangeNotifier {
     } catch (e) {
       _calculando = false;
       _mensaje =
-          'No fue posible calcular la ruta: $e';
+          Textos.t('No fue posible calcular la ruta: {0}', [e]);
 
       notifyListeners();
 
@@ -317,7 +368,7 @@ class MapaRutaController extends ChangeNotifier {
     }
 
     _mostrarRutaGuardada = true;
-    _mensaje = 'Ruta confirmada.';
+    _mensaje = Textos.t('Ruta confirmada.');
 
     // Ahora sí salimos del modo de creación.
     estado.cancelar();
@@ -340,10 +391,14 @@ class MapaRutaController extends ChangeNotifier {
     required String nombre,
     required List<SitioTuristicoModel> sitios,
     String? rutaId,
+    LatLng? origen,
+    String? avisoOrigen,
+    int maxSitios = MapaEstadoRuta.maxSitios,
+    List<ParadaRutaModel> paradas = const [],
   }) async {
     if (sitios.length < 2) {
       _mensaje =
-          'La ruta guardada no tiene suficientes sitios.';
+          Textos.t('La ruta guardada no tiene suficientes sitios.');
 
       notifyListeners();
 
@@ -354,12 +409,12 @@ class MapaRutaController extends ChangeNotifier {
         .where(
           (sitio) => sitio.enAreaTuristica,
         )
-        .take(MapaEstadoRuta.maxSitios)
+        .take(maxSitios)
         .toList();
 
     if (sitiosValidos.length < 2) {
       _mensaje =
-          'Los sitios de esta ruta no tienen coordenadas válidas.';
+          Textos.t('Los sitios de esta ruta no tienen coordenadas válidas.');
 
       notifyListeners();
 
@@ -380,30 +435,37 @@ class MapaRutaController extends ChangeNotifier {
     );
 
     _rutaPersistidaId = rutaId;
+    _minutosActividadPorSitio = _minutosDeParadas(paradas);
 
     _calculando = true;
     _mensaje =
-        'Cargando y calculando tu ruta...';
+        Textos.t('Cargando y calculando tu ruta...');
 
     notifyListeners();
 
     try {
-      final puntos = sitiosValidos
-          .map(
-            (sitio) => sitio.ubicacion,
-          )
-          .toList();
+      final puntos = <LatLng>[
+        ?origen,
+        ...sitiosValidos.map(
+          (sitio) => sitio.ubicacion,
+        ),
+      ];
 
       final resultado =
           await _routingService.calcularRuta(
         puntos,
       );
 
-      _aplicarResultado(resultado);
+      _aplicarResultado(
+        resultado,
+        origen: origen,
+      );
+      _avisoOrigen =
+          origen == null ? avisoOrigen : null;
       _rutaGuardada = true;
       _mostrarRutaGuardada = true;
       _calculando = false;
-      _mensaje = 'Ruta cargada correctamente.';
+      _mensaje = Textos.t('Ruta cargada correctamente.');
 
       estado.cancelar();
 
@@ -416,9 +478,10 @@ class MapaRutaController extends ChangeNotifier {
       _rutaGuardada = false;
       _mostrarRutaGuardada = false;
       _rutaPersistidaId = null;
+      _minutosActividadPorSitio = {};
       _calculando = false;
       _mensaje =
-          'No fue posible cargar la ruta: $e';
+          Textos.t('No fue posible cargar la ruta: {0}', [e]);
 
       notifyListeners();
 
@@ -501,6 +564,8 @@ class MapaRutaController extends ChangeNotifier {
     _tramoOrigen = null;
     _avisoOrigen = null;
     _rutaPersistidaId = null;
+    _minutosActividadPorSitio = {};
+    _esRutaPredefinida = false;
 
     if (notificar) {
       notifyListeners();
@@ -523,61 +588,10 @@ class MapaRutaController extends ChangeNotifier {
     required RutaPredefinidaModel ruta,
     required List<SitioTuristicoModel> sitios,
   }) {
-    final municipios = ruta.municipios
-        .map(TextUtils.normalizar)
-        .where(
-          (item) => item.isNotEmpty,
-        )
-        .toSet();
-
-    final categorias = ruta.categorias
-        .map(TextUtils.normalizar)
-        .where(
-          (item) => item.isNotEmpty,
-        )
-        .toSet();
-
-    if (municipios.isEmpty &&
-        categorias.isEmpty) {
-      return [];
-    }
-
-    return sitios.where((sitio) {
-      if (!sitio.activo ||
-          !sitio.enAreaTuristica) {
-        return false;
-      }
-
-      final municipio =
-          TextUtils.normalizar(
-        sitio.ciudad,
-      );
-
-      final categoria =
-          TextUtils.normalizar(
-        sitio.categoriaNombre,
-      );
-
-      final coincideMunicipio =
-          municipios.contains(municipio);
-
-      final coincideCategoria =
-          categoria.isNotEmpty &&
-              categorias.any(
-        (categoriaRuta) {
-          return categoria == categoriaRuta ||
-              categoria.contains(
-                categoriaRuta,
-              ) ||
-              categoriaRuta.contains(
-                categoria,
-              );
-        },
-      );
-
-      return coincideMunicipio ||
-          coincideCategoria;
-    }).toList();
+    return SeleccionRutaHelper.buscarSitios(
+      ruta: ruta,
+      sitios: sitios,
+    );
   }
 
   /// Elige, en orden de visita, hasta [MapaEstadoRuta.maxSitios]
@@ -594,196 +608,10 @@ class MapaRutaController extends ChangeNotifier {
     required RutaPredefinidaModel ruta,
     required List<SitioTuristicoModel> sitios,
   }) {
-    final candidatos =
-        buscarSitiosParaRutaPredefinida(
+    return SeleccionRutaHelper.seleccionarSitios(
       ruta: ruta,
       sitios: sitios,
     );
-
-    if (candidatos.isEmpty) {
-      return [];
-    }
-
-    const maximo = MapaEstadoRuta.maxSitios;
-
-    // ----------------------------------------------------------
-    // CORREDORES POR MUNICIPIO
-    // ----------------------------------------------------------
-
-    final ordenMunicipios = ruta.municipios
-        .map(TextUtils.normalizar)
-        .toList();
-
-    if (ordenMunicipios.isNotEmpty &&
-        ruta.categorias.isEmpty) {
-      final grupos = <List<SitioTuristicoModel>>[
-        for (final _ in ordenMunicipios) [],
-      ];
-
-      for (final sitio in candidatos) {
-        final indice = ordenMunicipios.indexOf(
-          TextUtils.normalizar(sitio.ciudad),
-        );
-
-        if (indice != -1) {
-          grupos[indice].add(sitio);
-        }
-      }
-
-      final elegidos =
-          <MapEntry<int, SitioTuristicoModel>>[];
-
-      var ronda = 0;
-
-      while (elegidos.length < maximo) {
-        var agregado = false;
-
-        for (var g = 0; g < grupos.length; g++) {
-          if (elegidos.length >= maximo) {
-            break;
-          }
-
-          if (ronda < grupos[g].length) {
-            elegidos.add(
-              MapEntry(g, grupos[g][ronda]),
-            );
-
-            agregado = true;
-          }
-        }
-
-        if (!agregado) {
-          break;
-        }
-
-        ronda++;
-      }
-
-      // Orden estable por municipio: Gigante, Zuluaga, Garzón...
-      final ordenados = <SitioTuristicoModel>[];
-
-      for (var g = 0; g < grupos.length; g++) {
-        ordenados.addAll(
-          elegidos
-              .where((item) => item.key == g)
-              .map((item) => item.value),
-        );
-      }
-
-      return ordenados;
-    }
-
-    // ----------------------------------------------------------
-    // POR CATEGORÍA
-    // ----------------------------------------------------------
-
-    final ordenCategorias = ruta.categorias
-        .map(TextUtils.normalizar)
-        .toList();
-
-    final gruposCategoria = <List<SitioTuristicoModel>>[
-      for (final _ in ordenCategorias) [],
-    ];
-
-    final sinGrupo = <SitioTuristicoModel>[];
-
-    for (final sitio in candidatos) {
-      final categoria = TextUtils.normalizar(
-        sitio.categoriaNombre,
-      );
-
-      final indice = ordenCategorias.indexWhere(
-        (categoriaRuta) =>
-            categoria.isNotEmpty &&
-            (categoria == categoriaRuta ||
-            categoria.contains(categoriaRuta) ||
-            categoriaRuta.contains(categoria)),
-      );
-
-      if (indice == -1) {
-        sinGrupo.add(sitio);
-      } else {
-        gruposCategoria[indice].add(sitio);
-      }
-    }
-
-    final elegidosCategoria = <SitioTuristicoModel>[];
-
-    var rondaCategoria = 0;
-
-    while (elegidosCategoria.length < maximo) {
-      var agregadoCategoria = false;
-
-      for (final grupo in gruposCategoria) {
-        if (elegidosCategoria.length >= maximo) {
-          break;
-        }
-
-        if (rondaCategoria < grupo.length) {
-          elegidosCategoria.add(grupo[rondaCategoria]);
-
-          agregadoCategoria = true;
-        }
-      }
-
-      if (!agregadoCategoria) {
-        break;
-      }
-
-      rondaCategoria++;
-    }
-
-    for (final sitio in sinGrupo) {
-      if (elegidosCategoria.length >= maximo) {
-        break;
-      }
-
-      elegidosCategoria.add(sitio);
-    }
-
-    return _ordenarPorCercania(elegidosCategoria);
-  }
-
-  // Vecino más cercano partiendo del sitio más al norte.
-  List<SitioTuristicoModel> _ordenarPorCercania(
-    List<SitioTuristicoModel> sitios,
-  ) {
-    if (sitios.length < 3) {
-      return sitios;
-    }
-
-    const distancia = Distance();
-
-    final pendientes =
-        List<SitioTuristicoModel>.from(sitios);
-
-    pendientes.sort(
-      (a, b) => b.latitud.compareTo(a.latitud),
-    );
-
-    final ordenados = <SitioTuristicoModel>[
-      pendientes.removeAt(0),
-    ];
-
-    while (pendientes.isNotEmpty) {
-      final actual = ordenados.last;
-
-      pendientes.sort(
-        (a, b) => distancia(
-          actual.ubicacion,
-          a.ubicacion,
-        ).compareTo(
-          distancia(
-            actual.ubicacion,
-            b.ubicacion,
-          ),
-        ),
-      );
-
-      ordenados.add(pendientes.removeAt(0));
-    }
-
-    return ordenados;
   }
 
   /// Selecciona los sitios de la plantilla en el modo de creación
@@ -800,7 +628,7 @@ class MapaRutaController extends ChangeNotifier {
 
     if (seleccionados.length < 2) {
       _mensaje =
-          'No hay suficientes sitios disponibles para esta ruta.';
+          Textos.t('No hay suficientes sitios disponibles para esta ruta.');
 
       notifyListeners();
 
@@ -819,7 +647,7 @@ class MapaRutaController extends ChangeNotifier {
 
     _nombreRuta = ruta.nombre;
     _mensaje =
-        'Ruta predefinida seleccionada.';
+        Textos.t('Ruta predefinida seleccionada.');
 
     notifyListeners();
   }
@@ -838,7 +666,7 @@ class MapaRutaController extends ChangeNotifier {
 
     if (seleccionados.length < 2) {
       _mensaje =
-          'No hay suficientes sitios disponibles para esta ruta.';
+          Textos.t('No hay suficientes sitios disponibles para esta ruta.');
 
       notifyListeners();
 
@@ -849,6 +677,119 @@ class MapaRutaController extends ChangeNotifier {
       nombre: ruta.nombre,
       sitios: seleccionados,
     );
+  }
+
+  // ============================================================
+  // RUTA PREDEFINIDA DE LA API
+  // ============================================================
+  //
+  // Las rutas predefinidas se administran en MongoDB (colección
+  // de rutas, tipo "predefinida") y llegan con un itinerario
+  // (paradas) en orden de visita. Abrirlas NO guarda nada.
+  // ============================================================
+
+  /// Minutos de actividad por id de sitio, tomados de las paradas.
+  Map<String, int> _minutosDeParadas(
+    List<ParadaRutaModel> paradas,
+  ) {
+    return ItinerarioRutaHelper.minutosDeParadas(paradas);
+  }
+
+  /// Sitios de una ruta de la API en orden de visita (primero por
+  /// las paradas; si no hay, por `ruta.sitios`).
+  ///
+  /// Devuelve una lista vacía si algún sitio de la ruta no está
+  /// disponible o no tiene coordenadas válidas dentro del corredor:
+  /// una ruta temática incompleta no debe mostrarse como si lo
+  /// estuviera.
+  List<SitioTuristicoModel> sitiosDeRutaApi({
+    required RutaModel ruta,
+    required List<SitioTuristicoModel> sitios,
+  }) {
+    return ItinerarioRutaHelper.sitiosDeRutaApi(
+      ruta: ruta,
+      sitios: sitios,
+    );
+  }
+
+  /// Selecciona los sitios de una ruta predefinida de la API en el
+  /// modo de creación del mapa, para que el usuario la calcule
+  /// (con su ubicación como origen) y la confirme. NO guarda nada.
+  Future<bool> seleccionarRutaApi({
+    required RutaModel ruta,
+    required List<SitioTuristicoModel> sitios,
+  }) async {
+    final seleccionados = sitiosDeRutaApi(
+      ruta: ruta,
+      sitios: sitios,
+    );
+
+    if (seleccionados.isEmpty) {
+      _mensaje =
+          Textos.t('Algunos sitios de esta ruta no están disponibles.');
+      notifyListeners();
+      return false;
+    }
+
+    limpiarRutaGuardada(
+      notificar: false,
+    );
+
+    estado.iniciar(
+      limite: MapaEstadoRuta.maxSitiosPredefinida,
+    );
+
+    for (final sitio in seleccionados) {
+      estado.alternarSitio(sitio);
+    }
+
+    _nombreRuta = ruta.nombre;
+    _minutosActividadPorSitio = _minutosDeParadas(ruta.paradas);
+    _esRutaPredefinida = true;
+    _mensaje = Textos.t('Ruta predefinida seleccionada.');
+
+    notifyListeners();
+
+    return true;
+  }
+
+  /// Calcula y muestra directamente una ruta predefinida de la API
+  /// (por ejemplo, al abrirla desde la sección Rutas). NO guarda
+  /// nada. Si se recibe [origen] la ruta empieza en la ubicación
+  /// del usuario; si no, se explica el motivo en [avisoOrigen].
+  Future<bool> cargarRutaApi({
+    required RutaModel ruta,
+    required List<SitioTuristicoModel> sitios,
+    LatLng? origen,
+    String? avisoOrigen,
+  }) async {
+    final seleccionados = sitiosDeRutaApi(
+      ruta: ruta,
+      sitios: sitios,
+    );
+
+    if (seleccionados.isEmpty) {
+      _mensaje =
+          Textos.t('Algunos sitios de esta ruta no están disponibles.');
+      notifyListeners();
+      return false;
+    }
+
+    final cargada = await cargarRutaGuardada(
+      nombre: ruta.nombre,
+      sitios: seleccionados,
+      origen: origen,
+      avisoOrigen: avisoOrigen,
+      maxSitios: MapaEstadoRuta.maxSitiosPredefinida,
+      paradas: ruta.paradas,
+    );
+
+    if (cargada) {
+      _esRutaPredefinida = true;
+      notifyListeners();
+    }
+
+    return cargada;
   }
 
   // ============================================================

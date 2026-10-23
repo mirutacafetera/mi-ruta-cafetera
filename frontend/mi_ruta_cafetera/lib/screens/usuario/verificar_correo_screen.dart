@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/usuario/auth_usuario_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class VerificarCorreoScreen extends StatefulWidget {
   final String correo;
@@ -54,14 +55,14 @@ class _VerificarCorreoScreenState
 
     if (codigo.isEmpty) {
       mostrarMensaje(
-        'Ingresa el código de verificación',
+        Textos.t('Ingresa el código de verificación'),
       );
       return;
     }
 
     if (codigo.length != 6) {
       mostrarMensaje(
-        'El código debe tener 6 dígitos',
+        Textos.t('El código debe tener 6 dígitos'),
       );
       return;
     }
@@ -87,7 +88,7 @@ class _VerificarCorreoScreenState
         SnackBar(
           content: Text(
             resultado['mensaje'] ??
-                'Correo verificado correctamente',
+                Textos.t('Correo verificado correctamente'),
           ),
         ),
       );
@@ -103,7 +104,7 @@ class _VerificarCorreoScreenState
     } else {
       mostrarMensaje(
         resultado['mensaje'] ??
-            'Código incorrecto',
+            Textos.t('Código incorrecto'),
       );
     }
   }
@@ -116,7 +117,7 @@ class _VerificarCorreoScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: const Tr(
           'Verificar correo',
         ),
         centerTitle: true,
@@ -152,7 +153,7 @@ class _VerificarCorreoScreenState
               // TÍTULO
               // ==================================================
 
-              const Text(
+              const Tr(
                 'Verifica tu correo',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -166,9 +167,8 @@ class _VerificarCorreoScreenState
                 height: AppDimensions.spacingMd,
               ),
 
-              Text(
-                'Hemos enviado un código de 6 dígitos '
-                'a:\n${widget.correo}',
+              Tr(
+                'Hemos enviado un código de 6 dígitos a:\n{0}', args: [widget.correo],
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 15,
@@ -195,12 +195,12 @@ class _VerificarCorreoScreenState
                   letterSpacing: 8,
                   color: AppColors.textPrimary,
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Código de verificación',
-                  prefixIcon: Icon(
+                decoration: InputDecoration(
+                  labelText: Textos.t('Código de verificación'),
+                  prefixIcon: const Icon(
                     Icons.password,
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   counterText: '',
                 ),
               ),
@@ -228,7 +228,7 @@ class _VerificarCorreoScreenState
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
+                      : const Tr(
                           'Verificar correo',
                           style: TextStyle(
                             fontSize: 16,
@@ -247,10 +247,8 @@ class _VerificarCorreoScreenState
               // INFORMACIÓN
               // ==================================================
 
-              const Text(
-                'El código tiene una duración limitada. '
-                'Si no lo encuentras, revisa también '
-                'la carpeta de spam o correo no deseado.',
+              const Tr(
+                'El código tiene una duración limitada. Si no lo encuentras, revisa también la carpeta de spam o correo no deseado.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,

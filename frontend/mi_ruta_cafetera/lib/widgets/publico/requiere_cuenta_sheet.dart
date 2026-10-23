@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class RequiereCuentaSheet {
   RequiereCuentaSheet._();
@@ -74,7 +75,7 @@ class RequiereCuentaSheet {
               const SizedBox(
                 height: AppDimensions.spacingMd + 6,
               ),
-              Text(
+              Tr(
                 titulo,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
@@ -86,7 +87,7 @@ class RequiereCuentaSheet {
               const SizedBox(
                 height: AppDimensions.spacingSm + 2,
               ),
-              Text(
+              Tr(
                 mensaje,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
@@ -106,7 +107,7 @@ class RequiereCuentaSheet {
                     Navigator.pop(context);
                     onIniciarSesion();
                   },
-                  child: const Text(
+                  child: const Tr(
                     'Iniciar sesión',
                     style: TextStyle(
                       fontSize: 16,
@@ -123,7 +124,7 @@ class RequiereCuentaSheet {
                   Navigator.pop(context);
                   (onCrearCuenta ?? onIniciarSesion)();
                 },
-                child: const Text(
+                child: const Tr(
                   'Crear mi cuenta',
                 ),
               ),

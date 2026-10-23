@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../google/google_button.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class BotonGoogle extends StatelessWidget {
   final VoidCallback onPressed;
@@ -88,8 +89,8 @@ class BotonGoogle extends StatelessWidget {
                 ),
                 Text(
                   cargando
-                      ? 'Conectando con Google...'
-                      : 'Continuar con Google',
+                      ? Textos.t('Conectando con Google...')
+                      : Textos.t('Continuar con Google'),
                   style: const TextStyle(
                     color: Color(0xFF333333),
                     fontSize: 14,

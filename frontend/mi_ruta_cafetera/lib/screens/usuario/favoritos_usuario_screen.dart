@@ -6,6 +6,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/publico/sitio_card.dart';
 import 'detalle_sitio_usuario_screen.dart';
+import '../../l10n/textos.dart';
 
 class FavoritosUsuarioScreen extends StatefulWidget {
   final String usuarioId;
@@ -109,7 +110,7 @@ class _FavoritosUsuarioScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: Tr(
             'Sitio eliminado de favoritos.',
           ),
         ),
@@ -190,7 +191,7 @@ class _FavoritosUsuarioScreenState
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
+        content: Tr(
           'Sitio eliminado de favoritos.',
         ),
       ),
@@ -206,7 +207,7 @@ class _FavoritosUsuarioScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
+        title: const Tr(
           'Mis favoritos',
         ),
         backgroundColor: AppColors.primary,
@@ -288,7 +289,7 @@ class _FavoritosUsuarioScreenState
             const SizedBox(
               height: AppDimensions.spacingMd,
             ),
-            Text(
+            Tr(
               'Aún no tienes favoritos',
               style: Theme.of(context)
                   .textTheme
@@ -298,10 +299,8 @@ class _FavoritosUsuarioScreenState
             const SizedBox(
               height: AppDimensions.spacingSm,
             ),
-            Text(
-              'Guarda los sitios que quieras '
-              'visitar para encontrarlos '
-              'fácilmente.',
+            Tr(
+              'Guarda los sitios que quieras visitar para encontrarlos fácilmente.',
               textAlign: TextAlign.center,
               style: Theme.of(context)
                   .textTheme
@@ -334,7 +333,7 @@ class _FavoritosUsuarioScreenState
             const SizedBox(
               height: AppDimensions.spacingMd,
             ),
-            const Text(
+            const Tr(
               'No pudimos cargar tus favoritos.',
               textAlign: TextAlign.center,
             ),
@@ -343,7 +342,7 @@ class _FavoritosUsuarioScreenState
             ),
             ElevatedButton(
               onPressed: _cargarFavoritos,
-              child: const Text(
+              child: const Tr(
                 'Intentar nuevamente',
               ),
             ),
@@ -366,7 +365,7 @@ class _FavoritosUsuarioScreenState
     );
 
     if (categoria.contains('cafe')) {
-      return 'assets/images/sitios/cafe.jpeg';
+      return 'assets/images/sitios/cafe.jpg';
     }
 
     if (categoria.contains('artesania')) {
@@ -384,7 +383,7 @@ class _FavoritosUsuarioScreenState
     }
 
     if (categoria.contains('famil')) {
-      return 'assets/images/sitios/familiares.jpeg';
+      return 'assets/images/sitios/familiares.png';
     }
 
     if (categoria.contains('naturaleza') ||

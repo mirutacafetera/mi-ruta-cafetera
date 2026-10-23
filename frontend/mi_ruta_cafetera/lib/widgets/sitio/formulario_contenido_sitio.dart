@@ -1,28 +1,29 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+ 
 import '../../models/sitio/sitio_contenido_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../utils/avisos_sitio.dart';
 import 'audio_guia_borrador.dart';
 import 'seccion_audioguias.dart';
-
+ 
 typedef GuardarContenidoCallback = Future<bool> Function({
   required String titulo,
   required String descripcion,
   XFile? imagenPrincipal,
   required List<XFile> imagenes,
+  required List<String> imagenesAConservar,
   List<AudioGuiaBorrador>? audiosNuevos,
   List<String>? audiosAEliminar,
 });
-
+ 
 class FormularioContenidoSitio extends StatefulWidget {
   final String tituloDialogo;
   final String textoBoton;
   final SitioContenidoModel? contenidoExistente;
   final GuardarContenidoCallback onGuardar;
-
+ 
   const FormularioContenidoSitio({
     super.key,
     required this.tituloDialogo,
@@ -30,60 +31,61 @@ class FormularioContenidoSitio extends StatefulWidget {
     required this.contenidoExistente,
     required this.onGuardar,
   });
-
+ 
   @override
   State<FormularioContenidoSitio> createState() =>
       _FormularioContenidoSitioState();
 }
-
+ 
 class _FormularioContenidoSitioState
     extends State<FormularioContenidoSitio> {
   final ImagePicker _imagePicker = ImagePicker();
-
+ 
   late final TextEditingController _tituloController;
   late final TextEditingController _descripcionController;
-
+ 
   XFile? _imagenPrincipalSeleccionada;
   final List<XFile> _imagenesSeleccionadas = [];
-
+  final Set<String> _imagenesAEliminar = {};
+ 
   final List<AudioGuiaBorrador> _audiosNuevos = [];
   final Set<String> _audiosAEliminar = {};
-
+ 
   bool _guardando = false;
-
+ 
   bool get _esEdicion => widget.contenidoExistente != null;
-
+ 
   @override
   void initState() {
     super.initState();
-
+ 
     _tituloController = TextEditingController(
       text: widget.contenidoExistente?.titulo ?? '',
     );
-
+ 
     _descripcionController = TextEditingController(
       text: widget.contenidoExistente?.descripcion ?? '',
     );
   }
-
+ 
   @override
   void dispose() {
     _tituloController.dispose();
     _descripcionController.dispose();
     super.dispose();
   }
-
+ 
   Future<void> _seleccionarImagenPrincipal() async {
     if (_guardando) return;
-
+ 
     try {
       final imagen = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
       );
-
+ 
       if (imagen == null || !mounted) return;
-
+ 
       setState(() => _imagenPrincipalSeleccionada = imagen);
     } catch (_) {
       _mostrarMensaje(
@@ -92,21 +94,21 @@ class _FormularioContenidoSitioState
       );
     }
   }
-
+ 
   Future<void> _seleccionarGaleria() async {
     if (_guardando) return;
-
+ 
     try {
       final imagenes = await _imagePicker.pickMultiImage(
         imageQuality: 85,
       );
-
+ 
       if (imagenes.isEmpty || !mounted) return;
-
+ 
       setState(() {
         final rutasActuales =
             _imagenesSeleccionadas.map((imagen) => imagen.path).toSet();
-
+ 
         _imagenesSeleccionadas.addAll(
           imagenes.where(
             (imagen) => !rutasActuales.contains(imagen.path),
@@ -120,13 +122,13 @@ class _FormularioContenidoSitioState
       );
     }
   }
-
+ 
   void _eliminarImagenSeleccionada(int index) {
     if (_guardando) return;
-
+ 
     setState(() => _imagenesSeleccionadas.removeAt(index));
   }
-
+ 
   Widget _marcoImagenVacia({
     double? alto,
     IconData icono = Icons.image_outlined,
@@ -147,7 +149,7 @@ class _FormularioContenidoSitioState
       ),
     );
   }
-
+ 
   Widget _vistaPreviaImagen(
     XFile imagen, {
     double? alto,
@@ -170,14 +172,14 @@ class _FormularioContenidoSitioState
                 ),
               );
             }
-
+ 
             if (!snapshot.hasData) {
               return _marcoImagenVacia(
                 alto: alto,
                 icono: Icons.broken_image_outlined,
               );
             }
-
+ 
             return Image.memory(
               snapshot.data!,
               fit: BoxFit.cover,
@@ -191,10 +193,10 @@ class _FormularioContenidoSitioState
       ),
     );
   }
-
+ 
   Widget _construirImagenPrincipal() {
     final seleccionada = _imagenPrincipalSeleccionada;
-
+ 
     if (seleccionada != null) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,10 +230,10 @@ class _FormularioContenidoSitioState
         ],
       );
     }
-
+ 
     final existente =
         widget.contenidoExistente?.imagenPrincipal.trim() ?? '';
-
+ 
     if (existente.isNotEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,7 +263,7 @@ class _FormularioContenidoSitioState
         ],
       );
     }
-
+ 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -279,7 +281,7 @@ class _FormularioContenidoSitioState
       ],
     );
   }
-
+ 
   Widget _construirGaleriaSeleccionada() {
     if (_imagenesSeleccionadas.isEmpty) {
       return Container(
@@ -317,7 +319,7 @@ class _FormularioContenidoSitioState
         ),
       );
     }
-
+ 
     return LayoutBuilder(
       builder: (context, constraints) {
         final columnas = constraints.maxWidth < 300
@@ -325,7 +327,7 @@ class _FormularioContenidoSitioState
             : constraints.maxWidth < 460
                 ? 3
                 : 4;
-
+ 
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -372,12 +374,16 @@ class _FormularioContenidoSitioState
       },
     );
   }
-
+ 
   Widget _construirGaleriaExistente() {
-    final imagenes = widget.contenidoExistente?.imagenes ?? [];
-
-    if (imagenes.isEmpty) return const SizedBox.shrink();
-
+    final imagenes = (widget.contenidoExistente?.imagenes ?? [])
+        .where((url) => !_imagenesAEliminar.contains(url))
+        .toList();
+ 
+    if (imagenes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+ 
     return LayoutBuilder(
       builder: (context, constraints) {
         final columnas = constraints.maxWidth < 300
@@ -385,7 +391,7 @@ class _FormularioContenidoSitioState
             : constraints.maxWidth < 460
                 ? 3
                 : 4;
-
+ 
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -397,24 +403,59 @@ class _FormularioContenidoSitioState
             childAspectRatio: 0.88,
           ),
           itemBuilder: (context, index) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(
-                AppDimensions.sitioItemImageRadius,
-              ),
-              child: Image.network(
-                imagenes[index],
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _marcoImagenVacia(
-                  icono: Icons.broken_image_outlined,
+            final url = imagenes[index];
+ 
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.sitioItemImageRadius,
+                  ),
+                  child: Image.network(
+                    url,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => _marcoImagenVacia(
+                      icono: Icons.broken_image_outlined,
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(
+                  top: 5,
+                  right: 5,
+                  child: IconButton(
+                    tooltip: 'Eliminar imagen',
+                    onPressed: _guardando
+                        ? null
+                        : () {
+                            setState(() {
+                              _imagenesAEliminar.add(url);
+                            });
+                          },
+                    constraints: const BoxConstraints(
+                      minWidth: 34,
+                      minHeight: 34,
+                    ),
+                    padding: EdgeInsets.zero,
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.sitioPrimaryDark
+                          .withValues(alpha: 0.88),
+                      foregroundColor: Colors.white,
+                    ),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ],
             );
           },
         );
       },
     );
   }
-
+ 
   Widget _tituloSeccion(
     String titulo, {
     IconData? icono,
@@ -451,7 +492,7 @@ class _FormularioContenidoSitioState
       ],
     );
   }
-
+ 
   Widget _tarjeta(Widget contenido) {
     return Container(
       width: double.infinity,
@@ -477,7 +518,7 @@ class _FormularioContenidoSitioState
       child: contenido,
     );
   }
-
+ 
   Widget _construirInformacion() {
     return _tarjeta(
       Column(
@@ -517,7 +558,7 @@ class _FormularioContenidoSitioState
       ),
     );
   }
-
+ 
   Widget _construirSeccionImagenes() {
     return _tarjeta(
       Column(
@@ -570,7 +611,7 @@ class _FormularioContenidoSitioState
       ),
     );
   }
-
+ 
   Widget _campo({
     required TextEditingController controller,
     required String etiqueta,
@@ -646,7 +687,7 @@ class _FormularioContenidoSitioState
       ),
     );
   }
-
+ 
   Widget _construirAcciones() {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -657,7 +698,7 @@ class _FormularioContenidoSitioState
           style: _estiloBotonSecundario(),
           child: const Text('Cancelar'),
         );
-
+ 
         final guardar = ElevatedButton.icon(
           onPressed: _guardando ? null : _guardar,
           style: _estiloBotonPrincipal(),
@@ -676,7 +717,7 @@ class _FormularioContenidoSitioState
             overflow: TextOverflow.ellipsis,
           ),
         );
-
+ 
         if (constraints.maxWidth < 390) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -687,7 +728,7 @@ class _FormularioContenidoSitioState
             ],
           );
         }
-
+ 
         return Row(
           children: [
             Expanded(child: cancelar),
@@ -698,7 +739,7 @@ class _FormularioContenidoSitioState
       },
     );
   }
-
+ 
   bool _validarFormulario() {
     if (_tituloController.text.trim().length < 2) {
       _mostrarMensaje(
@@ -707,7 +748,7 @@ class _FormularioContenidoSitioState
       );
       return false;
     }
-
+ 
     if (_descripcionController.text.trim().length < 10) {
       _mostrarMensaje(
         'La descripción debe tener al menos 10 caracteres.',
@@ -715,7 +756,7 @@ class _FormularioContenidoSitioState
       );
       return false;
     }
-
+ 
     for (final audio in _audiosNuevos) {
       if (audio.titulo.trim().length < 2) {
         _mostrarMensaje(
@@ -725,66 +766,61 @@ class _FormularioContenidoSitioState
         return false;
       }
     }
-
+ 
     return true;
   }
-
+ 
   Future<void> _guardar() async {
     if (_guardando || !_validarFormulario()) return;
-
+ 
     setState(() => _guardando = true);
-
+ 
     try {
       final resultado = await widget.onGuardar(
         titulo: _tituloController.text.trim(),
         descripcion: _descripcionController.text.trim(),
         imagenPrincipal: _imagenPrincipalSeleccionada,
         imagenes: List<XFile>.from(_imagenesSeleccionadas),
+        imagenesAConservar: (widget.contenidoExistente?.imagenes ?? [])
+            .where((url) => !_imagenesAEliminar.contains(url))
+            .toList(),
         audiosNuevos: List<AudioGuiaBorrador>.from(_audiosNuevos),
         audiosAEliminar: List<String>.from(_audiosAEliminar),
       );
-
+ 
       if (!mounted) return;
-
+ 
       if (resultado) {
         Navigator.of(context).pop();
         return;
       }
     } catch (error) {
       if (!mounted) return;
-
+ 
       _mostrarMensaje(
         error.toString().replaceFirst('Exception: ', ''),
         esError: true,
       );
     }
-
+ 
     if (!mounted) return;
     setState(() => _guardando = false);
   }
-
+ 
   void _mostrarMensaje(
     String mensaje, {
     bool esError = false,
   }) {
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(mensaje),
-          backgroundColor: esError
-              ? AppColors.sitioError
-              : AppColors.sitioPrimary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
+ 
+    // Aviso en el overlay raíz: siempre queda encima del formulario.
+    if (esError) {
+      AvisosSitio.error(context, mensaje);
+    } else {
+      AvisosSitio.exito(context, mensaje);
+    }
   }
-
+ 
   ButtonStyle _estiloBotonPrincipal() {
     return ElevatedButton.styleFrom(
       backgroundColor: AppColors.sitioPrimary,
@@ -803,7 +839,7 @@ class _FormularioContenidoSitioState
       ),
     );
   }
-
+ 
   ButtonStyle _estiloBotonSecundario() {
     return OutlinedButton.styleFrom(
       foregroundColor: AppColors.sitioPrimary,
@@ -824,12 +860,12 @@ class _FormularioContenidoSitioState
       ),
     );
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     final alto = MediaQuery.sizeOf(context).height;
     final compacto = MediaQuery.sizeOf(context).width < 600;
-
+ 
     return Dialog(
       backgroundColor: AppColors.sitioBackground,
       surfaceTintColor: Colors.transparent,

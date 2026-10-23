@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 
 import '../../../../theme/app_dimensions.dart';
+import '../../../l10n/textos.dart';
 
 class DetalleResenasReservas extends StatelessWidget {
   final List<Widget> resenas;
@@ -33,7 +34,7 @@ class DetalleResenasReservas extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (reservas.isNotEmpty || cargandoReservas) ...[
-            Text(
+            Tr(
               'Reservas',
               style: Theme.of(context).textTheme.titleLarge,
             ),
@@ -45,7 +46,7 @@ class DetalleResenasReservas extends StatelessWidget {
             SizedBox(height: AppDimensions.spacingXxl),
           ],
           if (resenas.isNotEmpty || cargandoResenas) ...[
-            Text(
+            Tr(
               'Opiniones de los visitantes',
               style: Theme.of(context).textTheme.titleLarge,
             ),

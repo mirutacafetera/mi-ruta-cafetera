@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../l10n/textos.dart';
 
 class BotonComenzar extends StatefulWidget {
   final VoidCallback onPressed;
@@ -58,7 +59,7 @@ class _BotonComenzarState extends State<BotonComenzar> {
             ],
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: const Tr(
             'Comenzar a explorar',
             textAlign: TextAlign.center,
             style: TextStyle(

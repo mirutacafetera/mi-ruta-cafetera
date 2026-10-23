@@ -20,6 +20,7 @@ import 'cuenta_sitio/pantalla_cuenta_sitio.dart';
 import 'estadistica/pantalla_estadistica.dart';
 import 'producto/pantalla_producto.dart';
 import 'reporte/pantalla_reporte_admin.dart';
+import 'reporte/pantalla_reportes_sitios_admin.dart';
 import 'reserva/pantalla_reserva_admin.dart';
 import 'resena/pantalla_resenas_admin.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
@@ -60,7 +61,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   }
 
   void _actualizar() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _cargarCuenta() async {
@@ -68,10 +71,11 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
     if (!mounted) return;
 
-    final id = AdminServicioAutenticacion.idAdministrador;
+    final idAdministrador =
+        AdminServicioAutenticacion.idAdministrador;
 
-    if (id != null && id.isNotEmpty) {
-      await cuentaAdminController.cargarCuenta(id);
+    if (idAdministrador != null && idAdministrador.isNotEmpty) {
+      await cuentaAdminController.cargarCuenta(idAdministrador);
     }
   }
 
@@ -89,22 +93,28 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   Future<void> _confirmarCerrarSesion() async {
     final confirmar = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Cerrar sesión'),
-        content: const Text(
-          '¿Deseas cerrar la sesión de administrador?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancelar'),
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Cerrar sesión'),
+          content: const Text(
+            '¿Deseas cerrar la sesión de administrador?',
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Cerrar sesión'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Cerrar sesión'),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmar == true && mounted) {
@@ -113,14 +123,15 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   }
 
   void _manejarOpcion(String opcion) {
-    final valor = opcion.trim().toLowerCase();
+    final opcionNormalizada = opcion.trim().toLowerCase();
 
-    if (valor == 'logout' || valor == 'cerrar_sesion') {
+    if (opcionNormalizada == 'logout' ||
+        opcionNormalizada == 'cerrar_sesion') {
       _confirmarCerrarSesion();
       return;
     }
 
-    controlador.cambiarOpcion(opcion);
+    controlador.cambiarOpcion(opcionNormalizada);
   }
 
   void _abrirMapa() {
@@ -142,6 +153,7 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       'contenido' => 'Contenidos',
       'productos' => 'Productos',
       'usuarios' => 'Usuarios',
+      'reportes_sitios' => 'Reportes de sitios',
       _ => controlador.titulo,
     };
 
@@ -182,6 +194,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       case 'contenido':
         return const PantallaContenido();
 
+      case 'reportes_sitios':
+        return const PantallaReportesSitiosAdmin();
+
       case 'perfil':
         return AdminCuenta(
           controller: cuentaAdminController,
@@ -217,22 +232,21 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     }
   }
 
-  
-Widget _inicio() {
-  return AdminInicio(
-    nombre: widget.nombre,
-    email: widget.email,
-    fotoPerfilControlador: fotoPerfilControlador,
-    onAbrirMapa: _abrirMapa,
-    onGestionarSitios: () {
-      controlador.cambiarOpcion('sitios');
-    },
-    onGestionarUsuarios: _abrirUsuarios,
-    onAbrirCuenta: () {
-      controlador.cambiarOpcion('perfil');
-    },
-  );
-}
+  Widget _inicio() {
+    return AdminInicio(
+      nombre: widget.nombre,
+      email: widget.email,
+      fotoPerfilControlador: fotoPerfilControlador,
+      onAbrirMapa: _abrirMapa,
+      onGestionarSitios: () {
+        controlador.cambiarOpcion('sitios');
+      },
+      onGestionarUsuarios: _abrirUsuarios,
+      onAbrirCuenta: () {
+        controlador.cambiarOpcion('perfil');
+      },
+    );
+  }
 
   @override
   void dispose() {

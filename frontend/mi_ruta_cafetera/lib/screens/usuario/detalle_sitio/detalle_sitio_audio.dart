@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../../models/contenido_model.dart';
+import '../../../l10n/textos.dart';
 
 class DetalleSitioAudio extends ChangeNotifier {
   DetalleSitioAudio() : player = AudioPlayer();
@@ -59,7 +60,7 @@ class DetalleSitioAudio extends ChangeNotifier {
       } catch (e) {
         if (_cerrado) return;
 
-        _error = 'No fue posible controlar esta audioguía.';
+        _error = Textos.t('No fue posible controlar esta audioguía.');
         _notificar();
 
         debugPrint('Error al controlar audioguía: $e');
@@ -94,7 +95,7 @@ class DetalleSitioAudio extends ChangeNotifier {
       if (_cerrado || operacion != _operacionAudio) return;
 
       _cargando = false;
-      _error = 'No fue posible cargar esta audioguía.';
+      _error = Textos.t('No fue posible cargar esta audioguía.');
       _notificar();
 
       debugPrint('Error al reproducir audioguía: $e');
@@ -122,7 +123,7 @@ class DetalleSitioAudio extends ChangeNotifier {
     } catch (e) {
       if (_cerrado) return;
 
-      _error = 'No fue posible controlar esta audioguía.';
+      _error = Textos.t('No fue posible controlar esta audioguía.');
       _notificar();
 
       debugPrint('Error al controlar audioguía: $e');

@@ -10,7 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 // * Tipo de letra (predeterminada / Lora / Poppins / Nunito): se aplica al tema
 //   completo (AppTheme.construir) desde main.dart.
 //
-// Ambas se guardan en el dispositivo (SharedPreferences), de forma
+// * Idioma (Español / English): lo consume lib/l10n/textos.dart mediante
+//   IdiomaScope (main.dart); se aplica al instante, sin reiniciar.
+//
+// Todas se guardan en el dispositivo (SharedPreferences), de forma
 // independiente, y se restauran al abrir la aplicación.
 // ============================================================
 
@@ -61,6 +64,27 @@ enum FuenteApp {
   }
 }
 
+/// Idioma de la interfaz. [codigo] es el código ISO 639-1 y [etiqueta]
+/// el nombre del idioma escrito en su propio idioma.
+enum IdiomaApp {
+  es('es', 'Español', '🇨🇴'),
+  en('en', 'English', '🇺🇸');
+
+  const IdiomaApp(this.codigo, this.etiqueta, this.bandera);
+
+  final String codigo;
+  final String etiqueta;
+  final String bandera;
+
+  /// Un valor guardado desconocido o ausente vuelve a español.
+  static IdiomaApp desdeCodigo(String? codigo) {
+    return IdiomaApp.values.firstWhere(
+      (i) => i.codigo == codigo,
+      orElse: () => IdiomaApp.es,
+    );
+  }
+}
+
 class PreferenciasService {
   PreferenciasService._();
 
@@ -68,6 +92,7 @@ class PreferenciasService {
 
   static const String _claveTamanoTexto = 'preferencia_tamano_texto';
   static const String _claveFuente = 'preferencia_fuente';
+  static const String _claveIdioma = 'preferencia_idioma';
 
   final ValueNotifier<TamanoTexto> tamanoTexto = ValueNotifier<TamanoTexto>(
     TamanoTexto.normal,
@@ -75,6 +100,10 @@ class PreferenciasService {
 
   final ValueNotifier<FuenteApp> fuente = ValueNotifier<FuenteApp>(
     FuenteApp.predeterminada,
+  );
+
+  final ValueNotifier<IdiomaApp> idioma = ValueNotifier<IdiomaApp>(
+    IdiomaApp.es,
   );
 
   // Se llama una vez en main() antes de runApp().
@@ -87,6 +116,9 @@ class PreferenciasService {
       );
 
       fuente.value = FuenteApp.desdeId(preferencias.getString(_claveFuente));
+      idioma.value = IdiomaApp.desdeCodigo(
+        preferencias.getString(_claveIdioma),
+      );
     } catch (e) {
       debugPrint('No se pudieron restaurar las preferencias: $e');
     }
@@ -113,6 +145,17 @@ class PreferenciasService {
       await preferencias.setString(_claveFuente, nueva.id);
     } catch (e) {
       debugPrint('No se pudo guardar la fuente: $e');
+    }
+  }
+
+  Future<void> cambiarIdioma(IdiomaApp nuevo) async {
+    idioma.value = nuevo;
+
+    try {
+      final preferencias = await SharedPreferences.getInstance();
+      await preferencias.setString(_claveIdioma, nuevo.codigo);
+    } catch (e) {
+      debugPrint('No se pudo guardar el idioma: $e');
     }
   }
 }

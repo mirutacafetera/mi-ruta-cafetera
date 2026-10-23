@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/sitio_turistico_model.dart';
+import '../l10n/textos.dart';
 
 class FavoritoItem {
   final String id;
@@ -50,8 +51,7 @@ class FavoritoService {
 
       throw Exception(
         mensaje ??
-            'Error al obtener favoritos: '
-                '${response.statusCode}',
+            Textos.t('Error al obtener favoritos: {0}', [response.statusCode]),
       );
     }
 
@@ -151,7 +151,7 @@ class FavoritoService {
 
       throw Exception(
         mensaje ??
-            'No fue posible agregar el favorito.',
+            Textos.t('No fue posible agregar el favorito.'),
       );
     }
 
@@ -231,7 +231,7 @@ class FavoritoService {
 
       throw Exception(
         mensaje ??
-            'No fue posible eliminar el favorito.',
+            Textos.t('No fue posible eliminar el favorito.'),
       );
     }
   }

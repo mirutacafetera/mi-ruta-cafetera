@@ -8,6 +8,7 @@ import '../models/chat_model.dart';
 import '../models/clima_model.dart';
 import 'ia_recomendaciones_service.dart';
 import 'ubicacion_service.dart';
+import '../l10n/textos.dart';
 
 /// Chat con el asistente (backend: POST /api/chat).
 ///
@@ -75,7 +76,7 @@ class ChatService {
       if (response.statusCode == 401) {
         throw IaException(
           mensajeServidor ??
-              'Tu sesión expiró. Inicia sesión nuevamente.',
+              Textos.t('Tu sesión expiró. Inicia sesión nuevamente.'),
           sesionInvalida: true,
         );
       }
@@ -83,41 +84,38 @@ class ChatService {
       if (response.statusCode == 403) {
         throw IaException(
           mensajeServidor ??
-              'El asistente está disponible para usuarios registrados.',
+              Textos.t('El asistente está disponible para usuarios registrados.'),
         );
       }
 
       if (response.statusCode == 429) {
         throw IaException(
           mensajeServidor ??
-              'Has enviado muchos mensajes seguidos. '
-                  'Intenta de nuevo en unos minutos.',
+              Textos.t('Has enviado muchos mensajes seguidos. Intenta de nuevo en unos minutos.'),
         );
       }
 
       throw IaException(
         mensajeServidor ??
-            'El asistente no está disponible en este momento '
-                '(${response.statusCode}).',
+            Textos.t('El asistente no está disponible en este momento ({0}).', [response.statusCode]),
       );
     } on IaException {
       rethrow;
     } on TimeoutException {
-      throw const IaException(
-        'El asistente tardó demasiado en responder. '
-        'Intenta de nuevo.',
+      throw IaException(
+        Textos.t('El asistente tardó demasiado en responder. Intenta de nuevo.'),
       );
     } on http.ClientException {
-      throw const IaException(
-        'No fue posible conectarse con el servidor.',
+      throw IaException(
+        Textos.t('No fue posible conectarse con el servidor.'),
       );
     } on FormatException {
-      throw const IaException(
-        'La respuesta del servidor no tiene el formato esperado.',
+      throw IaException(
+        Textos.t('La respuesta del servidor no tiene el formato esperado.'),
       );
     } catch (_) {
-      throw const IaException(
-        'No fue posible enviar tu mensaje.',
+      throw IaException(
+        Textos.t('No fue posible enviar tu mensaje.'),
       );
     }
   }

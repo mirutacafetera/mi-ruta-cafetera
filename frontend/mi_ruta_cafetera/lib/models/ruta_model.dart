@@ -1,3 +1,62 @@
+// ============================================================
+// PARADA DE UNA RUTA PREDEFINIDA (ITINERARIO)
+// ============================================================
+//
+// Viene de la API (campo `paradas` de la ruta). [duracionMin] es
+// el tiempo planificado de la ACTIVIDAD en el sitio; el tiempo de
+// desplazamiento por carretera se calcula aparte y no se guarda.
+// ============================================================
+class ParadaRutaModel {
+  final String sitioId;
+  final int orden;
+  final String tipoActividad;
+  final String descripcion;
+  final int? duracionMin;
+  final String indicaciones;
+  final bool requiereReserva;
+
+  const ParadaRutaModel({
+    required this.sitioId,
+    required this.orden,
+    this.tipoActividad = 'visita',
+    this.descripcion = '',
+    this.duracionMin,
+    this.indicaciones = '',
+    this.requiereReserva = false,
+  });
+
+  factory ParadaRutaModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final duracion = json['duracionMin'];
+
+    return ParadaRutaModel(
+      sitioId: RutaModel._extraerId(json['sitio']),
+      orden: (json['orden'] is num)
+          ? (json['orden'] as num).toInt()
+          : 0,
+      tipoActividad:
+          (json['tipoActividad'] ?? 'visita').toString(),
+      descripcion: (json['descripcion'] ?? '').toString(),
+      duracionMin: duracion is num ? duracion.toInt() : null,
+      indicaciones: (json['indicaciones'] ?? '').toString(),
+      requiereReserva: json['requiereReserva'] == true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'sitio': sitioId,
+      'orden': orden,
+      'tipoActividad': tipoActividad,
+      'descripcion': descripcion,
+      'duracionMin': duracionMin,
+      'indicaciones': indicaciones,
+      'requiereReserva': requiereReserva,
+    };
+  }
+}
+
 class RutaModel {
   final String id;
   final String nombre;
@@ -15,6 +74,11 @@ class RutaModel {
   final DateTime? creadaEn;
   final DateTime? venceEn;
 
+  // Itinerario de las rutas predefinidas (vacío en las demás).
+  final List<ParadaRutaModel> paradas;
+  final String tipoExperiencia;
+  final int? duracionPlanificadaMin;
+
   const RutaModel({
     required this.id,
     required this.nombre,
@@ -27,11 +91,21 @@ class RutaModel {
     required this.activa,
     required this.creadaEn,
     required this.venceEn,
+    this.paradas = const [],
+    this.tipoExperiencia = '',
+    this.duracionPlanificadaMin,
   });
 
   factory RutaModel.fromJson(
     Map<String, dynamic> json,
   ) {
+    final paradas = _extraerParadas(json['paradas']);
+    final sitiosIds = _extraerSitios(
+      json['sitios'] ??
+          json['puntos'] ??
+          [],
+    );
+
     return RutaModel(
       id: _extraerId(
         json['_id'] ?? json['id'],
@@ -47,12 +121,9 @@ class RutaModel {
           (json['tipo'] ??
                   'personalizada')
               .toString(),
-      sitios:
-          _extraerSitios(
-        json['sitios'] ??
-            json['puntos'] ??
-            [],
-      ),
+      sitios: sitiosIds.isNotEmpty
+          ? sitiosIds
+          : paradas.map((p) => p.sitioId).toList(),
 
       distanciaKm:
           _numeroADouble(
@@ -93,6 +164,14 @@ class RutaModel {
             json['expiraEn'] ??
             json['expiresAt'],
       ),
+      paradas: paradas,
+      tipoExperiencia:
+          (json['tipoExperiencia'] ?? '').toString(),
+      duracionPlanificadaMin:
+          json['duracionPlanificadaMin'] is num
+              ? (json['duracionPlanificadaMin'] as num)
+                  .toInt()
+              : null,
     );
   }
 
@@ -111,6 +190,10 @@ class RutaModel {
           creadaEn?.toIso8601String(),
       'venceEn':
           venceEn?.toIso8601String(),
+      'paradas':
+          paradas.map((p) => p.toJson()).toList(),
+      'tipoExperiencia': tipoExperiencia,
+      'duracionPlanificadaMin': duracionPlanificadaMin,
     };
   }
 
@@ -135,6 +218,37 @@ class RutaModel {
     }
 
     return valor.toString();
+  }
+
+  // ============================================================
+  // EXTRAER PARADAS
+  // ============================================================
+  static List<ParadaRutaModel> _extraerParadas(
+    dynamic valor,
+  ) {
+    if (valor is! List) {
+      return const <ParadaRutaModel>[];
+    }
+
+    final paradas = <ParadaRutaModel>[];
+
+    for (final item in valor) {
+      if (item is! Map) {
+        continue;
+      }
+
+      final parada = ParadaRutaModel.fromJson(
+        Map<String, dynamic>.from(item),
+      );
+
+      if (parada.sitioId.isNotEmpty) {
+        paradas.add(parada);
+      }
+    }
+
+    paradas.sort((a, b) => a.orden.compareTo(b.orden));
+
+    return paradas;
   }
 
   // ============================================================

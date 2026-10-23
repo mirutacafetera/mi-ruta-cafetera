@@ -43,6 +43,9 @@ class ControladorPantallaAdministrador extends ChangeNotifier {
       case 'reportes':
         return 'Reportes';
 
+      case 'reportes_sitios':
+        return 'Reportes de sitios turísticos';
+
       case 'usuarios':
         return 'Usuarios';
 

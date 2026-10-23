@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../google/google_button.dart';
@@ -13,6 +14,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../auth/seleccion_rol_screen.dart';
 import 'public_shell_screen.dart';
+import '../../l10n/textos.dart';
 
 
 class BienvenidaScreen extends StatefulWidget {
@@ -51,6 +53,9 @@ class _BienvenidaScreenState
   int _paginaActual = 0;
 
   bool _iniciandoGoogle = false;
+
+  /// Se activa solo después de confirmar la salida de la aplicación.
+  bool _permitirSalida = false;
 
   StreamSubscription<GoogleSignInAuthenticationEvent>?
       _googleAuthenticationSubscription;
@@ -92,7 +97,7 @@ class _BienvenidaScreenState
       color: AppColors.categoryCultura,
     ),
     _ImagenBienvenida(
-      asset: 'assets/images/bienvenida/experiencia.jpg',
+      asset: 'assets/images/bienvenida/experiencia.png',
       titulo: 'Experiencias para vivir',
       subtitulo:
           'Encuentra nuevas formas de disfrutar el territorio.',
@@ -209,7 +214,7 @@ class _BienvenidaScreenState
     if (idToken == null || idToken.isEmpty) {
       if (mounted) {
         _mostrarMensaje(
-          'No se pudo obtener el token de Google.',
+          Textos.t('No se pudo obtener el token de Google.'),
         );
       }
       return false;
@@ -226,7 +231,7 @@ class _BienvenidaScreenState
       if (mounted) {
         _mostrarMensaje(
           resultado['mensaje']?.toString() ??
-              'No fue posible iniciar sesión con Google.',
+              Textos.t('No fue posible iniciar sesión con Google.'),
         );
       }
       return false;
@@ -262,7 +267,7 @@ class _BienvenidaScreenState
         });
 
         _mostrarMensaje(
-          'No fue posible iniciar sesión con Google.',
+          Textos.t('No fue posible iniciar sesión con Google.'),
         );
 
         debugPrint(
@@ -277,6 +282,12 @@ class _BienvenidaScreenState
   ) async {
     if (evento
         is! GoogleSignInAuthenticationEventSignIn) {
+      return;
+    }
+
+    // Si un acceso privado (administrador o sitio) está usando
+    // Google, este evento no pertenece a un visitante.
+    if (GoogleAuthService.instance.accesoPrivadoActivo) {
       return;
     }
 
@@ -308,7 +319,7 @@ class _BienvenidaScreenState
     }
 
     _mostrarMensaje(
-      'Bienvenido, ${usuario.displayName ?? usuario.email}',
+      Textos.t('Bienvenido, {0}', [usuario.displayName ?? usuario.email]),
     );
 
     await Future.delayed(
@@ -325,7 +336,7 @@ class _BienvenidaScreenState
       _iniciandoGoogle = false;
     });
 
-    _comenzarExplorar();
+    _comenzarExplorar(reemplazar: true);
   }
 
   // ============================================================
@@ -351,38 +362,45 @@ class _BienvenidaScreenState
   // COMENZAR A EXPLORAR
   // ============================================================
 
-  void _comenzarExplorar() {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(
-          milliseconds: 750,
-        ),
-        pageBuilder: (
-          context,
-          animation,
-          secondaryAnimation,
-        ) {
-          return const PublicShellScreen(
-            mostrarNavegacion: true,
-          );
-        },
-        transitionsBuilder: (
-          context,
-          animation,
-          secondaryAnimation,
-          child,
-        ) {
-          return FadeTransition(
-            opacity: CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeInOut,
-            ),
-            child: child,
-          );
-        },
+  // Con [reemplazar] en false (botón "Comenzar a explorar") la
+  // bienvenida queda debajo, para que "atrás" vuelva a ella. Con true
+  // (tras iniciar sesión con Google) se reemplaza, para que "atrás"
+  // no regrese a la bienvenida con la sesión ya iniciada.
+  void _comenzarExplorar({bool reemplazar = false}) {
+    final destino = PageRouteBuilder<void>(
+      transitionDuration: const Duration(
+        milliseconds: 750,
       ),
+      pageBuilder: (
+        context,
+        animation,
+        secondaryAnimation,
+      ) {
+        return const PublicShellScreen(
+          mostrarNavegacion: true,
+        );
+      },
+      transitionsBuilder: (
+        context,
+        animation,
+        secondaryAnimation,
+        child,
+      ) {
+        return FadeTransition(
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          ),
+          child: child,
+        );
+      },
     );
+
+    if (reemplazar) {
+      Navigator.pushReplacement(context, destino);
+    } else {
+      Navigator.push(context, destino);
+    }
   }
 
   // ============================================================
@@ -464,7 +482,7 @@ class _BienvenidaScreenState
       }
 
       _mostrarMensaje(
-        'Bienvenido, ${usuario.displayName ?? usuario.email}',
+        Textos.t('Bienvenido, {0}', [usuario.displayName ?? usuario.email]),
       );
 
       await Future.delayed(
@@ -481,7 +499,7 @@ class _BienvenidaScreenState
         _iniciandoGoogle = false;
       });
 
-      _comenzarExplorar();
+      _comenzarExplorar(reemplazar: true);
     } on GoogleSignInException catch (e) {
       if (!mounted) {
         return;
@@ -492,8 +510,7 @@ class _BienvenidaScreenState
       });
 
       _mostrarMensaje(
-        'No fue posible iniciar sesión con Google: '
-        '${e.description ?? e.code}',
+        Textos.t('No fue posible iniciar sesión con Google: {0}', [e.description ?? e.code]),
       );
 
       debugPrint(
@@ -509,7 +526,7 @@ class _BienvenidaScreenState
       });
 
       _mostrarMensaje(
-        'Ocurrió un error al iniciar sesión con Google.',
+        Textos.t('Ocurrió un error al iniciar sesión con Google.'),
       );
 
       debugPrint(
@@ -541,6 +558,48 @@ class _BienvenidaScreenState
   }
 
   // ============================================================
+  // SALIR DE LA APLICACIÓN
+  // ============================================================
+  //
+  // "Atrás" en la bienvenida (la pantalla principal) pregunta si se
+  // desea salir. Es el mismo aviso que usaba el Home.
+  // ============================================================
+
+  Future<void> _confirmarSalida() async {
+    final salir = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Tr('Salir'),
+          content: const Tr('¿Deseas salir de Mi Ruta Cafetera?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Tr('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Tr('Salir'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (salir != true || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _permitirSalida = true;
+    });
+
+    // En Android cierra la app. En Web retrocede fuera de la app
+    // en el historial del navegador.
+    await SystemNavigator.pop();
+  }
+
+  // ============================================================
   // CAMBIO DE PÁGINA
   // ============================================================
 
@@ -562,6 +621,20 @@ class _BienvenidaScreenState
 
   @override
   Widget build(
+    BuildContext context,
+  ) {
+    return PopScope(
+      canPop: _permitirSalida,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          _confirmarSalida();
+        }
+      },
+      child: _construirPantalla(context),
+    );
+  }
+
+  Widget _construirPantalla(
     BuildContext context,
   ) {
     final size = MediaQuery.sizeOf(context);
@@ -807,7 +880,7 @@ class _BienvenidaScreenState
                       child:
                           _BotonComenzar(
                         onPressed:
-                            _comenzarExplorar,
+                            () => _comenzarExplorar(),
                       ),
                     ),
 
@@ -857,7 +930,7 @@ class _BienvenidaScreenState
                         size:
                             AppDimensions.iconSm,
                       ),
-                      label: Text(
+                      label: Tr(
                         'Acceso privado',
                         style:
                             TextStyle(
@@ -905,7 +978,7 @@ class _BienvenidaScreenState
                                 AppDimensions.spacingSm,
                           ),
                           Flexible(
-                            child: Text(
+                            child: Tr(
                               'Descubre · Explora · Vive',
                               textAlign:
                                   TextAlign.center,
@@ -1198,7 +1271,7 @@ class _TextoExperiencia
           height:
               AppDimensions.spacingMd,
         ),
-        Text(
+        Tr(
           imagen.titulo,
           textAlign:
               TextAlign.center,
@@ -1216,7 +1289,7 @@ class _TextoExperiencia
           height:
               AppDimensions.spacingSm,
         ),
-        Text(
+        Tr(
           imagen.subtitulo,
           textAlign:
               TextAlign.center,
@@ -1252,7 +1325,7 @@ class _MarcaPrincipal
   ) {
     return Column(
       children: [
-        Text(
+        Tr(
           'Mi Ruta Cafetera',
           textAlign:
               TextAlign.center,
@@ -1271,7 +1344,7 @@ class _MarcaPrincipal
           height:
               AppDimensions.spacingSm,
         ),
-        Text(
+        Tr(
           'Descubre · Explora · Vive',
           textAlign:
               TextAlign.center,
@@ -1444,7 +1517,7 @@ class _BotonComenzarState
           ),
           alignment:
               Alignment.center,
-          child: const Text(
+          child: const Tr(
             'Comenzar a explorar',
             textAlign:
                 TextAlign.center,
@@ -1595,8 +1668,8 @@ class _BotonGoogle
                 ),
                 Text(
                   cargando
-                      ? 'Conectando con Google...'
-                      : 'Continuar con Google',
+                      ? Textos.t('Conectando con Google...')
+                      : Textos.t('Continuar con Google'),
                   style:
                       const TextStyle(
                     color:

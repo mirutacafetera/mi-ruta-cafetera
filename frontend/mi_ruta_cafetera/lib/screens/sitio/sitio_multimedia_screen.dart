@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -10,23 +9,25 @@ import '../../theme/app_dimensions.dart';
 import '../../widgets/sitio/formulario_multimedia_sitio.dart';
 import '../../widgets/sitio/tarjeta_multimedia_sitio.dart';
 import '../../widgets/sitio/tarjeta_seccion_sitio.dart';
+import 'sitio_multimedia/gestion_multimedia_helper.dart';
 
 class SitioMultimediaScreen extends StatefulWidget {
   const SitioMultimediaScreen({super.key});
 
   @override
-  State<SitioMultimediaScreen> createState() =>
-      _SitioMultimediaScreenState();
+  State<SitioMultimediaScreen> createState() => _SitioMultimediaScreenState();
 }
 
 class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
-  final SitioMultimediaService _multimediaService =
-      SitioMultimediaService();
-
+  final SitioMultimediaService _multimediaService = SitioMultimediaService();
   final SitioSesionService _sesionService = SitioSesionService();
 
-  List<SitioMultimediaModel> _multimedia = [];
+  late final GestionMultimediaHelper _gestionMultimediaHelper = GestionMultimediaHelper(
+    multimediaService: _multimediaService,
+    sesionService: _sesionService,
+  );
 
+  List<SitioMultimediaModel> _multimedia = [];
   bool _cargando = true;
   String? _error;
   String? _token;
@@ -40,27 +41,15 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
 
   Future<void> _inicializar() async {
     try {
-      final sesion = await _sesionService.obtenerSesion();
-
+      final credenciales = await _gestionMultimediaHelper.obtenerCredenciales();
       if (!mounted) return;
 
-      if (sesion == null ||
-          sesion.token.isEmpty ||
-          sesion.sitioId.isEmpty) {
-        setState(() {
-          _cargando = false;
-          _error = 'No hay una sesión de sitio disponible.';
-        });
-        return;
-      }
-
-      _token = sesion.token;
-      _sitioId = sesion.sitioId;
+      _token = credenciales['token'];
+      _sitioId = credenciales['sitioId'];
 
       await _cargarMultimedia();
     } catch (_) {
       if (!mounted) return;
-
       setState(() {
         _cargando = false;
         _error = 'No fue posible cargar la galería.';
@@ -69,43 +58,24 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
   }
 
   Future<void> _cargarMultimedia() async {
-    if (_token == null ||
-        _token!.isEmpty ||
-        _sitioId == null ||
-        _sitioId!.isEmpty) {
-      return;
-    }
+    if (_token == null || _token!.isEmpty || _sitioId == null || _sitioId!.isEmpty) return;
 
-    if (mounted) {
-      setState(() {
-        _cargando = true;
-        _error = null;
-      });
-    }
+    if (mounted) setState(() { _cargando = true; _error = null; });
 
     try {
-      final multimedia = await _multimediaService.obtenerMultimedia(
+      final multimedia = await _gestionMultimediaHelper.cargarMultimedia(
         token: _token!,
         sitioId: _sitioId!,
       );
 
       if (!mounted) return;
-
       setState(() {
-        _multimedia = multimedia
-            .where(
-              (item) =>
-                  item.tipo == 'imagen' &&
-                  item.activo &&
-                  item.url.isNotEmpty,
-            )
-            .toList();
+        _multimedia = multimedia;
         _cargando = false;
         _error = null;
       });
     } catch (error) {
       if (!mounted) return;
-
       setState(() {
         _cargando = false;
         _error = error.toString().replaceFirst('Exception: ', '');
@@ -122,11 +92,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
           required String titulo,
           required String descripcion,
         }) {
-          return _subirImagen(
-            imagen: imagen,
-            titulo: titulo,
-            descripcion: descripcion,
-          );
+          return _subirImagen(imagen: imagen, titulo: titulo, descripcion: descripcion);
         },
       ),
     );
@@ -138,17 +104,14 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
     required String descripcion,
   }) async {
     if (_token == null || _token!.isEmpty) {
-      _mostrarMensaje(
-        'Tu sesión no está disponible.',
-        esError: true,
-      );
+      _mostrarMensaje('Tu sesión no está disponible.', esError: true);
       return false;
     }
 
     try {
-      final resultado = await _multimediaService.subirImagen(
+      final resultado = await _gestionMultimediaHelper.subirImagen(
         token: _token!,
-        archivo: imagen,
+        imagen: imagen,
         titulo: titulo,
         descripcion: descripcion,
       );
@@ -156,9 +119,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
       if (!mounted) return false;
 
       setState(() {
-        if (resultado.tipo == 'imagen' &&
-            resultado.activo &&
-            resultado.url.isNotEmpty) {
+        if (resultado.tipo == 'imagen' && resultado.activo && resultado.url.isNotEmpty) {
           _multimedia.insert(0, resultado);
         }
       });
@@ -167,11 +128,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
       return true;
     } catch (error) {
       if (!mounted) return false;
-
-      _mostrarMensaje(
-        error.toString().replaceFirst('Exception: ', ''),
-        esError: true,
-      );
+      _mostrarMensaje(error.toString().replaceFirst('Exception: ', ''), esError: true);
       return false;
     }
   }
@@ -184,9 +141,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
       ..showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          backgroundColor: esError
-              ? AppColors.sitioError
-              : AppColors.sitioPrimary,
+          backgroundColor: esError ? AppColors.sitioError : AppColors.sitioPrimary,
           content: Text(mensaje),
         ),
       );
@@ -226,34 +181,21 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
             backgroundColor: AppColors.sitioPrimary,
             foregroundColor: AppColors.sitioTextOnPrimary,
             minimumSize: const Size(0, 48),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 12,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
         );
 
         if (esMovil) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              titulo,
-              const SizedBox(height: 16),
-              SizedBox(width: double.infinity, child: boton),
-            ],
+            children: [titulo, const SizedBox(height: 16), SizedBox(width: double.infinity, child: boton)],
           );
         }
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: titulo),
-            const SizedBox(width: 20),
-            boton,
-          ],
+          children: [Expanded(child: titulo), const SizedBox(width: 20), boton],
         );
       },
     );
@@ -269,37 +211,23 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
             icono: Icons.photo_library_rounded,
             titulo: 'Fotografías',
             valor: cantidad.toString(),
-            descripcion: cantidad == 1
-                ? 'Imagen publicada'
-                : 'Imágenes publicadas',
+            descripcion: cantidad == 1 ? 'Imagen publicada' : 'Imágenes publicadas',
           ),
           _tarjetaResumen(
             icono: Icons.image_rounded,
             titulo: 'Galería',
             valor: cantidad == 0 ? 'Vacía' : 'Activa',
-            descripcion: cantidad == 0
-                ? 'Todavía no tienes imágenes'
-                : '$cantidad imágenes disponibles',
+            descripcion: cantidad == 0 ? 'Todavía no tienes imágenes' : '$cantidad imágenes disponibles',
           ),
         ];
 
         if (constraints.maxWidth >= 600) {
           return Row(
-            children: [
-              Expanded(child: tarjetas[0]),
-              const SizedBox(width: 16),
-              Expanded(child: tarjetas[1]),
-            ],
+            children: [Expanded(child: tarjetas[0]), const SizedBox(width: 16), Expanded(child: tarjetas[1])],
           );
         }
 
-        return Column(
-          children: [
-            tarjetas[0],
-            const SizedBox(height: 12),
-            tarjetas[1],
-          ],
-        );
+        return Column(children: [tarjetas[0], const SizedBox(height: 12), tarjetas[1]]);
       },
     );
   }
@@ -314,77 +242,33 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(
-        AppDimensions.sitioStatCardPadding,
-      ),
+      padding: const EdgeInsets.all(AppDimensions.sitioStatCardPadding),
       decoration: BoxDecoration(
         color: AppColors.sitioSurface,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.sitioStatCardRadius,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.sitioStatCardRadius),
         border: Border.all(color: AppColors.sitioBorder),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.sitioCardShadow,
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: const [BoxShadow(color: AppColors.sitioCardShadow, blurRadius: 12, offset: Offset(0, 4))],
       ),
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 48, height: 48,
             decoration: BoxDecoration(
-              color: esGaleria
-                  ? AppColors.sitioWarningSoft
-                  : AppColors.sitioSurfaceGreen,
+              color: esGaleria ? AppColors.sitioWarningSoft : AppColors.sitioSurfaceGreen,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              icono,
-              color: esGaleria
-                  ? AppColors.sitioWarning
-                  : AppColors.sitioPrimary,
-              size: 24,
-            ),
+            child: Icon(icono, color: esGaleria ? AppColors.sitioWarning : AppColors.sitioPrimary, size: 24),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    color: AppColors.sitioTextSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(titulo, style: const TextStyle(color: AppColors.sitioTextSecondary, fontSize: 12, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                Text(
-                  valor,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.sitioTextPrimary,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                Text(valor, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.sitioTextPrimary, fontSize: 22, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 3),
-                Text(
-                  descripcion,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.sitioTextSecondary,
-                    fontSize: 11,
-                    height: 1.35,
-                  ),
-                ),
+                Text(descripcion, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.sitioTextSecondary, fontSize: 11, height: 1.35)),
               ],
             ),
           ),
@@ -396,30 +280,16 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
   Widget _construirGaleria() {
     if (_cargando) {
       return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: CircularProgressIndicator(
-            color: AppColors.sitioPrimary,
-          ),
-        ),
+        child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator(color: AppColors.sitioPrimary)),
       );
     }
 
-    if (_error != null && _multimedia.isEmpty) {
-      return _construirError();
-    }
-
-    if (_multimedia.isEmpty) {
-      return _construirVacio();
-    }
+    if (_error != null && _multimedia.isEmpty) return _construirError();
+    if (_multimedia.isEmpty) return _construirVacio();
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maximo = constraints.maxWidth >= 1000
-            ? 260.0
-            : constraints.maxWidth >= 600
-                ? 230.0
-                : 190.0;
+        final maximo = constraints.maxWidth >= 1000 ? 260.0 : (constraints.maxWidth >= 600 ? 230.0 : 190.0);
 
         return GridView.builder(
           shrinkWrap: true,
@@ -431,11 +301,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
             crossAxisSpacing: 14,
             childAspectRatio: 0.86,
           ),
-          itemBuilder: (context, index) {
-            return TarjetaMultimediaSitio(
-              imagen: _multimedia[index],
-            );
-          },
+          itemBuilder: (context, index) => TarjetaMultimediaSitio(imagen: _multimedia[index]),
         );
       },
     );
@@ -462,8 +328,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
     return _estadoGaleria(
       icono: Icons.photo_camera_back_rounded,
       titulo: 'Tu galería está esperando sus primeras fotos',
-      descripcion:
-          'Agrega fotografías de tus paisajes, instalaciones y experiencias para inspirar a los viajeros.',
+      descripcion: 'Agrega fotografías de tus paisajes, instalaciones y experiencias para inspirar a los viajeros.',
       accion: ElevatedButton.icon(
         onPressed: _mostrarFormulario,
         icon: const Icon(Icons.add_photo_alternate_outlined),
@@ -472,9 +337,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
           backgroundColor: AppColors.sitioPrimary,
           foregroundColor: AppColors.sitioTextOnPrimary,
           minimumSize: const Size(0, 46),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
     );
@@ -488,10 +351,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 22,
-        vertical: 32,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 32),
       decoration: BoxDecoration(
         color: AppColors.sitioSurfaceSoft,
         borderRadius: BorderRadius.circular(18),
@@ -500,38 +360,14 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
       child: Column(
         children: [
           Container(
-            width: 68,
-            height: 68,
-            decoration: const BoxDecoration(
-              color: AppColors.sitioSurfaceGreen,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icono,
-              color: AppColors.sitioPrimary,
-              size: 32,
-            ),
+            width: 68, height: 68,
+            decoration: const BoxDecoration(color: AppColors.sitioSurfaceGreen, shape: BoxShape.circle),
+            child: Icon(icono, color: AppColors.sitioPrimary, size: 32),
           ),
           const SizedBox(height: 18),
-          Text(
-            titulo,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.sitioTextPrimary,
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
+          Text(titulo, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.sitioTextPrimary, fontSize: 17, fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
-          Text(
-            descripcion,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.sitioTextSecondary,
-              fontSize: 13,
-              height: 1.5,
-            ),
-          ),
+          Text(descripcion, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.sitioTextSecondary, fontSize: 13, height: 1.5)),
           const SizedBox(height: 20),
           accion,
         ],
@@ -551,11 +387,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
         onRefresh: _cargarMultimedia,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(
-            escritorio
-                ? AppDimensions.sitioPagePadding
-                : AppDimensions.sitioPagePaddingCompact,
-          ),
+          padding: EdgeInsets.all(escritorio ? AppDimensions.sitioPagePadding : AppDimensions.sitioPagePaddingCompact),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1200),
@@ -568,8 +400,7 @@ class _SitioMultimediaScreenState extends State<SitioMultimediaScreen> {
                   const SizedBox(height: 24),
                   TarjetaSeccionSitio(
                     titulo: 'Galería de tu sitio',
-                    subtitulo:
-                        'Cada fotografía ayuda a los viajeros a imaginar su próxima experiencia.',
+                    subtitulo: 'Cada fotografía ayuda a los viajeros a imaginar su próxima experiencia.',
                     icono: Icons.photo_library_rounded,
                     child: _construirGaleria(),
                   ),

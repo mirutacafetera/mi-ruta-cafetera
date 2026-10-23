@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../controllers/admin/cuenta/foto_perfil_admin_controlador.dart';
@@ -88,6 +89,11 @@ class AdminMenuLateral extends StatelessWidget {
                   'contenido',
                 ),
                 _opcion(
+                  Icons.smart_toy_rounded,
+                  'Chatbot IA',
+                  'chatbot_ia',
+                ),
+                _opcion(
                   Icons.star_rounded,
                   'Reseñas',
                   'resenas',
@@ -101,6 +107,11 @@ class AdminMenuLateral extends StatelessWidget {
                   Icons.campaign_rounded,
                   'Reportes',
                   'reportes',
+                ),
+                _opcion(
+                  Icons.report_problem_rounded,
+                  'Reportes de sitios',
+                  'reportes_sitios',
                 ),
                 _opcion(
                   Icons.people_alt_rounded,

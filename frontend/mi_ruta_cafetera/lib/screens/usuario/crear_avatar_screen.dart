@@ -8,6 +8,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../widgets/usuario/avatar_cafetero.dart';
 import '../../widgets/usuario/avatar_cafetero_painter.dart';
+import '../../l10n/textos.dart';
 
 // ============================================================
 // CREAR / EDITAR AVATAR CAFETERO
@@ -174,7 +175,7 @@ class _CrearAvatarScreenState extends State<CrearAvatarScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            mensaje.isEmpty ? 'Avatar guardado.' : mensaje,
+            mensaje.isEmpty ? Textos.t('Avatar guardado.') : mensaje,
           ),
         ),
       );
@@ -188,7 +189,7 @@ class _CrearAvatarScreenState extends State<CrearAvatarScreen> {
         backgroundColor: AppColors.error,
         content: Text(
           mensaje.isEmpty
-              ? 'No fue posible guardar el avatar.'
+              ? Textos.t('No fue posible guardar el avatar.')
               : mensaje,
         ),
       ),
@@ -204,18 +205,18 @@ class _CrearAvatarScreenState extends State<CrearAvatarScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('¿Descartar cambios?'),
-          content: const Text(
+          title: const Tr('¿Descartar cambios?'),
+          content: const Tr(
             'Tienes cambios sin guardar en tu avatar.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Seguir editando'),
+              child: const Tr('Seguir editando'),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Descartar'),
+              child: const Tr('Descartar'),
             ),
           ],
         );
@@ -248,7 +249,7 @@ class _CrearAvatarScreenState extends State<CrearAvatarScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Mi avatar cafetero'),
+          title: const Tr('Mi avatar cafetero'),
         ),
         body: SafeArea(
           child: Column(
@@ -334,7 +335,7 @@ class _CrearAvatarScreenState extends State<CrearAvatarScreen> {
           setState(() => _avatar = _avatar.copyWith(usar: valor));
         },
         activeThumbColor: AppColors.secondary,
-        title: const Text(
+        title: const Tr(
           'Usar mi avatar como foto de perfil',
           style: TextStyle(
             color: AppColors.textPrimary,
@@ -344,9 +345,8 @@ class _CrearAvatarScreenState extends State<CrearAvatarScreen> {
         ),
         subtitle: Text(
           _tieneFoto
-              ? 'Tu foto de Google no se elimina; puedes volver a '
-                  'mostrarla cuando quieras.'
-              : 'Se mostrará en tu perfil y en tus reseñas.',
+              ? Textos.t('Tu foto de Google no se elimina; puedes volver a mostrarla cuando quieras.')
+              : Textos.t('Se mostrará en tu perfil y en tus reseñas.'),
           style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 13,
@@ -381,7 +381,7 @@ class _CrearAvatarScreenState extends State<CrearAvatarScreen> {
               size: AppDimensions.iconSm,
               color: activa ? AppColors.white : AppColors.primary,
             ),
-            label: Text(c.titulo),
+            label: Tr(c.titulo),
             labelStyle: TextStyle(
               color: activa ? AppColors.white : AppColors.textPrimary,
               fontWeight: FontWeight.w700,
@@ -454,7 +454,7 @@ class _CrearAvatarScreenState extends State<CrearAvatarScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.check_rounded),
-          label: Text(_guardando ? 'Guardando…' : 'Guardar avatar'),
+          label: Text(_guardando ? Textos.t('Guardando…') : Textos.t('Guardar avatar')),
         ),
       ),
     );

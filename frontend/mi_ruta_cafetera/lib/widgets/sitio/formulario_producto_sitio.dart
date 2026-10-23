@@ -1,12 +1,11 @@
-
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-
+ 
 import '../../models/sitio/sitio_producto_model.dart';
 import '../../theme/app_colors.dart';
-
+import '../../utils/avisos_sitio.dart';
+ 
 typedef GuardarProductoCallback = Future<void> Function({
   required String nombre,
   required String descripcion,
@@ -16,36 +15,36 @@ typedef GuardarProductoCallback = Future<void> Function({
   required List<String> imagenesConservar,
   required String imagenPrincipalActual,
 });
-
+ 
 class FormularioProductoSitio extends StatefulWidget {
   final SitioProductoModel? producto;
   final GuardarProductoCallback onGuardar;
-
+ 
   const FormularioProductoSitio({
     super.key,
     required this.producto,
     required this.onGuardar,
   });
-
+ 
   @override
   State<FormularioProductoSitio> createState() =>
       _FormularioProductoSitioState();
 }
-
+ 
 class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
   final _formKey = GlobalKey<FormState>();
   final _imagePicker = ImagePicker();
-
+ 
   late final TextEditingController _nombreController;
   late final TextEditingController _descripcionController;
   late final TextEditingController _precioController;
-
+ 
   final List<XFile> _imagenes = [];
   final Map<String, Future<Uint8List>> _bytesImagenes = {};
-
+ 
   late List<String> _imagenesExistentes;
   late String _imagenPrincipal;
-
+ 
   static const List<String> _categorias = [
     'Cafe',
     'Gastronomia',
@@ -54,46 +53,46 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
     'Productos tipicos',
     'Otros',
   ];
-
+ 
   late String _categoria;
   bool _guardando = false;
-
+ 
   bool get _esEdicion => widget.producto != null;
-
+ 
   int get _cantidadImagenes =>
       _imagenesExistentes.length + _imagenes.length;
-
+ 
   @override
   void initState() {
     super.initState();
-
+ 
     final producto = widget.producto;
-
+ 
     _nombreController = TextEditingController(
       text: producto?.nombre ?? '',
     );
-
+ 
     _descripcionController = TextEditingController(
       text: producto?.descripcion ?? '',
     );
-
+ 
     _precioController = TextEditingController(
       text: producto != null ? producto.precio.toString() : '',
     );
-
+ 
     _categoria = producto != null &&
             _categorias.contains(producto.categoria)
         ? producto.categoria
         : 'Cafe';
-
+ 
     _imagenPrincipal = producto?.imagenPrincipal ?? '';
-
+ 
     _imagenesExistentes = [
       if (_imagenPrincipal.isNotEmpty) _imagenPrincipal,
       ...?producto?.imagenes,
     ].toList();
   }
-
+ 
   @override
   void dispose() {
     _nombreController.dispose();
@@ -101,60 +100,64 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
     _precioController.dispose();
     super.dispose();
   }
-
+ 
   Future<void> _seleccionarImagenes() async {
     if (_guardando) return;
-
+ 
     final disponibles = 10 - _cantidadImagenes;
-
+ 
     if (disponibles <= 0) {
-      _mostrarMensaje('Puedes seleccionar máximo 10 imágenes.');
+      _mostrarMensaje(
+        'Puedes seleccionar máximo 10 imágenes.',
+        esError: true,
+      );
       return;
     }
-
+ 
     try {
       final seleccionadas = await _imagePicker.pickMultiImage(
         imageQuality: 85,
       );
-
+ 
       if (!mounted || seleccionadas.isEmpty) return;
-
+ 
       final rutasActuales = _imagenes.map((imagen) => imagen.path).toSet();
-
+ 
       final nuevas = seleccionadas
           .where((imagen) => !rutasActuales.contains(imagen.path))
           .take(disponibles)
           .toList();
-
+ 
       setState(() {
         _imagenes.addAll(nuevas);
-
+ 
         for (final imagen in nuevas) {
           _bytesImagenes[imagen.path] = imagen.readAsBytes();
         }
       });
-
+ 
       if (seleccionadas.length > nuevas.length) {
         _mostrarMensaje(
           'Se agregaron ${nuevas.length} imagen(es). El máximo es 10.',
+          esError: true,
         );
       }
     } catch (error) {
       if (!mounted) return;
-
+ 
       _mostrarMensaje(
         'No fue posible seleccionar las imágenes: $error',
         esError: true,
       );
     }
   }
-
+ 
   void _quitarImagenExistente(String url) {
     if (_guardando) return;
-
+ 
     setState(() {
       _imagenesExistentes.remove(url);
-
+ 
       if (_imagenPrincipal == url) {
         _imagenPrincipal = _imagenesExistentes.isNotEmpty
             ? _imagenesExistentes.first
@@ -162,31 +165,37 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       }
     });
   }
-
+ 
   void _establecerPrincipal(String url) {
     if (_guardando) return;
-
+ 
     setState(() {
       _imagenPrincipal = url;
     });
   }
-
+ 
   void _quitarImagenNueva(int index) {
     if (_guardando) return;
-
+ 
     final imagen = _imagenes[index];
-
+ 
     setState(() {
       _imagenes.removeAt(index);
       _bytesImagenes.remove(imagen.path);
     });
   }
-
+ 
   Future<void> _guardar() async {
-    if (_guardando || !_formKey.currentState!.validate()) {
+    if (_guardando) return;
+ 
+    if (!_formKey.currentState!.validate()) {
+      _mostrarMensaje(
+        'Completa los campos marcados en rojo para continuar.',
+        esError: true,
+      );
       return;
     }
-
+ 
     if (_cantidadImagenes == 0) {
       _mostrarMensaje(
         'El producto debe conservar al menos una imagen.',
@@ -194,13 +203,13 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       );
       return;
     }
-
+ 
     final precio = double.parse(
       _precioController.text.trim().replaceAll(',', '.'),
     );
-
+ 
     setState(() => _guardando = true);
-
+ 
     try {
       await widget.onGuardar(
         nombre: _nombreController.text.trim(),
@@ -211,38 +220,33 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
         imagenesConservar: List<String>.from(_imagenesExistentes),
         imagenPrincipalActual: _imagenPrincipal,
       );
-
+ 
       if (!mounted) return;
-
+ 
       Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
-
+ 
       setState(() => _guardando = false);
-
+ 
       _mostrarMensaje(
         error.toString().replaceFirst('Exception: ', ''),
         esError: true,
       );
     }
   }
-
+ 
   void _mostrarMensaje(String mensaje, {bool esError = false}) {
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text(mensaje),
-          backgroundColor: esError
-              ? AppColors.sitioError
-              : AppColors.sitioPrimary,
-        ),
-      );
+ 
+    // Aviso en el overlay raíz: siempre queda encima del formulario.
+    if (esError) {
+      AvisosSitio.error(context, mensaje);
+    } else {
+      AvisosSitio.exito(context, mensaje);
+    }
   }
-
+ 
   InputDecoration _decoracionCampo({
     required String etiqueta,
     String? ayuda,
@@ -298,13 +302,14 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       ),
     );
   }
-
+ 
   Widget _campo({
     required String etiqueta,
     required TextEditingController controller,
     required String? Function(String?) validator,
     int maxLines = 1,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
     String? ayuda,
     IconData? icono,
   }) {
@@ -313,6 +318,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       enabled: !_guardando,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       validator: validator,
       style: const TextStyle(
         color: AppColors.sitioTextPrimary,
@@ -331,7 +337,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       ),
     );
   }
-
+ 
   Widget _encabezadoSeccion({
     required IconData icono,
     required String titulo,
@@ -381,10 +387,10 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       ],
     );
   }
-
+ 
   Widget _tarjetaExistente(String url) {
     final esPrincipal = url == _imagenPrincipal;
-
+ 
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
@@ -415,7 +421,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
               },
               loadingBuilder: (context, child, progress) {
                 if (progress == null) return child;
-
+ 
                 return Container(
                   color: AppColors.sitioSurfaceSoft,
                   alignment: Alignment.center,
@@ -499,13 +505,13 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       ),
     );
   }
-
+ 
   Widget _vistaImagenNueva(XFile imagen) {
     final future = _bytesImagenes.putIfAbsent(
       imagen.path,
       () => imagen.readAsBytes(),
     );
-
+ 
     return FutureBuilder<Uint8List>(
       future: future,
       builder: (context, snapshot) {
@@ -517,7 +523,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
             ),
           );
         }
-
+ 
         return Image.memory(
           snapshot.data!,
           fit: BoxFit.cover,
@@ -533,7 +539,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       },
     );
   }
-
+ 
   Widget _tarjetaImagenNueva(XFile imagen, int index) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
@@ -591,7 +597,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       ),
     );
   }
-
+ 
   Widget _seccionImagenes() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -674,7 +680,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
             LayoutBuilder(
               builder: (context, constraints) {
                 final columnas = constraints.maxWidth >= 460 ? 4 : 3;
-
+ 
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -708,7 +714,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
             LayoutBuilder(
               builder: (context, constraints) {
                 final columnas = constraints.maxWidth >= 460 ? 4 : 3;
-
+ 
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -733,7 +739,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
       ),
     );
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     final anchoPantalla = MediaQuery.sizeOf(context).width;
@@ -742,7 +748,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
         : anchoPantalla >= 600
             ? 560.0
             : anchoPantalla - 32;
-
+ 
     return Dialog(
       backgroundColor: AppColors.sitioSurface,
       insetPadding: const EdgeInsets.symmetric(
@@ -876,13 +882,15 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
                         icono: Icons.payments_outlined,
                         keyboardType:
                             const TextInputType.numberWithOptions(
-                          decimal: true,
+                          decimal: false,
                         ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         validator: (valor) {
-                          final texto =
-                              (valor ?? '').trim().replaceAll(',', '.');
+                          final texto = (valor ?? '').trim();
                           final precio = double.tryParse(texto);
-
+ 
                           if (texto.isEmpty || precio == null) {
                             return 'Ingresa un precio válido.';
                           }
@@ -985,7 +993,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
                       ),
                     ),
                   ];
-
+ 
                   if (constraints.maxWidth < 420) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -996,7 +1004,7 @@ class _FormularioProductoSitioState extends State<FormularioProductoSitio> {
                       ],
                     );
                   }
-
+ 
                   return Row(
                     children: [
                       Expanded(child: botones[0]),
