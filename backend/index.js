@@ -459,6 +459,17 @@ app.get(
 );
 
 // ======================================================
+// MONTANDO LAS RUTAS DE LA API
+// ======================================================
+
+app.get('/health', (req, res) => {
+  res.status(200).send({
+    status: 'OK',
+    message: 'API Mi Ruta Cafetera funcionando correctamente'
+  });
+});
+
+// ======================================================
 // RUTA DE PRUEBA DE CONEXIÓN
 // ======================================================
 
