@@ -1,60 +1,55 @@
-﻿import 'package:flutter/foundation.dart';
+﻿
+import 'package:flutter/foundation.dart';
 
 class ApiConfig {
   ApiConfig._();
 
   // ============================================================
-  // IP DEL COMPUTADOR EN LA RED LOCAL
+  // CONFIGURACIÓN DE ENTORNO
   // ============================================================
 
-  // Para celular físico.
-  //
-  // Si la IP del PC cambia, se puede cambiar al ejecutar mediante:
-  //
-  // --dart-define=API_PC_IP=192.168.1.101
-  //
+  // Para utilizar Render:
+  // --dart-define=USE_REMOTE_API=true
+  static const bool _usarBackendRemoto = bool.fromEnvironment(
+    'USE_REMOTE_API',
+    defaultValue: false,
+  );
+
+  // IP del computador para pruebas en red local.
   static const String _ipPc = String.fromEnvironment(
     'API_PC_IP',
     defaultValue: '192.168.1.101',
   );
 
-  // ============================================================
-  // DISPOSITIVO FÍSICO
-  // ============================================================
-
-  // Por defecto Flutter utilizará el emulador Android.
-  //
-  // Para celular físico:
-  //
-  // --dart-define=USE_PHYSICAL_DEVICE=true
-  //
+  // Selección del dispositivo físico o emulador.
   static const bool _celular = bool.fromEnvironment(
     'USE_PHYSICAL_DEVICE',
-    defaultValue: false,
+    defaultValue: true,
   );
+
+  // Backend desplegado.
+  static const String _remoteUrl =
+      'https://mi-ruta-cafetera.onrender.com/api';
 
   // ============================================================
   // URL BASE
   // ============================================================
 
   static String get baseUrl {
-    // Flutter Web
+    if (_usarBackendRemoto) {
+      return _remoteUrl;
+    }
+
     if (kIsWeb) {
       return 'http://localhost:3000/api';
     }
 
-    // Celular físico conectado a la misma red del PC
     if (_celular) {
       return 'http://$_ipPc:3000/api';
     }
 
-    // Emulador Android
     return 'http://10.0.2.2:3000/api';
   }
-
-  // ============================================================
-  // URL PARA CELULAR FÍSICO
-  // ============================================================
 
   static String get baseUrlCelular =>
       'http://$_ipPc:3000/api';
@@ -63,29 +58,23 @@ class ApiConfig {
   // ENDPOINTS
   // ============================================================
 
-  static String get chatUrl =>
-      '$baseUrl/chat';
+  static String get chatUrl => '$baseUrl/chat';
 
-  static String get sitiosUrl =>
-      '$baseUrl/sitios';
+  static String get sitiosUrl => '$baseUrl/sitios';
 
-  static String get categoriasUrl =>
-      '$baseUrl/categorias';
+  static String get categoriasUrl => '$baseUrl/categorias';
 
   static String get categoriasSitiosUrl =>
       '$baseUrl/categorias-sitios';
 
-  static String get rutasUrl =>
-      '$baseUrl/rutas';
+  static String get rutasUrl => '$baseUrl/rutas';
 
   static String get calcularRutaUrl =>
       '$rutasUrl/calcular';
 
-  // Recomendaciones con IA (backend: POST /api/v1/ai/recommendations).
   static String get recomendacionesIaUrl =>
       '$baseUrl/v1/ai/recommendations';
 
-  // Servicio público de clima Open-Meteo (no requiere API key).
   static const String climaUrl =
       'https://api.open-meteo.com/v1/forecast';
 }
