@@ -18,10 +18,10 @@ class EncabezadoLista extends StatelessWidget {
     super.key,
     required this.titulo,
     required this.descripcion,
-    required this.textoNuevo,
+    this.textoNuevo = '',
     required this.cantidad,
     required this.cargando,
-    this.mostrarBotonNuevo = true,
+    this.mostrarBotonNuevo = false,
     required this.onActualizar,
     required this.onNuevo,
   });
@@ -52,9 +52,7 @@ class EncabezadoLista extends StatelessWidget {
                           color: AppColors.textPrimary,
                         ),
                   ),
-                const SizedBox(
-                  height: AppDimensions.spacingXs,
-                ),
+                const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   '$cantidad $descripcion',
                   style: const TextStyle(
@@ -68,15 +66,13 @@ class EncabezadoLista extends StatelessWidget {
             tooltip: 'Actualizar',
             onPressed: cargando ? null : onActualizar,
             icon: const Icon(
-              Icons.refresh,
+              Icons.refresh_rounded,
               color: AppColors.primary,
               size: AppDimensions.iconMd,
             ),
           ),
           if (mostrarBotonNuevo && textoNuevo.trim().isNotEmpty) ...[
-            const SizedBox(
-              width: AppDimensions.spacingXs,
-            ),
+            const SizedBox(width: AppDimensions.spacingXs),
             FilledButton.icon(
               onPressed: onNuevo,
               style: FilledButton.styleFrom(

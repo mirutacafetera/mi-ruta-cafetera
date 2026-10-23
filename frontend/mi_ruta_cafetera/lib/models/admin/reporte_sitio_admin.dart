@@ -1,3 +1,4 @@
+
 class ReporteSitioAdmin {
   final String id;
   final String asunto;
@@ -5,8 +6,12 @@ class ReporteSitioAdmin {
   final String estado;
   final String tipoReporte;
   final String? respuestaAdmin;
+
   final String sitioId;
   final String nombreSitio;
+  final String? fotoSitio;
+  final String nombreCategoria;
+
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -19,15 +24,30 @@ class ReporteSitioAdmin {
     required this.sitioId,
     required this.nombreSitio,
     this.respuestaAdmin,
+    this.fotoSitio,
+    this.nombreCategoria = 'Sin categoría',
     this.createdAt,
     this.updatedAt,
   });
 
   factory ReporteSitioAdmin.fromJson(Map<String, dynamic> json) {
-    final sitio = json['sitioId'];
-    final sitioMap = sitio is Map
-        ? Map<String, dynamic>.from(sitio)
+    final sitioJson = json['sitioId'];
+
+    final Map<String, dynamic> sitio = sitioJson is Map
+        ? Map<String, dynamic>.from(sitioJson)
         : <String, dynamic>{};
+
+    final categoriaJson = sitio['categoria'];
+
+    final Map<String, dynamic> categoria = categoriaJson is Map
+        ? Map<String, dynamic>.from(categoriaJson)
+        : <String, dynamic>{};
+
+    // Primero intenta obtener la imagen principal de Cloudinary.
+    String? foto = _obtenerUrl(sitio['imagen']);
+
+    // Si no existe, intenta obtener una imagen de la lista fotos.
+    foto ??= _obtenerUrl(sitio['fotos']);
 
     return ReporteSitioAdmin(
       id: (json['_id'] ?? '').toString(),
@@ -36,28 +56,55 @@ class ReporteSitioAdmin {
       estado: (json['estado'] ?? 'pendiente').toString(),
       tipoReporte: (json['tipoReporte'] ?? 'problema').toString(),
       respuestaAdmin: json['respuestaAdmin']?.toString(),
-      sitioId: sitioMap.isNotEmpty
-          ? (sitioMap['_id'] ?? '').toString()
-          : (sitio ?? '').toString(),
-      nombreSitio: (sitioMap['nombre'] ?? 'Sitio sin nombre').toString(),
-      createdAt: DateTime.tryParse((json['createdAt'] ?? '').toString()),
-      updatedAt: DateTime.tryParse((json['updatedAt'] ?? '').toString()),
+      sitioId: sitio.isNotEmpty
+          ? (sitio['_id'] ?? '').toString()
+          : (sitioJson ?? '').toString(),
+      nombreSitio: (sitio['nombre'] ?? 'Sitio sin nombre').toString(),
+      fotoSitio: foto,
+      nombreCategoria:
+          (categoria['nombre'] ?? 'Sin categoría').toString(),
+      createdAt: DateTime.tryParse(
+        (json['createdAt'] ?? '').toString(),
+      ),
+      updatedAt: DateTime.tryParse(
+        (json['updatedAt'] ?? '').toString(),
+      ),
     );
+  }
+
+  static String? _obtenerUrl(dynamic valor) {
+    if (valor is String && valor.trim().isNotEmpty) {
+      return valor.trim();
+    }
+
+    if (valor is List) {
+      for (final elemento in valor) {
+        if (elemento is String && elemento.trim().isNotEmpty) {
+          return elemento.trim();
+        }
+      }
+    }
+
+    return null;
   }
 
   String get estadoLegible {
     switch (estado) {
+      case 'pendiente':
+        return 'Pendiente';
       case 'en_revision':
         return 'En revisión';
       case 'resuelto':
         return 'Resuelto';
       default:
-        return 'Pendiente';
+        return estado;
     }
   }
 
   String get tipoLegible {
     switch (tipoReporte) {
+      case 'problema':
+        return 'Problema';
       case 'sugerencia':
         return 'Sugerencia';
       case 'mejora':
@@ -65,7 +112,7 @@ class ReporteSitioAdmin {
       case 'otro':
         return 'Otro';
       default:
-        return 'Problema';
+        return tipoReporte;
     }
   }
 }

@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/admin/cuenta/foto_perfil_admin_controlador.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import '../../widgets/admin/cuenta/foto_perfil.dart';
 import '../../widgets/admin/fondo_admin.dart';
 
@@ -25,74 +27,102 @@ class AdminInicio extends StatelessWidget {
     required this.onAbrirCuenta,
   });
 
-  static const Color _verde = Color(0xFF174D3A);
-  static const Color _crema = Color(0xFFFFF9F0);
-  static const Color _cafe = Color(0xFFB58A6A);
-  static const Color _naranja = Color(0xFFF47B20);
-  static const Color _texto = Color(0xFF293A32);
-  static const Color _gris = Color(0xFF454A45);
-
   @override
   Widget build(BuildContext context) {
+    final colores = Theme.of(context).colorScheme;
+    final oscuro = Theme.of(context).brightness == Brightness.dark;
+    final fondoTarjeta =
+        oscuro ? colores.surface : AppColors.creamLight;
+
     return FondoAdmin(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(18, 24, 18, 28),
+        padding: const EdgeInsets.fromLTRB(
+          AppDimensions.pageHorizontalSmall,
+          AppDimensions.spacingLg,
+          AppDimensions.pageHorizontalSmall,
+          AppDimensions.spacingXxl,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _encabezado(),
-            const SizedBox(height: 25),
+            const SizedBox(height: AppDimensions.sectionGap),
+
+            _tituloSeccion(
+              colorTexto: colores.onSurface,
+              colorSecundario: colores.onSurfaceVariant,
+            ),
+            const SizedBox(height: AppDimensions.spacingLg),
+
             _tarjetaOpcion(
+              context: context,
+              fondo: fondoTarjeta,
               icono: Icons.map_outlined,
               titulo: 'Mapa turístico',
               descripcion: 'Explora los destinos de la ruta cafetera.',
-              color: _verde,
-              fondoIcono: const Color(0xFFE7F0E5),
+              color: AppColors.primary,
+              fondoIcono: AppColors.sitioSurfaceGreen,
               onTap: onAbrirMapa,
             ),
+
             _tarjetaOpcion(
+              context: context,
+              fondo: fondoTarjeta,
               icono: Icons.place_outlined,
               titulo: 'Gestionar sitios',
               descripcion: 'Administra los sitios turísticos.',
-              color: _naranja,
-              fondoIcono: const Color(0xFFFFEEDB),
+              color: AppColors.cafeOscuro,
+              fondoIcono: AppColors.orangeSoft,
               onTap: onGestionarSitios,
             ),
+
             _tarjetaOpcion(
+              context: context,
+              fondo: fondoTarjeta,
               icono: Icons.people_outline_rounded,
               titulo: 'Gestionar usuarios',
-              descripcion: 'Consulta y administra los usuarios.',
-              color: const Color(0xFF397C70),
-              fondoIcono: const Color(0xFFE3F1EC),
+              descripcion: 'Consulta los usuarios registrados.',
+              color: AppColors.nature,
+              fondoIcono: AppColors.sitioSurfaceGreen,
               onTap: onGestionarUsuarios,
             ),
-            const SizedBox(height: 10),
+
+            const SizedBox(height: AppDimensions.spacingSm),
+
             Row(
               children: [
                 Expanded(
                   child: Container(
                     height: 1,
-                    color: _cafe.withValues(alpha: 0.65),
+                    color: AppColors.adminBorder.withValues(alpha: 0.7),
                   ),
                 ),
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingMd,
+                  ),
                   child: Icon(
                     Icons.coffee_rounded,
-                    color: _cafe,
-                    size: 20,
+                    color: AppColors.tertiary,
+                    size: AppDimensions.iconSm,
                   ),
                 ),
                 Expanded(
                   child: Container(
                     height: 1,
-                    color: _cafe.withValues(alpha: 0.65),
+                    color: AppColors.adminBorder.withValues(alpha: 0.7),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            _tarjetaCuenta(),
+
+            const SizedBox(height: AppDimensions.spacingMd),
+
+            _tarjetaCuenta(
+              fondo: fondoTarjeta,
+              colorTexto: colores.onSurface,
+              colorSecundario: colores.onSurfaceVariant,
+            ),
           ],
         ),
       ),
@@ -100,52 +130,108 @@ class AdminInicio extends StatelessWidget {
   }
 
   Widget _encabezado() {
-    return Column(
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: _verde,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _cafe, width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: _cafe.withValues(alpha: 0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+    final primerNombre = nombre.trim().isEmpty
+        ? 'Administrador'
+        : nombre.trim().split(RegExp(r'\s+')).first;
+
+    const cafe = Color(0xFF795548);
+    const cafeOscuro = Color(0xFF4E342E);
+    const crema = Color(0xFFFFF4E5);
+
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingLg,
+        vertical: AppDimensions.spacingXl,
+      ),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            crema,
+            Color.fromARGB(255, 251, 233, 211),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.cardRadius,
+        ),
+        border: Border.all(
+          color: cafe.withValues(alpha: 0.75),
+          width: 1.3,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cafe.withValues(alpha: 0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  '¡Hola, $primerNombre!',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: cafeOscuro,
+                    fontSize: 23,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
+                  ),
+                ),
               ),
+              const SizedBox(width: AppDimensions.spacingSm),
+             const Icon(
+  Icons.coffee_rounded,
+  color: cafeOscuro,
+  size: 27,
+),
             ],
           ),
-          child: const Icon(
-            Icons.admin_panel_settings_rounded,
-            color: _crema,
-            size: 40,
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Gestión del administrador',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: _verde,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            height: 1.2,
-          ),
-        ),
-        const SizedBox(height: 10),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            'Administra los mapas, sitios turísticos y usuarios '
+          const SizedBox(height: AppDimensions.spacingSm),
+          const Text(
+            'Bienvenido al panel de administración '
             'de Mi Ruta Cafetera.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: _gris,
-              fontSize: 15,
+              color: cafe,
+              fontSize: 13,
               height: 1.5,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tituloSeccion({
+    required Color colorTexto,
+    required Color colorSecundario,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Accesos rápidos',
+          style: TextStyle(
+            color: colorTexto,
+            fontSize: 19,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingXs),
+        Text(
+          '¿Qué deseas administrar hoy?',
+          style: TextStyle(
+            color: colorSecundario,
+            fontSize: 13,
           ),
         ),
       ],
@@ -153,6 +239,8 @@ class AdminInicio extends StatelessWidget {
   }
 
   Widget _tarjetaOpcion({
+    required BuildContext context,
+    required Color fondo,
     required IconData icono,
     required String titulo,
     required String descripcion,
@@ -160,83 +248,93 @@ class AdminInicio extends StatelessWidget {
     required Color fondoIcono,
     required VoidCallback onTap,
   }) {
+    final colores = Theme.of(context).colorScheme;
+
     return Container(
-      height: 105,
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 13),
+      margin: const EdgeInsets.only(
+        bottom: AppDimensions.spacingMd,
+      ),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFCF7),
-        borderRadius: BorderRadius.circular(16),
+        color: fondo,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.cardRadius,
+        ),
         border: Border.all(
-          color: _cafe.withValues(alpha: 0.7),
-          width: 1,
+          color: AppColors.adminBorder.withValues(alpha: 0.85),
+          width: 1.1,
         ),
         boxShadow: [
           BoxShadow(
-            color: _cafe.withValues(alpha: 0.09),
-            blurRadius: 7,
+            color: AppColors.cardShadow.withValues(alpha: 0.3),
+            blurRadius: 9,
             offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.cardRadius,
+        ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.cardRadius,
+          ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            padding: const EdgeInsets.all(
+              AppDimensions.spacingLg,
+            ),
             child: Row(
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 54,
+                  height: 54,
                   decoration: BoxDecoration(
                     color: fondoIcono,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusMd,
+                    ),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.2),
+                    ),
                   ),
                   child: Icon(
                     icono,
                     color: color,
-                    size: 26,
+                    size: AppDimensions.iconLg,
                   ),
                 ),
-                const SizedBox(width: 13),
+                const SizedBox(width: AppDimensions.spacingMd),
                 Expanded(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         titulo,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: _texto,
+                        style: TextStyle(
+                          color: colores.onSurface,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: AppDimensions.spacingXs),
                       Text(
                         descripcion,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: _gris,
+                        style: TextStyle(
+                          color: colores.onSurfaceVariant,
                           fontSize: 12,
-                          height: 1.3,
+                          height: 1.45,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: AppDimensions.spacingXs),
                 Icon(
                   Icons.chevron_right_rounded,
                   color: color,
-                  size: 25,
+                  size: AppDimensions.iconLg,
                 ),
               ],
             ),
@@ -246,91 +344,109 @@ class AdminInicio extends StatelessWidget {
     );
   }
 
-  Widget _tarjetaCuenta() {
+  Widget _tarjetaCuenta({
+    required Color fondo,
+    required Color colorTexto,
+    required Color colorSecundario,
+  }) {
     return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 105),
+      constraints: const BoxConstraints(minHeight: 88),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFCF7),
-        borderRadius: BorderRadius.circular(16),
+        color: fondo,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.cardRadius,
+        ),
         border: Border.all(
-          color: _cafe,
-          width: 1,
+          color: AppColors.adminBorder,
+          width: 1.1,
         ),
         boxShadow: [
           BoxShadow(
-            color: _cafe.withValues(alpha: 0.1),
-            blurRadius: 7,
+            color: AppColors.cardShadow.withValues(alpha: 0.3),
+            blurRadius: 8,
             offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.cardRadius,
+        ),
         child: InkWell(
           onTap: onAbrirCuenta,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.cardRadius,
+          ),
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(
+              AppDimensions.spacingMd,
+            ),
             child: Row(
               children: [
                 Container(
+                  width: 62,
+                  height: 62,
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: _naranja,
-                      width: 1.2,
+                      color: AppColors.secondary,
+                      width: 1.7,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _naranja.withValues(alpha: 0.10),
-                        blurRadius: 4,
-                        spreadRadius: 1,
-                      ),
-                    ],
                   ),
                   child: ClipOval(
                     child: FotoPerfil(
                       controlador: fotoPerfilControlador,
-                      radio: 29,
+                      radio: AppDimensions.profileAvatarSmall / 2,
                     ),
                   ),
                 ),
-                const SizedBox(width: 13),
+                const SizedBox(width: AppDimensions.spacingMd),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        nombre,
+                        nombre.trim().isEmpty
+                            ? 'Administrador'
+                            : nombre,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: _verde,
+                        style: TextStyle(
+                          color: colorTexto,
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      const SizedBox(height: AppDimensions.spacingXs),
                       Text(
                         email,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: _gris,
+                        style: TextStyle(
+                          color: colorSecundario,
                           fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Text(
+                        'Ver mi cuenta',
+                        style: TextStyle(
+                          color: AppColors.secondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: AppDimensions.spacingXs),
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: _verde,
-                  size: 25,
+                  color: AppColors.primary,
+                  size: AppDimensions.iconLg,
                 ),
               ],
             ),
