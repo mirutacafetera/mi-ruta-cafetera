@@ -49,20 +49,21 @@ class _PanelSitioScreenState extends State<PanelSitioScreen> {
     Icons.star_rounded,
   ];
 
-  late final List<Widget> _pantallas = [
-    const SitioDashboardScreen(),
-    const SitioPerfilScreen(),
-    const SitioCuentaScreen(),
-    const SitioContenidoScreen(),
-    const SitioMultimediaScreen(),
-    const SitioActividadesScreen(),
-    const SitioProductosScreen(),
-    const SitioReservasScreen(),
-    const SitioResenasScreen(),
-  ];
+  // Lista de pantallas mapeadas de forma limpia
+  List<Widget> get _pantallas => const [
+        SitioDashboardScreen(),
+        SitioPerfilScreen(),
+        SitioCuentaScreen(),
+        SitioContenidoScreen(),
+        SitioMultimediaScreen(),
+        SitioActividadesScreen(),
+        SitioProductosScreen(),
+        SitioReservasScreen(),
+        SitioResenasScreen(),
+      ];
 
   void _cambiarModulo(int indice) {
-    if (indice < 0 || indice >= _pantallas.length) {
+    if (indice < 0 || indice >= _titulos.length) {
       return;
     }
 
