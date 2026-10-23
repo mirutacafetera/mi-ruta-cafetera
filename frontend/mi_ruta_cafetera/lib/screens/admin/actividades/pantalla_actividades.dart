@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/actividades/actividad_admin_controller.dart';
 import '../../../models/admin/admin_actividad_model.dart';
+import '../../../theme/app_colors.dart';
 import '../../../widgets/admin/actividades/tarjeta_actividad_admin.dart';
 import '../../../widgets/admin/actividades/detalle_actividad_admin.dart';
+import '../../../widgets/admin/contenido/filtros_contenido.dart';
 import '../../../widgets/admin/contenido/galeria_imagenes.dart';
 import '../../../widgets/admin/producto/resumen_productos.dart';
 import '../../../widgets/admin/sitio_turistico/barra_busqueda.dart';
@@ -17,7 +19,6 @@ class PantallaActividades extends StatefulWidget {
 
 class _PantallaActividadesState extends State<PantallaActividades> {
   late final ActividadAdminController _controlador;
-
   String _estado = 'pendiente_revision';
   ActividadAdminModel? _actividadSeleccionada;
 
@@ -38,15 +39,14 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     await _controlador.cargarActividades();
   }
 
-  void _mensaje(String texto, {bool error = false}) {
+  void _mostrarMensaje(String mensaje, {bool error = false}) {
     if (!mounted) return;
-
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(texto),
-          backgroundColor: error ? Colors.red : Colors.green.shade700,
+          content: Text(mensaje),
+          backgroundColor: error ? AppColors.error : AppColors.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -60,12 +60,12 @@ class _PantallaActividadesState extends State<PantallaActividades> {
         content: Text('¿Deseas aprobar "${actividad.nombre}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton.icon(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            icon: const Icon(Icons.check_circle_outline),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            icon: const Icon(Icons.check_circle_outline_rounded),
             label: const Text('Aprobar'),
           ),
         ],
@@ -75,19 +75,18 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     if (confirmar != true || !mounted) return;
 
     final resultado = await _controlador.aprobarActividad(actividad.id);
-
     if (!mounted) return;
 
     if (resultado == null) {
       setState(() => _actividadSeleccionada = null);
-      _mensaje('Actividad aprobada correctamente.');
+      _mostrarMensaje('Actividad aprobada correctamente.');
     } else {
-      _mensaje(resultado, error: true);
+      _mostrarMensaje(resultado, error: true);
     }
   }
 
   Future<void> _rechazar(ActividadAdminModel actividad) async {
-    final motivoController = TextEditingController();
+    final controladorMotivo = TextEditingController();
 
     try {
       final motivo = await showDialog<String>(
@@ -96,7 +95,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
         builder: (dialogContext) => AlertDialog(
           title: const Text('Rechazar actividad'),
           content: TextField(
-            controller: motivoController,
+            controller: controladorMotivo,
             autofocus: true,
             maxLines: 4,
             maxLength: 500,
@@ -109,15 +108,15 @@ class _PantallaActividadesState extends State<PantallaActividades> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Cancelar'),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.error,
               ),
               onPressed: () {
-                final texto = motivoController.text.trim();
+                final texto = controladorMotivo.text.trim();
 
                 if (texto.length < 3) {
                   ScaffoldMessenger.of(dialogContext).showSnackBar(
@@ -130,7 +129,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                   return;
                 }
 
-                Navigator.of(dialogContext).pop(texto);
+                Navigator.pop(dialogContext, texto);
               },
               child: const Text('Rechazar'),
             ),
@@ -149,17 +148,43 @@ class _PantallaActividadesState extends State<PantallaActividades> {
 
       if (resultado == null) {
         setState(() => _actividadSeleccionada = null);
-        _mensaje('Actividad rechazada correctamente.');
+        _mostrarMensaje('Actividad rechazada correctamente.');
       } else {
-        _mensaje(resultado, error: true);
+        _mostrarMensaje(resultado, error: true);
       }
     } finally {
-      motivoController.dispose();
+      controladorMotivo.dispose();
     }
+  }
+
+  ActividadAdminModel? _obtenerActividad(String id) {
+    for (final actividad in _controlador.actividades) {
+      if (actividad.id == id) return actividad;
+    }
+    return null;
   }
 
   void _mostrarGaleria(List<String> imagenes, int inicial) {
     GaleriaImagenes.mostrar(context, imagenes, inicial);
+  }
+
+  int _contarEstado(String estado) {
+    return _controlador.actividades
+        .where((actividad) => actividad.estadoPublicacion == estado)
+        .length;
+  }
+
+  String _textoEstado() {
+    switch (_estado) {
+      case 'todas':
+        return 'registradas';
+      case 'aprobado':
+        return 'aprobadas';
+      case 'rechazado':
+        return 'rechazadas';
+      default:
+        return 'pendientes';
+    }
   }
 
   @override
@@ -168,28 +193,30 @@ class _PantallaActividadesState extends State<PantallaActividades> {
       animation: _controlador,
       builder: (context, _) {
         final actividades = _controlador.actividadesFiltradas
-            .where((a) => a.estadoPublicacion == _estado)
+            .where(
+              (actividad) =>
+                  _estado == 'todas' ||
+                  actividad.estadoPublicacion == _estado,
+            )
             .toList();
 
-        final seleccionada = _actividadSeleccionada;
+        if (_actividadSeleccionada != null) {
+          final actual = _obtenerActividad(_actividadSeleccionada!.id);
 
-        if (seleccionada != null) {
-          final actividadActual = _controlador.actividades
-              .where((a) => a.id == seleccionada.id)
-              .firstOrNull;
-
-          if (actividadActual != null) {
+          if (actual != null) {
             return DetalleActividadAdmin(
-              actividad: actividadActual,
+              actividad: actual,
               onVolver: () {
                 setState(() => _actividadSeleccionada = null);
               },
-              onAprobar: () => _aprobar(actividadActual),
-              onRechazar: () => _rechazar(actividadActual),
+              onAprobar: () => _aprobar(actual),
+              onRechazar: () => _rechazar(actual),
               onActualizar: _cargar,
               procesando: _controlador.procesando,
               onMostrarGaleria: _mostrarGaleria,
             );
+          } else {
+            _actividadSeleccionada = null;
           }
         }
 
@@ -204,38 +231,64 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
                     sliver: SliverToBoxAdapter(
-                      child: _encabezado(context),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${_controlador.actividades.length} '
+                              'Actividades registradas',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Actualizar',
+                            onPressed: _controlador.cargando ? null : _cargar,
+                            icon: const Icon(Icons.refresh_rounded),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SliverToBoxAdapter(
                     child: ResumenProductos(
-                      estadoSeleccionado: _estado,
-                      onSeleccionar: (nuevoEstado) {
-                        setState(() => _estado = nuevoEstado);
-                      },
                       tarjetas: [
                         ResumenTarjetaConfig(
                           titulo: 'Pendientes',
                           cantidad: _contarEstado('pendiente_revision'),
-                          icono: Icons.pending_actions,
-                          color: Colors.orange,
+                          icono: Icons.pending_actions_rounded,
+                          color: AppColors.secondary,
                           estado: 'pendiente_revision',
                         ),
                         ResumenTarjetaConfig(
                           titulo: 'Aprobados',
                           cantidad: _contarEstado('aprobado'),
-                          icono: Icons.check_circle_outline,
-                          color: Colors.green,
+                          icono: Icons.check_circle_rounded,
+                          color: AppColors.success,
                           estado: 'aprobado',
                         ),
                         ResumenTarjetaConfig(
                           titulo: 'Rechazados',
                           cantidad: _contarEstado('rechazado'),
-                          icono: Icons.cancel_outlined,
-                          color: Colors.red,
+                          icono: Icons.cancel_rounded,
+                          color: AppColors.error,
                           estado: 'rechazado',
                         ),
                       ],
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: FiltrosContenido(
+                      seleccionado: _estado,
+                      onSeleccionar: (nuevoEstado) {
+                        setState(() => _estado = nuevoEstado);
+                      },
                     ),
                   ),
                   SliverPadding(
@@ -249,38 +302,33 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                       ),
                     ),
                   ),
-                  if (_controlador.error != null &&
+                  if (_controlador.cargando &&
+                      _controlador.actividades.isEmpty)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (_controlador.error != null &&
                       _controlador.actividades.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: _estadoVacio(
-                        context,
                         'No se pudieron cargar las actividades.',
                         _controlador.error!,
                         _cargar,
                         error: true,
                       ),
                     )
-                  else if (_controlador.cargando &&
-                      _controlador.actividades.isEmpty)
-                    const SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
                   else if (actividades.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: _estadoVacio(
-                        context,
                         _controlador.busqueda.isNotEmpty
                             ? 'No se encontraron actividades'
                             : 'No hay actividades ${_textoEstado()}.',
                         _controlador.busqueda.isNotEmpty
                             ? 'Prueba con otro nombre o sitio turístico.'
-                            : 'Las actividades aparecerán aquí cuando '
-                                'haya registros de este estado.',
+                            : 'No hay registros para mostrar en este estado.',
                         _cargar,
                       ),
                     )
@@ -321,73 +369,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     );
   }
 
-  int _contarEstado(String estado) {
-    return _controlador.actividades
-        .where((a) => a.estadoPublicacion == estado)
-        .length;
-  }
-
-  String _textoEstado() {
-    switch (_estado) {
-      case 'aprobado':
-        return 'aprobados';
-      case 'rechazado':
-        return 'rechazados';
-      default:
-        return 'pendientes';
-    }
-  }
-
-  Widget _encabezado(BuildContext context) {
-    final colores = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: colores.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Icon(
-            Icons.event_available_rounded,
-            color: colores.primary,
-            size: 26,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Moderación de actividades',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Revisa y gestiona las actividades enviadas.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colores.onSurfaceVariant,
-                    ),
-              ),
-            ],
-          ),
-        ),
-        IconButton(
-          tooltip: 'Actualizar',
-          onPressed: _controlador.cargando ? null : _cargar,
-          icon: const Icon(Icons.refresh_rounded),
-        ),
-      ],
-    );
-  }
-
   Widget _estadoVacio(
-    BuildContext context,
     String titulo,
     String descripcion,
     VoidCallback accion, {
@@ -405,24 +387,26 @@ class _PantallaActividadesState extends State<PantallaActividades> {
               error
                   ? Icons.cloud_off_rounded
                   : Icons.event_available_rounded,
-              size: 58,
+              size: 54,
               color: error ? colores.error : colores.primary,
             ),
             const SizedBox(height: 14),
             Text(
               titulo,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               descripcion,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colores.onSurfaceVariant,
-                  ),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: colores.onSurfaceVariant),
             ),
             const SizedBox(height: 16),
             OutlinedButton.icon(

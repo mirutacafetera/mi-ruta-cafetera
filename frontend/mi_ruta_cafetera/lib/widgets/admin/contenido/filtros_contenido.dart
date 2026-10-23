@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
@@ -54,15 +53,11 @@ class FiltrosContenido extends StatelessWidget {
           children: [
             for (int i = 0; i < _opciones.length; i++) ...[
               if (i > 0)
-                const SizedBox(
-                  width: AppDimensions.spacingSm,
-                ),
+                const SizedBox(width: AppDimensions.spacingSm),
               _FiltroContenidoItem(
                 opcion: _opciones[i],
-                seleccionado:
-                    seleccionado == _opciones[i].valor,
-                onTap: () =>
-                    onSeleccionar(_opciones[i].valor),
+                seleccionado: seleccionado == _opciones[i].valor,
+                onTap: () => onSeleccionar(_opciones[i].valor),
               ),
             ],
           ],
@@ -101,12 +96,14 @@ class _FiltroContenidoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: seleccionado
-          ? AppColors.primary
+          ? opcion.color.withValues(alpha: 0.12)
           : const Color(0xFFFFFCF7),
       borderRadius: BorderRadius.circular(30),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(30),
+        splashColor: opcion.color.withValues(alpha: 0.08),
+        highlightColor: opcion.color.withValues(alpha: 0.05),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(
@@ -127,9 +124,7 @@ class _FiltroContenidoItem extends StatelessWidget {
               Icon(
                 opcion.icono,
                 size: 18,
-                color: seleccionado
-                    ? Colors.white
-                    : opcion.color,
+                color: opcion.color,
               ),
               const SizedBox(width: 6),
               Text(
@@ -138,7 +133,7 @@ class _FiltroContenidoItem extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: seleccionado
-                      ? Colors.white
+                      ? opcion.color
                       : AppColors.textPrimary,
                 ),
               ),

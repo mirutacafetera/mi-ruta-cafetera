@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../models/admin/admin_contenido_model.dart';
@@ -220,10 +221,6 @@ class TarjetaContenido extends StatelessWidget {
       ),
     );
   }
-
-  // ============================================================
-  // MOSTRAR UNA SOLA REVISIÓN
-  // ============================================================
 
   Widget _revision() {
     if (contenido.tieneRevisionManual) {

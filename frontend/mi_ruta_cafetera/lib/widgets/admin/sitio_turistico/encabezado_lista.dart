@@ -41,16 +41,17 @@ class EncabezadoLista extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  titulo,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                if (titulo.isNotEmpty)
+                  Text(
+                    titulo,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                   ),
-                ),
                 const SizedBox(
                   height: AppDimensions.spacingXs,
                 ),
@@ -72,12 +73,23 @@ class EncabezadoLista extends StatelessWidget {
               size: AppDimensions.iconMd,
             ),
           ),
-          if (mostrarBotonNuevo) ...[
+          if (mostrarBotonNuevo && textoNuevo.trim().isNotEmpty) ...[
             const SizedBox(
               width: AppDimensions.spacingXs,
             ),
             FilledButton.icon(
               onPressed: onNuevo,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.secondary,
+                foregroundColor: AppColors.white,
+                elevation: 0,
+                side: BorderSide.none,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusXl,
+                  ),
+                ),
+              ),
               icon: const Icon(
                 Icons.add,
                 size: AppDimensions.iconMd,

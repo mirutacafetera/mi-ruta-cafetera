@@ -1,11 +1,62 @@
-
 const mongoose = require('mongoose');
+
 const Actividad = require('../../models/sitio/actividad');
+const HistorialRevisionIA = require('../../models/admin/historial_revision_ia');
+
+// Agregar la última evaluación de IA a cada actividad.
+const agregarEvaluacionIA = async (actividades) => {
+  const lista = Array.isArray(actividades)
+    ? actividades
+    : [actividades];
+
+  if (!lista.length) {
+    return Array.isArray(actividades) ? [] : null;
+  }
+
+  const ids = lista.map((actividad) => actividad._id);
+
+  const historial = await HistorialRevisionIA.find({
+    tipoSolicitud: 'actividad',
+    solicitudId: { $in: ids },
+  })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const evaluaciones = new Map();
+
+  for (const registro of historial) {
+    const id = String(registro.solicitudId);
+
+    if (!evaluaciones.has(id)) {
+      evaluaciones.set(id, {
+        decision: registro.decision,
+        motivo: registro.motivo,
+        criterios: registro.criterios || [],
+        modeloIA: registro.modeloIA || '',
+        fechaDecision: registro.fechaDecision || registro.createdAt,
+      });
+    }
+  }
+
+  const resultado = lista.map((actividad) => {
+    const datos = actividad.toObject
+      ? actividad.toObject()
+      : actividad;
+
+    return {
+      ...datos,
+      evaluacionIA: evaluaciones.get(String(datos._id)) || null,
+    };
+  });
+
+  return Array.isArray(actividades) ? resultado : resultado[0];
+};
 
 // OBTENER ACTIVIDADES POR ESTADO
 const obtenerActividadesPendientes = async (req, res) => {
   try {
     const { estado } = req.query;
+
     const estadosPermitidos = [
       'pendiente_revision',
       'aprobado',
@@ -20,7 +71,11 @@ const obtenerActividadesPendientes = async (req, res) => {
       .populate('sitio', 'nombre ciudad departamento')
       .sort({ createdAt: -1 });
 
-    return res.status(200).json({ actividades });
+    const resultado = await agregarEvaluacionIA(actividades);
+
+    return res.status(200).json({
+      actividades: resultado,
+    });
   } catch (error) {
     console.error('Error al obtener actividades:', error);
 
@@ -44,7 +99,7 @@ const obtenerActividad = async (req, res) => {
 
     const actividad = await Actividad.findById(id).populate(
       'sitio',
-      'nombre ciudad departamento'
+      'nombre ciudad departamento',
     );
 
     if (!actividad) {
@@ -53,7 +108,11 @@ const obtenerActividad = async (req, res) => {
       });
     }
 
-    return res.status(200).json({ actividad });
+    const resultado = await agregarEvaluacionIA(actividad);
+
+    return res.status(200).json({
+      actividad: resultado,
+    });
   } catch (error) {
     console.error('Error al obtener actividad:', error);
 
@@ -64,7 +123,7 @@ const obtenerActividad = async (req, res) => {
   }
 };
 
-// APROBAR ACTIVIDAD
+// APROBAR ACTIVIDAD POR ADMINISTRADOR
 const aprobarActividad = async (req, res) => {
   try {
     const { id } = req.params;
@@ -96,13 +155,16 @@ const aprobarActividad = async (req, res) => {
 
     await actividad.save();
 
-    const actividadActualizada = await Actividad.findById(
-      actividad._id
-    ).populate('sitio', 'nombre ciudad departamento');
+    const actualizada = await Actividad.findById(actividad._id).populate(
+      'sitio',
+      'nombre ciudad departamento',
+    );
+
+    const resultado = await agregarEvaluacionIA(actualizada);
 
     return res.status(200).json({
       mensaje: 'Actividad aprobada correctamente',
-      actividad: actividadActualizada,
+      actividad: resultado,
     });
   } catch (error) {
     console.error('Error al aprobar actividad:', error);
@@ -114,7 +176,7 @@ const aprobarActividad = async (req, res) => {
   }
 };
 
-// RECHAZAR ACTIVIDAD
+// RECHAZAR ACTIVIDAD POR ADMINISTRADOR
 const rechazarActividad = async (req, res) => {
   try {
     const { id } = req.params;
@@ -156,13 +218,16 @@ const rechazarActividad = async (req, res) => {
 
     await actividad.save();
 
-    const actividadActualizada = await Actividad.findById(
-      actividad._id
-    ).populate('sitio', 'nombre ciudad departamento');
+    const actualizada = await Actividad.findById(actividad._id).populate(
+      'sitio',
+      'nombre ciudad departamento',
+    );
+
+    const resultado = await agregarEvaluacionIA(actualizada);
 
     return res.status(200).json({
       mensaje: 'Actividad rechazada correctamente',
-      actividad: actividadActualizada,
+      actividad: resultado,
     });
   } catch (error) {
     console.error('Error al rechazar actividad:', error);

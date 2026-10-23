@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/producto/producto_controller.dart';
@@ -20,9 +19,7 @@ class PantallaProducto extends StatefulWidget {
 
 class _PantallaProductoState extends State<PantallaProducto> {
   ProductoController? _controller;
-
-  final TextEditingController _busquedaController =
-      TextEditingController();
+  final TextEditingController _busquedaController = TextEditingController();
 
   bool _inicializando = true;
   String? _errorInicializacion;
@@ -37,7 +34,6 @@ class _PantallaProductoState extends State<PantallaProducto> {
   Future<void> _inicializar() async {
     try {
       await AdminServicioAutenticacion.cargarToken();
-
       final token = AdminServicioAutenticacion.tokenAdmin;
 
       if (token == null || token.trim().isEmpty) {
@@ -64,8 +60,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
       if (!mounted) return;
 
       setState(() {
-        _errorInicializacion =
-            e.toString().replaceFirst('Exception: ', '');
+        _errorInicializacion = e.toString().replaceFirst('Exception: ', '');
         _inicializando = false;
       });
     }
@@ -81,7 +76,6 @@ class _PantallaProductoState extends State<PantallaProducto> {
   Future<void> _actualizar() async {
     final controller = _controller;
     if (controller == null) return;
-
     await controller.actualizarProductos();
   }
 
@@ -89,15 +83,14 @@ class _PantallaProductoState extends State<PantallaProducto> {
     final controller = _controller;
     if (controller == null) return;
 
-    setState(() {
-      _filtroActivo = estado;
-    });
-
+    setState(() => _filtroActivo = estado);
     _busquedaController.clear();
     controller.limpiarBusqueda();
 
     if (estado != 'todas') {
       controller.seleccionarEstado(estado);
+    } else {
+      controller.actualizarProductos();
     }
   }
 
@@ -133,7 +126,6 @@ class _PantallaProductoState extends State<PantallaProducto> {
     if (confirmar != true || !mounted) return;
 
     final resultado = await controller.aprobarProducto(productoId);
-
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -143,8 +135,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
               ? 'Producto aprobado correctamente.'
               : controller.error ?? 'No se pudo aprobar el producto.',
         ),
-        backgroundColor:
-            resultado ? Colors.green.shade700 : Colors.red,
+        backgroundColor: resultado ? AppColors.success : AppColors.error,
       ),
     );
   }
@@ -177,8 +168,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
               ? 'Producto rechazado correctamente.'
               : controller.error ?? 'No se pudo rechazar el producto.',
         ),
-        backgroundColor:
-            resultado ? Colors.orange.shade800 : Colors.red,
+        backgroundColor: resultado ? AppColors.secondary : AppColors.error,
       ),
     );
   }
@@ -205,7 +195,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
       case ProductoController.estadoPendiente:
         return 'productos pendientes de revisión';
       default:
-        return 'todos los productos registrados';
+        return 'Productos registrados';
     }
   }
 
@@ -236,9 +226,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
   @override
   Widget build(BuildContext context) {
     if (_inicializando) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_errorInicializacion != null) {
@@ -249,61 +237,53 @@ class _PantallaProductoState extends State<PantallaProducto> {
 
     if (controller == null) {
       return const Center(
-        child: Text(
-          'No se pudo inicializar la pantalla de productos.',
-        ),
+        child: Text('No se pudo inicializar la pantalla de productos.'),
       );
     }
 
     return AnimatedBuilder(
       animation: controller,
       builder: (context, _) {
-        return Column(
-          children: [
-            EncabezadoLista(
-              titulo: '',
-              descripcion: 'Productos registrados',
-              textoNuevo: '',
-              cantidad: controller.todosLosProductos.length,
-              cargando:
-                  controller.cargando || controller.actualizando,
-              mostrarBotonNuevo: false,
-              onActualizar: _actualizar,
-              onNuevo: () {},
-            ),
-
-            // Tarjetas informativas, sin selección de filtros.
-            ResumenProductos(
-              pendientes: controller.totalPendientes,
-              aprobados: controller.totalAceptados,
-              rechazados: controller.totalRechazados,
-              estadoSeleccionado: controller.estadoSeleccionado,
-              onSeleccionar: (_) {},
-            ),
-
-            BarraBusqueda(
-              valor: controller.busqueda,
-              textoAyuda: 'Buscar producto o sitio turístico...',
-              controller: _busquedaController,
-              onChanged: controller.cambiarBusqueda,
-              onLimpiar: () {
-                _busquedaController.clear();
-                controller.limpiarBusqueda();
-              },
-            ),
-
-            _FiltrosProducto(
-              seleccionado: _filtroActivo,
-              onSeleccionar: _seleccionarEstado,
-            ),
-
-            if (controller.error != null)
-              _construirAvisoError(controller),
-
-            Expanded(
-              child: _construirContenido(controller),
-            ),
-          ],
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              EncabezadoLista(
+                titulo: '',
+                descripcion: _descripcionEstado(_filtroActivo),
+                textoNuevo: '',
+                cantidad: controller.todosLosProductos.length,
+                cargando: controller.cargando || controller.actualizando,
+                mostrarBotonNuevo: false,
+                onActualizar: _actualizar,
+                onNuevo: () {},
+              ),
+              ResumenProductos(
+                pendientes: controller.totalPendientes,
+                aprobados: controller.totalAceptados,
+                rechazados: controller.totalRechazados,
+                estadoSeleccionado: controller.estadoSeleccionado,
+                onSeleccionar: (_) {},
+              ),
+              BarraBusqueda(
+                valor: controller.busqueda,
+                textoAyuda: 'Buscar producto o sitio turístico...',
+                controller: _busquedaController,
+                onChanged: controller.cambiarBusqueda,
+                onLimpiar: () {
+                  _busquedaController.clear();
+                  controller.limpiarBusqueda();
+                },
+              ),
+              _FiltrosProducto(
+                seleccionado: _filtroActivo,
+                onSeleccionar: _seleccionarEstado,
+              ),
+              if (controller.error != null)
+                _construirAvisoError(controller),
+              _construirContenido(controller),
+            ],
+          ),
         );
       },
     );
@@ -311,8 +291,9 @@ class _PantallaProductoState extends State<PantallaProducto> {
 
   Widget _construirContenido(ProductoController controller) {
     if (controller.cargando) {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return const Padding(
+        padding: EdgeInsets.all(AppDimensions.spacingLg),
+        child: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -336,9 +317,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
       final hayBusqueda = consulta.isNotEmpty;
 
       return _construirEstadoVacio(
-        icono: hayBusqueda
-            ? Icons.search_off
-            : _iconoVacio(_filtroActivo),
+        icono: hayBusqueda ? Icons.search_off : _iconoVacio(_filtroActivo),
         titulo: hayBusqueda
             ? 'No se encontraron productos'
             : _tituloEstado(_filtroActivo),
@@ -349,18 +328,10 @@ class _PantallaProductoState extends State<PantallaProducto> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _actualizar,
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(
-          bottom: AppDimensions.spacingLg,
-        ),
-        itemCount: productos.length,
-        itemBuilder: (context, index) {
-          final producto = productos[index];
-
-          return TarjetaProducto(
+    return Column(
+      children: [
+        for (final producto in productos)
+          TarjetaProducto(
             key: ValueKey(producto.id),
             producto: producto,
             procesando: controller.estaProcesando(producto.id),
@@ -372,9 +343,9 @@ class _PantallaProductoState extends State<PantallaProducto> {
               producto.id,
               producto.nombre,
             ),
-          );
-        },
-      ),
+          ),
+        const SizedBox(height: AppDimensions.spacingLg),
+      ],
     );
   }
 
@@ -384,60 +355,47 @@ class _PantallaProductoState extends State<PantallaProducto> {
     required String descripcion,
     required bool mostrarActualizar,
   }) {
-    return Center(
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(
-          AppDimensions.spacingLg,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icono,
-              size: 64,
-              color: AppColors.textSecondary,
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icono,
+            size: 64,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(height: AppDimensions.spacingMd),
+          Text(
+            titulo,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Text(
+            descripcion,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          if (mostrarActualizar) ...[
+            const SizedBox(height: AppDimensions.spacingMd),
+            OutlinedButton.icon(
+              onPressed: _actualizar,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Actualizar'),
             ),
-            const SizedBox(
-              height: AppDimensions.spacingMd,
-            ),
-            Text(
-              titulo,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-            ),
-            const SizedBox(
-              height: AppDimensions.spacingSm,
-            ),
-            Text(
-              descripcion,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            if (mostrarActualizar) ...[
-              const SizedBox(
-                height: AppDimensions.spacingMd,
-              ),
-              OutlinedButton.icon(
-                onPressed: _actualizar,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Actualizar'),
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }
 
   Widget _construirAvisoError(ProductoController controller) {
     return Material(
-      color: Colors.red.withValues(alpha: 0.08),
+      color: AppColors.error.withValues(alpha: 0.08),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.pageHorizontalSmall,
@@ -445,19 +403,12 @@ class _PantallaProductoState extends State<PantallaProducto> {
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-            ),
-            const SizedBox(
-              width: AppDimensions.spacingSm,
-            ),
+            const Icon(Icons.error_outline, color: AppColors.error),
+            const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
                 controller.error!,
-                style: const TextStyle(
-                  color: Colors.red,
-                ),
+                style: const TextStyle(color: AppColors.error),
               ),
             ),
             IconButton(
@@ -474,27 +425,21 @@ class _PantallaProductoState extends State<PantallaProducto> {
   Widget _construirErrorInicializacion() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(
-          AppDimensions.spacingLg,
-        ),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
               Icons.lock_outline,
-              color: Colors.red,
+              color: AppColors.error,
               size: 48,
             ),
-            const SizedBox(
-              height: AppDimensions.spacingMd,
-            ),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               _errorInicializacion ?? 'No se pudo cargar la pantalla.',
               textAlign: TextAlign.center,
             ),
-            const SizedBox(
-              height: AppDimensions.spacingMd,
-            ),
+            const SizedBox(height: AppDimensions.spacingMd),
             FilledButton.icon(
               onPressed: () {
                 setState(() {
@@ -525,29 +470,24 @@ class _FiltrosProducto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final opciones = [
-      (
-        'Todos',
-        'todas',
-        Icons.grid_view_rounded,
-        AppColors.primary,
-      ),
+      ('Todos', 'todas', Icons.grid_view_rounded, AppColors.secondary),
       (
         'Pendientes',
         ProductoController.estadoPendiente,
-        Icons.pending_actions,
+        Icons.pending_actions_rounded,
         Colors.orange,
       ),
       (
         'Aprobados',
         ProductoController.estadoAprobado,
-        Icons.check_circle_outline,
-        Colors.green,
+        Icons.check_circle_outline_rounded,
+        AppColors.success,
       ),
       (
         'Rechazados',
         ProductoController.estadoRechazado,
         Icons.cancel_outlined,
-        Colors.red,
+        AppColors.error,
       ),
     ];
 
@@ -558,13 +498,12 @@ class _FiltrosProducto extends StatelessWidget {
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         child: Row(
           children: [
-            for (var i = 0; i < opciones.length; i++) ...[
+            for (int i = 0; i < opciones.length; i++) ...[
               if (i > 0)
-                const SizedBox(
-                  width: AppDimensions.spacingSm,
-                ),
+                const SizedBox(width: AppDimensions.spacingSm),
               _FiltroProductoItem(
                 titulo: opciones[i].$1,
                 valor: opciones[i].$2,
@@ -600,47 +539,46 @@ class _FiltroProductoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: seleccionado
-          ? AppColors.primary
-          : const Color(0xFFFFFCF7),
-      borderRadius: BorderRadius.circular(30),
-      child: InkWell(
-        onTap: onTap,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        color: seleccionado
+            ? color.withValues(alpha: 0.12)
+            : AppColors.creamLight,
         borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 13,
-            vertical: 10,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(
-              color: seleccionado
-                  ? color
-                  : const Color(0xFFC18A65),
+        border: Border.all(
+          color: AppColors.coffeeLight.withValues(alpha: 0.65),
+          width: 1.1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(30),
+          splashColor: color.withValues(alpha: 0.08),
+          highlightColor: color.withValues(alpha: 0.05),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 13,
+              vertical: 10,
             ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icono,
-                size: 18,
-                color: seleccionado ? Colors.white : color,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                titulo,
-                style: TextStyle(
-                  color: seleccionado
-                      ? Colors.white
-                      : AppColors.textPrimary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icono, size: 18, color: color),
+                const SizedBox(width: 6),
+                Text(
+                  titulo,
+                  style: TextStyle(
+                    color: seleccionado ? color : AppColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
@@ -19,6 +20,9 @@ class ResumenCuentaSitio extends StatelessWidget {
     required this.inactivas,
   });
 
+  static const Color _cafe = Color(0xFFB58A70);
+  static const Color _crema = Color(0xFFFBF7F0);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -38,9 +42,7 @@ class ResumenCuentaSitio extends StatelessWidget {
                   color: AppColors.primary,
                 ),
               ),
-              const SizedBox(
-                width: AppDimensions.spacingSm,
-              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: _tarjeta(
                   titulo: 'Con cuenta',
@@ -49,9 +51,7 @@ class ResumenCuentaSitio extends StatelessWidget {
                   color: AppColors.success,
                 ),
               ),
-              const SizedBox(
-                width: AppDimensions.spacingSm,
-              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: _tarjeta(
                   titulo: 'Sin cuenta',
@@ -62,9 +62,7 @@ class ResumenCuentaSitio extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(
-            height: AppDimensions.spacingSm,
-          ),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -75,9 +73,7 @@ class ResumenCuentaSitio extends StatelessWidget {
                   color: AppColors.success,
                 ),
               ),
-              const SizedBox(
-                width: AppDimensions.spacingSm,
-              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: _tarjeta(
                   titulo: 'Inactivas',
@@ -100,47 +96,76 @@ class ResumenCuentaSitio extends StatelessWidget {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(
-        AppDimensions.spacingMd,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 10,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
-        ),
+        color: _crema,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.border,
+          color: _cafe,
+          width: 1.1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: _cafe.withValues(alpha: 0.06),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icono,
-            color: color,
-            size: AppDimensions.iconLg,
+          Row(
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icono,
+                  color: color,
+                  size: 17,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  titulo,
+                  softWrap: true,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    height: 1.15,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(
-            height: AppDimensions.spacingSm,
-          ),
+          const SizedBox(height: 9),
           Text(
             cantidad.toString(),
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 23,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
+              height: 1.1,
             ),
           ),
-          const SizedBox(
-            height: AppDimensions.spacingXs,
-          ),
-          Text(
-            titulo,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
+          const SizedBox(height: 7),
+          Container(
+            width: 32,
+            height: 3,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
         ],

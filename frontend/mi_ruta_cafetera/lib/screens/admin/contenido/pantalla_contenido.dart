@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -91,63 +90,64 @@ class _PantallaContenidoState extends State<PantallaContenido> {
           return _detalle(contenido);
         }
 
-        return Column(
-          children: [
-            EncabezadoLista(
-              titulo: '',
-              descripcion: 'contenidos enviados',
-              textoNuevo: '',
-              cantidad: _controller.totalContenidos,
-              cargando: _controller.cargando,
-              mostrarBotonNuevo: false,
-              onActualizar: _cargar,
-              onNuevo: () {},
-            ),
-            ResumenProductos(
-              tarjetas: [
-                ResumenTarjetaConfig(
-                  titulo: 'Pendientes',
-                  cantidad: _controller.totalPendientes,
-                  icono: Icons.pending_actions,
-                  color: Colors.orange,
-                  estado: 'pendiente_revision',
-                ),
-                ResumenTarjetaConfig(
-                  titulo: 'Aprobados',
-                  cantidad: _controller.totalAceptados,
-                  icono: Icons.check_circle_outline,
-                  color: Colors.green,
-                  estado: 'aprobado',
-                ),
-                ResumenTarjetaConfig(
-                  titulo: 'Rechazados',
-                  cantidad: _controller.totalRechazados,
-                  icono: Icons.cancel_outlined,
-                  color: Colors.red,
-                  estado: 'rechazado',
-                ),
-              ],
-            ),
-            BarraBusqueda(
-              valor: _controller.busqueda,
-              textoAyuda: 'Buscar contenido o sitio turístico...',
-              controller: _busqueda,
-              onChanged: _controller.cambiarBusqueda,
-              onLimpiar: () {
-                _busqueda.clear();
-                _controller.limpiarBusqueda();
-              },
-            ),
-            FiltrosContenido(
-              seleccionado: _filtroActivo,
-              onSeleccionar: (valor) {
-                setState(() => _filtroActivo = valor);
-              },
-            ),
-            Expanded(
-              child: Stack(
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              EncabezadoLista(
+                titulo: '',
+                descripcion: 'contenidos enviados',
+                textoNuevo: '',
+                cantidad: _controller.totalContenidos,
+                cargando: _controller.cargando,
+                mostrarBotonNuevo: false,
+                onActualizar: _cargar,
+                onNuevo: () {},
+              ),
+              ResumenProductos(
+                tarjetas: [
+                  ResumenTarjetaConfig(
+                    titulo: 'Pendientes',
+                    cantidad: _controller.totalPendientes,
+                    icono: Icons.pending_actions,
+                    color: Colors.orange,
+                    estado: 'pendiente_revision',
+                  ),
+                  ResumenTarjetaConfig(
+                    titulo: 'Aprobados',
+                    cantidad: _controller.totalAceptados,
+                    icono: Icons.check_circle_outline,
+                    color: Colors.green,
+                    estado: 'aprobado',
+                  ),
+                  ResumenTarjetaConfig(
+                    titulo: 'Rechazados',
+                    cantidad: _controller.totalRechazados,
+                    icono: Icons.cancel_outlined,
+                    color: Colors.red,
+                    estado: 'rechazado',
+                  ),
+                ],
+              ),
+              BarraBusqueda(
+                valor: _controller.busqueda,
+                textoAyuda: 'Buscar contenido o sitio turístico...',
+                controller: _busqueda,
+                onChanged: _controller.cambiarBusqueda,
+                onLimpiar: () {
+                  _busqueda.clear();
+                  _controller.limpiarBusqueda();
+                },
+              ),
+              FiltrosContenido(
+                seleccionado: _filtroActivo,
+                onSeleccionar: (valor) {
+                  setState(() => _filtroActivo = valor);
+                },
+              ),
+              Stack(
                 children: [
-                  Positioned.fill(child: _lista()),
+                  _lista(),
                   if (_actualizandoLista &&
                       _controller.contenidos.isNotEmpty)
                     Positioned.fill(
@@ -160,8 +160,8 @@ class _PantallaContenidoState extends State<PantallaContenido> {
                     ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -169,8 +169,11 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
   Widget _lista() {
     if (_controller.cargando && _controller.contenidos.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return const Padding(
+        padding: EdgeInsets.all(AppDimensions.spacingLg),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
       );
     }
 
@@ -196,32 +199,37 @@ class _PantallaContenidoState extends State<PantallaContenido> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _cargar,
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(
-          bottom: AppDimensions.spacingLg,
+    return Stack(
+      children: [
+        Column(
+          children: [
+            for (final c in lista)
+              TarjetaContenido(
+                key: ValueKey(c.id),
+                contenido: c,
+                procesando:
+                    _controller.contenidosEnProcesamiento.contains(c.id),
+                onVer: () => _ver(c),
+                onSeleccionar: () => _ver(c),
+                onEditar: () => _editar(c),
+                onCambiarEstado: () => _cambiarEstado(c),
+                onEliminar: () => _eliminar(c),
+                onAprobar: () => _aprobar(c),
+                onRechazar: () => _rechazar(c),
+              ),
+            const SizedBox(height: AppDimensions.spacingLg),
+          ],
         ),
-        itemCount: lista.length,
-        itemBuilder: (_, i) {
-          final c = lista[i];
-
-          return TarjetaContenido(
-            key: ValueKey(c.id),
-            contenido: c,
-            procesando:
-                _controller.contenidosEnProcesamiento.contains(c.id),
-            onVer: () => _ver(c),
-            onSeleccionar: () => _ver(c),
-            onEditar: () => _editar(c),
-            onCambiarEstado: () => _cambiarEstado(c),
-            onEliminar: () => _eliminar(c),
-            onAprobar: () => _aprobar(c),
-            onRechazar: () => _rechazar(c),
-          );
-        },
-      ),
+        if (_actualizandoLista && _controller.contenidos.isNotEmpty)
+          Positioned.fill(
+            child: ColoredBox(
+              color: Colors.white.withValues(alpha: 0.65),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          ),
+      ],
     );
   }
 

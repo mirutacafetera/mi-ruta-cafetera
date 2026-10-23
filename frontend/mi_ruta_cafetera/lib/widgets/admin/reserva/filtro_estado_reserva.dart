@@ -16,30 +16,12 @@ class FiltroEstadoReserva extends StatelessWidget {
   static const Color _bordeCafe = Color(0xFFB58A70);
 
   static const List<Map<String, dynamic>> estados = [
-    {
-      'valor': 'Todas',
-      'icono': Icons.event_note_rounded,
-    },
-    {
-      'valor': 'Pendiente',
-      'icono': Icons.schedule_rounded,
-    },
-    {
-      'valor': 'Confirmada',
-      'icono': Icons.check_circle_outline_rounded,
-    },
-    {
-      'valor': 'Rechazada',
-      'icono': Icons.cancel_outlined,
-    },
-    {
-      'valor': 'Cancelada',
-      'icono': Icons.event_busy_rounded,
-    },
-    {
-      'valor': 'Completada',
-      'icono': Icons.task_alt_rounded,
-    },
+    {'valor': 'Todas', 'icono': Icons.event_note_rounded, 'color': AppColors.secondary},
+    {'valor': 'Pendiente', 'icono': Icons.schedule_rounded, 'color': Colors.orange},
+    {'valor': 'Confirmada', 'icono': Icons.check_circle_outline_rounded, 'color': Colors.green},
+    {'valor': 'Rechazada', 'icono': Icons.cancel_outlined, 'color': Colors.red},
+    {'valor': 'Cancelada', 'icono': Icons.event_busy_rounded, 'color': Colors.deepOrange},
+    {'valor': 'Completada', 'icono': Icons.task_alt_rounded, 'color': Colors.teal},
   ];
 
   @override
@@ -53,6 +35,8 @@ class FiltroEstadoReserva extends StatelessWidget {
       child: Row(
         children: estados.map((estado) {
           final valor = estado['valor'] as String;
+          final icono = estado['icono'] as IconData;
+          final color = estado['color'] as Color;
           final activo = estadoSeleccionado == valor;
 
           return Padding(
@@ -60,28 +44,19 @@ class FiltroEstadoReserva extends StatelessWidget {
               right: AppDimensions.spacingSm,
             ),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 180),
               curve: Curves.easeInOut,
               decoration: BoxDecoration(
                 color: activo
-                    ? AppColors.primary
+                    ? color.withValues(alpha: 0.12)
                     : AppColors.creamLight,
                 borderRadius: BorderRadius.circular(
                   AppDimensions.chipRadius,
                 ),
                 border: Border.all(
-                  color: activo ? AppColors.primary : _bordeCafe,
-                  width: activo ? 1.5 : 1.2,
+                  color: activo ? color : _bordeCafe,
+                  width: activo ? 1.3 : 1.1,
                 ),
-                boxShadow: activo
-                    ? [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.14),
-                          blurRadius: 7,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : [],
               ),
               child: Material(
                 color: Colors.transparent,
@@ -89,6 +64,8 @@ class FiltroEstadoReserva extends StatelessWidget {
                   borderRadius: BorderRadius.circular(
                     AppDimensions.chipRadius,
                   ),
+                  splashColor: color.withValues(alpha: 0.08),
+                  highlightColor: color.withValues(alpha: 0.05),
                   onTap: () {
                     if (!activo) onChanged(valor);
                   },
@@ -101,33 +78,19 @@ class FiltroEstadoReserva extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          estado['icono'] as IconData,
+                          icono,
                           size: 17,
-                          color: activo
-                              ? AppColors.white
-                              : AppColors.secondary,
+                          color: color,
                         ),
                         const SizedBox(width: 7),
                         Text(
                           valor,
                           style: TextStyle(
-                            color: activo
-                                ? AppColors.white
-                                : AppColors.textPrimary,
+                            color: activo ? color : AppColors.textPrimary,
                             fontSize: 13,
-                            fontWeight: activo
-                                ? FontWeight.w700
-                                : FontWeight.w600,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        if (activo) ...[
-                          const SizedBox(width: 6),
-                          const Icon(
-                            Icons.check_rounded,
-                            size: 15,
-                            color: AppColors.white,
-                          ),
-                        ],
                       ],
                     ),
                   ),

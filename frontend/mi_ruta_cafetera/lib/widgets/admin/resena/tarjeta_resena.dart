@@ -49,21 +49,7 @@ class TarjetaResena extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusLg,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.person_rounded,
-                      color: AppColors.primary,
-                      size: AppDimensions.iconLg,
-                    ),
-                  ),
+                  _fotoPerfil(),
                   const SizedBox(width: AppDimensions.spacingMd),
                   Expanded(
                     child: Column(
@@ -73,7 +59,10 @@ class TarjetaResena extends StatelessWidget {
                           resena.usuario,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textPrimary,
                               ),
@@ -83,9 +72,10 @@ class TarjetaResena extends StatelessWidget {
                           resena.sitio,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
                         ),
                       ],
                     ),
@@ -171,6 +161,39 @@ class TarjetaResena extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _fotoPerfil() {
+    final foto = resena.fotoPerfil?.trim() ?? '';
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+      child: Container(
+        width: 44,
+        height: 44,
+        color: AppColors.primary.withValues(alpha: 0.10),
+        child: foto.isNotEmpty
+            ? Image.network(
+                foto,
+                width: 44,
+                height: 44,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _iconoPersona(),
+              )
+            : _iconoPersona(),
+      ),
+    );
+  }
+
+  Widget _iconoPersona() {
+    return const Center(
+      child: Icon(
+        Icons.person_rounded,
+        color: AppColors.primary,
+        size: AppDimensions.iconLg,
       ),
     );
   }

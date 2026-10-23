@@ -1,71 +1,36 @@
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
 
 class EtiquetaSitio extends StatelessWidget {
   final String texto;
   final IconData icono;
-  final bool? activo;
-
-  /// Indica si esta etiqueta representa una categoría.
   final bool esCategoria;
 
   const EtiquetaSitio({
     super.key,
     required this.texto,
     required this.icono,
-    this.activo,
     this.esCategoria = false,
   });
 
-  const EtiquetaSitio.estado({
-    super.key,
-    required bool activo,
-  })  : texto = activo ? 'Activo' : 'Inactivo',
-        icono = Icons.circle,
-        activo = activo,
-        esCategoria = false;
-
   @override
   Widget build(BuildContext context) {
-    final esEstado = activo != null;
-
-    // ==========================================================
-    // COLORES
-    // ==========================================================
-
-    Color colorFondo;
-    Color colorTexto;
-
-    if (esEstado) {
-      colorFondo = activo!
-          ? AppColors.success.withValues(alpha: 0.12)
-          : AppColors.error.withValues(alpha: 0.12);
-
-      colorTexto = activo!
-          ? AppColors.success
-          : AppColors.error;
-    } else if (esCategoria) {
-      // La categoría obtiene automáticamente
-      // su color oficial.
-      colorTexto = AppColors.getColorForCategory(texto);
-
-      colorFondo = AppColors.getSoftColorForCategory(texto);
-    } else {
-      colorFondo = AppColors.divider;
-      colorTexto = AppColors.textSecondary;
-    }
+    final color = esCategoria
+        ? AppColors.secondary
+        : AppColors.coffeeLight;
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs,
+        horizontal: 10,
+        vertical: 6,
       ),
       decoration: BoxDecoration(
-        color: colorFondo,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.chipRadius,
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.adminBorder.withValues(alpha: 0.45),
+          width: 0.8,
         ),
       ),
       child: Row(
@@ -73,23 +38,48 @@ class EtiquetaSitio extends StatelessWidget {
         children: [
           Icon(
             icono,
-            size: AppDimensions.iconSm,
-            color: colorTexto,
+            size: 15,
+            color: color,
           ),
-          const SizedBox(
-            width: AppDimensions.spacingXs,
-          ),
+          const SizedBox(width: 5),
           Text(
             texto,
             style: TextStyle(
+              color: color,
               fontSize: 12,
-              fontWeight: esEstado || esCategoria
-                  ? FontWeight.w600
-                  : FontWeight.normal,
-              color: colorTexto,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  static Widget estado({required bool activo}) {
+    final color = activo
+        ? const Color(0xFF267447)
+        : AppColors.secondary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: color.withValues(alpha: 0.20),
+          width: 0.8,
+        ),
+      ),
+      child: Text(
+        activo ? 'Activo' : 'Inactivo',
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
