@@ -41,7 +41,6 @@ class _AdminScreenState extends State<AdminScreen> {
 
     cuentaController = CuentaAdminController();
     fotoPerfilControlador = FotoPerfilAdminControlador();
-    fotoPerfilControlador.cargarFoto();
 
     _cargarCuentaAdmin();
   }
@@ -49,17 +48,28 @@ class _AdminScreenState extends State<AdminScreen> {
   Future<void> _cargarCuentaAdmin() async {
     await AdminServicioAutenticacion.cargarToken();
 
+    if (!mounted) return;
+
     final id = AdminServicioAutenticacion.idAdministrador;
 
-    if (id != null && id.isNotEmpty) {
-      await cuentaController.cargarCuenta(id);
+    if (id == null || id.isEmpty) {
+      return;
     }
+
+    await cuentaController.cargarCuenta(id);
+
+    if (!mounted) return;
+
+    await fotoPerfilControlador.cargarFoto(
+      idAdministrador: id,
+    );
   }
 
   void _cambiarOpcion(String opcion) {
     final seleccion = opcion.toLowerCase().trim();
 
-    if (seleccion == 'logout' || seleccion == 'cerrar_sesion') {
+    if (seleccion == 'logout' ||
+        seleccion == 'cerrar_sesion') {
       _mostrarConfirmacionCerrarSesion();
       return;
     }
@@ -74,32 +84,44 @@ class _AdminScreenState extends State<AdminScreen> {
       case 'home':
       case 'inicio':
         return 'inicio';
+
       case 'sitio':
       case 'sitios':
       case 'sitios_turisticos':
         return 'sitios';
+
       case 'usuario':
       case 'usuarios':
         return 'usuarios';
+
       case 'perfil':
       case 'mi_cuenta':
         return 'perfil';
+
       case 'estadisticas':
         return 'estadisticas';
+
       case 'categorias':
         return 'categorias';
+
       case 'actividades':
         return 'actividades';
+
       case 'productos':
         return 'productos';
+
       case 'contenido':
         return 'contenido';
+
       case 'resenas':
         return 'resenas';
+
       case 'reservas':
         return 'reservas';
+
       case 'reportes':
         return 'reportes';
+
       default:
         return 'inicio';
     }
@@ -128,11 +150,15 @@ class _AdminScreenState extends State<AdminScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
+            onPressed: () {
+              Navigator.pop(dialogContext, false);
+            },
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
+            onPressed: () {
+              Navigator.pop(dialogContext, true);
+            },
             child: const Text('Cerrar sesión'),
           ),
         ],
@@ -145,7 +171,9 @@ class _AdminScreenState extends State<AdminScreen> {
 
     if (!mounted) return;
 
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    Navigator.of(context).popUntil(
+      (route) => route.isFirst,
+    );
   }
 
   @override
@@ -172,28 +200,40 @@ class _AdminScreenState extends State<AdminScreen> {
     switch (_opcionSeleccionada) {
       case 'inicio':
         return 'Inicio';
+
       case 'sitios':
         return 'Sitios turísticos';
+
       case 'usuarios':
         return 'Usuarios';
+
       case 'perfil':
         return 'Mi cuenta';
+
       case 'estadisticas':
         return 'Estadísticas';
+
       case 'categorias':
         return 'Categorías';
+
       case 'actividades':
         return 'Actividades';
+
       case 'productos':
         return 'Productos';
+
       case 'contenido':
         return 'Moderación de contenido';
+
       case 'resenas':
         return 'Reseñas';
+
       case 'reservas':
         return 'Reservas';
+
       case 'reportes':
         return 'Reportes';
+
       default:
         return 'Inicio';
     }
@@ -218,28 +258,44 @@ class _AdminScreenState extends State<AdminScreen> {
         );
 
       case 'estadisticas':
-        return const AdminProximamente(nombre: 'Estadísticas');
+        return const AdminProximamente(
+          nombre: 'Estadísticas',
+        );
 
       case 'categorias':
-        return const AdminProximamente(nombre: 'Categorías');
+        return const AdminProximamente(
+          nombre: 'Categorías',
+        );
 
       case 'actividades':
-        return const AdminProximamente(nombre: 'Actividades');
+        return const AdminProximamente(
+          nombre: 'Actividades',
+        );
 
       case 'productos':
-        return const AdminProximamente(nombre: 'Productos');
+        return const AdminProximamente(
+          nombre: 'Productos',
+        );
 
       case 'contenido':
-        return const AdminProximamente(nombre: 'Contenidos');
+        return const AdminProximamente(
+          nombre: 'Contenidos',
+        );
 
       case 'resenas':
-        return const AdminProximamente(nombre: 'Reseñas');
+        return const AdminProximamente(
+          nombre: 'Reseñas',
+        );
 
       case 'reservas':
-        return const AdminProximamente(nombre: 'Reservas');
+        return const AdminProximamente(
+          nombre: 'Reservas',
+        );
 
       case 'reportes':
-        return const AdminProximamente(nombre: 'Reportes');
+        return const AdminProximamente(
+          nombre: 'Reportes',
+        );
 
       default:
         return _inicio();
@@ -247,16 +303,16 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   Widget _inicio() {
-  return AdminInicio(
-    nombre: widget.nombre,
-    email: widget.email,
-    fotoPerfilControlador: fotoPerfilControlador,
-    onAbrirMapa: _abrirMapa,
-    onGestionarSitios: () => _cambiarOpcion('sitios'),
-    onGestionarUsuarios: () => _cambiarOpcion('usuarios'),
-    onAbrirCuenta: _abrirCuenta,
-  );
-}
+    return AdminInicio(
+      nombre: widget.nombre,
+      email: widget.email,
+      fotoPerfilControlador: fotoPerfilControlador,
+      onAbrirMapa: _abrirMapa,
+      onGestionarSitios: () => _cambiarOpcion('sitios'),
+      onGestionarUsuarios: () => _cambiarOpcion('usuarios'),
+      onAbrirCuenta: _abrirCuenta,
+    );
+  }
 
   @override
   void dispose() {

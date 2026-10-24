@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/categoria/categoria_controller.dart';
@@ -31,6 +32,8 @@ class _FormularioCategoriaState extends State<FormularioCategoria> {
 
   bool guardando = false;
   String? error;
+
+  static const Color _cafe = Color(0xFFB58A70);
 
   @override
   void initState() {
@@ -90,28 +93,43 @@ class _FormularioCategoriaState extends State<FormularioCategoria> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: blancoTarjeta,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+    return Dialog(
+      backgroundColor: AppColors.creamLight,
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: 32,
+        vertical: 32,
       ),
-      title: Text(
-        widget.categoria == null
-            ? 'Nueva categoría'
-            : 'Editar categoría',
-        style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w800,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(26),
+        side: const BorderSide(
+          color: _cafe,
+          width: 1.3,
         ),
       ),
-      content: SizedBox(
-        width: 360,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 370,
+          maxHeight: 620,
+        ),
         child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
           child: Form(
             key: formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Text(
+                  widget.categoria == null
+                      ? 'Nueva categoría'
+                      : 'Editar categoría',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 23,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingLg),
                 TextFormField(
                   controller: nombre,
                   enabled: !guardando,
@@ -160,40 +178,50 @@ class _FormularioCategoriaState extends State<FormularioCategoria> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       error!,
-                      style: const TextStyle(color: AppColors.error),
+                      style: const TextStyle(
+                        color: AppColors.error,
+                      ),
                     ),
                   ),
                 ],
+                const SizedBox(height: AppDimensions.spacingLg),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: guardando
+                          ? null
+                          : () => Navigator.pop(context, false),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFF58220),
+                      ),
+                      child: const Text('Cancelar'),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: verdeEncabezado,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: guardando ? null : guardar,
+                      child: guardando
+                          ? const SizedBox(
+                              width: AppDimensions.iconSm,
+                              height: AppDimensions.iconSm,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Guardar'),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: guardando
-              ? null
-              : () => Navigator.pop(context, false),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: verdeEncabezado,
-            foregroundColor: Colors.white,
-          ),
-          onPressed: guardando ? null : guardar,
-          child: guardando
-              ? const SizedBox(
-                  width: AppDimensions.iconSm,
-                  height: AppDimensions.iconSm,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Text('Guardar'),
-        ),
-      ],
     );
   }
 }

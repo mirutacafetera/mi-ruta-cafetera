@@ -40,13 +40,20 @@ const administradorSchema = new mongoose.Schema(
     },
 
     // =====================================================
+    // FOTO DE PERFIL
+    // La URL se guarda en MongoDB y apunta a Cloudinary.
+    // =====================================================
+
+    fotoPerfil: {
+      type: String,
+      default: null,
+      trim: true
+    },
+
+    // =====================================================
     // ESTADO DEL ADMINISTRADOR
     // =====================================================
 
-    // Identificador estable ("sub") de la cuenta de Google vinculada.
-    // Es opcional: solo existe si la cuenta inició sesión con Google.
-    // El índice único y disperso impide que dos cuentas compartan la
-    // misma identidad de Google sin afectar a las cuentas sin vincular.
     googleId: {
       type: String,
       unique: true,
@@ -107,16 +114,11 @@ const administradorSchema = new mongoose.Schema(
   }
 );
 
-
 // =====================================================
 // ENCRIPTACIÓN DE CONTRASEÑA
 // =====================================================
 
 administradorSchema.pre('save', async function () {
-
-  // Si la contraseña no fue modificada,
-  // no se vuelve a encriptar.
-
   if (!this.isModified('password')) {
     return;
   }
@@ -129,7 +131,6 @@ administradorSchema.pre('save', async function () {
   );
 });
 
-
 // =====================================================
 // COMPARAR CONTRASEÑA
 // =====================================================
@@ -137,13 +138,11 @@ administradorSchema.pre('save', async function () {
 administradorSchema.methods.compararPassword = async function (
   passwordIngresada
 ) {
-
   return await bcrypt.compare(
     passwordIngresada,
     this.password
   );
 };
-
 
 // =====================================================
 // CREAR MODELO
@@ -153,7 +152,6 @@ const Administrador = mongoose.model(
   'Administrador',
   administradorSchema
 );
-
 
 // =====================================================
 // EXPORTAR MODELO

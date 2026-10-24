@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../models/admin/usuario_admin.dart';
@@ -21,113 +22,117 @@ class TarjetaUsuario extends StatelessWidget {
   Widget build(BuildContext context) {
     final eliminado = usuario.eliminado;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.adminBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.coffeeDark.withValues(alpha: 0.07),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(17),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  _avatar(),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          eliminado &&
-                                  (usuario.usuarioNombreEliminado ?? '')
-                                      .isNotEmpty
-                              ? usuario.usuarioNombreEliminado!
-                              : usuario.nombreCompleto.isEmpty
-                                  ? 'Usuario sin nombre'
-                                  : usuario.nombreCompleto,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.coffeeDark,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _dato(
-                          Icons.mail_outline_rounded,
-                          usuario.correoMostrado,
-                          AppColors.secondary,
-                        ),
-                        if (!eliminado && usuario.ciudad.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          _dato(
-                            Icons.location_on_outlined,
-                            usuario.ciudad,
-                            AppColors.primary,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  _menu(context),
-                ],
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              color: AppColors.surface,
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 8,
-                alignment: WrapAlignment.spaceBetween,
-                children: [
-                  _etiqueta(
-                    eliminado
-                        ? 'Cuenta eliminada'
-                        : usuario.activo
-                            ? 'Cuenta activa'
-                            : 'Cuenta inactiva',
-                    eliminado
-                        ? AppColors.textSecondary
-                        : usuario.activo
-                            ? AppColors.success
-                            : AppColors.error,
-                    eliminado
-                        ? Icons.person_off_outlined
-                        : usuario.activo
-                            ? Icons.check_circle_rounded
-                            : Icons.pause_circle_outline_rounded,
-                  ),
-                  if (!eliminado)
-                    _etiqueta(
-                      usuario.correoVerificado
-                          ? 'Correo verificado'
-                          : 'Correo pendiente',
-                      usuario.correoVerificado
-                          ? AppColors.success
-                          : AppColors.warning,
-                      usuario.correoVerificado
-                          ? Icons.verified_rounded
-                          : Icons.mark_email_unread_outlined,
-                    ),
-                ],
-              ),
+    return InkWell(
+      onTap: () => _historial(context),
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.adminBorder),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.coffeeDark.withValues(alpha: 0.07),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(17),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    _avatar(),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            eliminado &&
+                                    (usuario.usuarioNombreEliminado ?? '')
+                                        .isNotEmpty
+                                ? usuario.usuarioNombreEliminado!
+                                : usuario.nombreCompleto.isEmpty
+                                    ? 'Usuario sin nombre'
+                                    : usuario.nombreCompleto,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.coffeeDark,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _dato(
+                            Icons.mail_outline_rounded,
+                            usuario.correoMostrado,
+                            AppColors.secondary,
+                          ),
+                          if (!eliminado && usuario.ciudad.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            _dato(
+                              Icons.location_on_outlined,
+                              usuario.ciudad,
+                              AppColors.primary,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    _menu(context),
+                  ],
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                color: AppColors.surface,
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.spaceBetween,
+                  children: [
+                    _etiqueta(
+                      eliminado
+                          ? 'Cuenta eliminada'
+                          : usuario.activo
+                              ? 'Cuenta activa'
+                              : 'Cuenta inactiva',
+                      eliminado
+                          ? AppColors.textSecondary
+                          : usuario.activo
+                              ? AppColors.success
+                              : AppColors.error,
+                      eliminado
+                          ? Icons.person_off_outlined
+                          : usuario.activo
+                              ? Icons.check_circle_rounded
+                              : Icons.pause_circle_outline_rounded,
+                    ),
+                    if (!eliminado)
+                      _etiqueta(
+                        usuario.correoVerificado
+                            ? 'Correo verificado'
+                            : 'Correo pendiente',
+                        usuario.correoVerificado
+                            ? AppColors.success
+                            : AppColors.warning,
+                        usuario.correoVerificado
+                            ? Icons.verified_rounded
+                            : Icons.mark_email_unread_outlined,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -152,7 +157,6 @@ class TarjetaUsuario extends StatelessWidget {
         onSelected: (accion) {
           if (accion == 'estado') onCambiarEstado();
           if (accion == 'eliminar') onEliminar();
-          if (accion == 'historial') _historial(context);
         },
         itemBuilder: (_) => [
           if (!usuario.eliminado)
@@ -175,14 +179,6 @@ class TarjetaUsuario extends StatelessWidget {
                 AppColors.error,
               ),
             ),
-          PopupMenuItem(
-            value: 'historial',
-            child: _opcion(
-              Icons.history_rounded,
-              'Ver historial',
-              AppColors.secondary,
-            ),
-          ),
         ],
       );
 
@@ -318,7 +314,7 @@ class TarjetaUsuario extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.creamLight,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
           side: const BorderSide(color: AppColors.adminBorder),
@@ -380,7 +376,6 @@ class TarjetaUsuario extends StatelessWidget {
                         : null,
               ),
               _historialDato('Responsable', usuario.responsableNombre),
-              _historialDato('ID responsable', usuario.responsableId),
               _historialDato(
                 'Fecha de eliminación',
                 _fecha(usuario.fechaEliminacion ?? usuario.eliminadoAt),

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../models/admin/sitio_admin_model.dart';
@@ -16,10 +15,12 @@ class DetalleSitioTuristico extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final nombreCategoria = sitio.categoria?.nombre ?? 'Sin categoría';
+    final nombreParaIcono = sitio.categoria?.nombre ?? '';
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.creamLight,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: AppColors.adminBorder,
@@ -69,9 +70,9 @@ class DetalleSitioTuristico extends StatelessWidget {
                   runSpacing: 8,
                   children: [
                     _etiqueta(
-                      Icons.category_outlined,
-                      sitio.categoria?.nombre ?? 'Sin categoría',
-                      AppColors.primary,
+                      AppColors.getIconForCategory(nombreParaIcono),
+                      nombreCategoria,
+                      AppColors.getColorForCategory(nombreParaIcono),
                     ),
                     _etiqueta(
                       Icons.location_on_outlined,
@@ -175,7 +176,7 @@ class DetalleSitioTuristico extends StatelessWidget {
           return Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.creamLight,
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
                 color: AppColors.adminBorder,

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_colors.dart';
@@ -68,11 +67,13 @@ class _CampoFormularioSitioState
           labelText: widget.etiqueta,
           floatingLabelBehavior: FloatingLabelBehavior.never,
           labelStyle: const TextStyle(
-            color: AppColors.textSecondary,
+            color: Color(0xFF6D4C41),
             fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
           floatingLabelStyle: const TextStyle(
-            color: AppColors.secondary,
+            color: Color(0xFF6D4C41),
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
           filled: true,

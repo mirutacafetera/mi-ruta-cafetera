@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-
 import '../../../controllers/admin/reporte/reportes_sitios_controller.dart';
 import '../../../models/admin/reporte_sitio_admin.dart';
 import '../../../theme/app_colors.dart';
@@ -60,12 +58,9 @@ class _PantallaReportesSitiosAdminState
                 ),
                 children: [
                   _encabezado(),
-
                   const SizedBox(height: AppDimensions.spacingMd),
-
                   if (_controller.error != null)
                     _mensajeError(_controller.error!),
-
                   ResumenReporte(
                     total: _controller.reportes.length,
                     pendientes: _controller.contarEstado('pendiente'),
@@ -74,20 +69,14 @@ class _PantallaReportesSitiosAdminState
                     estadoSeleccionado: _controller.estadoSeleccionado,
                     onEstadoSeleccionado: _controller.cambiarEstado,
                   ),
-
                   const SizedBox(height: AppDimensions.spacingLg),
-
                   _campoBusqueda(),
-
                   const SizedBox(height: AppDimensions.spacingMd),
-
                   FiltroEstadoReporte(
                     seleccionado: _controller.estadoSeleccionado,
                     onChanged: _controller.cambiarEstado,
                   ),
-
                   const SizedBox(height: AppDimensions.spacingLg),
-
                   Row(
                     children: [
                       const Expanded(
@@ -109,9 +98,7 @@ class _PantallaReportesSitiosAdminState
                       ),
                     ],
                   ),
-
                   const SizedBox(height: AppDimensions.spacingMd),
-
                   if (_controller.cargando)
                     const Padding(
                       padding: EdgeInsets.all(AppDimensions.spacingXl),
@@ -142,17 +129,17 @@ class _PantallaReportesSitiosAdminState
   }
 
   Widget _encabezado() {
-  return EncabezadoLista(
-    titulo: '',
-    descripcion: 'reportes recibidos',
-    textoNuevo: '',
-    cantidad: _controller.reportes.length,
-    cargando: _controller.cargando,
-    mostrarBotonNuevo: false,
-    onActualizar: _recargar,
-    onNuevo: () {},
-  );
-}
+    return EncabezadoLista(
+      titulo: '',
+      descripcion: 'reportes recibidos',
+      textoNuevo: '',
+      cantidad: _controller.reportes.length,
+      cargando: _controller.cargando,
+      mostrarBotonNuevo: false,
+      onActualizar: _recargar,
+      onNuevo: () {},
+    );
+  }
 
   Widget _campoBusqueda() {
     return TextField(
@@ -160,6 +147,9 @@ class _PantallaReportesSitiosAdminState
       onChanged: _controller.cambiarBusqueda,
       decoration: InputDecoration(
         hintText: 'Buscar por sitio, asunto o mensaje...',
+        hintStyle: const TextStyle(
+          color: AppColors.textSecondary,
+        ),
         prefixIcon: const Icon(
           Icons.search_rounded,
           color: AppColors.secondary,
@@ -172,10 +162,13 @@ class _PantallaReportesSitiosAdminState
                   _busqueda.clear();
                   _controller.cambiarBusqueda('');
                 },
-                icon: const Icon(Icons.close_rounded),
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: AppColors.secondary,
+                ),
               ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.creamLight,
         border: _bordeCafe(),
         enabledBorder: _bordeCafe(),
         focusedBorder: _bordeCafe(width: 1.5),
@@ -202,11 +195,7 @@ class _PantallaReportesSitiosAdminState
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
       child: Column(
         children: [
-          const Icon(
-            Icons.inbox_outlined,
-            size: 44,
-            color: _cafe,
-          ),
+          const Icon(Icons.inbox_outlined, size: 44, color: _cafe),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             _controller.error != null
@@ -222,9 +211,7 @@ class _PantallaReportesSitiosAdminState
           const Text(
             'Prueba cambiando la búsqueda o el estado.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
           if (_controller.error != null)
             TextButton.icon(
@@ -239,9 +226,7 @@ class _PantallaReportesSitiosAdminState
 
   Widget _mensajeError(String mensaje) {
     return Container(
-      margin: const EdgeInsets.only(
-        bottom: AppDimensions.spacingMd,
-      ),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.08),
@@ -261,7 +246,6 @@ class _PantallaReportesSitiosAdminState
     final respuesta = TextEditingController(
       text: reporte.respuestaAdmin ?? '',
     );
-
     String estado = reporte.estado;
     bool guardando = false;
 
@@ -279,30 +263,22 @@ class _PantallaReportesSitiosAdminState
           return StatefulBuilder(
             builder: (context, actualizarDialogo) {
               return Dialog(
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.creamLight,
                 insetPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 24,
+                  horizontal: 32,
+                  vertical: 32,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  side: const BorderSide(
-                    color: _cafe,
-                    width: 1.3,
-                  ),
+                  borderRadius: BorderRadius.circular(26),
+                  side: const BorderSide(color: _cafe, width: 1.3),
                 ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
-                    maxWidth: 430,
-                    maxHeight: 720,
+                    maxWidth: 370,
+                    maxHeight: 620,
                   ),
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(
-                      26,
-                      26,
-                      26,
-                      22,
-                    ),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,9 +291,7 @@ class _PantallaReportesSitiosAdminState
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 24),
-
                         Text(
                           reporte.asunto,
                           style: const TextStyle(
@@ -327,9 +301,7 @@ class _PantallaReportesSitiosAdminState
                             height: 1.3,
                           ),
                         ),
-
                         const SizedBox(height: 22),
-
                         const Text(
                           'Sitio turístico',
                           style: TextStyle(
@@ -338,9 +310,7 @@ class _PantallaReportesSitiosAdminState
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 8),
-
                         Text(
                           reporte.nombreSitio,
                           style: const TextStyle(
@@ -349,9 +319,7 @@ class _PantallaReportesSitiosAdminState
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-
                         const SizedBox(height: 24),
-
                         const Text(
                           'Descripción del reporte',
                           style: TextStyle(
@@ -360,9 +328,7 @@ class _PantallaReportesSitiosAdminState
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         Text(
                           reporte.mensaje,
                           style: const TextStyle(
@@ -371,9 +337,7 @@ class _PantallaReportesSitiosAdminState
                             height: 1.55,
                           ),
                         ),
-
                         const SizedBox(height: 26),
-
                         const Text(
                           'Estado del reporte',
                           style: TextStyle(
@@ -382,9 +346,7 @@ class _PantallaReportesSitiosAdminState
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         DropdownButtonFormField<String>(
                           initialValue: estado,
                           isExpanded: true,
@@ -428,9 +390,7 @@ class _PantallaReportesSitiosAdminState
                                   }
                                 },
                         ),
-
                         const SizedBox(height: 26),
-
                         const Text(
                           'Respuesta del administrador',
                           style: TextStyle(
@@ -439,9 +399,7 @@ class _PantallaReportesSitiosAdminState
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         TextField(
                           controller: respuesta,
                           enabled: !guardando,
@@ -470,9 +428,7 @@ class _PantallaReportesSitiosAdminState
                             disabledBorder: bordeCampo(),
                           ),
                         ),
-
                         const SizedBox(height: 20),
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -497,9 +453,7 @@ class _PantallaReportesSitiosAdminState
                                 ),
                               ),
                             ),
-
                             const SizedBox(width: 8),
-
                             FilledButton(
                               onPressed: guardando
                                   ? null
@@ -507,23 +461,19 @@ class _PantallaReportesSitiosAdminState
                                       actualizarDialogo(() {
                                         guardando = true;
                                       });
-
                                       final correcto =
                                           await _controller.responderReporte(
                                         id: reporte.id,
                                         estado: estado,
                                         respuestaAdmin: respuesta.text.trim(),
                                       );
-
                                       if (!dialogContext.mounted) return;
-
                                       if (correcto) {
                                         Navigator.pop(dialogContext, true);
                                       } else {
                                         actualizarDialogo(() {
                                           guardando = false;
                                         });
-
                                         ScaffoldMessenger.of(
                                           dialogContext,
                                         ).showSnackBar(

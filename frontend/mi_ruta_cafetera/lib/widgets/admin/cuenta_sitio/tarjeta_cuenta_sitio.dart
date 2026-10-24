@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../models/admin/sitio_admin_model.dart';
@@ -51,7 +52,7 @@ class TarjetaCuentaSitio extends StatelessWidget {
         horizontal: AppDimensions.pageHorizontalSmall,
         vertical: AppDimensions.spacingSm,
       ),
-      color: AppColors.surface,
+      color: AppColors.creamLight,
       elevation: 2,
       shadowColor: _cafe.withValues(alpha: 0.10),
       shape: RoundedRectangleBorder(

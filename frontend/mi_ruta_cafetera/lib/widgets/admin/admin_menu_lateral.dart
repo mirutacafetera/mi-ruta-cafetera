@@ -88,7 +88,6 @@ class AdminMenuLateral extends StatelessWidget {
                   'Contenido',
                   'contenido',
                 ),
-                
                 _opcion(
                   Icons.star_rounded,
                   'Reseñas',

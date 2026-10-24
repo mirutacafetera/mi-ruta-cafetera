@@ -21,6 +21,7 @@ class PantallaReporteAdmin extends StatefulWidget {
 
 class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
   late final ReporteController _controller;
+
   final TextEditingController _busquedaController =
       TextEditingController();
 
@@ -87,9 +88,9 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                     onActualizar: _recargar,
                     onNuevo: () {},
                   ),
-
-                  const SizedBox(height: AppDimensions.spacingLg),
-
+                  const SizedBox(
+                    height: AppDimensions.spacingLg,
+                  ),
                   ResumenUsuarios(
                     tarjetas: [
                       ResumenTarjeta(
@@ -100,30 +101,33 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                       ),
                       ResumenTarjeta(
                         titulo: 'Pendientes',
-                        cantidad:
-                            _controller.contarPorEstado('pendiente'),
+                        cantidad: _controller.contarPorEstado(
+                          'pendiente',
+                        ),
                         icono: Icons.mark_email_unread_rounded,
                         color: AppColors.warning,
                       ),
                       ResumenTarjeta(
                         titulo: 'En revisión',
-                        cantidad:
-                            _controller.contarPorEstado('en_revision'),
+                        cantidad: _controller.contarPorEstado(
+                          'en_revision',
+                        ),
                         icono: Icons.manage_search_rounded,
                         color: AppColors.info,
                       ),
                       ResumenTarjeta(
                         titulo: 'Resueltos',
-                        cantidad:
-                            _controller.contarPorEstado('resuelto'),
+                        cantidad: _controller.contarPorEstado(
+                          'resuelto',
+                        ),
                         icono: Icons.check_circle_rounded,
                         color: AppColors.success,
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: AppDimensions.spacingLg),
-
+                  const SizedBox(
+                    height: AppDimensions.spacingLg,
+                  ),
                   BarraBusqueda(
                     controller: _busquedaController,
                     valor: _busquedaController.text,
@@ -135,19 +139,20 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                       setState(() {});
                     },
                   ),
-
-                  const SizedBox(height: AppDimensions.spacingMd),
-
+                  const SizedBox(
+                    height: AppDimensions.spacingMd,
+                  ),
                   FiltroEstadoReporte(
                     seleccionado: _controller.estadoSeleccionado,
                     onChanged: _controller.cambiarEstadoFiltro,
                   ),
-
-                  const SizedBox(height: AppDimensions.spacingLg),
-
+                  const SizedBox(
+                    height: AppDimensions.spacingLg,
+                  ),
                   if (cargando)
                     SizedBox(
-                      height: MediaQuery.sizeOf(context).height * 0.45,
+                      height:
+                          MediaQuery.sizeOf(context).height * 0.45,
                       child: const Center(
                         child: CircularProgressIndicator(
                           color: _naranja,
@@ -176,9 +181,9 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: AppDimensions.spacingMd),
-
+                    const SizedBox(
+                      height: AppDimensions.spacingMd,
+                    ),
                     if (_controller.error != null)
                       Padding(
                         padding: const EdgeInsets.only(
@@ -191,7 +196,6 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                           ),
                         ),
                       ),
-
                     if (reportes.isEmpty)
                       const Padding(
                         padding: EdgeInsets.all(
@@ -254,13 +258,13 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
           return StatefulBuilder(
             builder: (context, actualizarDialogo) {
               return Dialog(
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.creamLight,
                 insetPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 24,
+                  horizontal: 32,
+                  vertical: 32,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(26),
                   side: const BorderSide(
                     color: _cafe,
                     width: 1.3,
@@ -268,11 +272,16 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                 ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
-                    maxWidth: 430,
-                    maxHeight: 720,
+                    maxWidth: 370,
+                    maxHeight: 620,
                   ),
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.fromLTRB(
+                      20,
+                      20,
+                      20,
+                      16,
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,9 +294,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 24),
-
                         Text(
                           reporte.asunto,
                           style: const TextStyle(
@@ -296,9 +303,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 22),
-
                         const Text(
                           'Usuario',
                           style: TextStyle(
@@ -307,9 +312,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 8),
-
                         Text(
                           reporte.nombreCompleto.isEmpty
                               ? 'Usuario sin nombre'
@@ -320,9 +323,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         const Text(
                           'Correo electrónico',
                           style: TextStyle(
@@ -331,9 +332,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 8),
-
                         SelectableText(
                           reporte.correoUsuario.isEmpty
                               ? 'Correo no disponible'
@@ -344,9 +343,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             height: 1.4,
                           ),
                         ),
-
                         const SizedBox(height: 24),
-
                         const Text(
                           'Mensaje del usuario',
                           style: TextStyle(
@@ -355,9 +352,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         Text(
                           reporte.mensaje,
                           style: const TextStyle(
@@ -366,9 +361,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             height: 1.55,
                           ),
                         ),
-
                         const SizedBox(height: 26),
-
                         const Text(
                           'Estado del reporte',
                           style: TextStyle(
@@ -377,16 +370,15 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         DropdownButtonFormField<String>(
                           initialValue: estado,
                           isExpanded: true,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
+                            contentPadding:
+                                const EdgeInsets.symmetric(
                               horizontal: 20,
                               vertical: 15,
                             ),
@@ -422,9 +414,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             }
                           },
                         ),
-
                         const SizedBox(height: 26),
-
                         const Text(
                           'Respuesta del administrador',
                           style: TextStyle(
@@ -433,9 +423,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         TextField(
                           controller: respuesta,
                           maxLength: 3000,
@@ -463,21 +451,21 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                             disabledBorder: bordeCafe(),
                           ),
                         ),
-
                         const SizedBox(height: 20),
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton(
                               onPressed: () {
-                                FocusManager.instance.primaryFocus
-                                    ?.unfocus();
-                                Navigator.of(dialogContext).pop(false);
+                                Navigator.pop(
+                                  dialogContext,
+                                  false,
+                                );
                               },
                               style: TextButton.styleFrom(
                                 foregroundColor: _naranja,
-                                padding: const EdgeInsets.symmetric(
+                                padding:
+                                    const EdgeInsets.symmetric(
                                   horizontal: 14,
                                   vertical: 13,
                                 ),
@@ -489,24 +477,25 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                                 ),
                               ),
                             ),
-
                             const SizedBox(width: 8),
-
                             FilledButton(
                               onPressed: () {
-                                FocusManager.instance.primaryFocus
-                                    ?.unfocus();
-                                Navigator.of(dialogContext).pop(true);
+                                Navigator.pop(
+                                  dialogContext,
+                                  true,
+                                );
                               },
                               style: FilledButton.styleFrom(
                                 backgroundColor: _naranja,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
+                                padding:
+                                    const EdgeInsets.symmetric(
                                   horizontal: 24,
                                   vertical: 14,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(28),
+                                  borderRadius:
+                                      BorderRadius.circular(28),
                                   side: const BorderSide(
                                     color: _cafe,
                                     width: 0.8,
@@ -532,7 +521,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
         },
       );
 
-      // Cancelar cierra el diálogo sin llamar al controlador.
+      // Cancelar cierra el diálogo sin guardar cambios.
       if (guardar != true || !mounted) return;
 
       final correcto = await _controller.responderReporte(

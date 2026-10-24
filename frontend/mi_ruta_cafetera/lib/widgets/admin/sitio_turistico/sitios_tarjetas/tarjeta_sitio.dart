@@ -39,7 +39,7 @@ class TarjetaSitio extends StatelessWidget {
         bottom: AppDimensions.spacingMd,
       ),
       elevation: 0,
-      color: AppColors.surface,
+      color: AppColors.creamLight,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
