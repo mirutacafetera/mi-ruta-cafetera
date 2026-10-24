@@ -1,3 +1,4 @@
+
 const express = require('express');
 
 const router = express.Router();
@@ -8,7 +9,7 @@ const {
 
 const {
   uploadFotoAdmin
-} = require('../../middleware/upload');
+} = require('../../middlewares/uploadmiddleware');
 
 const {
   registrarAdministrador,
@@ -64,7 +65,6 @@ router.post(
 
 // =====================================================
 // FOTO DE PERFIL DEL ADMINISTRADOR
-// Esta ruta debe ir antes de GET /:id.
 // =====================================================
 
 router.post(
