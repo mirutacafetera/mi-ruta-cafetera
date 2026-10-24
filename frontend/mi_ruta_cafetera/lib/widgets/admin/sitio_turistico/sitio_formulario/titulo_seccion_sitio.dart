@@ -63,7 +63,7 @@ class TituloSeccionSitio extends StatelessWidget {
                   subtitulo,
                   style: const TextStyle(
                     fontSize: 12,
-                    color: AppColors.textOnDarkSecondary,
+                    color: Color(0xFF6D4C41),
                   ),
                 ),
               ],

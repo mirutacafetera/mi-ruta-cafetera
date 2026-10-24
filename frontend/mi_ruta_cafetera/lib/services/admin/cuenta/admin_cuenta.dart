@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 import '../../../config/api_config.dart';
 import '../../../models/admin/cuenta_admin.dart';
@@ -17,12 +19,15 @@ class AdminServicioCuenta {
     final token = AdminServicioAutenticacion.tokenAdmin;
 
     return {
-      'Content-Type': 'application/json',
       'Accept': 'application/json',
       if (token != null && token.isNotEmpty)
         'Authorization': 'Bearer $token',
     };
   }
+
+  // =====================================================
+  // OBTENER CUENTA
+  // =====================================================
 
   static Future<CuentaAdmin> obtenerCuenta(
     String idAdministrador,
@@ -33,9 +38,7 @@ class AdminServicioCuenta {
             Uri.parse('$_urlBase/$idAdministrador'),
             headers: _headers(),
           )
-          .timeout(
-            const Duration(seconds: 15),
-          );
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode >= 200 &&
           response.statusCode < 300) {
@@ -56,9 +59,7 @@ class AdminServicioCuenta {
         return CuentaAdmin.fromJson(data);
       }
 
-      throw Exception(
-        _obtenerMensajeError(response),
-      );
+      throw Exception(_obtenerMensajeError(response));
     } on http.ClientException {
       throw Exception(
         'No fue posible conectarse con el servidor.',
@@ -68,9 +69,7 @@ class AdminServicioCuenta {
         'El servidor devolvió una respuesta inválida.',
       );
     } catch (e) {
-      final mensaje = e.toString();
-
-      if (mensaje.contains('TimeoutException')) {
+      if (e.toString().contains('TimeoutException')) {
         throw Exception(
           'El servidor tardó demasiado en responder.',
         );
@@ -79,6 +78,10 @@ class AdminServicioCuenta {
       rethrow;
     }
   }
+
+  // =====================================================
+  // ACTUALIZAR DATOS PERSONALES
+  // =====================================================
 
   static Future<CuentaAdmin> actualizarCuenta({
     required String idAdministrador,
@@ -90,16 +93,17 @@ class AdminServicioCuenta {
       final response = await http
           .put(
             Uri.parse('$_urlBase/$idAdministrador'),
-            headers: _headers(),
+            headers: {
+              ..._headers(),
+              'Content-Type': 'application/json',
+            },
             body: jsonEncode({
               'nombre': nombre.trim(),
               'apellido': apellido.trim(),
               'telefono': telefono.trim(),
             }),
           )
-          .timeout(
-            const Duration(seconds: 15),
-          );
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode >= 200 &&
           response.statusCode < 300) {
@@ -128,9 +132,7 @@ class AdminServicioCuenta {
         return CuentaAdmin.fromJson(administrador);
       }
 
-      throw Exception(
-        _obtenerMensajeError(response),
-      );
+      throw Exception(_obtenerMensajeError(response));
     } on http.ClientException {
       throw Exception(
         'No fue posible conectarse con el servidor.',
@@ -140,9 +142,7 @@ class AdminServicioCuenta {
         'El servidor devolvió una respuesta inválida.',
       );
     } catch (e) {
-      final mensaje = e.toString();
-
-      if (mensaje.contains('TimeoutException')) {
+      if (e.toString().contains('TimeoutException')) {
         throw Exception(
           'El servidor tardó demasiado en responder.',
         );
@@ -151,6 +151,97 @@ class AdminServicioCuenta {
       rethrow;
     }
   }
+
+  // =====================================================
+  // SUBIR FOTO DE PERFIL A CLOUDINARY
+  // =====================================================
+
+  static Future<CuentaAdmin> subirFotoPerfil({
+    required String idAdministrador,
+    required XFile imagen,
+  }) async {
+    try {
+      final uri = Uri.parse(
+        '$_urlBase/$idAdministrador/foto',
+      );
+
+      final solicitud = http.MultipartRequest(
+        'POST',
+        uri,
+      );
+
+      solicitud.headers.addAll(_headers());
+
+      if (kIsWeb) {
+        solicitud.files.add(
+          http.MultipartFile.fromBytes(
+            'foto',
+            await imagen.readAsBytes(),
+            filename: imagen.name,
+          ),
+        );
+      } else {
+        solicitud.files.add(
+          http.MultipartFile.fromBytes(
+            'foto',
+            await imagen.readAsBytes(),
+            filename: imagen.name,
+          ),
+        );
+      }
+
+      final respuestaStream = await solicitud
+          .send()
+          .timeout(const Duration(seconds: 60));
+
+      final response = await http.Response.fromStream(
+        respuestaStream,
+      );
+
+      if (response.statusCode >= 200 &&
+          response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+
+        if (data is! Map<String, dynamic>) {
+          throw Exception(
+            'La respuesta del servidor tiene un formato inválido.',
+          );
+        }
+
+        final administrador = data['administrador'];
+
+        if (administrador is! Map<String, dynamic>) {
+          throw Exception(
+            'El servidor no devolvió la cuenta actualizada.',
+          );
+        }
+
+        return CuentaAdmin.fromJson(administrador);
+      }
+
+      throw Exception(_obtenerMensajeError(response));
+    } on http.ClientException {
+      throw Exception(
+        'No fue posible conectarse con el servidor.',
+      );
+    } on FormatException {
+      throw Exception(
+        'El servidor devolvió una respuesta inválida.',
+      );
+    } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        throw Exception(
+          'La subida tardó demasiado. Inténtalo de nuevo.',
+        );
+      }
+
+      rethrow;
+    }
+  }
+
+  // =====================================================
+  // MENSAJES DE ERROR DEL SERVIDOR
+  // =====================================================
 
   static String _obtenerMensajeError(
     http.Response response,
@@ -171,6 +262,7 @@ class AdminServicioCuenta {
       }
     } catch (_) {}
 
-    return 'No fue posible realizar la operación.';
+    return 'No fue posible realizar la operación. '
+        'Código: ${response.statusCode}.';
   }
 }

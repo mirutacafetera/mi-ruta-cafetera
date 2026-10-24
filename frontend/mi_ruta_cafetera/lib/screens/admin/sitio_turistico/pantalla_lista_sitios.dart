@@ -98,32 +98,34 @@ class _PantallaListaSitiosState extends State<PantallaListaSitios> {
   }
 
   Future<void> _mostrarDetalle(SitioAdminModel sitio) async {
-    await showModalBottomSheet<void>(
+    await showDialog<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.88,
-        minChildSize: 0.55,
-        maxChildSize: 0.96,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: AppColors.creamLight,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 32,
+            vertical: 32,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(26),
+            side: const BorderSide(
+              color: Color(0xFFB58A70),
+              width: 1.3,
             ),
-            clipBehavior: Clip.antiAlias,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 370,
+              maxHeight: 620,
+            ),
             child: SingleChildScrollView(
-              controller: scrollController,
               child: DetalleSitioTuristico(sitio: sitio),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

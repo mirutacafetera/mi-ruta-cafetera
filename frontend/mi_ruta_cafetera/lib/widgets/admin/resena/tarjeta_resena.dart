@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../models/admin/resena_admin.dart';
@@ -24,184 +25,187 @@ class TarjetaResena extends StatelessWidget {
   Widget build(BuildContext context) {
     final activa = resena.activo;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.pageHorizontalSmall,
-        vertical: AppDimensions.spacingXs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.creamLight,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
+    return InkWell(
+      onTap: () => _mostrarHistorial(context),
+      borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.pageHorizontalSmall,
+          vertical: AppDimensions.spacingXs,
         ),
-        border: Border.all(
-          color: _bordeCafe,
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.coffeeDark.withValues(alpha: 0.06),
-            blurRadius: 7,
-            offset: const Offset(0, 2),
+        decoration: BoxDecoration(
+          color: AppColors.creamLight,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.cardRadius,
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(
-            AppDimensions.spacingMd,
+          border: Border.all(
+            color: _bordeCafe,
+            width: 1.2,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  SitioAvatarPerfil(
-                    fotoPerfil: resena.fotoPerfil,
-                    nombre: resena.usuario,
-                    radio: 22,
-                    colorFondo: AppColors.primary,
-                    colorIcono: Colors.white,
-                    avatar: resena.avatar,
-                  ),
-                  const SizedBox(
-                    width: AppDimensions.spacingMd,
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          resena.usuario,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                        ),
-                        const SizedBox(
-                          height: AppDimensions.spacingXs,
-                        ),
-                        Text(
-                          resena.sitio,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _menu(context, activa),
-                ],
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingMd,
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0E5D3),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusMd,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.coffeeDark.withValues(alpha: 0.06),
+              blurRadius: 7,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.cardRadius,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(
+              AppDimensions.spacingMd,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    ...List.generate(
-                      5,
-                      (i) => Icon(
-                        i < resena.calificacion
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
-                        color: AppColors.secondary,
-                        size: AppDimensions.iconMd,
-                      ),
+                    SitioAvatarPerfil(
+                      fotoPerfil: resena.fotoPerfil,
+                      nombre: resena.usuario,
+                      radio: 22,
+                      colorFondo: AppColors.primary,
+                      colorIcono: Colors.white,
+                      avatar: resena.avatar,
                     ),
                     const SizedBox(
-                      width: AppDimensions.spacingSm,
+                      width: AppDimensions.spacingMd,
                     ),
-                    Text(
-                      '${resena.calificacion}/5',
-                      style: const TextStyle(
-                        color: AppColors.coffeeDark,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingMd,
-              ),
-              Text(
-                resena.comentario,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      color: AppColors.textPrimary,
-                      height: 1.5,
-                    ),
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingLg,
-              ),
-              Container(
-                height: 1,
-                color: _bordeCafe.withValues(alpha: 0.45),
-              ),
-              const SizedBox(
-                height: AppDimensions.spacingMd,
-              ),
-              Row(
-                children: [
-                  _estado(activa),
-                  const Spacer(),
-                  if (resena.fecha != null)
-                    Flexible(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
-                            Icons.calendar_today_rounded,
-                            size: 13,
-                            color: AppColors.textSecondary,
+                          Text(
+                            resena.usuario,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
                           ),
                           const SizedBox(
-                            width: AppDimensions.spacingXs,
+                            height: AppDimensions.spacingXs,
                           ),
-                          Flexible(
-                            child: Text(
-                              _fecha(resena.fecha!),
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall,
-                            ),
+                          Text(
+                            resena.sitio,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
                           ),
                         ],
                       ),
                     ),
-                ],
-              ),
-            ],
+                    _menu(context, activa),
+                  ],
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingMd,
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingMd,
+                    vertical: AppDimensions.spacingSm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0E5D3),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusMd,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...List.generate(
+                        5,
+                        (i) => Icon(
+                          i < resena.calificacion
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: AppColors.secondary,
+                          size: AppDimensions.iconMd,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: AppDimensions.spacingSm,
+                      ),
+                      Text(
+                        '${resena.calificacion}/5',
+                        style: const TextStyle(
+                          color: AppColors.coffeeDark,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingMd,
+                ),
+                Text(
+                  resena.comentario,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(
+                        color: AppColors.textPrimary,
+                        height: 1.5,
+                      ),
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingLg,
+                ),
+                Container(
+                  height: 1,
+                  color: _bordeCafe.withValues(alpha: 0.45),
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingMd,
+                ),
+                Row(
+                  children: [
+                    _estado(activa),
+                    const Spacer(),
+                    if (resena.fecha != null)
+                      Flexible(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            const Icon(
+                              Icons.calendar_today_rounded,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(
+                              width: AppDimensions.spacingXs,
+                            ),
+                            Flexible(
+                              child: Text(
+                                _fecha(resena.fecha!),
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -226,9 +230,6 @@ class TarjetaResena extends StatelessWidget {
       onSelected: (opcion) {
         if (opcion == 'estado') onCambiarEstado();
         if (opcion == 'eliminar') onEliminar();
-        if (opcion == 'historial') {
-          _mostrarHistorial(context);
-        }
       },
       itemBuilder: (_) => [
         PopupMenuItem(
@@ -247,14 +248,6 @@ class TarjetaResena extends StatelessWidget {
             Icons.delete_outline_rounded,
             'Eliminar reseña',
             AppColors.error,
-          ),
-        ),
-        PopupMenuItem(
-          value: 'historial',
-          child: _opcion(
-            Icons.history_rounded,
-            'Ver historial',
-            AppColors.secondary,
           ),
         ),
       ],

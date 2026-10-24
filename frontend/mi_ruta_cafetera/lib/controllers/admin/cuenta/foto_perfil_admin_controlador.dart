@@ -1,7 +1,8 @@
-
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../../../services/admin/cuenta/foto_perfil_admin.dart';
+import '../../../models/admin/cuenta_admin.dart';
+import '../../../services/admin/cuenta/admin_cuenta.dart';
 
 class FotoPerfilAdminControlador extends ChangeNotifier {
   String? _rutaFoto;
@@ -16,15 +17,30 @@ class FotoPerfilAdminControlador extends ChangeNotifier {
   bool get inicializado => _inicializado;
   String? get error => _error;
 
-  Future<void> cargarFoto() async {
-    if (_inicializado) return;
+  // =====================================================
+  // CARGAR FOTO DESDE EL SERVIDOR
+  // =====================================================
+
+  Future<void> cargarFoto({
+    required String idAdministrador,
+    bool forzarRecarga = false,
+  }) async {
+    if (idAdministrador.trim().isEmpty) {
+      _error = 'No se pudo identificar al administrador.';
+      notifyListeners();
+      return;
+    }
+
+    if (_inicializado && !forzarRecarga) {
+      return;
+    }
 
     if (_cargaEnCurso != null) {
       await _cargaEnCurso;
       return;
     }
 
-    final carga = _ejecutarCarga();
+    final carga = _ejecutarCarga(idAdministrador);
     _cargaEnCurso = carga;
 
     try {
@@ -34,19 +50,31 @@ class FotoPerfilAdminControlador extends ChangeNotifier {
     }
   }
 
-  Future<void> _ejecutarCarga() async {
+  Future<void> _ejecutarCarga(
+    String idAdministrador,
+  ) async {
     _cargando = true;
     _error = null;
     notifyListeners();
 
     try {
-      _rutaFoto = await FotoPerfilAdmin.obtenerRuta();
+      final cuenta = await AdminServicioCuenta.obtenerCuenta(
+        idAdministrador,
+      );
+
+      _rutaFoto = cuenta.fotoPerfil;
       _inicializado = true;
 
-      debugPrint('Foto admin cargada: $_rutaFoto');
+      debugPrint(
+        'Foto del administrador cargada desde el servidor: $_rutaFoto',
+      );
     } catch (e, stackTrace) {
-      _error = 'No se pudo cargar la foto de perfil.';
-      debugPrint('Error cargando foto: $e');
+      _error = e.toString().replaceFirst(
+        'Exception: ',
+        '',
+      );
+
+      debugPrint('Error al cargar la foto del administrador: $e');
       debugPrintStack(stackTrace: stackTrace);
     } finally {
       _cargando = false;
@@ -54,28 +82,64 @@ class FotoPerfilAdminControlador extends ChangeNotifier {
     }
   }
 
-  Future<bool> seleccionarFoto() async {
-    if (_cargando) return false;
+  // =====================================================
+  // SELECCIONAR Y SUBIR FOTO
+  // =====================================================
+
+  Future<bool> seleccionarFoto({
+    required String idAdministrador,
+  }) async {
+    if (_cargando) {
+      return false;
+    }
+
+    if (idAdministrador.trim().isEmpty) {
+      _error = 'No se pudo identificar al administrador.';
+      notifyListeners();
+      return false;
+    }
 
     _cargando = true;
     _error = null;
     notifyListeners();
 
     try {
-      final nuevaRuta =
-          await FotoPerfilAdmin.seleccionarYGuardar();
+      final XFile? imagen = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+        maxWidth: 1200,
+      );
 
-      if (nuevaRuta == null) return false;
+      if (imagen == null) {
+        return false;
+      }
 
-      _rutaFoto = nuevaRuta;
+      final cuenta = await AdminServicioCuenta.subirFotoPerfil(
+        idAdministrador: idAdministrador,
+        imagen: imagen,
+      );
+
+      _rutaFoto = cuenta.fotoPerfil;
       _inicializado = true;
 
-      debugPrint('Nueva foto admin: $_rutaFoto');
+      if (_rutaFoto == null || _rutaFoto!.trim().isEmpty) {
+        _error =
+            'El servidor guardó la solicitud, pero no devolvió la URL de la foto.';
+        return false;
+      }
+
+      debugPrint('Foto actualizada: $_rutaFoto');
+
       return true;
     } catch (e, stackTrace) {
-      _error = 'No se pudo seleccionar la foto.';
-      debugPrint('Error seleccionando foto: $e');
+      _error = e.toString().replaceFirst(
+        'Exception: ',
+        '',
+      );
+
+      debugPrint('Error al seleccionar o subir la foto: $e');
       debugPrintStack(stackTrace: stackTrace);
+
       return false;
     } finally {
       _cargando = false;
@@ -83,27 +147,34 @@ class FotoPerfilAdminControlador extends ChangeNotifier {
     }
   }
 
-  Future<bool> eliminarFoto() async {
-    if (_cargando) return false;
+  // =====================================================
+  // ACTUALIZAR DESDE LOS DATOS DE LA CUENTA
+  // =====================================================
 
-    _cargando = true;
+  void actualizarDesdeCuenta(CuentaAdmin cuenta) {
+    _rutaFoto = cuenta.fotoPerfil;
+    _inicializado = true;
     _error = null;
     notifyListeners();
+  }
 
-    try {
-      await FotoPerfilAdmin.eliminarFoto();
+  // =====================================================
+  // LIMPIAR ERROR
+  // =====================================================
 
-      _rutaFoto = null;
-      _inicializado = true;
-      return true;
-    } catch (e, stackTrace) {
-      _error = 'No se pudo eliminar la foto.';
-      debugPrint('Error eliminando foto: $e');
-      debugPrintStack(stackTrace: stackTrace);
-      return false;
-    } finally {
-      _cargando = false;
-      notifyListeners();
-    }
+  void limpiarError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  // =====================================================
+  // LIMPIAR DATOS AL CERRAR SESIÓN
+  // =====================================================
+
+  void limpiarFoto() {
+    _rutaFoto = null;
+    _inicializado = false;
+    _error = null;
+    notifyListeners();
   }
 }

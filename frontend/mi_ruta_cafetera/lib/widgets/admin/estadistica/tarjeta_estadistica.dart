@@ -25,7 +25,7 @@ class TarjetaEstadistica extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF7F0),
+        color: AppColors.creamLight,
         borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
         border: Border.all(
           color: const Color(0xFFB58A70),

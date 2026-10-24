@@ -135,6 +135,7 @@ class _PantallaResenasAdminState extends State<PantallaResenasAdmin> {
               ],
             ),
           ),
+          const SizedBox(height: 15),
           BarraBusqueda(
             valor: _controller.busqueda,
             controller: _busquedaController,

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/estadistica/estadistica_controller.dart';
@@ -161,17 +160,17 @@ class _PantallaEstadisticaState extends State<PantallaEstadistica> {
       );
     }
 
-      if (datos == null) {
-  return ListView(
-    physics: const AlwaysScrollableScrollPhysics(),
-    children: const [
-      SizedBox(height: 30),
-      Center(
-        child: Text('No hay estadísticas disponibles.'),
-      ),
-    ],
-  );
-}
+    if (datos == null) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(height: 30),
+          Center(
+            child: Text('No hay estadísticas disponibles.'),
+          ),
+        ],
+      );
+    }
 
     // Durante la actualización se conserva el resumen superior
     // y se reemplaza todo lo demás por el indicador de carga.
@@ -270,7 +269,7 @@ class _PantallaEstadisticaState extends State<PantallaEstadistica> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.creamLight,
         borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
         border: Border.all(
           color: const Color(0xFFB58A70),
@@ -371,7 +370,7 @@ class _PantallaEstadisticaState extends State<PantallaEstadistica> {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.creamLight,
         borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
         border: Border.all(color: const Color(0xFFB58A70)),
       ),

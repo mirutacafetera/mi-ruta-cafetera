@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../models/admin/cuenta_sitio_model.dart';
@@ -73,7 +72,7 @@ class _FormularioCuentaSitioState extends State<FormularioCuentaSitio> {
       ),
       prefixIcon: Icon(icono, color: _naranja),
       filled: true,
-      fillColor: AppColors.surface,
+      fillColor: AppColors.creamLight,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 16,
         vertical: 17,

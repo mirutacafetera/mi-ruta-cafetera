@@ -22,14 +22,14 @@ class PantallaSitiosCategoria extends StatefulWidget {
       _PantallaSitiosCategoriaState();
 }
 
-class _PantallaSitiosCategoriaState extends State<PantallaSitiosCategoria> {
+class _PantallaSitiosCategoriaState
+    extends State<PantallaSitiosCategoria> {
   List<SitioAdminModel> sitios = [];
   bool cargando = true;
   String? error;
   String busqueda = '';
 
   static const Color cafe = Color(0xFF966F52);
-  static const Color beigeTarjeta = Color(0xFFFAF3E8);
   static const Color beigeBuscador = Color(0xFFFFFCF6);
 
   @override
@@ -51,7 +51,9 @@ class _PantallaSitiosCategoriaState extends State<PantallaSitiosCategoria> {
 
       setState(() {
         sitios = todos
-            .where((sitio) => sitio.categoria?.id == widget.categoria.id)
+            .where(
+              (sitio) => sitio.categoria?.id == widget.categoria.id,
+            )
             .toList();
         cargando = false;
       });
@@ -78,32 +80,36 @@ class _PantallaSitiosCategoriaState extends State<PantallaSitiosCategoria> {
   }
 
   Future<void> _mostrarDetalle(SitioAdminModel sitio) async {
-    await showModalBottomSheet<void>(
+    await showDialog<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.88,
-        minChildSize: 0.55,
-        maxChildSize: 0.96,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(24),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: AppColors.creamLight,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 32,
+            vertical: 32,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(26),
+            side: const BorderSide(
+              color: Color(0xFFB58A70),
+              width: 1.3,
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 370,
+              maxHeight: 620,
+            ),
+            child: SingleChildScrollView(
+              child: DetalleSitioTuristico(
+                sitio: sitio,
               ),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: SingleChildScrollView(
-              controller: scrollController,
-              child: DetalleSitioTuristico(sitio: sitio),
-            ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -276,7 +282,9 @@ class _PantallaSitiosCategoriaState extends State<PantallaSitiosCategoria> {
                           width: 72,
                           height: 72,
                           decoration: BoxDecoration(
-                            color: colorCategoria.withValues(alpha: 0.12),
+                            color: colorCategoria.withValues(
+                              alpha: 0.12,
+                            ),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -332,7 +340,9 @@ class _PantallaSitiosCategoriaState extends State<PantallaSitiosCategoria> {
                             vertical: AppDimensions.spacingXs,
                           ),
                           decoration: BoxDecoration(
-                            color: colorCategoria.withValues(alpha: 0.12),
+                            color: colorCategoria.withValues(
+                              alpha: 0.12,
+                            ),
                             borderRadius: BorderRadius.circular(
                               AppDimensions.chipRadius,
                             ),
@@ -360,7 +370,7 @@ class _PantallaSitiosCategoriaState extends State<PantallaSitiosCategoria> {
                         bottom: AppDimensions.spacingSm,
                       ),
                       decoration: BoxDecoration(
-                        color: beigeTarjeta,
+                        color: AppColors.creamLight,
                         borderRadius: BorderRadius.circular(
                           AppDimensions.cardRadius,
                         ),
@@ -379,7 +389,8 @@ class _PantallaSitiosCategoriaState extends State<PantallaSitiosCategoria> {
                               AppDimensions.spacingMd,
                             ),
                             child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.center,
                               children: [
                                 _miniaturaSitio(
                                   sitio,
@@ -414,7 +425,8 @@ class _PantallaSitiosCategoriaState extends State<PantallaSitiosCategoria> {
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
-                                            color: AppColors.textSecondary,
+                                            color:
+                                                AppColors.textSecondary,
                                             fontSize: 12,
                                             height: 1.35,
                                           ),

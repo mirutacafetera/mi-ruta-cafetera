@@ -57,7 +57,6 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     fotoPerfilControlador = FotoPerfilAdminControlador();
 
     _cargarCuenta();
-    fotoPerfilControlador.cargarFoto();
   }
 
   void _actualizar() {
@@ -74,9 +73,17 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     final idAdministrador =
         AdminServicioAutenticacion.idAdministrador;
 
-    if (idAdministrador != null && idAdministrador.isNotEmpty) {
-      await cuentaAdminController.cargarCuenta(idAdministrador);
+    if (idAdministrador == null || idAdministrador.isEmpty) {
+      return;
     }
+
+    await cuentaAdminController.cargarCuenta(idAdministrador);
+
+    if (!mounted) return;
+
+    await fotoPerfilControlador.cargarFoto(
+      idAdministrador: idAdministrador,
+    );
   }
 
   Future<void> _cerrarSesion() async {
@@ -232,23 +239,21 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     }
   }
 
-  
-Widget _inicio() {
-  return AdminInicio(
-    nombre: widget.nombre,
-    email: widget.email,
-    fotoPerfilControlador: fotoPerfilControlador,
-    onAbrirMapa: _abrirMapa,
-    onGestionarSitios: () {
-      controlador.cambiarOpcion('sitios');
-    },
-    onGestionarUsuarios: _abrirUsuarios,
-    onAbrirCuenta: () {
-      controlador.cambiarOpcion('perfil');
-    },
-  );
-}
-
+  Widget _inicio() {
+    return AdminInicio(
+      nombre: widget.nombre,
+      email: widget.email,
+      fotoPerfilControlador: fotoPerfilControlador,
+      onAbrirMapa: _abrirMapa,
+      onGestionarSitios: () {
+        controlador.cambiarOpcion('sitios');
+      },
+      onGestionarUsuarios: _abrirUsuarios,
+      onAbrirCuenta: () {
+        controlador.cambiarOpcion('perfil');
+      },
+    );
+  }
 
   @override
   void dispose() {
