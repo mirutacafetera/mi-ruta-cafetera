@@ -91,6 +91,7 @@ abstract class AppColors {
   static const Color borderDark = Color(0xFF315745);
   static const Color cardShadow = Color(0x18000000);
   static const Color strongShadow = Color(0x26000000);
+  static const Color terracota = Color(0xFFB85C50);
 
   // ESTADOS
   static const Color success = Color(0xFF3E8E5B);

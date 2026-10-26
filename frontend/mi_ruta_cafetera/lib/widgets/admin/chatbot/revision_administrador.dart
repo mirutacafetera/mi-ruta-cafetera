@@ -29,23 +29,24 @@ class RevisionAdministrador extends StatelessWidget {
   bool get _aprobado =>
       _estado == 'aprobado' || _estado == 'aprobado_manual';
 
+  bool get _rechazado =>
+      _estado == 'rechazado' || _estado == 'rechazado_manual';
+
   String get _estadoLegible {
     if (!_tieneRevision) return 'Sin revisión manual';
     return _aprobado ? 'Aprobado manualmente' : 'Rechazado manualmente';
   }
 
   Color get _color {
-    if (!_tieneRevision) return AppColors.primary;
-    return _aprobado
-        ? const Color(0xFF27824D)
-        : const Color(0xFFC43F36);
+    if (_rechazado) return AppColors.error;
+    if (_aprobado) return AppColors.primary;
+    return AppColors.secondary;
   }
 
   IconData get _icono {
-    if (!_tieneRevision) return Icons.person_search_rounded;
-    return _aprobado
-        ? Icons.check_circle_rounded
-        : Icons.cancel_rounded;
+    if (_rechazado) return Icons.cancel_rounded;
+    if (_aprobado) return Icons.check_circle_rounded;
+    return Icons.person_search_outlined;
   }
 
   @override
@@ -62,17 +63,17 @@ class RevisionAdministrador extends StatelessWidget {
             vertical: 12,
           ),
           decoration: BoxDecoration(
-            color: _color.withValues(alpha: 0.07),
+            color: AppColors.creamLight,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: _color.withValues(alpha: 0.35),
+              color: AppColors.adminBorder,
             ),
           ),
           child: Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.admin_panel_settings_outlined,
-                color: _color,
+                color: AppColors.secondary,
                 size: 23,
               ),
               const SizedBox(width: 10),
@@ -85,6 +86,7 @@ class RevisionAdministrador extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -108,10 +110,10 @@ class RevisionAdministrador extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Icon(
+              const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 15,
-                color: _color,
+                color: AppColors.secondary,
               ),
             ],
           ),
@@ -121,118 +123,99 @@ class RevisionAdministrador extends StatelessWidget {
   }
 
   void _mostrarDetalles(BuildContext context) {
+    final alturaPantalla = MediaQuery.of(context).size.height;
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF151A16),
+      useSafeArea: false,
+      backgroundColor: Colors.transparent,
       barrierColor: Colors.black54,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(26),
-        ),
-      ),
       builder: (context) {
-        return SafeArea(
-          child: FractionallySizedBox(
-            heightFactor: 0.72,
+        return SizedBox(
+          height: alturaPantalla * 0.58,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(AppDimensions.sheetRadius),
+              ),
+              border: const Border(
+                top: BorderSide(
+                  color: AppColors.adminBorder,
+                  width: 2,
+                ),
+              ),
+            ),
             child: Column(
               children: [
+                _indicador(),
                 Padding(
-                  padding: const EdgeInsets.only(top: 12, bottom: 8),
-                  child: Container(
-                    width: 42,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white30,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  padding: const EdgeInsets.all(
+                    AppDimensions.spacingXl,
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 12, 16),
                   child: Row(
                     children: [
                       Container(
-                        width: 44,
-                        height: 44,
+                        width: 48,
+                        height: 48,
                         decoration: BoxDecoration(
                           color: _color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusLg,
+                          ),
                         ),
                         child: Icon(
-                          Icons.admin_panel_settings_rounded,
+                          Icons.admin_panel_settings_outlined,
                           color: _color,
-                          size: 26,
+                          size: AppDimensions.iconLg,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(
+                        width: AppDimensions.spacingMd,
+                      ),
                       const Expanded(
                         child: Text(
                           'Detalles de la revisión',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                            fontSize: 19,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
+                        tooltip: 'Cerrar',
                         icon: const Icon(
-                          Icons.close_rounded,
-                          color: Colors.white70,
+                          Icons.close,
+                          color: AppColors.coffee,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Divider(color: Colors.white12, height: 1),
+                const Divider(
+                  color: AppColors.adminBorder,
+                  height: 1,
+                ),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppDimensions.spacingXl,
+                      AppDimensions.spacingXl,
+                      AppDimensions.spacingXl,
+                      32,
+                    ),
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          color: _color.withValues(alpha: 0.09),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: _color.withValues(alpha: 0.35),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(_icono, color: _color, size: 26),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Resultado de la revisión',
-                                    style: TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _estadoLegible,
-                                    style: TextStyle(
-                                      color: _color,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      _tarjetaResultado(),
+                      const SizedBox(
+                        height: AppDimensions.spacingXl,
                       ),
-                      const SizedBox(height: 24),
                       _titulo('Motivo registrado'),
-                      const SizedBox(height: 8),
+                      const SizedBox(
+                        height: AppDimensions.spacingSm,
+                      ),
                       _texto(
                         _tieneRevision
                             ? motivo.trim().isNotEmpty
@@ -240,16 +223,26 @@ class RevisionAdministrador extends StatelessWidget {
                                 : 'No se registró un motivo para esta decisión.'
                             : 'Todavía no hay una revisión manual registrada.',
                       ),
-                      if ((nombreAdministrador ?? '').trim().isNotEmpty) ...[
-                        const SizedBox(height: 24),
+                      if ((nombreAdministrador ?? '')
+                          .trim()
+                          .isNotEmpty) ...[
+                        const SizedBox(
+                          height: AppDimensions.spacingXl,
+                        ),
                         _titulo('Administrador responsable'),
-                        const SizedBox(height: 8),
+                        const SizedBox(
+                          height: AppDimensions.spacingSm,
+                        ),
                         _texto(nombreAdministrador!),
                       ],
                       if (fechaRevision != null) ...[
-                        const SizedBox(height: 24),
+                        const SizedBox(
+                          height: AppDimensions.spacingXl,
+                        ),
                         _titulo('Fecha de revisión'),
-                        const SizedBox(height: 8),
+                        const SizedBox(
+                          height: AppDimensions.spacingSm,
+                        ),
                         _texto(_fecha(fechaRevision!)),
                       ],
                     ],
@@ -263,12 +256,90 @@ class RevisionAdministrador extends StatelessWidget {
     );
   }
 
+  Widget _indicador() {
+    return Container(
+      width: 42,
+      height: 5,
+      margin: const EdgeInsets.only(top: 12),
+      decoration: BoxDecoration(
+        color: AppColors.adminBorder,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusFull,
+        ),
+      ),
+    );
+  }
+
+  Widget _tarjetaResultado() {
+    return Container(
+      padding: const EdgeInsets.all(
+        AppDimensions.spacingLg,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.creamLight,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusLg,
+        ),
+        border: Border.all(
+          color: AppColors.adminBorder,
+          width: 1.2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            _rechazado
+                ? Icons.cancel_rounded
+                : Icons.check_circle_rounded,
+            color: _color,
+            size: AppDimensions.iconLg,
+          ),
+          const SizedBox(
+            width: AppDimensions.spacingMd,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Resultado de la revisión',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingXs,
+                ),
+                Text(
+                  _estadoLegible,
+                  style: TextStyle(
+                    color: _color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _titulo(String texto) {
     return Text(
       texto,
       style: const TextStyle(
-        color: Color(0xFFFF9800),
-        fontSize: 14,
+        color: AppColors.secondary,
+        fontSize: 16,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -278,9 +349,9 @@ class RevisionAdministrador extends StatelessWidget {
     return Text(
       texto,
       style: const TextStyle(
-        color: Colors.white70,
-        fontSize: 14,
-        height: 1.5,
+        color: AppColors.textSecondary,
+        fontSize: 15,
+        height: 1.6,
       ),
     );
   }
@@ -288,6 +359,7 @@ class RevisionAdministrador extends StatelessWidget {
   String _fecha(DateTime fecha) {
     final dia = fecha.day.toString().padLeft(2, '0');
     final mes = fecha.month.toString().padLeft(2, '0');
+
     return '$dia/$mes/${fecha.year}';
   }
 }

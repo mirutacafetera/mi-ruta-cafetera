@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../controllers/admin/controlador_pantalla_administrador.dart';
@@ -45,6 +44,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   late final ControladorPantallaAdministrador controlador;
   late final CuentaAdminController cuentaAdminController;
   late final FotoPerfilAdminControlador fotoPerfilControlador;
+
+  final GlobalKey<ScaffoldState> _claveScaffold =
+      GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -141,6 +143,8 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     controlador.cambiarOpcion(opcionNormalizada);
   }
 
+ 
+
   void _abrirMapa() {
     Navigator.push(
       context,
@@ -165,6 +169,7 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     };
 
     return Scaffold(
+      key: _claveScaffold,
       appBar: AppBar(
         title: Text(titulo),
         backgroundColor: AppColors.primary,
@@ -196,7 +201,15 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
         return const PantallaActividades();
 
       case 'productos':
-        return const PantallaProducto();
+        return PantallaProducto(
+          menuLateral: AdminMenuLateral(
+            nombre: widget.nombre,
+            email: widget.email,
+            fotoPerfilControlador: fotoPerfilControlador,
+            onOpcionSeleccionada: _manejarOpcion,
+            opcionSeleccionada: controlador.opcion,
+          ),
+        );
 
       case 'contenido':
         return const PantallaContenido();

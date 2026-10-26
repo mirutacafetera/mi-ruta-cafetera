@@ -28,6 +28,11 @@ class EvaluacionIA extends StatelessWidget {
       ['aprobado', 'rechazado', 'pendiente_manual', 'error']
           .contains(_decision);
 
+  bool get _aprobado => _decision == 'aprobado';
+
+  bool get _rechazado =>
+      _decision == 'rechazado' || _decision == 'error';
+
   String get _estado {
     switch (_decision) {
       case 'aprobado':
@@ -43,33 +48,21 @@ class EvaluacionIA extends StatelessWidget {
     }
   }
 
+  // Mismo color de texto que el aprobado manual.
   Color get _color {
-    switch (_decision) {
-      case 'aprobado':
-        return const Color(0xFF27824D);
-      case 'rechazado':
-      case 'error':
-        return const Color(0xFFC43F36);
-      case 'pendiente_manual':
-        return const Color(0xFFE9A23B);
-      default:
-        return AppColors.primary;
-    }
+    if (_rechazado) return AppColors.error;
+    if (_aprobado) return AppColors.primary;
+    return AppColors.secondary;
   }
 
+  // Mismo icono de aprobado que el de revisión del administrador.
   IconData get _icono {
-    switch (_decision) {
-      case 'aprobado':
-        return Icons.check_circle_rounded;
-      case 'rechazado':
-        return Icons.cancel_rounded;
-      case 'pendiente_manual':
-        return Icons.schedule_rounded;
-      case 'error':
-        return Icons.warning_amber_rounded;
-      default:
-        return Icons.smart_toy_outlined;
+    if (_rechazado) return Icons.cancel_rounded;
+    if (_aprobado) return Icons.check_circle_rounded;
+    if (_decision == 'pendiente_manual') {
+      return Icons.schedule_rounded;
     }
+    return Icons.smart_toy_outlined;
   }
 
   @override
@@ -80,22 +73,23 @@ class EvaluacionIA extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: () => _mostrarDetalles(context),
         child: Container(
+          width: double.infinity,
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,
             vertical: 12,
           ),
           decoration: BoxDecoration(
-            color: _color.withValues(alpha: 0.07),
+            color: AppColors.creamLight,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: _color.withValues(alpha: 0.35),
+              color: AppColors.adminBorder,
             ),
           ),
           child: Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.smart_toy_outlined,
-                color: _color,
+                color: AppColors.secondary,
                 size: 22,
               ),
               const SizedBox(width: 10),
@@ -108,12 +102,17 @@ class EvaluacionIA extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(_icono, size: 15, color: _color),
+                        Icon(
+                          _icono,
+                          size: 15,
+                          color: _color,
+                        ),
                         const SizedBox(width: 5),
                         Expanded(
                           child: Text(
@@ -131,10 +130,10 @@ class EvaluacionIA extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Icon(
+              const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 15,
-                color: _color,
+                color: AppColors.secondary,
               ),
             ],
           ),
@@ -147,115 +146,104 @@ class EvaluacionIA extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF151A16),
+      backgroundColor: Colors.transparent,
       barrierColor: Colors.black54,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(26),
+          top: Radius.circular(AppDimensions.sheetRadius),
         ),
       ),
       builder: (context) {
-        return SafeArea(
-          child: FractionallySizedBox(
-            heightFactor: 0.78,
+        final alturaPantalla = MediaQuery.of(context).size.height;
+
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: alturaPantalla * 0.65,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppDimensions.sheetRadius),
+            ),
+            border: const Border(
+              top: BorderSide(
+                color: AppColors.adminBorder,
+                width: 2,
+              ),
+            ),
+          ),
+          child: SafeArea(
             child: Column(
               children: [
+                _indicador(),
+
                 Padding(
-                  padding: const EdgeInsets.only(top: 12, bottom: 8),
-                  child: Container(
-                    width: 42,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white30,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  padding: const EdgeInsets.all(
+                    AppDimensions.spacingXl,
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 12, 16),
                   child: Row(
                     children: [
                       Container(
-                        width: 44,
-                        height: 44,
+                        width: 48,
+                        height: 48,
                         decoration: BoxDecoration(
                           color: _color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusLg,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.smart_toy_rounded,
-                          color: _color,
-                          size: 25,
+                        child: const Icon(
+                          Icons.smart_toy_outlined,
+                          color: AppColors.primary,
+                          size: AppDimensions.iconLg,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(
+                        width: AppDimensions.spacingMd,
+                      ),
                       const Expanded(
                         child: Text(
                           'Detalles de la evaluación',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                            fontSize: 19,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
+                        tooltip: 'Cerrar',
                         icon: const Icon(
-                          Icons.close_rounded,
-                          color: Colors.white70,
+                          Icons.close,
+                          color: AppColors.coffee,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Divider(color: Colors.white12, height: 1),
+
+                const Divider(
+                  color: AppColors.adminBorder,
+                  height: 1,
+                ),
+
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(
+                      AppDimensions.spacingXl,
+                    ),
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          color: _color.withValues(alpha: 0.09),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: _color.withValues(alpha: 0.35),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(_icono, color: _color, size: 26),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Resultado',
-                                    style: TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _estado,
-                                    style: TextStyle(
-                                      color: _color,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      _tarjetaResultado(),
+
+                      const SizedBox(
+                        height: AppDimensions.spacingXl,
                       ),
-                      const SizedBox(height: 24),
+
                       _titulo('Motivo de la evaluación'),
-                      const SizedBox(height: 8),
+                      const SizedBox(
+                        height: AppDimensions.spacingSm,
+                      ),
                       _texto(
                         _existe && motivo.trim().isNotEmpty
                             ? motivo
@@ -263,46 +251,68 @@ class EvaluacionIA extends StatelessWidget {
                                 ? 'No se registró un motivo para esta evaluación.'
                                 : 'Este elemento no tiene una evaluación de IA registrada.',
                       ),
-                      if (criterios.isNotEmpty) ...[
-                        const SizedBox(height: 24),
+
+                      if (criterios.any(
+                        (criterio) => criterio.trim().isNotEmpty,
+                      )) ...[
+                        const SizedBox(
+                          height: AppDimensions.spacingXl,
+                        ),
                         _titulo('Criterios evaluados'),
-                        const SizedBox(height: 10),
+                        const SizedBox(
+                          height: AppDimensions.spacingMd,
+                        ),
                         ...criterios
-                            .where((e) => e.trim().isNotEmpty)
+                            .where(
+                              (criterio) => criterio.trim().isNotEmpty,
+                            )
                             .map(
                               (criterio) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.only(
+                                  bottom: AppDimensions.spacingMd,
+                                ),
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
                                     Icon(
-                                      Icons.check_circle_outline_rounded,
+                                      _icono,
                                       color: _color,
-                                      size: 19,
+                                      size: AppDimensions.iconMd,
                                     ),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: _texto(criterio)),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingMd,
+                                    ),
+                                    Expanded(
+                                      child: _texto(criterio),
+                                    ),
                                   ],
                                 ),
                               ),
                             ),
                       ],
+
                       if (motivoRechazo?.trim().isNotEmpty ?? false) ...[
-                        const SizedBox(height: 24),
+                        const SizedBox(
+                          height: AppDimensions.spacingXl,
+                        ),
                         _titulo('Motivo del rechazo registrado'),
-                        const SizedBox(height: 8),
+                        const SizedBox(
+                          height: AppDimensions.spacingSm,
+                        ),
                         _texto(motivoRechazo!),
                       ],
-                      if (modelo.trim().isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        _titulo('Modelo de IA'),
-                        const SizedBox(height: 8),
-                        _texto(modelo),
-                      ],
+
+                      
+
                       if (fechaDecision != null) ...[
-                        const SizedBox(height: 24),
+                        const SizedBox(
+                          height: AppDimensions.spacingXl,
+                        ),
                         _titulo('Fecha de evaluación'),
-                        const SizedBox(height: 8),
+                        const SizedBox(
+                          height: AppDimensions.spacingSm,
+                        ),
                         _texto(_fecha(fechaDecision!)),
                       ],
                     ],
@@ -316,12 +326,89 @@ class EvaluacionIA extends StatelessWidget {
     );
   }
 
+  Widget _indicador() {
+    return Container(
+      width: 42,
+      height: 5,
+      margin: const EdgeInsets.only(top: 12),
+      decoration: BoxDecoration(
+        color: AppColors.adminBorder,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusFull,
+        ),
+      ),
+    );
+  }
+
+  Widget _tarjetaResultado() {
+    return Container(
+      padding: const EdgeInsets.all(
+        AppDimensions.spacingLg,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.creamLight,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusLg,
+        ),
+        border: Border.all(
+          color: AppColors.adminBorder,
+          width: 1.2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Icono relleno, igual al de aprobación manual.
+          Icon(
+            _icono,
+            color: _color,
+            size: AppDimensions.iconLg,
+          ),
+          const SizedBox(
+            width: AppDimensions.spacingMd,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Resultado',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingXs,
+                ),
+                Text(
+                  _estado,
+                  style: TextStyle(
+                    color: _color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _titulo(String texto) {
     return Text(
       texto,
       style: const TextStyle(
-        color: Color(0xFFFF9800),
-        fontSize: 14,
+        color: AppColors.secondary,
+        fontSize: 16,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -331,9 +418,9 @@ class EvaluacionIA extends StatelessWidget {
     return Text(
       texto,
       style: const TextStyle(
-        color: Colors.white70,
-        fontSize: 14,
-        height: 1.5,
+        color: AppColors.textSecondary,
+        fontSize: 15,
+        height: 1.6,
       ),
     );
   }
@@ -341,6 +428,7 @@ class EvaluacionIA extends StatelessWidget {
   String _fecha(DateTime fecha) {
     final dia = fecha.day.toString().padLeft(2, '0');
     final mes = fecha.month.toString().padLeft(2, '0');
+
     return '$dia/$mes/${fecha.year}';
   }
 }

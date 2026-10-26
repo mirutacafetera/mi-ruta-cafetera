@@ -1,38 +1,58 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 
+class OpcionFiltroAdmin {
+  final String titulo;
+  final String valor;
+  final IconData icono;
+  final Color color;
+
+  const OpcionFiltroAdmin({
+    required this.titulo,
+    required this.valor,
+    required this.icono,
+    required this.color,
+  });
+}
+
 class FiltrosContenido extends StatelessWidget {
   final String seleccionado;
   final ValueChanged<String> onSeleccionar;
+
+  /// Permite personalizar los filtros de cada pantalla.
+  /// Si no se proporcionan, se conservan los filtros actuales.
+  final List<OpcionFiltroAdmin>? opciones;
 
   const FiltrosContenido({
     super.key,
     required this.seleccionado,
     required this.onSeleccionar,
+    this.opciones,
   });
 
-  static const List<_OpcionFiltro> _opciones = [
-    _OpcionFiltro(
+  static const List<OpcionFiltroAdmin> _opcionesPredeterminadas = [
+    OpcionFiltroAdmin(
       titulo: 'Todos',
       valor: 'todas',
       icono: Icons.grid_view_rounded,
-      color: AppColors.primary,
+      color: AppColors.secondary,
     ),
-    _OpcionFiltro(
+    OpcionFiltroAdmin(
       titulo: 'Pendientes',
       valor: 'pendiente_revision',
       icono: Icons.pending_actions_rounded,
       color: Colors.orange,
     ),
-    _OpcionFiltro(
+    OpcionFiltroAdmin(
       titulo: 'Aprobados',
       valor: 'aprobado',
       icono: Icons.check_circle_outline_rounded,
       color: Colors.green,
     ),
-    _OpcionFiltro(
+    OpcionFiltroAdmin(
       titulo: 'Rechazados',
       valor: 'rechazado',
       icono: Icons.cancel_outlined,
@@ -42,6 +62,8 @@ class FiltrosContenido extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final opcionesActuales = opciones ?? _opcionesPredeterminadas;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.pageHorizontalSmall,
@@ -49,15 +71,20 @@ class FiltrosContenido extends StatelessWidget {
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         child: Row(
           children: [
-            for (int i = 0; i < _opciones.length; i++) ...[
+            for (int i = 0; i < opcionesActuales.length; i++) ...[
               if (i > 0)
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(
+                  width: AppDimensions.spacingSm,
+                ),
               _FiltroContenidoItem(
-                opcion: _opciones[i],
-                seleccionado: seleccionado == _opciones[i].valor,
-                onTap: () => onSeleccionar(_opciones[i].valor),
+                opcion: opcionesActuales[i],
+                seleccionado:
+                    seleccionado == opcionesActuales[i].valor,
+                onTap: () =>
+                    onSeleccionar(opcionesActuales[i].valor),
               ),
             ],
           ],
@@ -67,22 +94,8 @@ class FiltrosContenido extends StatelessWidget {
   }
 }
 
-class _OpcionFiltro {
-  final String titulo;
-  final String valor;
-  final IconData icono;
-  final Color color;
-
-  const _OpcionFiltro({
-    required this.titulo,
-    required this.valor,
-    required this.icono,
-    required this.color,
-  });
-}
-
 class _FiltroContenidoItem extends StatelessWidget {
-  final _OpcionFiltro opcion;
+  final OpcionFiltroAdmin opcion;
   final bool seleccionado;
   final VoidCallback onTap;
 
