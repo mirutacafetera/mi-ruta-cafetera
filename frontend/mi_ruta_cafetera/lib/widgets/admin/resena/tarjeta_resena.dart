@@ -320,70 +320,107 @@ class TarjetaResena extends StatelessWidget {
   void _mostrarHistorial(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => Dialog(
         backgroundColor: AppColors.creamLight,
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: 32,
+          vertical: 32,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: _bordeCafe),
+          borderRadius: BorderRadius.circular(26),
+          side: const BorderSide(
+            color: _bordeCafe,
+            width: 1.3,
+          ),
         ),
-        title: const Row(
-          children: [
-            Icon(
-              Icons.history_rounded,
-              color: AppColors.secondary,
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Historial de la reseña',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 370,
+            maxHeight: 620,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.history_rounded,
+                      color: AppColors.secondary,
+                      size: 23,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Historial de la reseña',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _datoHistorial(
+                          'Usuario',
+                          resena.usuario,
+                        ),
+                        _datoHistorial(
+                          'Sitio turístico',
+                          resena.sitio,
+                        ),
+                        _datoHistorial(
+                          'Calificación',
+                          '${resena.calificacion}/5',
+                        ),
+                        _datoHistorial(
+                          'Comentario',
+                          resena.comentario,
+                        ),
+                        _datoHistorial(
+                          'Estado actual',
+                          resena.activo ? 'Activa' : 'Inactiva',
+                        ),
+                        _datoHistorial(
+                          'Fecha de la reseña',
+                          resena.fecha == null
+                              ? null
+                              : _fecha(resena.fecha!),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                    ),
+                    child: const Text(
+                      'Cerrar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _datoHistorial('Usuario', resena.usuario),
-              _datoHistorial(
-                'Sitio turístico',
-                resena.sitio,
-              ),
-              _datoHistorial(
-                'Calificación',
-                '${resena.calificacion}/5',
-              ),
-              _datoHistorial(
-                'Comentario',
-                resena.comentario,
-              ),
-              _datoHistorial(
-                'Estado actual',
-                resena.activo ? 'Activa' : 'Inactiva',
-              ),
-              _datoHistorial(
-                'Fecha de la reseña',
-                resena.fecha == null
-                    ? null
-                    : _fecha(resena.fecha!),
-              ),
-            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'Cerrar',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ),
-        ],
       ),
     );
   }

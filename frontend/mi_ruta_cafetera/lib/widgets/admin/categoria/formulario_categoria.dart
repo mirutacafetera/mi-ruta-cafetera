@@ -137,6 +137,24 @@ class _FormularioCategoriaState extends State<FormularioCategoria> {
                   decoration: const InputDecoration(
                     labelText: 'Nombre',
                     prefixIcon: Icon(Icons.category_outlined),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(22),
+                      ),
+                      borderSide: BorderSide(
+                        color: Color(0xFFB58A70),
+                        width: 1.3,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(22),
+                      ),
+                      borderSide: BorderSide(
+                        color: Color(0xFFB58A70),
+                        width: 1.3,
+                      ),
+                    ),
                   ),
                   validator: (v) =>
                       v == null || v.trim().isEmpty
@@ -153,6 +171,24 @@ class _FormularioCategoriaState extends State<FormularioCategoria> {
                     labelText: 'Descripción',
                     prefixIcon: Icon(Icons.description_outlined),
                     alignLabelWithHint: true,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(22),
+                      ),
+                      borderSide: BorderSide(
+                        color: Color(0xFFB58A70),
+                        width: 1.3,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(22),
+                      ),
+                      borderSide: BorderSide(
+                        color: Color(0xFFB58A70),
+                        width: 1.6,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingLg),
