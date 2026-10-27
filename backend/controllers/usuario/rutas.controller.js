@@ -8,7 +8,7 @@ const SitioTuristico = require('../../models/admin/sitio');
 // ============================================================
 
 const obtenerRutas = async (req, res) => {
-  try {a
+  try {
     const { usuarioId } = req.params;
 
     // --------------------------------------------------------

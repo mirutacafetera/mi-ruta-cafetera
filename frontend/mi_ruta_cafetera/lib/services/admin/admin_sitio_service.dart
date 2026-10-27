@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import '../../config/api_config.dart';
 
 import 'admin_sitio_consultas.dart';
 import 'admin_sitio_crud.dart';
@@ -8,13 +8,8 @@ class AdminSitioService {
   // URL BASE
   // ============================================================
 
-  static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:3000/api';
-    }
-
-    return 'http://10.0.2.2:3000/api';
-  }
+  // Se reutiliza la configuracion central de la API.
+  static String get baseUrl => ApiConfig.baseUrl;
 
   // ============================================================
   // CONSULTAS
