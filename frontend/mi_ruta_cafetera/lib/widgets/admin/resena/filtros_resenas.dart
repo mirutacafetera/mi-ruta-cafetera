@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_colors.dart';
@@ -33,6 +32,17 @@ class FiltrosResenas extends StatelessWidget {
     }
   }
 
+  Color _obtenerColor(String filtro) {
+    switch (filtro) {
+      case 'Activas':
+        return AppColors.success;
+      case 'Inactivas':
+        return AppColors.warning;
+      default:
+        return AppColors.secondary;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -42,51 +52,69 @@ class FiltrosResenas extends StatelessWidget {
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         child: Row(
           children: filtros.map((filtro) {
             final seleccionado = filtroSeleccionado == filtro;
+            final color = _obtenerColor(filtro);
 
             return Padding(
               padding: const EdgeInsets.only(
                 right: AppDimensions.spacingSm,
               ),
-              child: ChoiceChip(
-                avatar: Icon(
-                  _obtenerIcono(filtro),
-                  size: AppDimensions.iconSm,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                decoration: BoxDecoration(
                   color: seleccionado
-                      ? AppColors.white
-                      : AppColors.secondary,
-                ),
-                label: Text(filtro),
-                selected: seleccionado,
-                onSelected: (_) => onChanged(filtro),
-                showCheckmark: false,
-                selectedColor: AppColors.primary,
-                backgroundColor: AppColors.creamLight,
-                elevation: 0,
-                pressElevation: 0,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingSm,
-                  vertical: AppDimensions.spacingXs,
-                ),
-                shape: RoundedRectangleBorder(
+                      ? color.withValues(alpha: 0.12)
+                      : AppColors.creamLight,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.chipRadius,
                   ),
+                  border: Border.all(
+                    color: seleccionado
+                        ? color
+                        : AppColors.coffeeLight.withValues(alpha: 0.65),
+                    width: seleccionado ? 1.3 : 1.1,
+                  ),
                 ),
-                side: BorderSide(
-                  color: seleccionado
-                      ? AppColors.primary
-                      : AppColors.coffeeLight.withValues(alpha: 0.65),
-                  width: 1.2,
-                ),
-                labelStyle: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: seleccionado
-                      ? AppColors.white
-                      : AppColors.textPrimary,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.chipRadius,
+                    ),
+                    splashColor: color.withValues(alpha: 0.08),
+                    highlightColor: color.withValues(alpha: 0.05),
+                    onTap: () => onChanged(filtro),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingSm + 4,
+                        vertical: AppDimensions.spacingSm,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _obtenerIcono(filtro),
+                            size: AppDimensions.iconSm,
+                            color: color,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            filtro,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: seleccionado
+                                  ? color
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             );

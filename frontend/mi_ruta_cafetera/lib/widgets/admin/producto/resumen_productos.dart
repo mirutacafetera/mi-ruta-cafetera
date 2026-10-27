@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
@@ -24,7 +23,6 @@ class ResumenProductos extends StatelessWidget {
   final int pendientes;
   final int aprobados;
   final int rechazados;
-
   final String estadoSeleccionado;
   final ValueChanged<String>? onSeleccionar;
   final List<ResumenTarjetaConfig>? tarjetas;
@@ -39,12 +37,6 @@ class ResumenProductos extends StatelessWidget {
     this.tarjetas,
   });
 
-  static const Color _fondo = Color(0xFFFFFCF7);
-  static const Color _borde = Color(0xFFD8B69C);
-  static const Color _cafe = Color(0xFF76513B);
-  static const Color _verde = Color(0xFF285943);
-  static const Color _naranja = Color(0xFFFF783E);
-
   @override
   Widget build(BuildContext context) {
     final opciones = tarjetas ??
@@ -53,21 +45,21 @@ class ResumenProductos extends StatelessWidget {
             titulo: 'Pendientes',
             cantidad: pendientes,
             icono: Icons.pending_actions_rounded,
-            color: _naranja,
+            color: AppColors.secondary,
             estado: 'pendiente_revision',
           ),
           ResumenTarjetaConfig(
             titulo: 'Aprobados',
             cantidad: aprobados,
-            icono: Icons.check_circle_outline_rounded,
-            color: _verde,
+            icono: Icons.check_circle_rounded,
+            color: AppColors.success,
             estado: 'aprobado',
           ),
           ResumenTarjetaConfig(
             titulo: 'Rechazados',
             cantidad: rechazados,
-            icono: Icons.cancel_outlined,
-            color: const Color(0xFFB9574D),
+            icono: Icons.cancel_rounded,
+            color: AppColors.error,
             estado: 'rechazado',
           ),
         ];
@@ -75,21 +67,15 @@ class ResumenProductos extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.pageHorizontalSmall,
-        vertical: AppDimensions.spacingSm,
+        vertical: 5,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (var i = 0; i < opciones.length; i++) ...[
-            if (i > 0)
-              const SizedBox(width: AppDimensions.spacingSm),
+          for (int i = 0; i < opciones.length; i++) ...[
+            if (i > 0) const SizedBox(width: 7),
             Expanded(
-              child: _TarjetaResumen(
-                titulo: opciones[i].titulo,
-                cantidad: opciones[i].cantidad,
-                icono: opciones[i].icono,
-                color: opciones[i].color,
-              ),
+              child: _TarjetaResumen(tarjeta: opciones[i]),
             ),
           ],
         ],
@@ -99,92 +85,87 @@ class ResumenProductos extends StatelessWidget {
 }
 
 class _TarjetaResumen extends StatelessWidget {
-  final String titulo;
-  final int cantidad;
-  final IconData icono;
-  final Color color;
+  final ResumenTarjetaConfig tarjeta;
 
   const _TarjetaResumen({
-    required this.titulo,
-    required this.cantidad,
-    required this.icono,
-    required this.color,
+    required this.tarjeta,
   });
-
-  static const Color _fondo = Color(0xFFFFFCF7);
-  static const Color _borde = Color(0xFFD8B69C);
-  static const Color _cafe = Color(0xFF76513B);
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: const BoxConstraints(minHeight: 105),
       padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 12,
+        horizontal: 8,
+        vertical: 9,
       ),
       decoration: BoxDecoration(
-        color: _fondo,
-        borderRadius: BorderRadius.circular(15),
+        color: AppColors.creamLight,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _borde,
+          color: AppColors.coffeeLight.withValues(alpha: 0.65),
           width: 1.1,
         ),
         boxShadow: [
           BoxShadow(
-            color: _cafe.withValues(alpha: 0.07),
-            blurRadius: 7,
-            offset: const Offset(0, 3),
+            color: AppColors.coffeeDark.withValues(alpha: 0.06),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(
-              icono,
-              color: color,
-              size: 21,
-            ),
-          ),
-          const SizedBox(height: 10),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              cantidad.toString(),
-              style: const TextStyle(
-                color: Color(0xFF293D32),
-                fontSize: 23,
-                fontWeight: FontWeight.w800,
+          Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: tarjeta.color.withValues(alpha: 0.16),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  tarjeta.icono,
+                  color: tarjeta.color,
+                  size: 17,
+                ),
               ),
-            ),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  tarjeta.titulo,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        height: 1.1,
+                      ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 9),
           Text(
-            titulo,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: _cafe,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            '${tarjeta.cantidad}',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: AppColors.coffeeDark,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
           ),
           const SizedBox(height: 9),
           Container(
-            width: 30,
-            height: 3,
+            width: 32,
+            height: 4,
             decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(10),
+              color: tarjeta.color,
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
         ],

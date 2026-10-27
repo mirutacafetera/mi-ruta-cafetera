@@ -13,16 +13,20 @@ class AdminEstadisticas {
   static String get _urlEstadisticas =>
       '${ApiConfig.baseUrl}/admin/estadisticas';
 
-  static Future<ResumenEstadisticasModel> obtenerEstadisticas() async {
-    final url = Uri.parse(_urlEstadisticas);
+  static Future<ResumenEstadisticasModel> obtenerEstadisticas({
+    int? anio,
+  }) async {
+    final uri = Uri.parse(_urlEstadisticas).replace(
+      queryParameters: anio == null
+          ? null
+          : {'anio': anio.toString()},
+    );
 
     try {
       final respuesta = await http
           .get(
-            url,
-            headers: {
-              'Accept': 'application/json',
-            },
+            uri,
+            headers: {'Accept': 'application/json'},
           )
           .timeout(_tiempoEspera);
 
@@ -30,7 +34,6 @@ class AdminEstadisticas {
         throw Exception(
           'Error al consultar las estadísticas.\n'
           'Estado: ${respuesta.statusCode}\n'
-          'URL: $url\n'
           'Respuesta: ${respuesta.body}',
         );
       }

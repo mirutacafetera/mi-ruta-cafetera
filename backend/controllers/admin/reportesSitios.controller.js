@@ -8,14 +8,28 @@ const ESTADOS_PERMITIDOS = [
   'resuelto',
 ];
 
+const TIPOS_PERMITIDOS = [
+  'problema',
+  'sugerencia',
+  'mejora',
+  'otro',
+];
+
+const poblarSitio = (consulta) =>
+  consulta.populate({
+    path: 'sitioId',
+    select: 'nombre imagen fotos categoria',
+    populate: {
+      path: 'categoria',
+      select: 'nombre icono',
+    },
+  });
+
 // GET /api/admin/reportes-sitios
 const obtenerReportesSitios = async (req, res) => {
   try {
     const { estado, tipoReporte } = req.query;
-
-    const filtro = {
-      tipoRemitente: 'sitio',
-    };
+    const filtro = { tipoRemitente: 'sitio' };
 
     if (estado && estado !== 'todos') {
       if (!ESTADOS_PERMITIDOS.includes(estado)) {
@@ -28,7 +42,7 @@ const obtenerReportesSitios = async (req, res) => {
     }
 
     if (tipoReporte && tipoReporte !== 'todos') {
-      if (!['problema', 'sugerencia', 'mejora', 'otro'].includes(tipoReporte)) {
+      if (!TIPOS_PERMITIDOS.includes(tipoReporte)) {
         return res.status(400).json({
           mensaje: 'El tipo de reporte no es válido.',
         });
@@ -37,8 +51,7 @@ const obtenerReportesSitios = async (req, res) => {
       filtro.tipoReporte = tipoReporte;
     }
 
-    const reportes = await Ayuda.find(filtro)
-      .populate('sitioId', 'nombre')
+    const reportes = await poblarSitio(Ayuda.find(filtro))
       .sort({ createdAt: -1 })
       .lean();
 
@@ -63,11 +76,12 @@ const obtenerReporteSitio = async (req, res) => {
       });
     }
 
-    const reporte = await Ayuda.findOne({
-      _id: id,
-      tipoRemitente: 'sitio',
-    })
-      .populate('sitioId', 'nombre');
+    const reporte = await poblarSitio(
+      Ayuda.findOne({
+        _id: id,
+        tipoRemitente: 'sitio',
+      })
+    ).lean();
 
     if (!reporte) {
       return res.status(404).json({
@@ -128,11 +142,13 @@ const responderReporteSitio = async (req, res) => {
 
     await reporte.save();
 
-    await reporte.populate('sitioId', 'nombre');
+    const reporteActualizado = await poblarSitio(
+      Ayuda.findById(reporte._id)
+    ).lean();
 
     return res.status(200).json({
       mensaje: 'Reporte del sitio actualizado correctamente.',
-      reporte,
+      reporte: reporteActualizado,
     });
   } catch (error) {
     console.error('Error al responder reporte del sitio:', error);

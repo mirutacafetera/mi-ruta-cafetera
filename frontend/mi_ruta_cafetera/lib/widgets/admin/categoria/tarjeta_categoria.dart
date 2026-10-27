@@ -30,37 +30,38 @@ class TarjetaCategoria extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
-      color: AppColors.surface,
-      elevation: 2,
+      color: AppColors.creamLight,
+      elevation: AppDimensions.elevationNone,
       margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
+          AppDimensions.categoryRadius,
         ),
-        side: BorderSide(color: AppColors.border),
+        side: const BorderSide(
+          color: AppColors.adminBorder,
+          width: 1.2,
+        ),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.cardRadius,
-        ),
         child: Padding(
-          padding: const EdgeInsets.all(
-            AppDimensions.spacingMd,
-          ),
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: Row(
             children: [
               CircleAvatar(
-                radius: 32,
-                backgroundColor: color.withValues(alpha: 0.15),
+                radius: 28,
+                backgroundColor: color.withValues(alpha: 0.13),
                 child: Icon(
                   icono,
                   color: color,
-                  size: 34,
+                  size: AppDimensions.categoryIconLarge,
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,25 +70,23 @@ class TarjetaCategoria extends StatelessWidget {
                       nombre,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: theme.textTheme.titleSmall?.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppDimensions.spacingXs),
                     Text(
                       descripcion.isEmpty
                           ? 'Explora esta categoría'
                           : descripcion,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 13,
                       ),
                     ),
-                    const SizedBox(height: 9),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -95,22 +94,23 @@ class TarjetaCategoria extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.chipRadius,
+                        ),
                       ),
                       child: Text(
                         '$cantidadSitios '
                         '${cantidadSitios == 1 ? 'sitio' : 'sitios'}',
-                        style: TextStyle(
+                        style: theme.textTheme.labelSmall?.copyWith(
                           color: color,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: AppDimensions.spacingXs),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -121,16 +121,19 @@ class TarjetaCategoria extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: activa
-                          ? Colors.green.withValues(alpha: 0.10)
+                          ? AppColors.success.withValues(alpha: 0.10)
                           : AppColors.error.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.chipRadius,
+                      ),
                     ),
                     child: Text(
                       activa ? 'Activa' : 'Inactiva',
-                      style: TextStyle(
-                        color: activa ? Colors.green : AppColors.error,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: activa
+                            ? AppColors.success
+                            : AppColors.error,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -141,8 +144,8 @@ class TarjetaCategoria extends StatelessWidget {
                       if (opcion == 'editar') onEditar();
                       if (opcion == 'eliminar') onEliminar();
                     },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
                         value: 'editar',
                         child: Row(
                           children: [
@@ -160,7 +163,7 @@ class TarjetaCategoria extends StatelessWidget {
                               Icons.delete_outline,
                               color: AppColors.error,
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Text(
                               'Eliminar',
                               style: TextStyle(
@@ -172,14 +175,18 @@ class TarjetaCategoria extends StatelessWidget {
                       ),
                     ],
                     child: const Padding(
-                      padding: EdgeInsets.all(6),
+                      padding: EdgeInsets.all(AppDimensions.spacingXs),
                       child: Icon(
                         Icons.more_vert,
-                        color: AppColors.textSecondary,
+                        color: AppColors.secondary,
                       ),
                     ),
                   ),
                 ],
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textSecondary,
               ),
             ],
           ),

@@ -40,6 +40,16 @@ class _CampoFormularioSitioState
 
   @override
   Widget build(BuildContext context) {
+    final bordeCafe = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(
+        AppDimensions.searchRadius,
+      ),
+      borderSide: const BorderSide(
+        color: AppColors.adminBorder,
+        width: 1.2,
+      ),
+    );
+
     return Padding(
       padding: const EdgeInsets.only(
         bottom: AppDimensions.spacingMd,
@@ -55,23 +65,19 @@ class _CampoFormularioSitioState
         ),
         decoration: InputDecoration(
           labelText: widget.etiqueta,
-
-          // La etiqueta permanece dentro del campo.
           floatingLabelBehavior: FloatingLabelBehavior.never,
-
           labelStyle: const TextStyle(
-            color: AppColors.textSecondary,
+            color: Color(0xFF6D4C41),
             fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
-
           floatingLabelStyle: const TextStyle(
-            color: AppColors.secondary,
+            color: Color(0xFF6D4C41),
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
-
           filled: true,
-          fillColor: AppColors.creamLight,
-
+          fillColor: const Color(0xFFF0EFEB),
           prefixIcon: widget.icono != null
               ? Icon(
                   widget.icono,
@@ -79,7 +85,6 @@ class _CampoFormularioSitioState
                   size: AppDimensions.iconMd,
                 )
               : null,
-
           suffixIcon: widget.ocultarTexto
               ? IconButton(
                   onPressed: () {
@@ -95,40 +100,13 @@ class _CampoFormularioSitioState
                   ),
                 )
               : null,
-
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
             vertical: AppDimensions.spacingLg,
           ),
-
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(
-              AppDimensions.searchRadius,
-            ),
-            borderSide: const BorderSide(
-              color: AppColors.border,
-            ),
-          ),
-
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(
-              AppDimensions.searchRadius,
-            ),
-            borderSide: const BorderSide(
-              color: AppColors.border,
-            ),
-          ),
-
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(
-              AppDimensions.searchRadius,
-            ),
-            borderSide: const BorderSide(
-              color: AppColors.secondary,
-              width: 2,
-            ),
-          ),
-
+          border: bordeCafe,
+          enabledBorder: bordeCafe,
+          focusedBorder: bordeCafe,
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
               AppDimensions.searchRadius,
@@ -137,25 +115,21 @@ class _CampoFormularioSitioState
               color: AppColors.error,
             ),
           ),
-
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
               AppDimensions.searchRadius,
             ),
             borderSide: const BorderSide(
               color: AppColors.error,
-              width: 2,
+              width: 1.5,
             ),
           ),
         ),
-
         validator: widget.obligatorio
             ? (valor) {
-                if (valor == null ||
-                    valor.trim().isEmpty) {
+                if (valor == null || valor.trim().isEmpty) {
                   return 'Este campo es obligatorio';
                 }
-
                 return null;
               }
             : null,

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/cuenta_sitio/cuenta_sitio_controller.dart';
@@ -9,6 +10,7 @@ import '../../../widgets/admin/cuenta_sitio/filtros_cuenta_sitio.dart';
 import '../../../widgets/admin/cuenta_sitio/resumen_cuenta_sitio.dart';
 import '../../../widgets/admin/cuenta_sitio/tarjeta_cuenta_sitio.dart';
 import '../../../widgets/admin/cuenta_sitio/formulario_cuenta_sitio.dart';
+import '../../../widgets/admin/cuenta_sitio/selector_sitio_cuenta.dart';
 import '../../../widgets/admin/sitio_turistico/encabezado_lista.dart';
 import '../../../widgets/admin/sitio_turistico/barra_busqueda.dart';
 
@@ -27,9 +29,10 @@ class PantallaCuentasSitio extends StatefulWidget {
 
 class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
   late final CuentaSitioController _controller;
-
   final TextEditingController _busquedaController =
       TextEditingController();
+
+  bool _actualizando = false;
 
   @override
   void initState() {
@@ -46,7 +49,17 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
   }
 
   Future<void> _cargarDatos() async {
-    await _controller.cargarDatos(token: widget.token);
+    if (_actualizando) return;
+
+    setState(() => _actualizando = true);
+
+    try {
+      await _controller.cargarDatos(token: widget.token);
+    } catch (e) {
+      _mostrarMensaje('No se pudieron actualizar los datos: $e');
+    } finally {
+      if (mounted) setState(() => _actualizando = false);
+    }
   }
 
   void _mostrarMensaje(String mensaje) {
@@ -65,50 +78,47 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: FormularioCuentaSitio(
-              cuenta: cuenta,
-              cargando: _controller.guardando,
-              onGuardar: (datos) async {
-                try {
-                  if (cuenta == null) {
-                    await _controller.crearCuenta(
-                      sitioId: sitio.id,
-                      nombre: datos['nombre']!,
-                      apellido: datos['apellido']!,
-                      correo: datos['correo']!,
-                      password: datos['password']!,
-                      telefono: datos['telefono']!,
-                    );
-                  } else {
-                    await _controller.actualizarCuenta(
-                      cuentaId: cuenta.id,
-                      nombre: datos['nombre']!,
-                      apellido: datos['apellido']!,
-                      correo: datos['correo']!,
-                      telefono: datos['telefono']!,
-                    );
-                  }
-
-                  if (context.mounted) {
-                    Navigator.pop(context, true);
-                  }
-                } catch (e) {
-                  _mostrarMensaje('No se pudo guardar: $e');
-                }
-              },
-            ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-        );
-      },
+          child: FormularioCuentaSitio(
+            cuenta: cuenta,
+            cargando: _controller.guardando,
+            onGuardar: (datos) async {
+              try {
+                if (cuenta == null) {
+                  await _controller.crearCuenta(
+                    sitioId: sitio.id,
+                    nombre: datos['nombre']!,
+                    apellido: datos['apellido']!,
+                    correo: datos['correo']!,
+                    password: datos['password']!,
+                    telefono: datos['telefono']!,
+                  );
+                } else {
+                  await _controller.actualizarCuenta(
+                    cuentaId: cuenta.id,
+                    nombre: datos['nombre']!,
+                    apellido: datos['apellido']!,
+                    correo: datos['correo']!,
+                    telefono: datos['telefono']!,
+                  );
+                }
+
+                if (context.mounted) Navigator.pop(context, true);
+              } catch (e) {
+                _mostrarMensaje('No se pudo guardar: $e');
+              }
+            },
+          ),
+        ),
+      ),
     );
 
     if (resultado == true && mounted) {
+      await _cargarDatos();
       _mostrarMensaje(
         cuenta == null
             ? 'Cuenta creada correctamente'
@@ -123,9 +133,7 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          nuevoEstado ? 'Activar cuenta' : 'Desactivar cuenta',
-        ),
+        title: Text(nuevoEstado ? 'Activar cuenta' : 'Desactivar cuenta'),
         content: Text(
           nuevoEstado
               ? '¿Deseas activar esta cuenta?'
@@ -151,7 +159,6 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
         cuentaId: cuenta.id,
         activo: nuevoEstado,
       );
-
       _mostrarMensaje(
         nuevoEstado ? 'Cuenta activada' : 'Cuenta desactivada',
       );
@@ -195,6 +202,32 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
     }
   }
 
+  Future<void> _crearCuenta() async {
+    final disponibles = _controller.sitios
+        .where((sitio) => _controller.cuentaDeSitio(sitio.id) == null)
+        .toList();
+
+    if (disponibles.isEmpty) {
+      _mostrarMensaje('Todos los sitios tienen una cuenta asociada');
+      return;
+    }
+
+    await _seleccionarSitio(disponibles);
+  }
+
+  Future<void> _seleccionarSitio(
+    List<SitioAdminModel> disponibles,
+  ) async {
+    final sitio = await SelectorSitioCuenta.mostrar(
+      context: context,
+      sitios: disponibles,
+    );
+
+    if (sitio != null && mounted) {
+      await _abrirFormulario(sitio: sitio);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -204,191 +237,135 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
 
         return Scaffold(
           backgroundColor: Colors.transparent,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.endFloat,
+          floatingActionButton: FloatingActionButton(
+            onPressed: _crearCuenta,
+            backgroundColor: AppColors.secondary,
+            foregroundColor: Colors.white,
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: const Icon(Icons.add_rounded, size: 32),
+          ),
           body: SafeArea(
-            child: Column(
-              children: [
-                EncabezadoLista(
-                  titulo: 'Cuentas de sitios',
-                  descripcion: 'sitios turísticos',
-                  textoNuevo: 'Crear cuenta',
-                  cantidad: _controller.totalSitios,
-                  cargando: _controller.cargando,
-                  onActualizar: _cargarDatos,
-                  onNuevo: () {
-                    final disponibles = _controller.sitios
-                        .where(
-                          (sitio) =>
-                              _controller.cuentaDeSitio(sitio.id) == null,
-                        )
-                        .toList();
-
-                    if (disponibles.isEmpty) {
-                      _mostrarMensaje(
-                        'Todos los sitios tienen una cuenta asociada',
-                      );
-                      return;
-                    }
-
-                    _seleccionarSitio(disponibles);
-                  },
-                ),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _cargarDatos,
-                    child: ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(
-                        bottom: AppDimensions.spacingXl,
+            child: RefreshIndicator(
+              onRefresh: _cargarDatos,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 90),
+                children: [
+                  EncabezadoLista(
+                    titulo: '',
+                    descripcion: 'sitios turísticos',
+                    textoNuevo: '',
+                    cantidad: _controller.totalSitios,
+                    cargando: _actualizando || _controller.cargando,
+                    mostrarBotonNuevo: false,
+                    onActualizar: _cargarDatos,
+                    onNuevo: () {},
+                  ),
+                  if (_controller.error != null)
+                    Padding(
+                      padding: const EdgeInsets.all(
+                        AppDimensions.spacingMd,
                       ),
-                      children: [
-                        if (_controller.error != null)
-                          Padding(
-                            padding: const EdgeInsets.all(
-                              AppDimensions.spacingMd,
-                            ),
-                            child: Text(
-                              _controller.error!,
-                              style: const TextStyle(
-                                color: AppColors.error,
-                              ),
-                            ),
-                          ),
-                        ResumenCuentaSitio(
-                          totalSitios: _controller.totalSitios,
-                          conCuenta: _controller.totalConCuenta,
-                          sinCuenta: _controller.totalSinCuenta,
-                          activas: _controller.cuentasActivas,
-                          inactivas: _controller.cuentasInactivas,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.pageHorizontalSmall,
-                          ),
-                          child: BarraBusqueda(
-                            valor: _controller.busqueda,
-                            textoAyuda: 'Buscar sitio o cuenta...',
-                            controller: _busquedaController,
-                            onChanged: _controller.cambiarBusqueda,
-                            onLimpiar: () {
-                              _busquedaController.clear();
-                              _controller.cambiarBusqueda('');
-                            },
-                          ),
-                        ),
-                        FiltrosCuentaSitio(
-                          filtroSeleccionado: _controller.filtro,
-                          onChanged: _controller.cambiarFiltro,
-                        ),
-                        if (_controller.cargando &&
-                            _controller.sitios.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(
-                              AppDimensions.spacingXxl,
-                            ),
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          )
-                        else if (sitios.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(
-                              AppDimensions.spacingXxl,
-                            ),
-                            child: Column(
-                              children: [
-                                const Icon(
-                                  Icons.search_off,
-                                  size: 48,
-                                  color: AppColors.textSecondary,
-                                ),
-                                const SizedBox(
-                                  height: AppDimensions.spacingMd,
-                                ),
-                                Text(
-                                  _controller.sitios.isEmpty
-                                      ? 'No hay sitios turísticos registrados'
-                                      : 'No se encontraron resultados',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          ...sitios.map((sitio) {
-                            final cuenta =
-                                _controller.cuentaDeSitio(sitio.id);
-
-                            return TarjetaCuentaSitio(
-                              sitio: sitio,
-                              cuenta: cuenta,
-                              onCrearCuenta: () => _abrirFormulario(
-                                sitio: sitio,
-                              ),
-                              onEditar: cuenta == null
-                                  ? null
-                                  : () => _abrirFormulario(
-                                        sitio: sitio,
-                                        cuenta: cuenta,
-                                      ),
-                              onCambiarEstado: cuenta == null
-                                  ? null
-                                  : () => _cambiarEstado(cuenta),
-                              onEliminar: () => _eliminarSitio(sitio),
-                            );
-                          }),
-                      ],
+                      child: Text(
+                        _controller.error!,
+                        style: const TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  ResumenCuentaSitio(
+                    totalSitios: _controller.totalSitios,
+                    conCuenta: _controller.totalConCuenta,
+                    sinCuenta: _controller.totalSinCuenta,
+                    activas: _controller.cuentasActivas,
+                    inactivas: _controller.cuentasInactivas,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.pageHorizontalSmall,
+                    ),
+                    child: BarraBusqueda(
+                      valor: _controller.busqueda,
+                      textoAyuda: 'Buscar sitio o cuenta...',
+                      controller: _busquedaController,
+                      onChanged: _controller.cambiarBusqueda,
+                      onLimpiar: () {
+                        _busquedaController.clear();
+                        _controller.cambiarBusqueda('');
+                      },
                     ),
                   ),
-                ),
-              ],
+                  FiltrosCuentaSitio(
+                    filtroSeleccionado: _controller.filtro,
+                    onChanged: _controller.cambiarFiltro,
+                  ),
+                  if (_actualizando)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    )
+                  else if (sitios.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(
+                        AppDimensions.spacingXxl,
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.search_off,
+                            size: 48,
+                            color: AppColors.textSecondary,
+                          ),
+                          const SizedBox(
+                            height: AppDimensions.spacingMd,
+                          ),
+                          Text(
+                            _controller.sitios.isEmpty
+                                ? 'No hay sitios turísticos registrados'
+                                : 'No se encontraron resultados',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ...sitios.map((sitio) {
+                      final cuenta = _controller.cuentaDeSitio(sitio.id);
+
+                      return TarjetaCuentaSitio(
+                        sitio: sitio,
+                        cuenta: cuenta,
+                        onCrearCuenta: () => _abrirFormulario(
+                          sitio: sitio,
+                        ),
+                        onEditar: cuenta == null
+                            ? null
+                            : () => _abrirFormulario(
+                                  sitio: sitio,
+                                  cuenta: cuenta,
+                                ),
+                        onCambiarEstado: cuenta == null
+                            ? null
+                            : () => _cambiarEstado(cuenta),
+                        onEliminar: () => _eliminarSitio(sitio),
+                      );
+                    }),
+                ],
+              ),
             ),
           ),
         );
       },
     );
-  }
-
-  Future<void> _seleccionarSitio(
-    List<SitioAdminModel> disponibles,
-  ) async {
-    final sitio = await showDialog<SitioAdminModel>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Seleccionar sitio'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: disponibles.length,
-            itemBuilder: (context, index) {
-              final sitio = disponibles[index];
-
-              return ListTile(
-                leading: const Icon(
-                  Icons.landscape_outlined,
-                  color: AppColors.primary,
-                ),
-                title: Text(sitio.nombre),
-                subtitle: Text(sitio.ciudad),
-                onTap: () => Navigator.pop(context, sitio),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-        ],
-      ),
-    );
-
-    if (sitio != null && mounted) {
-      await _abrirFormulario(sitio: sitio);
-    }
   }
 }

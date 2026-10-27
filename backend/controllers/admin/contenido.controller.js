@@ -4,25 +4,21 @@ const mongoose = require('mongoose');
 const ContenidoAdmin = require('../../models/admin/contenido');
 const HistorialRevisionIA = require('../../models/admin/historial_revision_ia');
 
+// AGREGAR DATOS DE REVISION IA
+
 const agregarDatosRevision = async (contenidos) => {
   const lista = Array.isArray(contenidos)
     ? contenidos
-    : contenidos
-      ? [contenidos]
-      : [];
+    : contenidos ? [contenidos] : [];
 
   if (!lista.length) {
     return Array.isArray(contenidos) ? [] : null;
   }
 
-  const ids = lista.map((contenido) => contenido._id);
-
   const historial = await HistorialRevisionIA.find({
     tipoSolicitud: 'contenido',
-    solicitudId: { $in: ids },
-  })
-    .sort({ fechaDecision: -1 })
-    .lean();
+    solicitudId: { $in: lista.map((c) => c._id) },
+  }).sort({ fechaDecision: -1 }).lean();
 
   const evaluaciones = new Map();
 
@@ -40,20 +36,15 @@ const agregarDatosRevision = async (contenidos) => {
     }
   }
 
-  const resultado = lista.map((contenido) => {
-    const documento = contenido.toObject
-      ? contenido.toObject()
-      : contenido;
-
-    return {
-      ...documento,
-      evaluacionIA:
-        evaluaciones.get(contenido._id.toString()) || null,
-    };
-  });
+  const resultado = lista.map((contenido) => ({
+    ...(contenido.toObject ? contenido.toObject() : contenido),
+    evaluacionIA: evaluaciones.get(contenido._id.toString()) || null,
+  }));
 
   return Array.isArray(contenidos) ? resultado : resultado[0];
 };
+
+// OBTENER CONTENIDOS
 
 const obtenerContenidos = async (req, res) => {
   try {
@@ -68,33 +59,18 @@ const obtenerContenidos = async (req, res) => {
       .populate('revisadoPor', 'nombre nombreCompleto correo')
       .sort({ createdAt: -1 });
 
-    const resultado = await agregarDatosRevision(contenidos);
-
-    console.log(
-      'CONTENIDOS Y REVISIONES:',
-      JSON.stringify(
-        resultado.map((contenido) => ({
-          id: contenido._id,
-          titulo: contenido.titulo,
-          estadoPublicacion: contenido.estadoPublicacion,
-          revisadoPor: contenido.revisadoPor,
-          revisadoAt: contenido.revisadoAt,
-          evaluacionIA: contenido.evaluacionIA,
-        })),
-        null,
-        2
-      )
+    return res.status(200).json(
+      await agregarDatosRevision(contenidos)
     );
-
-    return res.status(200).json(resultado);
   } catch (error) {
     console.error('Error al obtener contenidos:', error);
-
     return res.status(500).json({
       mensaje: 'Error al obtener los contenidos',
     });
   }
 };
+
+// OBTENER UN CONTENIDO
 
 const obtenerContenido = async (req, res) => {
   try {
@@ -119,12 +95,13 @@ const obtenerContenido = async (req, res) => {
     );
   } catch (error) {
     console.error('Error al obtener contenido:', error);
-
     return res.status(500).json({
       mensaje: 'Error al obtener el contenido',
     });
   }
 };
+
+// ACTUALIZAR CONTENIDO
 
 const actualizarContenido = async (req, res) => {
   try {
@@ -160,10 +137,7 @@ const actualizarContenido = async (req, res) => {
 
     await contenido.save();
     await contenido.populate('sitio', 'nombre ciudad departamento');
-    await contenido.populate(
-      'revisadoPor',
-      'nombre nombreCompleto correo'
-    );
+    await contenido.populate('revisadoPor', 'nombre nombreCompleto correo');
 
     return res.status(200).json({
       mensaje: 'Contenido actualizado correctamente',
@@ -171,18 +145,44 @@ const actualizarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al actualizar contenido:', error);
-
     return res.status(500).json({
       mensaje: 'Error al actualizar el contenido',
     });
   }
 };
 
+// OBTENER ID DEL ADMINISTRADOR
+
+const obtenerAdministradorId = (req) => {
+  const id =
+    req.usuario?.id ||
+    req.usuario?._id ||
+    req.usuario?.administradorId;
+
+  return id && mongoose.isValidObjectId(id) ? id : null;
+};
+
+// APROBAR CONTENIDO
+
 const aprobarContenido = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(400).json({
         mensaje: 'Identificador no válido',
+      });
+    }
+
+    const administradorId = obtenerAdministradorId(req);
+
+    console.log('USUARIO AUTENTICADO:', req.usuario);
+    console.log('ID DEL ADMINISTRADOR:', administradorId);
+
+    if (!administradorId) {
+      console.error('No se identificó al administrador');
+
+      return res.status(401).json({
+        mensaje:
+          'No se pudo identificar al administrador. Verifica el token de sesión.',
       });
     }
 
@@ -200,23 +200,6 @@ const aprobarContenido = async (req, res) => {
       });
     }
 
-    const administradorId = req.usuario?.id || req.usuario?._id;
-
-    if (
-      !administradorId ||
-      !mongoose.isValidObjectId(administradorId)
-    ) {
-      console.error(
-        'No se identificó al administrador:',
-        req.usuario
-      );
-
-      return res.status(401).json({
-        mensaje:
-          'No se pudo identificar al administrador. Verifica el token de sesión.',
-      });
-    }
-
     contenido.estadoPublicacion = 'aprobado';
     contenido.motivoRechazo = '';
     contenido.activo = true;
@@ -225,10 +208,7 @@ const aprobarContenido = async (req, res) => {
 
     await contenido.save();
     await contenido.populate('sitio', 'nombre ciudad departamento');
-    await contenido.populate(
-      'revisadoPor',
-      'nombre nombreCompleto correo'
-    );
+    await contenido.populate('revisadoPor', 'nombre nombreCompleto correo');
 
     return res.status(200).json({
       mensaje: 'Contenido aprobado correctamente',
@@ -236,12 +216,13 @@ const aprobarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al aprobar contenido:', error);
-
     return res.status(500).json({
       mensaje: 'Error al aprobar el contenido',
     });
   }
 };
+
+// RECHAZAR CONTENIDO
 
 const rechazarContenido = async (req, res) => {
   try {
@@ -259,6 +240,20 @@ const rechazarContenido = async (req, res) => {
       });
     }
 
+    const administradorId = obtenerAdministradorId(req);
+
+    console.log('USUARIO AUTENTICADO:', req.usuario);
+    console.log('ID DEL ADMINISTRADOR:', administradorId);
+
+    if (!administradorId) {
+      console.error('No se identificó al administrador');
+
+      return res.status(401).json({
+        mensaje:
+          'No se pudo identificar al administrador. Verifica el token de sesión.',
+      });
+    }
+
     const contenido = await ContenidoAdmin.findById(req.params.id);
 
     if (!contenido) {
@@ -273,23 +268,6 @@ const rechazarContenido = async (req, res) => {
       });
     }
 
-    const administradorId = req.usuario?.id || req.usuario?._id;
-
-    if (
-      !administradorId ||
-      !mongoose.isValidObjectId(administradorId)
-    ) {
-      console.error(
-        'No se identificó al administrador:',
-        req.usuario
-      );
-
-      return res.status(401).json({
-        mensaje:
-          'No se pudo identificar al administrador. Verifica el token de sesión.',
-      });
-    }
-
     contenido.estadoPublicacion = 'rechazado';
     contenido.motivoRechazo = motivo.trim();
     contenido.activo = false;
@@ -298,10 +276,7 @@ const rechazarContenido = async (req, res) => {
 
     await contenido.save();
     await contenido.populate('sitio', 'nombre ciudad departamento');
-    await contenido.populate(
-      'revisadoPor',
-      'nombre nombreCompleto correo'
-    );
+    await contenido.populate('revisadoPor', 'nombre nombreCompleto correo');
 
     return res.status(200).json({
       mensaje: 'Contenido rechazado correctamente',
@@ -309,12 +284,13 @@ const rechazarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al rechazar contenido:', error);
-
     return res.status(500).json({
       mensaje: 'Error al rechazar el contenido',
     });
   }
 };
+
+// DESACTIVAR CONTENIDO
 
 const desactivarContenido = async (req, res) => {
   try {
@@ -336,12 +312,13 @@ const desactivarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al desactivar contenido:', error);
-
     return res.status(500).json({
       mensaje: 'Error al desactivar el contenido',
     });
   }
 };
+
+// ACTIVAR CONTENIDO
 
 const activarContenido = async (req, res) => {
   try {
@@ -363,12 +340,13 @@ const activarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al activar contenido:', error);
-
     return res.status(500).json({
       mensaje: 'Error al activar el contenido',
     });
   }
 };
+
+// ELIMINAR CONTENIDO
 
 const eliminarContenido = async (req, res) => {
   try {
@@ -387,12 +365,13 @@ const eliminarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al eliminar contenido:', error);
-
     return res.status(500).json({
       mensaje: 'Error al eliminar el contenido',
     });
   }
 };
+
+// EXPORTAR FUNCIONES
 
 module.exports = {
   obtenerContenidos,

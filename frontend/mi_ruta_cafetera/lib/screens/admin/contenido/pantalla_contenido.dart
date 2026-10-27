@@ -54,8 +54,14 @@ class _PantallaContenidoState extends State<PantallaContenido> {
       await _audio.stop();
       await _controller.cargarContenidos();
 
-      if (mounted && _controller.error != null) {
-        _mensaje(_controller.error!, true);
+      if (!mounted) return;
+
+      if (_controller.error != null) {
+        _mensaje('No se pudieron actualizar los contenidos.', true);
+      }
+    } catch (e) {
+      if (mounted) {
+        _mensaje('No fue posible actualizar los contenidos.', true);
       }
     } finally {
       if (mounted) {
@@ -65,12 +71,15 @@ class _PantallaContenidoState extends State<PantallaContenido> {
   }
 
   void _mensaje(String texto, [bool error = false]) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(texto),
-        backgroundColor: error ? Colors.red : AppColors.primary,
-      ),
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(texto),
+          backgroundColor: error ? AppColors.error : AppColors.success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   @override
@@ -91,77 +100,75 @@ class _PantallaContenidoState extends State<PantallaContenido> {
           return _detalle(contenido);
         }
 
-        return Column(
-          children: [
-            EncabezadoLista(
-              titulo: '',
-              descripcion: 'contenidos enviados',
-              textoNuevo: '',
-              cantidad: _controller.totalContenidos,
-              cargando: _controller.cargando,
-              mostrarBotonNuevo: false,
-              onActualizar: _cargar,
-              onNuevo: () {},
-            ),
-            ResumenProductos(
-              tarjetas: [
-                ResumenTarjetaConfig(
-                  titulo: 'Pendientes',
-                  cantidad: _controller.totalPendientes,
-                  icono: Icons.pending_actions,
-                  color: Colors.orange,
-                  estado: 'pendiente_revision',
-                ),
-                ResumenTarjetaConfig(
-                  titulo: 'Aprobados',
-                  cantidad: _controller.totalAceptados,
-                  icono: Icons.check_circle_outline,
-                  color: Colors.green,
-                  estado: 'aprobado',
-                ),
-                ResumenTarjetaConfig(
-                  titulo: 'Rechazados',
-                  cantidad: _controller.totalRechazados,
-                  icono: Icons.cancel_outlined,
-                  color: Colors.red,
-                  estado: 'rechazado',
-                ),
-              ],
-            ),
-            BarraBusqueda(
-              valor: _controller.busqueda,
-              textoAyuda: 'Buscar contenido o sitio turístico...',
-              controller: _busqueda,
-              onChanged: _controller.cambiarBusqueda,
-              onLimpiar: () {
-                _busqueda.clear();
-                _controller.limpiarBusqueda();
-              },
-            ),
-            FiltrosContenido(
-              seleccionado: _filtroActivo,
-              onSeleccionar: (valor) {
-                setState(() => _filtroActivo = valor);
-              },
-            ),
-            Expanded(
-              child: Stack(
-                children: [
-                  Positioned.fill(child: _lista()),
-                  if (_actualizandoLista &&
-                      _controller.contenidos.isNotEmpty)
-                    Positioned.fill(
-                      child: ColoredBox(
-                        color: Colors.white.withValues(alpha: 0.65),
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                    ),
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              EncabezadoLista(
+                titulo: '',
+                descripcion: 'contenidos enviados',
+                textoNuevo: '',
+                cantidad: _controller.totalContenidos,
+                cargando: _actualizandoLista,
+                mostrarBotonNuevo: false,
+                onActualizar: _cargar,
+                onNuevo: () {},
+              ),
+              ResumenProductos(
+                tarjetas: [
+                  ResumenTarjetaConfig(
+                    titulo: 'Pendientes',
+                    cantidad: _controller.totalPendientes,
+                    icono: Icons.pending_actions,
+                    color: Colors.orange,
+                    estado: 'pendiente_revision',
+                  ),
+                  ResumenTarjetaConfig(
+                    titulo: 'Aprobados',
+                    cantidad: _controller.totalAceptados,
+                    icono: Icons.check_circle_outline,
+                    color: Colors.green,
+                    estado: 'aprobado',
+                  ),
+                  ResumenTarjetaConfig(
+                    titulo: 'Rechazados',
+                    cantidad: _controller.totalRechazados,
+                    icono: Icons.cancel_outlined,
+                    color: Colors.red,
+                    estado: 'rechazado',
+                  ),
                 ],
               ),
-            ),
-          ],
+              BarraBusqueda(
+                valor: _controller.busqueda,
+                textoAyuda: 'Buscar contenido o sitio turístico...',
+                controller: _busqueda,
+                onChanged: _controller.cambiarBusqueda,
+                onLimpiar: () {
+                  _busqueda.clear();
+                  _controller.limpiarBusqueda();
+                },
+              ),
+              FiltrosContenido(
+                seleccionado: _filtroActivo,
+                onSeleccionar: (valor) {
+                  setState(() => _filtroActivo = valor);
+                },
+              ),
+              if (_actualizandoLista)
+                const Padding(
+                  padding: EdgeInsets.all(AppDimensions.spacingLg),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.success,
+                      strokeWidth: 4,
+                    ),
+                  ),
+                )
+              else
+                _lista(),
+            ],
+          ),
         );
       },
     );
@@ -169,13 +176,18 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
   Widget _lista() {
     if (_controller.cargando && _controller.contenidos.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return const Padding(
+        padding: EdgeInsets.all(AppDimensions.spacingLg),
+        child: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.success,
+            strokeWidth: 4,
+          ),
+        ),
       );
     }
 
-    if (_controller.error != null &&
-        _controller.contenidos.isEmpty) {
+    if (_controller.error != null && _controller.contenidos.isEmpty) {
       return _vacio(_controller.error!, _cargar);
     }
 
@@ -196,22 +208,13 @@ class _PantallaContenidoState extends State<PantallaContenido> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _cargar,
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(
-          bottom: AppDimensions.spacingLg,
-        ),
-        itemCount: lista.length,
-        itemBuilder: (_, i) {
-          final c = lista[i];
-
-          return TarjetaContenido(
+    return Column(
+      children: [
+        for (final c in lista)
+          TarjetaContenido(
             key: ValueKey(c.id),
             contenido: c,
-            procesando:
-                _controller.contenidosEnProcesamiento.contains(c.id),
+            procesando: _controller.contenidosEnProcesamiento.contains(c.id),
             onVer: () => _ver(c),
             onSeleccionar: () => _ver(c),
             onEditar: () => _editar(c),
@@ -219,9 +222,9 @@ class _PantallaContenidoState extends State<PantallaContenido> {
             onEliminar: () => _eliminar(c),
             onAprobar: () => _aprobar(c),
             onRechazar: () => _rechazar(c),
-          );
-        },
-      ),
+          ),
+        const SizedBox(height: AppDimensions.spacingLg),
+      ],
     );
   }
 
@@ -247,7 +250,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
       contenido: c,
       audio: _audio,
       onVolver: () => setState(() => _seleccionado = null),
-      onActualizar: _cargar,
+      onActualizar: _actualizarDetalle,
       onEditar: () => _editar(c),
       onCambiarEstado: () => _cambiarEstado(c),
       onEliminar: () => _eliminar(c),
@@ -257,6 +260,31 @@ class _PantallaContenidoState extends State<PantallaContenido> {
           GaleriaImagenes.mostrar(context, imagenes, inicial),
       onMensaje: _mensaje,
     );
+  }
+
+  Future<void> _actualizarDetalle() async {
+    if (_actualizandoLista) return;
+
+    setState(() => _actualizandoLista = true);
+
+    try {
+      await _audio.stop();
+      await _controller.cargarContenidos();
+
+      if (!mounted) return;
+
+      if (_controller.error != null) {
+        _mensaje('No se pudo actualizar el detalle del contenido.', true);
+      }
+    } catch (e) {
+      if (mounted) {
+        _mensaje('No fue posible actualizar el detalle del contenido.', true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _actualizandoLista = false);
+      }
+    }
   }
 
   Future<void> _ver(AdminContenidoModel c) async {
@@ -287,9 +315,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: accion,
-              child: const Text(
-                'Actualizar o limpiar búsqueda',
-              ),
+              child: const Text('Actualizar o limpiar búsqueda'),
             ),
           ],
         ),
@@ -297,10 +323,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
     );
   }
 
-  Future<bool?> _confirmar(
-    String titulo,
-    String mensaje,
-  ) {
+  Future<bool?> _confirmar(String titulo, String mensaje) {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -338,9 +361,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
     }
 
     _mensaje(
-      ok
-          ? 'Contenido aprobado.'
-          : _controller.error ?? 'No se pudo aprobar.',
+      ok ? 'Contenido aprobado.' : _controller.error ?? 'No se pudo aprobar.',
       !ok,
     );
   }
@@ -393,9 +414,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
       }
 
       _mensaje(
-        ok
-            ? 'Contenido rechazado.'
-            : _controller.error ?? 'No se pudo rechazar.',
+        ok ? 'Contenido rechazado.' : _controller.error ?? 'No se pudo rechazar.',
         !ok,
       );
     } finally {
@@ -405,9 +424,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
   Future<void> _editar(AdminContenidoModel c) async {
     final titulo = TextEditingController(text: c.titulo);
-    final descripcion = TextEditingController(
-      text: c.descripcion,
-    );
+    final descripcion = TextEditingController(text: c.descripcion);
     final formKey = GlobalKey<FormState>();
 
     try {
@@ -477,9 +494,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
       if (mounted) {
         _mensaje(
-          ok
-              ? 'Contenido actualizado.'
-              : _controller.error ?? 'No se pudo actualizar.',
+          ok ? 'Contenido actualizado.' : _controller.error ?? 'No se pudo actualizar.',
           !ok,
         );
       }
@@ -494,8 +509,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
     if (await _confirmar(
           activar ? 'Activar contenido' : 'Desactivar contenido',
-          '¿Deseas ${activar ? 'activar' : 'desactivar'} '
-              '"${c.titulo}"?',
+          '¿Deseas ${activar ? 'activar' : 'desactivar'} "${c.titulo}"?',
         ) !=
         true) {
       return;
@@ -507,9 +521,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
     if (mounted) {
       _mensaje(
-        ok
-            ? 'Estado actualizado.'
-            : _controller.error ?? 'No se pudo actualizar.',
+        ok ? 'Estado actualizado.' : _controller.error ?? 'No se pudo actualizar.',
         !ok,
       );
     }
@@ -518,8 +530,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
   Future<void> _eliminar(AdminContenidoModel c) async {
     if (await _confirmar(
           'Eliminar contenido',
-          '¿Eliminar "${c.titulo}"? '
-              'Esta acción no se puede deshacer.',
+          '¿Eliminar "${c.titulo}"? Esta acción no se puede deshacer.',
         ) !=
         true) {
       return;
@@ -536,9 +547,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
     }
 
     _mensaje(
-      ok
-          ? 'Contenido eliminado.'
-          : _controller.error ?? 'No se pudo eliminar.',
+      ok ? 'Contenido eliminado.' : _controller.error ?? 'No se pudo eliminar.',
       !ok,
     );
   }

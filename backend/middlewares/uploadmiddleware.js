@@ -3,28 +3,24 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('../config/cloudinary');
 
 // ============================================================
-// CARGA DE IMÁGENES: SE CONSERVA LA CONFIGURACIÓN ACTUAL
+// FILTRO DE IMÁGENES
 // ============================================================
-
-const storageImagenes = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'mi-ruta-cafetera/sitios',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [
-      { width: 1200, height: 1200, crop: 'limit' },
-    ],
-  },
-});
 
 const TIPOS_IMAGEN = [
   'image/jpeg',
   'image/jpg',
   'image/png',
   'image/webp',
+  'image/avif',
 ];
 
-const EXTENSIONES_IMAGEN = ['jpg', 'jpeg', 'png', 'webp'];
+const EXTENSIONES_IMAGEN = [
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'avif',
+];
 
 const filtroImagenes = (req, file, cb) => {
   const tipo = (file.mimetype || '').toLowerCase();
@@ -45,16 +41,57 @@ const filtroImagenes = (req, file, cb) => {
   }
 
   return cb(
-    new Error('Formato no permitido. Usa JPG, PNG o WEBP.'),
+    new Error(
+      'Formato no permitido. Usa JPG, AVIF, PNG o WEBP.'
+    )
   );
 };
+
+// ============================================================
+// CARGA DE IMÁGENES DE SITIOS TURÍSTICOS
+// ============================================================
+
+const storageImagenes = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'mi-ruta-cafetera/sitios',
+    allowed_formats: EXTENSIONES_IMAGEN,
+    transformation: [
+      { width: 1200, height: 1200, crop: 'limit' },
+    ],
+  },
+});
 
 const upload = multer({
   storage: storageImagenes,
   fileFilter: filtroImagenes,
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: 10 * 1024 * 1024,
     files: 10,
+  },
+});
+
+// ============================================================
+// CARGA DE FOTOS DE PERFIL DE ADMINISTRADORES
+// ============================================================
+
+const storageFotosAdmin = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'mi-ruta-cafetera/administradores',
+    allowed_formats: EXTENSIONES_IMAGEN,
+    transformation: [
+      { width: 800, height: 800, crop: 'limit' },
+    ],
+  },
+});
+
+const uploadFotoAdmin = multer({
+  storage: storageFotosAdmin,
+  fileFilter: filtroImagenes,
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+    files: 1,
   },
 });
 
@@ -120,7 +157,6 @@ const filtroAudios = (req, file, cb) => {
     return cb(null, true);
   }
 
-  // Flutter Web puede enviar octet-stream.
   if (
     tipo === 'application/octet-stream' &&
     EXTENSIONES_AUDIO.includes(extension)
@@ -130,8 +166,8 @@ const filtroAudios = (req, file, cb) => {
 
   return cb(
     new Error(
-      'Formato de audio no permitido. Usa MP3, WAV, M4A, AAC, OGG o WebM.',
-    ),
+      'Formato de audio no permitido. Usa MP3, WAV, M4A, AAC, OGG o WebM.'
+    )
   );
 };
 
@@ -144,7 +180,12 @@ const uploadAudio = multer({
   },
 });
 
+// ============================================================
+// EXPORTACIONES
+// ============================================================
+
 module.exports = {
   upload,
   uploadAudio,
+  uploadFotoAdmin,
 };

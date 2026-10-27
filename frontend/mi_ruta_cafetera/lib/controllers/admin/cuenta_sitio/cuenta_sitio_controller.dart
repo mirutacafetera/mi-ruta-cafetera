@@ -1,3 +1,4 @@
+
 import 'package:flutter/foundation.dart';
 
 import '../../../config/api_config.dart';
@@ -22,6 +23,7 @@ class CuentaSitioController extends ChangeNotifier {
 
     return sitios.where((sitio) {
       final cuenta = cuentaDeSitio(sitio.id);
+
       final coincideBusqueda = consulta.isEmpty ||
           sitio.nombre.toLowerCase().contains(consulta) ||
           sitio.ciudad.toLowerCase().contains(consulta) ||
@@ -79,6 +81,8 @@ class CuentaSitioController extends ChangeNotifier {
   }
 
   Future<void> cargarDatos({required String token}) async {
+    if (cargando) return;
+
     _token = token;
     cargando = true;
     error = null;
@@ -90,8 +94,13 @@ class CuentaSitioController extends ChangeNotifier {
         AdminSitioConsultas.obtenerSitios(ApiConfig.baseUrl),
       ]);
 
-      cuentas = resultados[0] as List<CuentaSitioModel>;
-      sitios = resultados[1] as List<SitioAdminModel>;
+      final cuentasActualizadas =
+          resultados[0] as List<CuentaSitioModel>;
+      final sitiosActualizados =
+          resultados[1] as List<SitioAdminModel>;
+
+      cuentas = cuentasActualizadas;
+      sitios = sitiosActualizados;
     } catch (e) {
       error = e.toString();
     } finally {

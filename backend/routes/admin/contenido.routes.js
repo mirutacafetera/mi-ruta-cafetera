@@ -4,6 +4,11 @@ const express = require('express');
 const router = express.Router();
 
 const {
+  verificarToken,
+  verificarAdministrador,
+} = require('../../middlewares/authmiddleware');
+
+const {
   obtenerContenidos,
   obtenerContenido,
   actualizarContenido,
@@ -14,24 +19,51 @@ const {
   eliminarContenido,
 } = require('../../controllers/admin/contenido.controller');
 
-// Consultar todos los contenidos o filtrar por estado.
-router.get('/', obtenerContenidos);
+// Consultar contenidos.
+router.get('/', verificarToken, verificarAdministrador, obtenerContenidos);
 
 // Consultar un contenido específico.
-router.get('/:id', obtenerContenido);
+router.get('/:id', verificarToken, verificarAdministrador, obtenerContenido);
 
 // Editar información del contenido.
-router.put('/:id', actualizarContenido);
+router.put('/:id', verificarToken, verificarAdministrador, actualizarContenido);
 
-// Moderación del administrador.
-router.put('/:id/aprobar', aprobarContenido);
-router.put('/:id/rechazar', rechazarContenido);
+// Aprobar o rechazar contenido.
+router.put(
+  '/:id/aprobar',
+  verificarToken,
+  verificarAdministrador,
+  aprobarContenido
+);
 
-// Activar o desactivar un contenido ya aprobado.
-router.put('/:id/desactivar', desactivarContenido);
-router.put('/:id/activar', activarContenido);
+router.put(
+  '/:id/rechazar',
+  verificarToken,
+  verificarAdministrador,
+  rechazarContenido
+);
 
-// Eliminar un contenido.
-router.delete('/:id', eliminarContenido);
+// Activar o desactivar contenido.
+router.put(
+  '/:id/desactivar',
+  verificarToken,
+  verificarAdministrador,
+  desactivarContenido
+);
+
+router.put(
+  '/:id/activar',
+  verificarToken,
+  verificarAdministrador,
+  activarContenido
+);
+
+// Eliminar contenido.
+router.delete(
+  '/:id',
+  verificarToken,
+  verificarAdministrador,
+  eliminarContenido
+);
 
 module.exports = router;

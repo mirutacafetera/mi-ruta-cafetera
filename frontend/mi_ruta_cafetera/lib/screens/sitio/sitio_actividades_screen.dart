@@ -6,10 +6,12 @@ import '../../services/sitio/sitio_actividades_service.dart';
 import '../../services/sitio/sitio_sesion_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
+import '../../utils/avisos_sitio.dart';
 import '../../widgets/sitio/formulario_actividad_sitio.dart';
 import '../../widgets/sitio/tarjeta_actividad_sitio.dart';
 import '../../widgets/sitio/tarjeta_resumen_sitio.dart';
 import '../../widgets/sitio/tarjeta_seccion_sitio.dart';
+import 'sitio_actividades/gestion_actividad_helper.dart';
 
 class SitioActividadesScreen extends StatefulWidget {
   const SitioActividadesScreen({super.key});
@@ -23,6 +25,19 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
   final SitioActividadesService _actividadesService =
       SitioActividadesService();
   final SitioSesionService _sesionService = SitioSesionService();
+
+  late final GestionActividadHelper _gestionActividadHelper =
+      GestionActividadHelper(
+    servicio: _actividadesService,
+    obtenerToken: () => _token,
+    obtenerSitioId: () => _sitioId,
+    estaMontado: () => mounted,
+    cambiarEstadoGuardado: (valor) {
+      if (mounted) setState(() => _guardando = valor);
+    },
+    mostrarMensaje: (mensaje, {esError = false}) =>
+        _mostrarMensaje(mensaje, esError: esError),
+  );
 
   List<SitioActividadModel> _actividades = [];
   bool _cargando = true;
@@ -141,171 +156,18 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
     required String imagenPrincipalUrl,
     required String? imagenPrincipalNueva,
   }) async {
-    if (_token.isEmpty || _sitioId.isEmpty) {
-      throw Exception('No hay una sesión activa del sitio.');
-    }
-
-    if (mounted) {
-      setState(() => _guardando = true);
-    }
-
-    try {
-      final imagenesOriginales = <String>{
-        if (actividad != null && actividad.imagenPrincipal.isNotEmpty)
-          actividad.imagenPrincipal,
-        ...?actividad?.imagenes,
-      };
-
-      late SitioActividadModel guardada;
-
-      if (actividad == null) {
-        guardada = await _actividadesService.crearActividad(
-          token: _token,
-          sitioId: _sitioId,
-          nombre: nombre,
-          descripcion: descripcion,
-          precio: precio,
-          horario: horario,
-          duracion: duracion,
-        );
-      } else {
-        guardada = await _actividadesService.actualizarActividad(
-          token: _token,
-          sitioId: _sitioId,
-          actividadId: actividad.id,
-          nombre: nombre,
-          descripcion: descripcion,
-          precio: precio,
-          horario: horario,
-          duracion: duracion,
-        );
-      }
-
-      if (imagenes.isNotEmpty) {
-        guardada = await _actividadesService.subirImagenes(
-          token: _token,
-          sitioId: _sitioId,
-          actividadId: guardada.id,
-          archivos: imagenes,
-        );
-      }
-
-      List<String> obtenerUrls(SitioActividadModel item) {
-        return {
-          if (item.imagenPrincipal.isNotEmpty) item.imagenPrincipal,
-          ...item.imagenes.where((url) => url.isNotEmpty),
-        }.toList();
-      }
-
-      var urlsDisponibles = obtenerUrls(guardada);
-
-      final urlsNuevas = urlsDisponibles
-          .where((url) => !imagenesOriginales.contains(url))
-          .toList();
-
-      var principalDeseada = imagenPrincipalUrl.trim();
-
-      if (imagenPrincipalNueva != null) {
-        final indiceSeleccionado = imagenes.indexWhere(
-          (imagen) => imagen.path == imagenPrincipalNueva,
-        );
-
-        if (indiceSeleccionado < 0) {
-          throw Exception(
-            'No se encontró la fotografía seleccionada como portada.',
-          );
-        }
-
-        if (indiceSeleccionado >= urlsNuevas.length) {
-          throw Exception(
-            'El servidor no devolvió una URL para la fotografía elegida. '
-            'No se eliminarán las imágenes existentes.',
-          );
-        }
-
-        principalDeseada = urlsNuevas[indiceSeleccionado];
-      }
-
-      if (principalDeseada.isEmpty ||
-          imagenesEliminar.contains(principalDeseada) ||
-          !urlsDisponibles.contains(principalDeseada)) {
-        principalDeseada = '';
-
-        for (final url in urlsDisponibles) {
-          if (!imagenesEliminar.contains(url)) {
-            principalDeseada = url;
-            break;
-          }
-        }
-      }
-
-      if (principalDeseada.isEmpty) {
-        throw Exception(
-          'La actividad debe conservar al menos una imagen.',
-        );
-      }
-
-      if (guardada.imagenPrincipal != principalDeseada) {
-        if (!guardada.imagenes.contains(principalDeseada)) {
-          throw Exception(
-            'La imagen elegida como portada no está disponible '
-            'en la galería del servidor.',
-          );
-        }
-
-        guardada = await _actividadesService.establecerImagenPrincipal(
-          token: _token,
-          sitioId: _sitioId,
-          actividadId: guardada.id,
-          url: principalDeseada,
-        );
-
-        urlsDisponibles = obtenerUrls(guardada);
-      }
-
-      for (final url in imagenesEliminar.toSet()) {
-        if (url == guardada.imagenPrincipal) {
-          throw Exception(
-            'No se puede eliminar la imagen principal actual. '
-            'Selecciona otra portada antes de continuar.',
-          );
-        }
-
-        if (!urlsDisponibles.contains(url)) {
-          continue;
-        }
-
-        guardada = await _actividadesService.eliminarImagen(
-          token: _token,
-          sitioId: _sitioId,
-          actividadId: guardada.id,
-          url: url,
-        );
-
-        urlsDisponibles = obtenerUrls(guardada);
-      }
-
-      if (mounted) {
-        _mostrarMensaje(
-          actividad == null
-              ? 'Actividad creada correctamente.'
-              : 'Actividad actualizada correctamente.',
-        );
-      }
-    } catch (error) {
-      if (mounted) {
-        _mostrarMensaje(
-          error.toString().replaceFirst('Exception: ', ''),
-          esError: true,
-        );
-      }
-
-      rethrow;
-    } finally {
-      if (mounted) {
-        setState(() => _guardando = false);
-      }
-    }
+    await _gestionActividadHelper.guardarActividad(
+      actividad: actividad,
+      nombre: nombre,
+      descripcion: descripcion,
+      precio: precio,
+      horario: horario,
+      duracion: duracion,
+      imagenes: imagenes,
+      imagenesEliminar: imagenesEliminar,
+      imagenPrincipalUrl: imagenPrincipalUrl,
+      imagenPrincipalNueva: imagenPrincipalNueva,
+    );
   }
 
   Future<void> _enviarARevision(
@@ -420,17 +282,11 @@ class _SitioActividadesScreenState extends State<SitioActividadesScreen> {
   }) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text(mensaje),
-          backgroundColor: esError
-              ? AppColors.sitioError
-              : AppColors.sitioPrimary,
-        ),
-      );
+    if (esError) {
+      AvisosSitio.error(context, mensaje);
+    } else {
+      AvisosSitio.exito(context, mensaje);
+    }
   }
 
   @override

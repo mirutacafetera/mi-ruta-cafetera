@@ -19,17 +19,20 @@ class ControladorPantallaAdministrador extends ChangeNotifier {
       case 'sitios':
         return 'Sitios turísticos';
 
+      case 'cuentasitio':
+         return 'Cuentas de sitios turísticos';
+
       case 'categorias':
         return 'Categorías';
 
       case 'actividades':
-        return 'Moderación de actividades';
+        return 'Actividades';
 
       case 'productos':
-        return 'Productos pendientes';
+        return 'Productos';
 
       case 'contenido':
-        return 'Moderación de contenidos';
+        return 'Contenidos';
 
       case 'resenas':
         return 'Reseñas';

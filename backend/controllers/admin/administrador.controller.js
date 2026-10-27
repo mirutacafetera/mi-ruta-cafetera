@@ -1,8 +1,11 @@
-// Controlador para la autenticación y gestión de administradores.
+// =====================================================
+// CONTROLADOR DE AUTENTICACIÓN Y GESTIÓN DE ADMINISTRADORES
+// =====================================================
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+
 const Administrador = require('../../models/admin/administrador');
 
 const {
@@ -10,11 +13,17 @@ const {
   enviarCodigoRecuperacion
 } = require('../../utils/mailer');
 
-// Genera un código aleatorio de 6 dígitos.
+// =====================================================
+// GENERAR CÓDIGO DE 6 DÍGITOS
+// =====================================================
+
 const generarCodigo = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
-// Registra un administrador y envía el código de verificación.
+// =====================================================
+// REGISTRAR ADMINISTRADOR
+// =====================================================
+
 const registrarAdministrador = async (req, res) => {
   try {
     const {
@@ -61,6 +70,7 @@ const registrarAdministrador = async (req, res) => {
       correo: correoNormalizado,
       password,
       telefono,
+      fotoPerfil: null,
       activo: true,
       isVerified: false,
       codigoVerificacion,
@@ -89,6 +99,7 @@ const registrarAdministrador = async (req, res) => {
         apellido: administrador.apellido,
         correo: administrador.correo,
         telefono: administrador.telefono,
+        fotoPerfil: administrador.fotoPerfil,
         activo: administrador.activo,
         isVerified: administrador.isVerified
       }
@@ -106,7 +117,10 @@ const registrarAdministrador = async (req, res) => {
   }
 };
 
-// Verifica el correo del administrador mediante un código.
+// =====================================================
+// VERIFICAR CORREO DEL ADMINISTRADOR
+// =====================================================
+
 const verificarCodigoVerificacionAdministrador = async (
   req,
   res
@@ -122,10 +136,9 @@ const verificarCodigoVerificacionAdministrador = async (
 
     const correoNormalizado = correo.toLowerCase().trim();
 
-    const administrador =
-      await Administrador.findOne({
-        correo: correoNormalizado
-      });
+    const administrador = await Administrador.findOne({
+      correo: correoNormalizado
+    });
 
     if (!administrador) {
       return res.status(404).json({
@@ -178,6 +191,8 @@ const verificarCodigoVerificacionAdministrador = async (
         nombre: administrador.nombre,
         apellido: administrador.apellido,
         correo: administrador.correo,
+        telefono: administrador.telefono,
+        fotoPerfil: administrador.fotoPerfil,
         isVerified: administrador.isVerified
       }
     });
@@ -195,7 +210,10 @@ const verificarCodigoVerificacionAdministrador = async (
   }
 };
 
-// Valida las credenciales e inicia sesión del administrador.
+// =====================================================
+// INICIAR SESIÓN DEL ADMINISTRADOR
+// =====================================================
+
 const iniciarSesionAdministrador = async (req, res) => {
   try {
     const { correo, password } = req.body;
@@ -236,11 +254,10 @@ const iniciarSesionAdministrador = async (req, res) => {
       });
     }
 
-    const passwordCorrecta =
-      await bcrypt.compare(
-        password,
-        administrador.password
-      );
+    const passwordCorrecta = await bcrypt.compare(
+      password,
+      administrador.password
+    );
 
     if (!passwordCorrecta) {
       return res.status(401).json({
@@ -272,6 +289,7 @@ const iniciarSesionAdministrador = async (req, res) => {
         apellido: administrador.apellido,
         correo: administrador.correo,
         telefono: administrador.telefono,
+        fotoPerfil: administrador.fotoPerfil,
         activo: administrador.activo,
         isVerified: administrador.isVerified,
         rol: 'admin'
@@ -291,7 +309,10 @@ const iniciarSesionAdministrador = async (req, res) => {
   }
 };
 
-// Solicita la recuperación de contraseña mediante un código.
+// =====================================================
+// SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+// =====================================================
+
 const solicitarRecuperacionAdministrador = async (
   req,
   res
@@ -307,10 +328,9 @@ const solicitarRecuperacionAdministrador = async (
 
     const correoNormalizado = correo.toLowerCase().trim();
 
-    const administrador =
-      await Administrador.findOne({
-        correo: correoNormalizado
-      });
+    const administrador = await Administrador.findOne({
+      correo: correoNormalizado
+    });
 
     if (!administrador) {
       return res.status(404).json({
@@ -362,7 +382,10 @@ const solicitarRecuperacionAdministrador = async (
   }
 };
 
-// Verifica el código de recuperación y genera un token temporal.
+// =====================================================
+// VERIFICAR CÓDIGO DE RECUPERACIÓN
+// =====================================================
+
 const verificarCodigoRecuperacionAdministrador = async (
   req,
   res
@@ -378,10 +401,9 @@ const verificarCodigoRecuperacionAdministrador = async (
 
     const correoNormalizado = correo.toLowerCase().trim();
 
-    const administrador =
-      await Administrador.findOne({
-        correo: correoNormalizado
-      });
+    const administrador = await Administrador.findOne({
+      correo: correoNormalizado
+    });
 
     if (!administrador) {
       return res.status(404).json({
@@ -448,7 +470,10 @@ const verificarCodigoRecuperacionAdministrador = async (
   }
 };
 
-// Restablece la contraseña usando el token de recuperación.
+// =====================================================
+// RESTABLECER CONTRASEÑA
+// =====================================================
+
 const restablecerPasswordAdministrador = async (
   req,
   res
@@ -473,10 +498,9 @@ const restablecerPasswordAdministrador = async (
       });
     }
 
-    const administrador =
-      await Administrador.findOne({
-        tokenRecuperacion
-      });
+    const administrador = await Administrador.findOne({
+      tokenRecuperacion
+    });
 
     if (!administrador) {
       return res.status(400).json({
@@ -524,13 +548,15 @@ const restablecerPasswordAdministrador = async (
   }
 };
 
-// Consulta la información de un administrador por su ID.
+// =====================================================
+// OBTENER ADMINISTRADOR POR ID
+// =====================================================
+
 const obtenerAdministrador = async (req, res) => {
   try {
-    const administrador =
-      await Administrador
-        .findById(req.params.id)
-        .select('-password');
+    const administrador = await Administrador
+      .findById(req.params.id)
+      .select('-password');
 
     if (!administrador) {
       return res.status(404).json({
@@ -554,7 +580,10 @@ const obtenerAdministrador = async (req, res) => {
   }
 };
 
-// Actualiza los datos personales del administrador.
+// =====================================================
+// ACTUALIZAR DATOS DEL ADMINISTRADOR
+// =====================================================
+
 const actualizarAdministrador = async (req, res) => {
   try {
     const {
@@ -573,8 +602,8 @@ const actualizarAdministrador = async (req, res) => {
       });
     }
 
-    const administrador =
-      await Administrador.findByIdAndUpdate(
+    const administrador = await Administrador
+      .findByIdAndUpdate(
         req.params.id,
         {
           nombre,
@@ -585,7 +614,8 @@ const actualizarAdministrador = async (req, res) => {
           new: true,
           runValidators: true
         }
-      ).select('-password');
+      )
+      .select('-password');
 
     if (!administrador) {
       return res.status(404).json({
@@ -613,7 +643,74 @@ const actualizarAdministrador = async (req, res) => {
   }
 };
 
-// Activa o desactiva la cuenta del administrador.
+// =====================================================
+// SUBIR O ACTUALIZAR FOTO DE PERFIL
+// =====================================================
+
+const subirFotoAdministrador = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (
+      req.usuario &&
+      req.usuario.id !== id
+    ) {
+      return res.status(403).json({
+        mensaje:
+          'No puedes modificar la foto de otro administrador'
+      });
+    }
+
+    if (!req.file || !req.file.path) {
+      return res.status(400).json({
+        mensaje:
+          'Debes seleccionar una imagen de perfil'
+      });
+    }
+
+    const administrador = await Administrador
+      .findByIdAndUpdate(
+        id,
+        {
+          fotoPerfil: req.file.path
+        },
+        {
+          new: true,
+          runValidators: true
+        }
+      )
+      .select('-password');
+
+    if (!administrador) {
+      return res.status(404).json({
+        mensaje:
+          'Administrador no encontrado'
+      });
+    }
+
+    return res.status(200).json({
+      mensaje:
+        'Foto de perfil actualizada correctamente',
+      administrador
+    });
+  } catch (error) {
+    console.error(
+      'Error al subir la foto del administrador:',
+      error
+    );
+
+    return res.status(500).json({
+      mensaje:
+        'No fue posible actualizar la foto de perfil',
+      error: error.message
+    });
+  }
+};
+
+// =====================================================
+// ACTIVAR O DESACTIVAR ADMINISTRADOR
+// =====================================================
+
 const cambiarEstadoAdministrador = async (
   req,
   res
@@ -628,15 +725,16 @@ const cambiarEstadoAdministrador = async (
       });
     }
 
-    const administrador =
-      await Administrador.findByIdAndUpdate(
+    const administrador = await Administrador
+      .findByIdAndUpdate(
         req.params.id,
         { activo },
         {
           new: true,
           runValidators: true
         }
-      ).select('-password');
+      )
+      .select('-password');
 
     if (!administrador) {
       return res.status(404).json({
@@ -665,6 +763,10 @@ const cambiarEstadoAdministrador = async (
   }
 };
 
+// =====================================================
+// EXPORTAR CONTROLADORES
+// =====================================================
+
 module.exports = {
   registrarAdministrador,
   verificarCodigoVerificacionAdministrador,
@@ -674,5 +776,6 @@ module.exports = {
   restablecerPasswordAdministrador,
   obtenerAdministrador,
   actualizarAdministrador,
-  cambiarEstadoAdministrador
+  cambiarEstadoAdministrador,
+  subirFotoAdministrador
 };

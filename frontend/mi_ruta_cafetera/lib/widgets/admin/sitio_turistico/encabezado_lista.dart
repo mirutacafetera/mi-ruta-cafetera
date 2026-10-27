@@ -18,10 +18,10 @@ class EncabezadoLista extends StatelessWidget {
     super.key,
     required this.titulo,
     required this.descripcion,
-    required this.textoNuevo,
+    this.textoNuevo = '',
     required this.cantidad,
     required this.cargando,
-    this.mostrarBotonNuevo = true,
+    this.mostrarBotonNuevo = false,
     required this.onActualizar,
     required this.onNuevo,
   });
@@ -41,19 +41,18 @@ class EncabezadoLista extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  titulo,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                if (titulo.isNotEmpty)
+                  Text(
+                    titulo,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                   ),
-                ),
-                const SizedBox(
-                  height: AppDimensions.spacingXs,
-                ),
+                const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   '$cantidad $descripcion',
                   style: const TextStyle(
@@ -67,17 +66,26 @@ class EncabezadoLista extends StatelessWidget {
             tooltip: 'Actualizar',
             onPressed: cargando ? null : onActualizar,
             icon: const Icon(
-              Icons.refresh,
+              Icons.refresh_rounded,
               color: AppColors.primary,
               size: AppDimensions.iconMd,
             ),
           ),
-          if (mostrarBotonNuevo) ...[
-            const SizedBox(
-              width: AppDimensions.spacingXs,
-            ),
+          if (mostrarBotonNuevo && textoNuevo.trim().isNotEmpty) ...[
+            const SizedBox(width: AppDimensions.spacingXs),
             FilledButton.icon(
               onPressed: onNuevo,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.secondary,
+                foregroundColor: AppColors.white,
+                elevation: 0,
+                side: BorderSide.none,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusXl,
+                  ),
+                ),
+              ),
               icon: const Icon(
                 Icons.add,
                 size: AppDimensions.iconMd,

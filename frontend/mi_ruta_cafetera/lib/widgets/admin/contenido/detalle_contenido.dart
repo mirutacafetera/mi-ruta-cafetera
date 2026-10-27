@@ -1,14 +1,25 @@
+
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../../models/admin/admin_contenido_model.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../actividades/botones_navegacion_admin.dart';
+import '../actividades/componentes_detalle_actividad.dart';
+import '../actividades/galeria_detalle_actividad.dart';
+import '../actividades/tarjeta_principal_actividad.dart';
 
-class DetalleContenido extends StatelessWidget {
+class DetalleContenido extends StatefulWidget {
   final AdminContenidoModel contenido;
   final AudioPlayer audio;
-  final VoidCallback onVolver, onActualizar, onEditar;
-  final VoidCallback onCambiarEstado, onEliminar, onAprobar, onRechazar;
+  final VoidCallback onVolver;
+  final Future<void> Function() onActualizar;
+  final VoidCallback onEditar;
+  final VoidCallback onCambiarEstado;
+  final VoidCallback onEliminar;
+  final VoidCallback onAprobar;
+  final VoidCallback onRechazar;
   final Function(List<String>, int) onMostrarGaleria;
   final Function(String) onMensaje;
 
@@ -27,207 +38,462 @@ class DetalleContenido extends StatelessWidget {
     required this.onMensaje,
   });
 
-  static const _borde = Color(0xFFB58A70);
-  static const _vainilla = Color(0xFFFFFCF7);
+  @override
+  State<DetalleContenido> createState() => _DetalleContenidoState();
+}
+
+class _DetalleContenidoState extends State<DetalleContenido> {
+  bool _actualizando = false;
+
+  static const Color _terracota = Color(0xFFB85C50);
+
+  bool get _pendiente =>
+      widget.contenido.estadoPublicacion.toLowerCase().trim() ==
+      'pendiente_revision';
+
+  Future<void> _actualizarDetalle() async {
+    if (_actualizando) return;
+
+    setState(() => _actualizando = true);
+
+    try {
+      await widget.onActualizar();
+
+      if (mounted) {
+        widget.onMensaje('Contenido actualizado correctamente.');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error al actualizar el contenido: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (mounted) {
+        widget.onMensaje('No se pudo actualizar el contenido.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _actualizando = false);
+      }
+    }
+  }
+
+  List<String> get _imagenes {
+    final resultado = <String>[];
+    final principal = widget.contenido.imagenPrincipal.trim();
+
+    if (principal.isNotEmpty) {
+      resultado.add(principal);
+    }
+
+    for (final imagen in widget.contenido.imagenes) {
+      final url = imagen.trim();
+
+      if (url.isNotEmpty && !resultado.contains(url)) {
+        resultado.add(url);
+      }
+    }
+
+    return resultado;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final pendiente =
-        contenido.estadoPublicacion == 'pendiente_revision';
+    final imagenes = _imagenes;
 
     return Column(
       children: [
-        _barra(),
+        _encabezado(),
         Expanded(
-          child: Container(
-            color: const Color(0xFFF4F0E8),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.creamLight,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: _borde),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _encabezado(),
-                    const SizedBox(height: 24),
-                    _seccion('Información general', Icons.info_outline),
-                    const SizedBox(height: 16),
-                    _dato('Descripción', contenido.descripcion, Icons.notes),
-                    _dato('Sitio turístico', contenido.sitioNombre, Icons.place_outlined),
-                    _dato('Ciudad', contenido.ciudad, Icons.location_city),
-                    _dato('Departamento', contenido.departamento, Icons.map_outlined),
-                    _dato(
-                      'Estado de publicación',
-                      contenido.estadoPublicacion.replaceAll('_', ' '),
-                      Icons.verified_outlined,
+          child: _actualizando
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                    strokeWidth: 3,
+                  ),
+                )
+              : SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppDimensions.pageHorizontalSmall,
+                    AppDimensions.spacingSm,
+                    AppDimensions.pageHorizontalSmall,
+                    AppDimensions.spacingXl,
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 950),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // TARJETA PRINCIPAL
+                          TarjetaPrincipalActividad(
+                            titulo: widget.contenido.titulo.trim().isEmpty
+                                ? 'Contenido sin título'
+                                : widget.contenido.titulo,
+                            descripcion: widget.contenido.descripcion,
+                            imagenUrl:
+                                imagenes.isNotEmpty ? imagenes.first : null,
+                            estado: _estadoParaTarjeta(
+                              widget.contenido.estadoPublicacion,
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // INFORMACIÓN DEL CONTENIDO
+                          TarjetaDetalleActividad(
+                            child: Padding(
+                              padding: const EdgeInsets.all(18),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const TituloDetalleActividad(
+                                    texto: 'Información del contenido',
+                                    icono: Icons.description_outlined,
+                                  ),
+                                  const SizedBox(height: 22),
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final datos = <Widget>[
+                                        _dato(
+                                          icono: Icons.storefront_outlined,
+                                          titulo: 'Sitio turístico',
+                                          valor: widget.contenido.sitioNombre,
+                                        ),
+                                        _dato(
+                                          icono: Icons.location_city_outlined,
+                                          titulo: 'Ciudad',
+                                          valor: widget.contenido.ciudad,
+                                        ),
+                                        _dato(
+                                          icono: Icons.map_outlined,
+                                          titulo: 'Departamento',
+                                          valor:
+                                              widget.contenido.departamento,
+                                        ),
+                                        _dato(
+                                          icono: Icons.verified_outlined,
+                                          titulo: 'Estado de publicación',
+                                          valor: _textoEstado(
+                                            widget.contenido.estadoPublicacion,
+                                          ),
+                                        ),
+                                        _dato(
+                                          icono: Icons.event_outlined,
+                                          titulo: 'Fecha de creación',
+                                          valor: widget.contenido.createdAt ==
+                                                  null
+                                              ? 'No disponible'
+                                              : FormateadorFechaActividad
+                                                  .formatear(
+                                                  widget.contenido.createdAt!,
+                                                ),
+                                        ),
+                                        _dato(
+                                          icono: Icons.visibility_outlined,
+                                          titulo: 'Disponibilidad',
+                                          valor: widget.contenido.activo
+                                              ? 'Activo'
+                                              : 'Inactivo',
+                                        ),
+                                      ];
+
+                                      if (constraints.maxWidth >= 620) {
+                                        final ancho =
+                                            (constraints.maxWidth - 20) / 2;
+
+                                        return Wrap(
+                                          spacing: 20,
+                                          runSpacing: 22,
+                                          children: datos
+                                              .map(
+                                                (dato) => SizedBox(
+                                                  width: ancho,
+                                                  child: dato,
+                                                ),
+                                              )
+                                              .toList(),
+                                        );
+                                      }
+
+                                      return Column(
+                                        children: [
+                                          for (int i = 0;
+                                              i < datos.length;
+                                              i++) ...[
+                                            datos[i],
+                                            if (i < datos.length - 1)
+                                              const SizedBox(height: 20),
+                                          ],
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // MOTIVO DEL RECHAZO
+                          if (widget.contenido.motivoRechazo
+                              .trim()
+                              .isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            _motivoRechazo(),
+                          ],
+
+                          // GALERÍA DE IMÁGENES
+                          const SizedBox(height: 16),
+                          GaleriaDetalleActividad(
+                            imagenes: imagenes,
+                            onMostrarGaleria: widget.onMostrarGaleria,
+                          ),
+
+                          // AUDIOGUÍAS
+                          const SizedBox(height: 22),
+                          const TituloDetalleActividad(
+                            texto: 'Audioguías',
+                            icono: Icons.headphones_rounded,
+                          ),
+                          const SizedBox(height: 12),
+
+                          if (widget.contenido.audioGuias.isEmpty)
+                            _vacio('No hay audioguías disponibles.')
+                          else
+                            ...widget.contenido.audioGuias.map(_audioguia),
+
+                          const SizedBox(height: 24),
+
+                          // ACCIONES DEL CONTENIDO
+                          _acciones(),
+
+                          const SizedBox(height: AppDimensions.spacingXl),
+                        ],
+                      ),
                     ),
-                    if (contenido.motivoRechazo.isNotEmpty)
-                      _dato('Motivo del rechazo', contenido.motivoRechazo, Icons.warning_amber),
-                    _separador(),
-                    _seccion('Audioguías', Icons.headphones),
-                    const SizedBox(height: 14),
-                    if (contenido.audioGuias.isEmpty)
-                      _vacio('No hay audioguías disponibles.')
-                    else
-                      ...contenido.audioGuias.map(_audioguia),
-                    _separador(),
-                    _acciones(pendiente),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ),
         ),
       ],
     );
   }
 
-  Widget _barra() => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: const BoxDecoration(
-          color: AppColors.creamLight,
-          border: Border(bottom: BorderSide(color: _borde)),
-        ),
-        child: Row(
-          children: [
-            _icono(Icons.arrow_back, onVolver),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text(
-                'Detalles del contenido',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
+  // ENCABEZADO: PERMANECE VISIBLE DURANTE LA ACTUALIZACIÓN
+  Widget _encabezado() => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: double.infinity,
+            height: 6,
+            color: AppColors.primary,
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.adminBorder.withValues(alpha: .65),
                 ),
               ),
             ),
-            _Actualizar(onActualizar: onActualizar),
+            child: Row(
+              children: [
+                BotonNavegacionAdmin(
+                  icono: Icons.arrow_back_rounded,
+                  tooltip: 'Volver',
+                  onPressed: widget.onVolver,
+                ),
+                const SizedBox(width: AppDimensions.spacingMd),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Detalles del contenido',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'Información y gestión turística',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.spacingSm),
+                BotonNavegacionAdmin(
+                  icono: Icons.refresh_rounded,
+                  tooltip: _actualizando ? 'Actualizando...' : 'Actualizar',
+                  onPressed: _actualizando ? null : _actualizarDetalle,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+
+  // DATO REUTILIZABLE
+  Widget _dato({
+    required IconData icono,
+    required String titulo,
+    required String valor,
+  }) {
+    return DatoDetalleActividad(
+      ancho: double.infinity,
+      icono: icono,
+      titulo: titulo,
+      valor: valor,
+    );
+  }
+
+  // MOTIVO DEL RECHAZO
+  Widget _motivoRechazo() => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        decoration: BoxDecoration(
+          color: _terracota.withValues(alpha: .07),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _terracota.withValues(alpha: .45),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  color: _terracota,
+                  size: 22,
+                ),
+                SizedBox(width: AppDimensions.spacingSm),
+                Expanded(
+                  child: Text(
+                    'Motivo del rechazo',
+                    style: TextStyle(
+                      color: _terracota,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.spacingMd),
+            Text(
+              widget.contenido.motivoRechazo,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                height: 1.5,
+              ),
+            ),
           ],
         ),
       );
 
-  Widget _icono(IconData icono, VoidCallback accion) => IconButton(
-        onPressed: accion,
-        style: IconButton.styleFrom(
-          foregroundColor: AppColors.secondary,
-          backgroundColor: AppColors.secondary.withValues(alpha: 0.09),
+  // TARJETA DE AUDIOGUÍA
+  Widget _audioguia(AdminAudioGuiaModel guia) => Padding(
+        padding: const EdgeInsets.only(
+          bottom: AppDimensions.spacingMd,
         ),
-        icon: Icon(icono),
-      );
-
-  Widget _encabezado() {
-    final pendiente = contenido.estadoPublicacion == 'pendiente_revision';
-    final color = pendiente
-        ? AppColors.secondary
-        : contenido.activo
-            ? AppColors.success
-            : AppColors.error;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE4EBDD),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _borde.withValues(alpha: 0.45)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            contenido.titulo.isEmpty ? 'Contenido sin título' : contenido.titulo,
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _etiqueta(
-            contenido.estadoPublicacion.replaceAll('_', ' '),
-            color,
-            pendiente ? Icons.hourglass_top : Icons.check_circle,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _seccion(String titulo, IconData icono) => Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFE8D6),
-              borderRadius: BorderRadius.circular(13),
-            ),
-            child: Icon(icono, color: AppColors.secondary, size: 23),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            titulo,
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      );
-
-  Widget _dato(String titulo, String valor, IconData icono) => Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: _vainilla,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: _borde.withValues(alpha: 0.38)),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: TarjetaDetalleActividad(
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(width: 4, color: AppColors.secondary),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(icono, size: 17, color: AppColors.secondary),
-                            const SizedBox(width: 7),
-                            Text(
-                              titulo,
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 9),
-                        Text(
-                          valor.trim().isEmpty ? 'No disponible' : valor,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.orangeSoft,
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: const Icon(
+                        Icons.graphic_eq_rounded,
+                        color: AppColors.secondary,
+                        size: 24,
+                      ),
                     ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        guia.titulo.trim().isEmpty
+                            ? 'Audioguía'
+                            : guia.titulo,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (guia.descripcion.trim().isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    guia.descripcion,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+                if (guia.duracion.trim().isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Duración: ${guia.duracion}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+
+                // BOTONES CENTRADOS: REPRODUCIR Y DETENER
+                Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _botonAudio(
+                        'Reproducir',
+                        Icons.play_arrow_rounded,
+                        () => _reproducir(guia.url),
+                        principal: true,
+                      ),
+                      _botonAudio(
+                        'Detener',
+                        Icons.stop_rounded,
+                        () => widget.audio.stop(),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -236,166 +502,223 @@ class DetalleContenido extends StatelessWidget {
         ),
       );
 
-  Widget _audioguia(AdminAudioGuiaModel guia) => Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: _vainilla,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: _borde.withValues(alpha: 0.4)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              guia.titulo.isEmpty ? 'Audioguía' : guia.titulo,
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            if (guia.descripcion.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(guia.descripcion),
-            ],
-            if (guia.duracion.isNotEmpty)
-              Text('Duración: ${guia.duracion}'),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              children: [
-                _audioBoton(Icons.play_arrow, () async {
-                  if (guia.url.trim().isEmpty) {
-                    onMensaje('Esta audioguía no tiene una URL disponible.');
-                    return;
-                  }
-                  try {
-                    await audio.stop();
-                    await audio.setUrl(guia.url.trim());
-                    await audio.play();
-                  } catch (_) {
-                    onMensaje('No se pudo reproducir el audio.');
-                  }
-                }),
-                _audioBoton(Icons.pause, () => audio.pause()),
-                _audioBoton(Icons.stop, () => audio.stop()),
-              ],
-            ),
-          ],
-        ),
-      );
+  Future<void> _reproducir(String url) async {
+    if (url.trim().isEmpty) {
+      widget.onMensaje('Esta audioguía no tiene una URL disponible.');
+      return;
+    }
 
-  Widget _audioBoton(IconData icono, VoidCallback accion) => IconButton(
-        onPressed: accion,
-        color: AppColors.secondary,
-        icon: Icon(icono),
-      );
-
-  Widget _acciones(bool pendiente) {
-    final botones = pendiente
-        ? [
-            _boton('Aprobar', Icons.check_circle_outline, onAprobar, AppColors.success),
-            _boton('Rechazar', Icons.cancel_outlined, onRechazar, AppColors.error),
-          ]
-        : [
-            _boton('Editar', Icons.edit_outlined, onEditar, AppColors.primary),
-            _boton(
-              contenido.activo ? 'Desactivar' : 'Activar',
-              contenido.activo ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-              onCambiarEstado,
-              AppColors.secondary,
-            ),
-            _boton('Eliminar', Icons.delete_outline, onEliminar, AppColors.error),
-          ];
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 10,
-      children: botones,
-    );
-  }
-
-  Widget _boton(String texto, IconData icono, VoidCallback accion, Color color) =>
-      OutlinedButton.icon(
-        onPressed: accion,
-        icon: Icon(icono, size: 17),
-        label: Text(texto),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: color,
-          side: BorderSide(color: color.withValues(alpha: 0.55)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-
-  Widget _etiqueta(String texto, Color color, IconData icono) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icono, color: color, size: 17),
-            const SizedBox(width: 7),
-            Text(texto, style: TextStyle(color: color, fontWeight: FontWeight.w800)),
-          ],
-        ),
-      );
-
-  Widget _vacio(String texto) => Padding(
-        padding: const EdgeInsets.all(18),
-        child: Center(child: Text(texto)),
-      );
-
-  Widget _separador() => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Container(height: 1, color: _borde.withValues(alpha: 0.45)),
-      );
-}
-
-class _Actualizar extends StatefulWidget {
-  final VoidCallback onActualizar;
-
-  const _Actualizar({required this.onActualizar});
-
-  @override
-  State<_Actualizar> createState() => _ActualizarState();
-}
-
-class _ActualizarState extends State<_Actualizar> {
-  bool cargando = false;
-
-  Future<void> _actualizar() async {
-    if (cargando) return;
-    setState(() => cargando = true);
     try {
-      widget.onActualizar();
-      await Future<void>.delayed(const Duration(milliseconds: 900));
-    } finally {
-      if (mounted) setState(() => cargando = false);
+      await widget.audio.stop();
+      await widget.audio.setUrl(url.trim());
+      await widget.audio.play();
+    } catch (_) {
+      widget.onMensaje('No se pudo reproducir el audio.');
     }
   }
 
-  @override
-  Widget build(BuildContext context) => IconButton(
-        tooltip: cargando ? 'Actualizando...' : 'Actualizar',
-        onPressed: cargando ? null : _actualizar,
-        style: IconButton.styleFrom(
-          foregroundColor: AppColors.secondary,
-          backgroundColor: AppColors.secondary.withValues(alpha: 0.09),
+  // BOTONES DE AUDIO
+  Widget _botonAudio(
+    String texto,
+    IconData icono,
+    VoidCallback accion, {
+    bool principal = false,
+  }) =>
+      OutlinedButton.icon(
+        onPressed: accion,
+        icon: Icon(icono, size: 20),
+        label: Text(texto),
+        style: OutlinedButton.styleFrom(
+          foregroundColor:
+              principal ? AppColors.white : AppColors.primary,
+          backgroundColor:
+              principal ? AppColors.primary : AppColors.surface,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 13,
+            vertical: 11,
+          ),
+          minimumSize: const Size(0, 42),
+          visualDensity: VisualDensity.compact,
+          side: BorderSide(
+            color: AppColors.adminBorder,
+            width: 1.1,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        icon: cargando
-            ? const SizedBox(
-                width: 21,
-                height: 21,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: AppColors.secondary,
-                ),
-              )
-            : const Icon(Icons.refresh_rounded),
       );
+
+  // ESTADO SIN CONTENIDO
+  Widget _vacio(String texto) => TarjetaDetalleActividad(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          child: Column(
+            children: [
+              const Icon(
+                Icons.headphones_outlined,
+                color: AppColors.secondary,
+                size: 36,
+              ),
+              const SizedBox(height: AppDimensions.spacingMd),
+              Text(
+                texto,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  // ACCIONES DEL CONTENIDO
+  Widget _acciones() {
+    final botones = _pendiente
+        ? [
+            _botonAccion(
+              'Aprobar',
+              Icons.check_rounded,
+              widget.onAprobar,
+              AppColors.success,
+              principal: true,
+            ),
+            _botonAccion(
+              'Rechazar',
+              Icons.close_rounded,
+              widget.onRechazar,
+              _terracota,
+            ),
+          ]
+        : [
+            _botonAccion(
+              'Editar',
+              Icons.edit_outlined,
+              widget.onEditar,
+              AppColors.primary,
+            ),
+            _botonAccion(
+              widget.contenido.activo ? 'Desactivar' : 'Activar',
+              widget.contenido.activo
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              widget.onCambiarEstado,
+              AppColors.secondary,
+            ),
+            _botonAccion(
+              'Eliminar',
+              Icons.delete_outline,
+              widget.onEliminar,
+              AppColors.error,
+            ),
+          ];
+
+    return TarjetaDetalleActividad(
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Acciones disponibles',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 5),
+            const Text(
+              'Administra el contenido desde aquí.',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 9,
+              runSpacing: 9,
+              children: botones,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _botonAccion(
+    String texto,
+    IconData icono,
+    VoidCallback accion,
+    Color color, {
+    bool principal = false,
+  }) =>
+      OutlinedButton.icon(
+        onPressed: accion,
+        icon: Icon(icono, size: 18),
+        label: Text(texto),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: principal ? AppColors.white : color,
+          backgroundColor: principal ? color : AppColors.surface,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 11,
+          ),
+          minimumSize: const Size(0, 42),
+          visualDensity: VisualDensity.compact,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          side: BorderSide(
+            color: AppColors.adminBorder,
+            width: 1.1,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      );
+
+  String _textoEstado(String estado) {
+    switch (estado.toLowerCase().trim()) {
+      case 'pendiente_revision':
+        return 'Pendiente de revisión';
+      case 'aprobado':
+      case 'aprobada':
+      case 'aprobado_manual':
+      case 'aprobada_manual':
+        return 'Aprobado';
+      case 'rechazado':
+      case 'rechazada':
+      case 'rechazado_manual':
+      case 'rechazada_manual':
+        return 'Rechazado';
+      default:
+        return estado.replaceAll('_', ' ');
+    }
+  }
+
+  String _estadoParaTarjeta(String estado) {
+    switch (estado.toLowerCase().trim()) {
+      case 'aprobado':
+      case 'aprobada':
+      case 'aprobado_manual':
+      case 'aprobada_manual':
+        return 'aprobada';
+      case 'rechazado':
+      case 'rechazada':
+      case 'rechazado_manual':
+      case 'rechazada_manual':
+        return 'rechazada';
+      case 'pendiente':
+      case 'pendiente_revision':
+        return 'pendiente_revision';
+      default:
+        return estado;
+    }
+  }
 }

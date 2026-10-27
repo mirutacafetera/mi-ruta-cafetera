@@ -179,12 +179,7 @@ class _FormaEncabezadoMenu extends CustomClipper<Path> {
     return Path()
       ..moveTo(radio, 0)
       ..lineTo(size.width - radio, 0)
-      ..quadraticBezierTo(
-        size.width,
-        0,
-        size.width,
-        radio,
-      )
+      ..quadraticBezierTo(size.width, 0, size.width, radio)
       ..lineTo(size.width, size.height - curvaInferior)
       ..quadraticBezierTo(
         size.width,
@@ -200,12 +195,7 @@ class _FormaEncabezadoMenu extends CustomClipper<Path> {
         size.height - radio,
       )
       ..lineTo(0, radio)
-      ..quadraticBezierTo(
-        0,
-        0,
-        radio,
-        0,
-      )
+      ..quadraticBezierTo(0, 0, radio, 0)
       ..close();
   }
 

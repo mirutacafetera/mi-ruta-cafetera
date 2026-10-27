@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../../theme/app_colors.dart';
@@ -36,14 +37,12 @@ class SitioInformacion extends StatelessWidget {
             titulo: 'Información del sitio',
             subtitulo: 'Datos principales del lugar turístico',
           ),
-
           CampoFormularioSitio(
             controlador: nombreController,
             etiqueta: 'Nombre del sitio',
             icono: Icons.place_rounded,
             obligatorio: true,
           ),
-
           CampoFormularioSitio(
             controlador: descripcionController,
             etiqueta: 'Descripción',
@@ -51,7 +50,6 @@ class SitioInformacion extends StatelessWidget {
             maxLines: 4,
             obligatorio: true,
           ),
-
           Padding(
             padding: const EdgeInsets.only(
               bottom: AppDimensions.spacingMd,
@@ -62,7 +60,7 @@ class SitioInformacion extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Categoría',
                 filled: true,
-                fillColor: AppColors.creamLight,
+                fillColor: const Color(0xFFF0EFEB),
                 prefixIcon: Icon(
                   iconoCategoria,
                   color: AppColors.secondary,
@@ -77,7 +75,7 @@ class SitioInformacion extends StatelessWidget {
                     AppDimensions.searchRadius,
                   ),
                   borderSide: const BorderSide(
-                    color: AppColors.border,
+                    color: AppColors.adminBorder,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
@@ -85,7 +83,7 @@ class SitioInformacion extends StatelessWidget {
                     AppDimensions.searchRadius,
                   ),
                   borderSide: const BorderSide(
-                    color: AppColors.border,
+                    color: AppColors.adminBorder,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -93,48 +91,42 @@ class SitioInformacion extends StatelessWidget {
                     AppDimensions.searchRadius,
                   ),
                   borderSide: const BorderSide(
-                    color: AppColors.secondary,
-                    width: 2,
+                    color: AppColors.adminBorder,
+                    width: 1.5,
                   ),
                 ),
               ),
-              items: categorias
-                  .map((categoria) {
-                    final id = categoria['_id']?.toString();
-                    final nombre =
-                        categoria['nombre']?.toString() ?? 'Sin nombre';
+              items: categorias.map((categoria) {
+                final id = categoria['_id']?.toString();
+                final nombre =
+                    categoria['nombre']?.toString() ?? 'Sin nombre';
 
-                    if (id == null || id.isEmpty) {
-                      return null;
-                    }
+                if (id == null || id.isEmpty) {
+                  return null;
+                }
 
-                    return DropdownMenuItem<String>(
-                      value: id,
-                      child: Text(
-                        nombre,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  })
-                  .whereType<DropdownMenuItem<String>>()
-                  .toList(),
+                return DropdownMenuItem<String>(
+                  value: id,
+                  child: Text(
+                    nombre,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).whereType<DropdownMenuItem<String>>().toList(),
               onChanged: onCategoriaChanged,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Selecciona una categoría';
                 }
-
                 return null;
               },
             ),
           ),
-
           CampoFormularioSitio(
             controlador: etiquetasController,
             etiqueta: 'Etiquetas',
             icono: Icons.local_offer_rounded,
           ),
-
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
@@ -153,11 +145,9 @@ class SitioInformacion extends StatelessWidget {
                 Icon(
                   Icons.info_outline_rounded,
                   size: AppDimensions.iconSm,
-                  color: AppColors.nature,
+                  color: AppColors.coffee,
                 ),
-                SizedBox(
-                  width: AppDimensions.spacingSm,
-                ),
+                SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   child: Text(
                     'Separa las etiquetas con comas. Ejemplo: café, naturaleza, aventura.',

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
@@ -20,10 +21,14 @@ class PantallaReporteAdmin extends StatefulWidget {
 
 class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
   late final ReporteController _controller;
+
   final TextEditingController _busquedaController =
       TextEditingController();
 
   bool _actualizandoLista = false;
+
+  static const Color _cafe = Color(0xFFB58A70);
+  static const Color _naranja = Color(0xFFF58220);
 
   @override
   void initState() {
@@ -65,7 +70,7 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                 _actualizandoLista || _controller.cargando;
 
             return RefreshIndicator(
-              color: AppColors.primary,
+              color: _naranja,
               onRefresh: _recargar,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -78,16 +83,14 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                     descripcion: 'reportes recibidos',
                     textoNuevo: '',
                     cantidad: _controller.reportes.length,
-                    cargando: _actualizandoLista,
+                    cargando: cargando,
+                    mostrarBotonNuevo: false,
                     onActualizar: _recargar,
                     onNuevo: () {},
-                    mostrarBotonNuevo: false,
                   ),
-
                   const SizedBox(
                     height: AppDimensions.spacingLg,
                   ),
-
                   ResumenUsuarios(
                     tarjetas: [
                       ResumenTarjeta(
@@ -98,32 +101,33 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                       ),
                       ResumenTarjeta(
                         titulo: 'Pendientes',
-                        cantidad:
-                            _controller.contarPorEstado('pendiente'),
+                        cantidad: _controller.contarPorEstado(
+                          'pendiente',
+                        ),
                         icono: Icons.mark_email_unread_rounded,
                         color: AppColors.warning,
                       ),
                       ResumenTarjeta(
                         titulo: 'En revisión',
-                        cantidad:
-                            _controller.contarPorEstado('en_revision'),
+                        cantidad: _controller.contarPorEstado(
+                          'en_revision',
+                        ),
                         icono: Icons.manage_search_rounded,
                         color: AppColors.info,
                       ),
                       ResumenTarjeta(
                         titulo: 'Resueltos',
-                        cantidad:
-                            _controller.contarPorEstado('resuelto'),
+                        cantidad: _controller.contarPorEstado(
+                          'resuelto',
+                        ),
                         icono: Icons.check_circle_rounded,
                         color: AppColors.success,
                       ),
                     ],
                   ),
-
                   const SizedBox(
                     height: AppDimensions.spacingLg,
                   ),
-
                   BarraBusqueda(
                     controller: _busquedaController,
                     valor: _busquedaController.text,
@@ -135,26 +139,23 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                       setState(() {});
                     },
                   ),
-
                   const SizedBox(
                     height: AppDimensions.spacingMd,
                   ),
-
                   FiltroEstadoReporte(
                     seleccionado: _controller.estadoSeleccionado,
                     onChanged: _controller.cambiarEstadoFiltro,
                   ),
-
                   const SizedBox(
                     height: AppDimensions.spacingLg,
                   ),
-
                   if (cargando)
                     SizedBox(
-                      height: MediaQuery.sizeOf(context).height * 0.45,
+                      height:
+                          MediaQuery.sizeOf(context).height * 0.45,
                       child: const Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.primary,
+                          color: _naranja,
                         ),
                       ),
                     )
@@ -180,11 +181,9 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                         ),
                       ],
                     ),
-
                     const SizedBox(
                       height: AppDimensions.spacingMd,
                     ),
-
                     if (_controller.error != null)
                       Padding(
                         padding: const EdgeInsets.only(
@@ -197,7 +196,6 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
                           ),
                         ),
                       ),
-
                     if (reportes.isEmpty)
                       const Padding(
                         padding: EdgeInsets.all(
@@ -242,146 +240,310 @@ class _PantallaReporteAdminState extends State<PantallaReporteAdmin> {
 
     String estado = reporte.estado;
 
-    final guardar = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, actualizarDialogo) => AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('Detalle del reporte'),
-          content: SizedBox(
-            width: 450,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    reporte.asunto,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Text(
-                    'Usuario: ${reporte.nombreCompleto.isEmpty ? 'Sin nombre' : reporte.nombreCompleto}',
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  Text(
-                    'Correo: ${reporte.correoUsuario.isEmpty ? 'No disponible' : reporte.correoUsuario}',
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  const Text(
-                    'Mensaje del usuario',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  Text(reporte.mensaje),
-
-                  const SizedBox(height: 18),
-
-                  const Text(
-                    'Estado del reporte',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  DropdownButtonFormField<String>(
-                    initialValue: estado,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'pendiente',
-                        child: Text('Pendiente'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'en_revision',
-                        child: Text('En revisión'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'resuelto',
-                        child: Text('Resuelto'),
-                      ),
-                    ],
-                    onChanged: (valor) {
-                      if (valor != null) {
-                        actualizarDialogo(() => estado = valor);
-                      }
-                    },
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  const Text(
-                    'Respuesta del administrador',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  TextField(
-                    controller: respuesta,
-                    maxLines: 4,
-                    decoration: const InputDecoration(
-                      hintText: 'Escribe una respuesta...',
-                      border: OutlineInputBorder(),
-                      alignLabelWithHint: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, true),
-              child: const Text('Guardar'),
-            ),
-          ],
+    OutlineInputBorder bordeCafe({double ancho = 1.2}) {
+      return OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide(
+          color: _cafe,
+          width: ancho,
         ),
-      ),
-    );
+      );
+    }
 
-    if (guardar == true && mounted) {
+    try {
+      final guardar = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return StatefulBuilder(
+            builder: (context, actualizarDialogo) {
+              return Dialog(
+                backgroundColor: AppColors.creamLight,
+                insetPadding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 32,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(26),
+                  side: const BorderSide(
+                    color: _cafe,
+                    width: 1.3,
+                  ),
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 370,
+                    maxHeight: 620,
+                  ),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(
+                      20,
+                      20,
+                      20,
+                      16,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Detalle del reporte',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 23,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          reporte.asunto,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        const Text(
+                          'Usuario',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          reporte.nombreCompleto.isEmpty
+                              ? 'Usuario sin nombre'
+                              : reporte.nombreCompleto,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Correo electrónico',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SelectableText(
+                          reporte.correoUsuario.isEmpty
+                              ? 'Correo no disponible'
+                              : reporte.correoUsuario,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Mensaje del usuario',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          reporte.mensaje,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 15,
+                            height: 1.55,
+                          ),
+                        ),
+                        const SizedBox(height: 26),
+                        const Text(
+                          'Estado del reporte',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        DropdownButtonFormField<String>(
+                          initialValue: estado,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding:
+                                const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 15,
+                            ),
+                            border: bordeCafe(),
+                            enabledBorder: bordeCafe(),
+                            focusedBorder: bordeCafe(),
+                            disabledBorder: bordeCafe(),
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: _naranja,
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'pendiente',
+                              child: Text('Pendiente'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'en_revision',
+                              child: Text('En revisión'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'resuelto',
+                              child: Text('Resuelto'),
+                            ),
+                          ],
+                          onChanged: (valor) {
+                            if (valor != null) {
+                              actualizarDialogo(() {
+                                estado = valor;
+                              });
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 26),
+                        const Text(
+                          'Respuesta del administrador',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: respuesta,
+                          maxLength: 3000,
+                          minLines: 4,
+                          maxLines: 6,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 15,
+                            height: 1.4,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Escribe una respuesta...',
+                            hintStyle: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            alignLabelWithHint: true,
+                            counterText: '',
+                            contentPadding: const EdgeInsets.all(20),
+                            border: bordeCafe(),
+                            enabledBorder: bordeCafe(),
+                            focusedBorder: bordeCafe(),
+                            disabledBorder: bordeCafe(),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(
+                                  dialogContext,
+                                  false,
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: _naranja,
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 13,
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancelar',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.pop(
+                                  dialogContext,
+                                  true,
+                                );
+                              },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: _naranja,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(28),
+                                  side: const BorderSide(
+                                    color: _cafe,
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                              child: const Text(
+                                'Guardar',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+
+      // Cancelar cierra el diálogo sin guardar cambios.
+      if (guardar != true || !mounted) return;
+
       final correcto = await _controller.responderReporte(
         id: reporte.id,
         estado: estado,
         respuestaAdmin: respuesta.text.trim(),
       );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              correcto
-                  ? 'Reporte actualizado correctamente.'
-                  : _controller.error ??
-                      'No se pudo actualizar el reporte.',
-            ),
-          ),
-        );
-      }
-    }
+      if (!mounted) return;
 
-    respuesta.dispose();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            correcto
+                ? 'Reporte actualizado correctamente.'
+                : _controller.error ??
+                    'No se pudo actualizar el reporte.',
+          ),
+        ),
+      );
+    } finally {
+      respuesta.dispose();
+    }
   }
 }

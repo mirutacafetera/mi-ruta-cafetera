@@ -1,3 +1,4 @@
+
 const Ayuda = require('../../models/usuario/ayuda');
 
 // =====================================================
@@ -7,11 +8,17 @@ const Ayuda = require('../../models/usuario/ayuda');
 const obtenerReportes = async (req, res) => {
   try {
     const reportes = await Ayuda.find()
-      .populate('usuarioId', 'nombre apellido correo')
+      .populate(
+        'usuarioId',
+        'nombre apellido correo fotoPerfil avatar'
+      )
+      .populate(
+        'sitioId',
+        'nombre ciudad departamento'
+      )
       .sort({ createdAt: -1 });
 
     return res.status(200).json(reportes);
-
   } catch (error) {
     console.error('Error al obtener reportes:', error);
 
@@ -20,7 +27,6 @@ const obtenerReportes = async (req, res) => {
     });
   }
 };
-
 
 // =====================================================
 // OBTENER UN REPORTE POR ID
@@ -31,7 +37,14 @@ const obtenerReporte = async (req, res) => {
     const { id } = req.params;
 
     const reporte = await Ayuda.findById(id)
-      .populate('usuarioId', 'nombre apellido correo');
+      .populate(
+        'usuarioId',
+        'nombre apellido correo fotoPerfil avatar'
+      )
+      .populate(
+        'sitioId',
+        'nombre ciudad departamento'
+      );
 
     if (!reporte) {
       return res.status(404).json({
@@ -40,7 +53,6 @@ const obtenerReporte = async (req, res) => {
     }
 
     return res.status(200).json(reporte);
-
   } catch (error) {
     console.error('Error al obtener reporte:', error);
 
@@ -49,7 +61,6 @@ const obtenerReporte = async (req, res) => {
     });
   }
 };
-
 
 // =====================================================
 // RESPONDER / ACTUALIZAR REPORTE
@@ -68,21 +79,30 @@ const responderReporte = async (req, res) => {
       });
     }
 
-    if (estado) {
+    if (estado !== undefined) {
       reporte.estado = estado;
     }
 
-    if (respuestaAdmin) {
+    if (respuestaAdmin !== undefined) {
       reporte.respuestaAdmin = respuestaAdmin;
     }
 
     await reporte.save();
 
+    const reporteActualizado = await Ayuda.findById(reporte._id)
+      .populate(
+        'usuarioId',
+        'nombre apellido correo fotoPerfil avatar'
+      )
+      .populate(
+        'sitioId',
+        'nombre ciudad departamento'
+      );
+
     return res.status(200).json({
       mensaje: 'Reporte actualizado correctamente',
-      reporte
+      reporte: reporteActualizado
     });
-
   } catch (error) {
     console.error('Error al responder reporte:', error);
 
@@ -91,7 +111,6 @@ const responderReporte = async (req, res) => {
     });
   }
 };
-
 
 // =====================================================
 // EXPORTAR

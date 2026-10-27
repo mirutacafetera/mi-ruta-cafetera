@@ -7,6 +7,7 @@ class CuentaAdmin {
   final bool activo;
   final bool isVerified;
   final String rol;
+  final String? fotoPerfil;
 
   const CuentaAdmin({
     required this.id,
@@ -17,6 +18,7 @@ class CuentaAdmin {
     required this.activo,
     required this.isVerified,
     required this.rol,
+    this.fotoPerfil,
   });
 
   factory CuentaAdmin.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class CuentaAdmin {
       activo: json['activo'] == true,
       isVerified: json['isVerified'] == true,
       rol: json['rol']?.toString() ?? 'admin',
+      fotoPerfil: json['fotoPerfil']?.toString(),
     );
   }
 
@@ -44,6 +47,7 @@ class CuentaAdmin {
       'activo': activo,
       'isVerified': isVerified,
       'rol': rol,
+      'fotoPerfil': fotoPerfil,
     };
   }
 
@@ -56,6 +60,7 @@ class CuentaAdmin {
     bool? activo,
     bool? isVerified,
     String? rol,
+    String? fotoPerfil,
   }) {
     return CuentaAdmin(
       id: id ?? this.id,
@@ -66,6 +71,7 @@ class CuentaAdmin {
       activo: activo ?? this.activo,
       isVerified: isVerified ?? this.isVerified,
       rol: rol ?? this.rol,
+      fotoPerfil: fotoPerfil ?? this.fotoPerfil,
     );
   }
 }

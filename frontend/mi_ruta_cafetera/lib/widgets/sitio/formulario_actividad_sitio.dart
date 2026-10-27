@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-
+ 
 import '../../models/sitio/sitio_actividad_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
-
+import '../../utils/avisos_sitio.dart';
+ 
 typedef GuardarActividadCallback = Future<void> Function({
   required String nombre,
   required String descripcion,
@@ -17,22 +18,22 @@ typedef GuardarActividadCallback = Future<void> Function({
   required String imagenPrincipalUrl,
   required String? imagenPrincipalNueva,
 });
-
+ 
 class FormularioActividadSitio extends StatefulWidget {
   final SitioActividadModel? actividad;
   final GuardarActividadCallback onGuardar;
-
+ 
   const FormularioActividadSitio({
     super.key,
     required this.actividad,
     required this.onGuardar,
   });
-
+ 
   @override
   State<FormularioActividadSitio> createState() =>
       _FormularioActividadSitioState();
 }
-
+ 
 class _FormularioActividadSitioState
     extends State<FormularioActividadSitio> {
   late final TextEditingController _nombreController;
@@ -40,32 +41,32 @@ class _FormularioActividadSitioState
   late final TextEditingController _precioController;
   late final TextEditingController _horarioController;
   late final TextEditingController _duracionController;
-
+ 
   final ImagePicker _imagePicker = ImagePicker();
   final List<XFile> _imagenesSeleccionadas = [];
   final Map<String, Future<Uint8List>> _bytesImagenes = {};
   final List<String> _imagenesExistentes = [];
   final List<String> _imagenesEliminar = [];
-
+ 
   String _imagenPrincipalUrl = '';
   String? _imagenPrincipalNueva;
   bool _guardando = false;
-
+ 
   bool get _esEdicion => widget.actividad != null;
-
+ 
   int get _imagenesConservadas => _imagenesExistentes
       .where((url) => !_imagenesEliminar.contains(url))
       .length;
-
+ 
   int get _totalImagenes =>
       _imagenesConservadas + _imagenesSeleccionadas.length;
-
+ 
   @override
   void initState() {
     super.initState();
-
+ 
     final actividad = widget.actividad;
-
+ 
     _nombreController = TextEditingController(
       text: actividad?.nombre ?? '',
     );
@@ -83,17 +84,17 @@ class _FormularioActividadSitioState
     _duracionController = TextEditingController(
       text: actividad?.duracion ?? '',
     );
-
+ 
     if (actividad != null) {
       _imagenPrincipalUrl = actividad.imagenPrincipal.trim();
-
+ 
       _imagenesExistentes.addAll({
         if (_imagenPrincipalUrl.isNotEmpty) _imagenPrincipalUrl,
         ...actividad.imagenes.where((url) => url.trim().isNotEmpty),
       });
     }
   }
-
+ 
   @override
   void dispose() {
     _nombreController.dispose();
@@ -103,46 +104,46 @@ class _FormularioActividadSitioState
     _duracionController.dispose();
     super.dispose();
   }
-
+ 
   Future<void> _seleccionarImagenes() async {
     if (_guardando) return;
-
+ 
     final disponibles = 10 - _totalImagenes;
-
+ 
     if (disponibles <= 0) {
       _mostrarError('Una actividad puede tener máximo 10 imágenes.');
       return;
     }
-
+ 
     try {
       final seleccionadas = await _imagePicker.pickMultiImage(
         imageQuality: 85,
       );
-
+ 
       if (!mounted || seleccionadas.isEmpty) return;
-
+ 
       final rutasActuales =
           _imagenesSeleccionadas.map((imagen) => imagen.path).toSet();
-
+ 
       final nuevas = seleccionadas
           .where((imagen) => !rutasActuales.contains(imagen.path))
           .take(disponibles)
           .toList();
-
+ 
       setState(() {
         _imagenesSeleccionadas.addAll(nuevas);
-
+ 
         for (final imagen in nuevas) {
           _bytesImagenes[imagen.path] = imagen.readAsBytes();
         }
-
+ 
         if (_imagenPrincipalUrl.isEmpty &&
             _imagenPrincipalNueva == null &&
             nuevas.isNotEmpty) {
           _imagenPrincipalNueva = nuevas.first.path;
         }
       });
-
+ 
       if (seleccionadas.length > nuevas.length) {
         _mostrarError(
           'Se agregaron ${nuevas.length} imagen(es). '
@@ -154,22 +155,22 @@ class _FormularioActividadSitioState
       _mostrarError('No fue posible seleccionar las imágenes: $error');
     }
   }
-
+ 
   void _quitarImagenExistente(String url) {
     if (_guardando) return;
-
+ 
     setState(() {
       if (!_imagenesEliminar.contains(url)) {
         _imagenesEliminar.add(url);
       }
-
+ 
       if (_imagenPrincipalUrl == url) {
         _imagenPrincipalUrl = '';
-
+ 
         final restantes = _imagenesExistentes
             .where((item) => !_imagenesEliminar.contains(item))
             .toList();
-
+ 
         if (restantes.isNotEmpty) {
           _imagenPrincipalUrl = restantes.first;
           _imagenPrincipalNueva = null;
@@ -181,52 +182,52 @@ class _FormularioActividadSitioState
       }
     });
   }
-
+ 
   void _restaurarImagenExistente(String url) {
     if (_guardando) return;
-
+ 
     setState(() {
       _imagenesEliminar.remove(url);
-
+ 
       if (_imagenPrincipalUrl.isEmpty &&
           _imagenPrincipalNueva == null) {
         _imagenPrincipalUrl = url;
       }
     });
   }
-
+ 
   void _establecerPrincipalExistente(String url) {
     if (_guardando || _imagenesEliminar.contains(url)) return;
-
+ 
     setState(() {
       _imagenPrincipalUrl = url;
       _imagenPrincipalNueva = null;
     });
   }
-
+ 
   void _establecerPrincipalNueva(XFile imagen) {
     if (_guardando) return;
-
+ 
     setState(() {
       _imagenPrincipalNueva = imagen.path;
       _imagenPrincipalUrl = '';
     });
   }
-
+ 
   void _quitarImagenNueva(XFile imagen) {
     if (_guardando) return;
-
+ 
     setState(() {
       _imagenesSeleccionadas.remove(imagen);
       _bytesImagenes.remove(imagen.path);
-
+ 
       if (_imagenPrincipalNueva == imagen.path) {
         _imagenPrincipalNueva = null;
-
+ 
         final existentes = _imagenesExistentes
             .where((url) => !_imagenesEliminar.contains(url))
             .toList();
-
+ 
         if (existentes.isNotEmpty) {
           _imagenPrincipalUrl = existentes.first;
         } else if (_imagenesSeleccionadas.isNotEmpty) {
@@ -235,64 +236,64 @@ class _FormularioActividadSitioState
       }
     });
   }
-
+ 
   Future<void> _guardar() async {
     if (_guardando) return;
-
+ 
     final nombre = _nombreController.text.trim();
-
+ 
     if (nombre.isEmpty) {
       _mostrarError('El nombre de la actividad es obligatorio.');
       return;
     }
-
+ 
     if (nombre.length > 120) {
       _mostrarError('El nombre no puede superar los 120 caracteres.');
       return;
     }
-
+ 
     final descripcion = _descripcionController.text.trim();
-
+ 
     if (descripcion.length > 1500) {
       _mostrarError('La descripción no puede superar los 1500 caracteres.');
       return;
     }
-
+ 
     final precioTexto =
         _precioController.text.trim().replaceAll(',', '.');
     final precio =
         precioTexto.isEmpty ? 0.0 : double.tryParse(precioTexto);
-
+ 
     if (precio == null || !precio.isFinite || precio < 0) {
       _mostrarError('Ingresa un precio válido que no sea negativo.');
       return;
     }
-
+ 
     if (_totalImagenes == 0) {
       _mostrarError('La actividad debe conservar al menos una imagen.');
       return;
     }
-
+ 
     if (_totalImagenes > 10) {
       _mostrarError('Una actividad puede tener máximo 10 imágenes.');
       return;
     }
-
+ 
     if (_imagenPrincipalUrl.isEmpty &&
         _imagenPrincipalNueva == null) {
       final existentes = _imagenesExistentes
           .where((url) => !_imagenesEliminar.contains(url))
           .toList();
-
+ 
       if (existentes.isNotEmpty) {
         _imagenPrincipalUrl = existentes.first;
       } else if (_imagenesSeleccionadas.isNotEmpty) {
         _imagenPrincipalNueva = _imagenesSeleccionadas.first.path;
       }
     }
-
+ 
     setState(() => _guardando = true);
-
+ 
     try {
       await widget.onGuardar(
         nombre: nombre,
@@ -305,47 +306,37 @@ class _FormularioActividadSitioState
         imagenPrincipalUrl: _imagenPrincipalUrl,
         imagenPrincipalNueva: _imagenPrincipalNueva,
       );
-
+ 
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
-
+ 
       setState(() => _guardando = false);
       _mostrarError(error.toString().replaceFirst('Exception: ', ''));
     }
   }
-
+ 
   void _mostrarError(String mensaje) {
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(mensaje),
-          backgroundColor: AppColors.sitioError,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
+ 
+    // Aviso en el overlay raíz: siempre queda encima del formulario.
+    AvisosSitio.error(context, mensaje);
   }
-
+ 
   Widget _vistaNueva(XFile imagen) {
     final bytes = _bytesImagenes.putIfAbsent(
       imagen.path,
       () => imagen.readAsBytes(),
     );
-
+ 
     return FutureBuilder<Uint8List>(
       future: bytes,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const _ImagenActividadVacia();
         }
-
+ 
         if (!snapshot.hasData) {
           return const Center(
             child: CircularProgressIndicator(
@@ -354,7 +345,7 @@ class _FormularioActividadSitioState
             ),
           );
         }
-
+ 
         return Image.memory(
           snapshot.data!,
           fit: BoxFit.cover,
@@ -363,7 +354,7 @@ class _FormularioActividadSitioState
       },
     );
   }
-
+ 
   Widget _miniatura({
     required Widget imagen,
     required bool principal,
@@ -452,12 +443,12 @@ class _FormularioActividadSitioState
       ],
     );
   }
-
+ 
   Widget _construirSeccionImagenes() {
     final existentesVisibles = _imagenesExistentes
         .where((url) => !_imagenesEliminar.contains(url))
         .toList();
-
+ 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -551,7 +542,7 @@ class _FormularioActividadSitioState
                     : constraints.maxWidth < 460
                         ? 3
                         : 4;
-
+ 
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -566,7 +557,7 @@ class _FormularioActividadSitioState
                   itemBuilder: (context, index) {
                     if (index < existentesVisibles.length) {
                       final url = existentesVisibles[index];
-
+ 
                       return _miniatura(
                         imagen: Image.network(
                           url,
@@ -580,11 +571,11 @@ class _FormularioActividadSitioState
                         alQuitar: () => _quitarImagenExistente(url),
                       );
                     }
-
+ 
                     final indiceNueva =
                         index - existentesVisibles.length;
                     final imagen = _imagenesSeleccionadas[indiceNueva];
-
+ 
                     return _miniatura(
                       imagen: _vistaNueva(imagen),
                       principal: _imagenPrincipalNueva == imagen.path &&
@@ -658,7 +649,7 @@ class _FormularioActividadSitioState
       ),
     );
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -814,7 +805,7 @@ class _FormularioActividadSitioState
                             ],
                           );
                         }
-
+ 
                         return Column(
                           children: [
                             Row(
@@ -875,7 +866,7 @@ class _FormularioActividadSitioState
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final compacto = constraints.maxWidth < 340;
-
+ 
                     if (compacto) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -899,7 +890,7 @@ class _FormularioActividadSitioState
                         ],
                       );
                     }
-
+ 
                     return Row(
                       children: [
                         Expanded(
@@ -935,7 +926,7 @@ class _FormularioActividadSitioState
       ),
     );
   }
-
+ 
   Widget _encabezadoSeccion(
     String titulo,
     String descripcion,
@@ -985,7 +976,7 @@ class _FormularioActividadSitioState
       ],
     );
   }
-
+ 
   Widget _campo(
     TextEditingController controller,
     String etiqueta, {
@@ -1073,7 +1064,7 @@ class _FormularioActividadSitioState
       ),
     );
   }
-
+ 
   ButtonStyle _estiloBotonPrincipal() {
     return ElevatedButton.styleFrom(
       backgroundColor: AppColors.sitioPrimary,
@@ -1091,7 +1082,7 @@ class _FormularioActividadSitioState
       ),
     );
   }
-
+ 
   ButtonStyle _estiloBotonSecundario() {
     return OutlinedButton.styleFrom(
       foregroundColor: AppColors.sitioPrimary,
@@ -1107,7 +1098,7 @@ class _FormularioActividadSitioState
       ),
     );
   }
-
+ 
   Widget _iconoGuardar() {
     if (_guardando) {
       return const SizedBox(
@@ -1119,14 +1110,14 @@ class _FormularioActividadSitioState
         ),
       );
     }
-
+ 
     return const Icon(Icons.save_outlined, size: 19);
   }
 }
-
+ 
 class _ImagenActividadVacia extends StatelessWidget {
   const _ImagenActividadVacia();
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(

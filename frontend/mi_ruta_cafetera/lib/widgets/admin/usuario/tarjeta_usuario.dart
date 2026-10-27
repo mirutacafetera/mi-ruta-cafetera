@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../models/admin/usuario_admin.dart';
@@ -21,113 +22,117 @@ class TarjetaUsuario extends StatelessWidget {
   Widget build(BuildContext context) {
     final eliminado = usuario.eliminado;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.adminBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.coffeeDark.withValues(alpha: 0.07),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(17),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  _avatar(),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          eliminado &&
-                                  (usuario.usuarioNombreEliminado ?? '')
-                                      .isNotEmpty
-                              ? usuario.usuarioNombreEliminado!
-                              : usuario.nombreCompleto.isEmpty
-                                  ? 'Usuario sin nombre'
-                                  : usuario.nombreCompleto,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.coffeeDark,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _dato(
-                          Icons.mail_outline_rounded,
-                          usuario.correoMostrado,
-                          AppColors.secondary,
-                        ),
-                        if (!eliminado && usuario.ciudad.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          _dato(
-                            Icons.location_on_outlined,
-                            usuario.ciudad,
-                            AppColors.primary,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  _menu(context),
-                ],
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              color: AppColors.surface,
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 8,
-                alignment: WrapAlignment.spaceBetween,
-                children: [
-                  _etiqueta(
-                    eliminado
-                        ? 'Cuenta eliminada'
-                        : usuario.activo
-                            ? 'Cuenta activa'
-                            : 'Cuenta inactiva',
-                    eliminado
-                        ? AppColors.textSecondary
-                        : usuario.activo
-                            ? AppColors.success
-                            : AppColors.error,
-                    eliminado
-                        ? Icons.person_off_outlined
-                        : usuario.activo
-                            ? Icons.check_circle_rounded
-                            : Icons.pause_circle_outline_rounded,
-                  ),
-                  if (!eliminado)
-                    _etiqueta(
-                      usuario.correoVerificado
-                          ? 'Correo verificado'
-                          : 'Correo pendiente',
-                      usuario.correoVerificado
-                          ? AppColors.success
-                          : AppColors.warning,
-                      usuario.correoVerificado
-                          ? Icons.verified_rounded
-                          : Icons.mark_email_unread_outlined,
-                    ),
-                ],
-              ),
+    return InkWell(
+      onTap: () => _historial(context),
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.adminBorder),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.coffeeDark.withValues(alpha: 0.07),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(17),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    _avatar(),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            eliminado &&
+                                    (usuario.usuarioNombreEliminado ?? '')
+                                        .isNotEmpty
+                                ? usuario.usuarioNombreEliminado!
+                                : usuario.nombreCompleto.isEmpty
+                                    ? 'Usuario sin nombre'
+                                    : usuario.nombreCompleto,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.coffeeDark,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _dato(
+                            Icons.mail_outline_rounded,
+                            usuario.correoMostrado,
+                            AppColors.secondary,
+                          ),
+                          if (!eliminado && usuario.ciudad.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            _dato(
+                              Icons.location_on_outlined,
+                              usuario.ciudad,
+                              AppColors.primary,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    _menu(context),
+                  ],
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                color: AppColors.surface,
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.spaceBetween,
+                  children: [
+                    _etiqueta(
+                      eliminado
+                          ? 'Cuenta eliminada'
+                          : usuario.activo
+                              ? 'Cuenta activa'
+                              : 'Cuenta inactiva',
+                      eliminado
+                          ? AppColors.textSecondary
+                          : usuario.activo
+                              ? AppColors.success
+                              : AppColors.error,
+                      eliminado
+                          ? Icons.person_off_outlined
+                          : usuario.activo
+                              ? Icons.check_circle_rounded
+                              : Icons.pause_circle_outline_rounded,
+                    ),
+                    if (!eliminado)
+                      _etiqueta(
+                        usuario.correoVerificado
+                            ? 'Correo verificado'
+                            : 'Correo pendiente',
+                        usuario.correoVerificado
+                            ? AppColors.success
+                            : AppColors.warning,
+                        usuario.correoVerificado
+                            ? Icons.verified_rounded
+                            : Icons.mark_email_unread_outlined,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -152,7 +157,6 @@ class TarjetaUsuario extends StatelessWidget {
         onSelected: (accion) {
           if (accion == 'estado') onCambiarEstado();
           if (accion == 'eliminar') onEliminar();
-          if (accion == 'historial') _historial(context);
         },
         itemBuilder: (_) => [
           if (!usuario.eliminado)
@@ -175,14 +179,6 @@ class TarjetaUsuario extends StatelessWidget {
                 AppColors.error,
               ),
             ),
-          PopupMenuItem(
-            value: 'historial',
-            child: _opcion(
-              Icons.history_rounded,
-              'Ver historial',
-              AppColors.secondary,
-            ),
-          ),
         ],
       );
 
@@ -317,87 +313,138 @@ class TarjetaUsuario extends StatelessWidget {
   void _historial(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.background,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.creamLight,
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: 32,
+          vertical: 32,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.adminBorder),
+          borderRadius: BorderRadius.circular(26),
+          side: const BorderSide(
+            color: Color(0xFFB58A70),
+            width: 1.3,
+          ),
         ),
-        title: const Row(
-          children: [
-            Icon(
-              Icons.history_rounded,
-              color: AppColors.secondary,
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Historial del usuario',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 370,
+            maxHeight: 620,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.history_rounded,
+                      color: AppColors.secondary,
+                      size: 23,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Historial del usuario',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _seccion('Información de la cuenta'),
+                        _historialDato(
+                          'Nombre',
+                          usuario.nombreCompleto,
+                        ),
+                        _historialDato(
+                          'Correo',
+                          usuario.correoMostrado,
+                        ),
+                        _historialDato(
+                          'Ciudad',
+                          usuario.ciudad,
+                        ),
+                        _historialDato(
+                          'Fecha de creación',
+                          _fecha(usuario.creadoEn),
+                        ),
+                        _historialDato(
+                          'Estado',
+                          usuario.eliminado
+                              ? 'Eliminada'
+                              : usuario.activo
+                                  ? 'Activa'
+                                  : 'Inactiva',
+                        ),
+                        _seccion('Información de eliminación'),
+                        _historialDato(
+                          'Nombre original',
+                          usuario.usuarioNombreEliminado,
+                        ),
+                        _historialDato(
+                          'Correo original',
+                          usuario.usuarioCorreoEliminado,
+                        ),
+                        _historialDato(
+                          'Tipo',
+                          usuario.tipoEliminacion == 'administrador'
+                              ? 'Por administrador'
+                              : usuario.tipoEliminacion == 'usuario'
+                                  ? 'Voluntaria'
+                                  : null,
+                        ),
+                        _historialDato(
+                          'Responsable',
+                          usuario.responsableNombre,
+                        ),
+                        _historialDato(
+                          'Fecha de eliminación',
+                          _fecha(
+                            usuario.fechaEliminacion ??
+                                usuario.eliminadoAt,
+                          ),
+                        ),
+                        _historialDato(
+                          'Motivo',
+                          usuario.motivoEliminacion,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                    ),
+                    child: const Text(
+                      'Cerrar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _seccion('Información de la cuenta'),
-              _historialDato('Nombre', usuario.nombreCompleto),
-              _historialDato('Correo', usuario.correoMostrado),
-              _historialDato('Ciudad', usuario.ciudad),
-              _historialDato(
-                'Fecha de creación',
-                _fecha(usuario.creadoEn),
-              ),
-              _historialDato(
-                'Estado',
-                usuario.eliminado
-                    ? 'Eliminada'
-                    : usuario.activo
-                        ? 'Activa'
-                        : 'Inactiva',
-              ),
-              _seccion('Información de eliminación'),
-              _historialDato(
-                'Nombre original',
-                usuario.usuarioNombreEliminado,
-              ),
-              _historialDato(
-                'Correo original',
-                usuario.usuarioCorreoEliminado,
-              ),
-              _historialDato(
-                'Tipo',
-                usuario.tipoEliminacion == 'administrador'
-                    ? 'Por administrador'
-                    : usuario.tipoEliminacion == 'usuario'
-                        ? 'Voluntaria'
-                        : null,
-              ),
-              _historialDato('Responsable', usuario.responsableNombre),
-              _historialDato('ID responsable', usuario.responsableId),
-              _historialDato(
-                'Fecha de eliminación',
-                _fecha(usuario.fechaEliminacion ?? usuario.eliminadoAt),
-              ),
-              _historialDato('Motivo', usuario.motivoEliminacion),
-            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'Cerrar',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ),
-        ],
       ),
     );
   }

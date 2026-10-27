@@ -1,91 +1,119 @@
-﻿import 'package:flutter/foundation.dart';
+﻿
+import 'package:flutter/foundation.dart';
 
 class ApiConfig {
   ApiConfig._();
 
   // ============================================================
-  // IP DEL COMPUTADOR EN LA RED LOCAL
+  // CONFIGURACIÓN DE ENTORNO
   // ============================================================
 
-  // Para celular físico.
+  // true: utiliza el backend remoto de Render.
+  // false: utiliza el backend local.
   //
-  // Si la IP del PC cambia, se puede cambiar al ejecutar mediante:
+  // Por defecto se utiliza Render.
   //
+  // Para ejecutar con el backend local:
+  // flutter run --dart-define=USE_REMOTE_API=false
+  //
+  // Para ejecutar con Render explícitamente:
+  // flutter run --dart-define=USE_REMOTE_API=true
+
+  static const bool _usarBackendRemoto = bool.fromEnvironment(
+    'USE_REMOTE_API',
+    defaultValue: true,
+  );
+
+  // IP del computador para pruebas desde un celular físico.
+  //
+  // Puedes cambiarla al ejecutar Flutter con:
   // --dart-define=API_PC_IP=192.168.1.101
-  //
+
   static const String _ipPc = String.fromEnvironment(
     'API_PC_IP',
     defaultValue: '192.168.1.101',
   );
 
-  // ============================================================
-  // DISPOSITIVO FÍSICO
-  // ============================================================
+  // true: dispositivo físico conectado a la red local.
+  // false: emulador Android.
+  //
+  // Solo se utiliza cuando el backend remoto está desactivado.
 
-  // Por defecto Flutter utilizará el emulador Android.
-  //
-  // Para celular físico:
-  //
-  // --dart-define=USE_PHYSICAL_DEVICE=true
-  //
   static const bool _celular = bool.fromEnvironment(
     'USE_PHYSICAL_DEVICE',
     defaultValue: false,
   );
 
   // ============================================================
+  // DIRECCIONES DEL BACKEND
+  // ============================================================
+
+  static const String _remoteUrl =
+      'https://mi-ruta-cafetera.onrender.com/api';
+
+  static const String _localUrlWeb =
+      'http://localhost:3000/api';
+
+  static const String _localUrlEmulador =
+      'http://10.0.2.2:3000/api';
+
+  static String get _localUrlCelular =>
+      'http://$_ipPc:3000/api';
+
+  // ============================================================
   // URL BASE
   // ============================================================
 
   static String get baseUrl {
-    // Flutter Web
+    // Backend remoto en Render.
+    if (_usarBackendRemoto) {
+      return _remoteUrl;
+    }
+
+    // Backend local cuando se ejecuta en navegador.
     if (kIsWeb) {
-      return 'http://localhost:3000/api';
+      return _localUrlWeb;
     }
 
-    // Celular físico conectado a la misma red del PC
+    // Backend local desde un celular físico.
     if (_celular) {
-      return 'http://$_ipPc:3000/api';
+      return _localUrlCelular;
     }
 
-    // Emulador Android
-    return 'http://10.0.2.2:3000/api';
+    // Backend local desde el emulador Android.
+    return _localUrlEmulador;
   }
 
-  // ============================================================
-  // URL PARA CELULAR FÍSICO
-  // ============================================================
+  // Dirección del backend local para un celular físico.
+  static String get baseUrlCelular => _localUrlCelular;
 
-  static String get baseUrlCelular =>
-      'http://$_ipPc:3000/api';
+  // Indica si la aplicación utiliza el backend remoto.
+  static bool get usaBackendRemoto => _usarBackendRemoto;
 
   // ============================================================
   // ENDPOINTS
   // ============================================================
 
-  static String get chatUrl =>
-      '$baseUrl/chat';
+  static String get chatUrl => '$baseUrl/chat';
 
-  static String get sitiosUrl =>
-      '$baseUrl/sitios';
+  static String get sitiosUrl => '$baseUrl/sitios';
 
-  static String get categoriasUrl =>
-      '$baseUrl/categorias';
+  static String get categoriasUrl => '$baseUrl/categorias';
 
   static String get categoriasSitiosUrl =>
       '$baseUrl/categorias-sitios';
 
-  static String get rutasUrl =>
-      '$baseUrl/rutas';
+  static String get rutasUrl => '$baseUrl/rutas';
 
-  static String get calcularRutaUrl =>
-      '$rutasUrl/calcular';
+  static String get calcularRutaUrl => '$rutasUrl/calcular';
 
-  // Recomendaciones con IA (backend: POST /api/v1/ai/recommendations).
   static String get recomendacionesIaUrl =>
       '$baseUrl/v1/ai/recommendations';
 
-  // Servicio público de clima Open-Meteo (no requiere API key).
+  // ============================================================
+  // SERVICIOS EXTERNOS
+  // ============================================================
+
   static const String climaUrl =
       'https://api.open-meteo.com/v1/forecast';
 }

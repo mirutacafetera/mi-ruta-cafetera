@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/reserva/reserva_admin_controller.dart';
@@ -71,11 +72,9 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
   }
 
   Future<void> abrirDetalle(ReservaAdminModel reserva) async {
-    await showModalBottomSheet<void>(
+    await showDialog<void>(
       context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: AppColors.creamLight,
+      barrierDismissible: true,
       builder: (context) {
         return AnimatedBuilder(
           animation: controller,
@@ -85,9 +84,25 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
               orElse: () => reserva,
             );
 
-            return SafeArea(
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.85,
+            return Dialog(
+              backgroundColor: AppColors.creamLight,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 32,
+                vertical: 32,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(26),
+                side: const BorderSide(
+                  color: Color(0xFFB58A70),
+                  width: 1.3,
+                ),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 370,
+                  maxHeight: 620,
+                ),
                 child: DetalleReservaAdmin(
                   reserva: actual,
                 ),
@@ -182,9 +197,7 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
                   onActualizar: controller.cargarReservas,
                   onNuevo: () {},
                 ),
-
                 const SizedBox(height: AppDimensions.spacingSm),
-
                 ResumenReservas(
                   todas: controller.reservas.length,
                   pendientes: _contarEstado('pendiente'),
@@ -193,9 +206,7 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
                   canceladas: _contarEstado('cancelada'),
                   completadas: _contarEstado('completada'),
                 ),
-
                 const SizedBox(height: AppDimensions.spacingLg),
-
                 BarraBusqueda(
                   valor: busqueda,
                   textoAyuda:
@@ -206,18 +217,14 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
                   },
                   onLimpiar: limpiarBusqueda,
                 ),
-
                 const SizedBox(height: AppDimensions.spacingSm),
-
                 FiltroEstadoReserva(
                   estadoSeleccionado: estadoSeleccionado,
                   onChanged: (estado) {
                     setState(() => estadoSeleccionado = estado);
                   },
                 ),
-
                 const SizedBox(height: AppDimensions.spacingLg),
-
                 if (controller.error != null)
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -231,7 +238,6 @@ class _PantallaReservaAdminState extends State<PantallaReservaAdmin> {
                       ),
                     ),
                   ),
-
                 Padding(
                   padding: const EdgeInsets.only(
                     top: AppDimensions.spacingSm,

@@ -1,301 +1,168 @@
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../../widgets/admin/admin_menu_lateral.dart';
-import '../../widgets/admin/admin_proximamente.dart';
-import '../../controllers/admin/cuenta/foto_perfil_admin_controlador.dart';
 
-import 'admin_inicio.dart';
-import 'admin_perfil.dart';
-import 'admin_sitio_list_screen.dart';
-
-import '../mapa_screen_2.dart';
-
-import '../../screens/admin/usuario/pantalla_usuarios_admin.dart';
-
-class AdminScreen extends StatefulWidget {
+class AdminInicio extends StatelessWidget {
   final String nombre;
   final String email;
+  final VoidCallback onAbrirMapa;
+  final VoidCallback onGestionarSitios;
+  final VoidCallback onGestionarUsuarios;
+  final VoidCallback onAbrirCuenta;
 
-  const AdminScreen({
+  const AdminInicio({
     super.key,
     required this.nombre,
     required this.email,
+    required this.onAbrirMapa,
+    required this.onGestionarSitios,
+    required this.onGestionarUsuarios,
+    required this.onAbrirCuenta,
   });
 
   @override
-  State<AdminScreen> createState() => _AdminScreenState();
-}
-
-class _AdminScreenState extends State<AdminScreen> {
-  String _opcionSeleccionada = 'inicio';
-
-  late final FotoPerfilAdminControlador fotoPerfilControlador;
-
-  @override
-  void initState() {
-    super.initState();
-    fotoPerfilControlador = FotoPerfilAdminControlador();
-    fotoPerfilControlador.cargarFoto();
-  }
-
-  String _normalizarOpcion(String opcion) {
-    switch (opcion.trim().toLowerCase()) {
-      case 'inicio':
-      case 'home':
-        return 'inicio';
-
-      case 'estadistica':
-      case 'estadisticas':
-        return 'estadisticas';
-
-      case 'sitio':
-      case 'sitios':
-      case 'sitios_turisticos':
-        return 'sitios';
-
-      case 'actividad':
-      case 'actividades':
-      case 'actividad_pendiente':
-      case 'actividades_pendientes':
-        return 'actividades';
-
-      case 'producto':
-      case 'productos':
-      case 'producto_pendiente':
-      case 'productos_pendientes':
-      case 'productos-pendientes':
-        return 'productos';
-
-      case 'categoria':
-      case 'categorias':
-        return 'categorias';
-
-      case 'contenido':
-      case 'contenidos':
-      case 'moderacion':
-      case 'moderacion_contenidos':
-      case 'moderacion-contenidos':
-        return 'contenido';
-
-      case 'resena':
-      case 'resenas':
-        return 'resenas';
-
-      case 'reserva':
-      case 'reservas':
-        return 'reservas';
-
-      case 'reporte':
-      case 'reportes':
-        return 'reportes';
-
-      case 'usuario':
-      case 'usuarios':
-        return 'usuarios';
-
-      case 'perfil':
-      case 'mi_cuenta':
-        return 'perfil';
-
-      case 'logout':
-      case 'cerrar_sesion':
-        return 'logout';
-
-      default:
-        return 'inicio';
-    }
-  }
-
-  void _cambiarOpcion(String opcion) {
-    if (!mounted) return;
-
-    final opcionNormalizada = _normalizarOpcion(opcion);
-
-    if (opcionNormalizada == 'logout') {
-      _mostrarConfirmacionCerrarSesion();
-      return;
-    }
-
-    setState(() {
-      _opcionSeleccionada = opcionNormalizada;
-    });
-  }
-
-  Future<void> _mostrarConfirmacionCerrarSesion() async {
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Cerrar sesión'),
-          content: const Text(
-            '¿Deseas cerrar la sesión de administrador?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(false);
-              },
-              child: const Text('Cancelar'),
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _tarjetaCuenta(),
+          const SizedBox(height: 24),
+          const Text(
+            'Panel de administración',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
             ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-              child: const Text('Cerrar sesión'),
+          ),
+          const SizedBox(height: 16),
+          _tarjetaOpcion(
+            icono: Icons.map_outlined,
+            titulo: 'Mapa turístico',
+            descripcion: 'Explora los sitios turísticos.',
+            color: Colors.green,
+            onTap: onAbrirMapa,
+          ),
+          _tarjetaOpcion(
+            icono: Icons.place_outlined,
+            titulo: 'Gestionar sitios',
+            descripcion: 'Administra los sitios turísticos.',
+            color: Colors.orange,
+            onTap: onGestionarSitios,
+          ),
+          _tarjetaOpcion(
+            icono: Icons.people_outline,
+            titulo: 'Gestionar usuarios',
+            descripcion: 'Consulta los usuarios registrados.',
+            color: Colors.teal,
+            onTap: onGestionarUsuarios,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tarjetaCuenta() {
+    return InkWell(
+      onTap: onAbrirCuenta,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              radius: 28,
+              backgroundColor: Colors.white24,
+              child: Icon(
+                Icons.person,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nombre,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    email,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Ver mi cuenta',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white,
+              size: 18,
             ),
           ],
-        );
-      },
-    );
-
-    if (!mounted || confirmar != true) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Debes cerrar la sesión desde el flujo de autenticación.',
         ),
       ),
     );
   }
 
-  void _abrirMapa() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const MapaScreen2(),
+  Widget _tarjetaOpcion({
+    required IconData icono,
+    required String titulo,
+    required String descripcion,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 14),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: CircleAvatar(
+          backgroundColor: color.withValues(alpha: 0.15),
+          child: Icon(icono, color: color),
+        ),
+        title: Text(
+          titulo,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 5),
+          child: Text(descripcion),
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
       ),
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_tituloPantalla()),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.white,
-        elevation: AppDimensions.elevationNone,
-      ),
-      drawer: AdminMenuLateral(
-        nombre: widget.nombre,
-        email: widget.email,
-        fotoPerfilControlador: fotoPerfilControlador,
-        onOpcionSeleccionada: _cambiarOpcion,
-        opcionSeleccionada: _opcionSeleccionada,
-      ),
-      body: _crearContenido(),
-    );
-  }
-
-  String _tituloPantalla() {
-    switch (_opcionSeleccionada) {
-      case 'inicio':
-        return 'Panel de administración';
-
-      case 'estadisticas':
-        return 'Estadísticas';
-
-      case 'sitios':
-        return 'Sitios turísticos';
-
-      case 'actividades':
-        return 'Actividades pendientes';
-
-      case 'productos':
-        return 'Productos pendientes';
-
-      case 'categorias':
-        return 'Categorías';
-
-      case 'contenido':
-        return 'Moderación de contenidos';
-
-      case 'resenas':
-        return 'Reseñas';
-
-      case 'reservas':
-        return 'Reservas';
-
-      case 'reportes':
-        return 'Reportes';
-
-      case 'usuarios':
-        return 'Usuarios';
-
-      case 'perfil':
-        return 'Mi cuenta';
-
-      default:
-        return 'Panel de administración';
-    }
-  }
-
-  Widget _crearContenido() {
-    switch (_opcionSeleccionada) {
-      case 'inicio':
-        return _inicio();
-
-      case 'sitios':
-        return _sitios();
-
-      case 'productos':
-        return const AdminProximamente(nombre: 'Productos');
-
-      case 'perfil':
-        return AdminPerfil(
-          nombre: widget.nombre,
-          email: widget.email,
-        );
-
-      case 'estadisticas':
-        return const AdminProximamente(nombre: 'Estadísticas');
-
-      case 'categorias':
-        return const AdminProximamente(nombre: 'Categorías');
-
-      case 'actividades':
-        return const AdminProximamente(nombre: 'Actividades');
-
-      case 'contenido':
-        return const AdminProximamente(nombre: 'Moderación de contenidos');
-
-      case 'resenas':
-        return const AdminProximamente(nombre: 'Reseñas');
-
-      case 'reservas':
-        return const AdminProximamente(nombre: 'Reservas');
-
-      case 'reportes':
-        return const AdminProximamente(nombre: 'Reportes');
-
-      case 'usuarios':
-        return const PantallaUsuariosAdmin();
-
-      default:
-        return _inicio();
-    }
-  }
-
-  Widget _inicio() {
-    return AdminInicio(
-      nombre: widget.nombre,
-      email: widget.email,
-      onAbrirMapa: _abrirMapa,
-      onGestionarSitios: () {
-        _cambiarOpcion('sitios');
-      },
-    );
-  }
-
-  Widget _sitios() {
-    return const AdminSitioListScreen();
-  }
-
-  @override
-  void dispose() {
-    fotoPerfilControlador.dispose();
-    super.dispose();
   }
 }

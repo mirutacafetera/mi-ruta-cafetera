@@ -19,7 +19,7 @@ import 'cuenta_sitio/pantalla_cuenta_sitio.dart';
 import 'estadistica/pantalla_estadistica.dart';
 import 'producto/pantalla_producto.dart';
 import 'reporte/pantalla_reporte_admin.dart';
-import 'reporte/pantalla_reportes_sitios_admin.dart';
+import 'reportes_sitios/pantalla_reportes_sitios_admin.dart';
 import 'reserva/pantalla_reserva_admin.dart';
 import 'resena/pantalla_resenas_admin.dart';
 import 'sitio_turistico/pantalla_lista_sitios.dart';
@@ -36,7 +36,8 @@ class PantallaAdministrador extends StatefulWidget {
   });
 
   @override
-  State<PantallaAdministrador> createState() => _PantallaAdministradorState();
+  State<PantallaAdministrador> createState() =>
+      _PantallaAdministradorState();
 }
 
 class _PantallaAdministradorState extends State<PantallaAdministrador> {
@@ -44,17 +45,20 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   late final CuentaAdminController cuentaAdminController;
   late final FotoPerfilAdminControlador fotoPerfilControlador;
 
+  final GlobalKey<ScaffoldState> _claveScaffold =
+      GlobalKey<ScaffoldState>();
+
   @override
   void initState() {
     super.initState();
 
-    controlador = ControladorPantallaAdministrador()..addListener(_actualizar);
+    controlador = ControladorPantallaAdministrador()
+      ..addListener(_actualizar);
 
     cuentaAdminController = CuentaAdminController();
     fotoPerfilControlador = FotoPerfilAdminControlador();
 
     _cargarCuenta();
-    fotoPerfilControlador.cargarFoto();
   }
 
   void _actualizar() {
@@ -68,11 +72,20 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
     if (!mounted) return;
 
-    final idAdministrador = AdminServicioAutenticacion.idAdministrador;
+    final idAdministrador =
+        AdminServicioAutenticacion.idAdministrador;
 
-    if (idAdministrador != null && idAdministrador.isNotEmpty) {
-      await cuentaAdminController.cargarCuenta(idAdministrador);
+    if (idAdministrador == null || idAdministrador.isEmpty) {
+      return;
     }
+
+    await cuentaAdminController.cargarCuenta(idAdministrador);
+
+    if (!mounted) return;
+
+    await fotoPerfilControlador.cargarFoto(
+      idAdministrador: idAdministrador,
+    );
   }
 
   Future<void> _cerrarSesion() async {
@@ -80,7 +93,10 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
 
     if (!mounted) return;
 
-    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      '/',
+      (route) => false,
+    );
   }
 
   Future<void> _confirmarCerrarSesion() async {
@@ -89,14 +105,20 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Cerrar sesión'),
-          content: const Text('¿Deseas cerrar la sesión de administrador?'),
+          content: const Text(
+            '¿Deseas cerrar la sesión de administrador?',
+          ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
               child: const Text('Cancelar'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
               child: const Text('Cerrar sesión'),
             ),
           ],
@@ -112,26 +134,44 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
   void _manejarOpcion(String opcion) {
     final opcionNormalizada = opcion.trim().toLowerCase();
 
-    if (opcionNormalizada == 'logout' || opcionNormalizada == 'cerrar_sesion') {
+    if (opcionNormalizada == 'logout' ||
+        opcionNormalizada == 'cerrar_sesion') {
       _confirmarCerrarSesion();
       return;
     }
 
-    controlador.cambiarOpcion(opcion);
+    controlador.cambiarOpcion(opcionNormalizada);
   }
+
+ 
 
   void _abrirMapa() {
     Navigator.push(
       context,
-      MaterialPageRoute<void>(builder: (_) => const MapaScreen2()),
+      MaterialPageRoute<void>(
+        builder: (_) => const MapaScreen2(),
+      ),
     );
+  }
+
+  void _abrirUsuarios() {
+    controlador.cambiarOpcion('usuarios');
   }
 
   @override
   Widget build(BuildContext context) {
+    final titulo = switch (controlador.opcion) {
+      'contenido' => 'Contenidos',
+      'productos' => 'Productos',
+      'usuarios' => 'Usuarios',
+      'reportes_sitios' => 'Reportes de sitios',
+      _ => controlador.titulo,
+    };
+
     return Scaffold(
+      key: _claveScaffold,
       appBar: AppBar(
-        title: Text(controlador.titulo),
+        title: Text(titulo),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         elevation: AppDimensions.elevationNone,
@@ -143,7 +183,9 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
         onOpcionSeleccionada: _manejarOpcion,
         opcionSeleccionada: controlador.opcion,
       ),
-      body: FondoAdmin(child: _contenido()),
+      body: FondoAdmin(
+        child: _contenido(),
+      ),
     );
   }
 
@@ -159,7 +201,15 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
         return const PantallaActividades();
 
       case 'productos':
-        return const PantallaProducto();
+        return PantallaProducto(
+          menuLateral: AdminMenuLateral(
+            nombre: widget.nombre,
+            email: widget.email,
+            fotoPerfilControlador: fotoPerfilControlador,
+            onOpcionSeleccionada: _manejarOpcion,
+            opcionSeleccionada: controlador.opcion,
+          ),
+        );
 
       case 'contenido':
         return const PantallaContenido();
@@ -206,9 +256,14 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     return AdminInicio(
       nombre: widget.nombre,
       email: widget.email,
+      fotoPerfilControlador: fotoPerfilControlador,
       onAbrirMapa: _abrirMapa,
       onGestionarSitios: () {
         controlador.cambiarOpcion('sitios');
+      },
+      onGestionarUsuarios: _abrirUsuarios,
+      onAbrirCuenta: () {
+        controlador.cambiarOpcion('perfil');
       },
     );
   }

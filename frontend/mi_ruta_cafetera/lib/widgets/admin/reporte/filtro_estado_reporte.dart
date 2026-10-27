@@ -13,87 +13,83 @@ class FiltroEstadoReporte extends StatelessWidget {
     required this.onChanged,
   });
 
+  static const Color _bordeCafe = Color(0xFFB58A70);
+
   static const List<Map<String, dynamic>> estados = [
     {
       'valor': 'todos',
       'titulo': 'Todos',
       'icono': Icons.groups_rounded,
+      'color': AppColors.secondary,
     },
     {
       'valor': 'pendiente',
       'titulo': 'Pendientes',
       'icono': Icons.mark_email_unread_rounded,
+      'color': Colors.orange,
     },
     {
       'valor': 'en_revision',
       'titulo': 'En revisión',
       'icono': Icons.manage_search_rounded,
+      'color': Colors.blue,
     },
     {
       'valor': 'resuelto',
       'titulo': 'Resueltos',
       'icono': Icons.check_circle_outline_rounded,
+      'color': AppColors.success,
     },
   ];
-
-  static const Color _bordeCafe = Color(0xFFB58A70);
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingSm,
+      ),
       child: Row(
         children: estados.map((estado) {
-          final activo = seleccionado == estado['valor'];
+          final valor = estado['valor'] as String;
+          final color = estado['color'] as Color;
+          final activo = seleccionado == valor;
 
           return Padding(
             padding: const EdgeInsets.only(
               right: AppDimensions.spacingSm,
             ),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
+              duration: const Duration(milliseconds: 180),
               curve: Curves.easeInOut,
               decoration: BoxDecoration(
                 color: activo
-                    ? AppColors.primary
+                    ? color.withValues(alpha: 0.12)
                     : AppColors.creamLight,
                 borderRadius: BorderRadius.circular(
                   AppDimensions.chipRadius,
                 ),
                 border: Border.all(
-                  color: activo
-                      ? AppColors.primary
-                      : _bordeCafe,
-                  width: activo ? 1.6 : 1.2,
+                  color: activo ? color : _bordeCafe,
+                  width: activo ? 1.3 : 1.1,
                 ),
-                boxShadow: activo
-                    ? [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(
-                            alpha: 0.16,
-                          ),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ]
-                    : [],
               ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    if (!activo) {
-                      onChanged(estado['valor'] as String);
-                    }
+                    if (!activo) onChanged(valor);
                   },
                   borderRadius: BorderRadius.circular(
                     AppDimensions.chipRadius,
                   ),
+                  splashColor: color.withValues(alpha: 0.08),
+                  highlightColor: color.withValues(alpha: 0.05),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingMd,
-                      vertical: 11,
+                      vertical: 10,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -101,31 +97,19 @@ class FiltroEstadoReporte extends StatelessWidget {
                         Icon(
                           estado['icono'] as IconData,
                           size: 17,
-                          color: activo
-                              ? AppColors.white
-                              : AppColors.secondary,
+                          color: color,
                         ),
                         const SizedBox(width: 7),
                         Text(
                           estado['titulo'] as String,
                           style: TextStyle(
                             color: activo
-                                ? AppColors.white
+                                ? color
                                 : AppColors.textPrimary,
                             fontSize: 13,
-                            fontWeight: activo
-                                ? FontWeight.w700
-                                : FontWeight.w600,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        if (activo) ...[
-                          const SizedBox(width: 7),
-                          const Icon(
-                            Icons.check_rounded,
-                            size: 16,
-                            color: AppColors.white,
-                          ),
-                        ],
                       ],
                     ),
                   ),

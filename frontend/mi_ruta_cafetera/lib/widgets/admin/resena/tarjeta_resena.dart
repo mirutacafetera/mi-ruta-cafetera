@@ -1,8 +1,10 @@
+
 import 'package:flutter/material.dart';
 
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_dimensions.dart';
-import '../../../../models/admin/resena_admin.dart';
+import '../../../models/admin/resena_admin.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../sitio/sitio_avatar_perfil.dart';
 
 class TarjetaResena extends StatelessWidget {
   final ResenaAdmin resena;
@@ -23,152 +25,187 @@ class TarjetaResena extends StatelessWidget {
   Widget build(BuildContext context) {
     final activa = resena.activo;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.pageHorizontalSmall,
-        vertical: AppDimensions.spacingXs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.creamLight,
-        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
-        border: Border.all(color: _bordeCafe, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.coffeeDark.withValues(alpha: 0.06),
-            blurRadius: 7,
-            offset: const Offset(0, 2),
+    return InkWell(
+      onTap: () => _mostrarHistorial(context),
+      borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.pageHorizontalSmall,
+          vertical: AppDimensions.spacingXs,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.creamLight,
+          borderRadius: BorderRadius.circular(
+            AppDimensions.cardRadius,
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusLg,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.person_rounded,
-                      color: AppColors.primary,
-                      size: AppDimensions.iconLg,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingMd),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          resena.usuario,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                        ),
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        Text(
-                          resena.sitio,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _menu(context, activa),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.spacingMd),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0E5D3),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+          border: Border.all(
+            color: _bordeCafe,
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.coffeeDark.withValues(alpha: 0.06),
+              blurRadius: 7,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.cardRadius,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(
+              AppDimensions.spacingMd,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    ...List.generate(
-                      5,
-                      (i) => Icon(
-                        i < resena.calificacion
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
-                        color: AppColors.secondary,
-                        size: AppDimensions.iconMd,
-                      ),
+                    SitioAvatarPerfil(
+                      fotoPerfil: resena.fotoPerfil,
+                      nombre: resena.usuario,
+                      radio: 22,
+                      colorFondo: AppColors.primary,
+                      colorIcono: Colors.white,
+                      avatar: resena.avatar,
                     ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Text(
-                      '${resena.calificacion}/5',
-                      style: const TextStyle(
-                        color: AppColors.coffeeDark,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    const SizedBox(
+                      width: AppDimensions.spacingMd,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppDimensions.spacingMd),
-              Text(
-                resena.comentario,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
-                      height: 1.5,
-                    ),
-              ),
-              const SizedBox(height: AppDimensions.spacingLg),
-              Container(
-                height: 1,
-                color: _bordeCafe.withValues(alpha: 0.45),
-              ),
-              const SizedBox(height: AppDimensions.spacingMd),
-              Row(
-                children: [
-                  _estado(activa),
-                  const Spacer(),
-                  if (resena.fecha != null)
-                    Flexible(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
-                            Icons.calendar_today_rounded,
-                            size: 13,
-                            color: AppColors.textSecondary,
+                          Text(
+                            resena.usuario,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
                           ),
-                          const SizedBox(width: AppDimensions.spacingXs),
-                          Flexible(
-                            child: Text(
-                              _fecha(resena.fecha!),
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
+                          const SizedBox(
+                            height: AppDimensions.spacingXs,
+                          ),
+                          Text(
+                            resena.sitio,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
                           ),
                         ],
                       ),
                     ),
-                ],
-              ),
-            ],
+                    _menu(context, activa),
+                  ],
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingMd,
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingMd,
+                    vertical: AppDimensions.spacingSm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0E5D3),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusMd,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...List.generate(
+                        5,
+                        (i) => Icon(
+                          i < resena.calificacion
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: AppColors.secondary,
+                          size: AppDimensions.iconMd,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: AppDimensions.spacingSm,
+                      ),
+                      Text(
+                        '${resena.calificacion}/5',
+                        style: const TextStyle(
+                          color: AppColors.coffeeDark,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingMd,
+                ),
+                Text(
+                  resena.comentario,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(
+                        color: AppColors.textPrimary,
+                        height: 1.5,
+                      ),
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingLg,
+                ),
+                Container(
+                  height: 1,
+                  color: _bordeCafe.withValues(alpha: 0.45),
+                ),
+                const SizedBox(
+                  height: AppDimensions.spacingMd,
+                ),
+                Row(
+                  children: [
+                    _estado(activa),
+                    const Spacer(),
+                    if (resena.fecha != null)
+                      Flexible(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            const Icon(
+                              Icons.calendar_today_rounded,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(
+                              width: AppDimensions.spacingXs,
+                            ),
+                            Flexible(
+                              child: Text(
+                                _fecha(resena.fecha!),
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -193,7 +230,6 @@ class TarjetaResena extends StatelessWidget {
       onSelected: (opcion) {
         if (opcion == 'estado') onCambiarEstado();
         if (opcion == 'eliminar') onEliminar();
-        if (opcion == 'historial') _mostrarHistorial(context);
       },
       itemBuilder: (_) => [
         PopupMenuItem(
@@ -214,49 +250,56 @@ class TarjetaResena extends StatelessWidget {
             AppColors.error,
           ),
         ),
-        PopupMenuItem(
-          value: 'historial',
-          child: _opcion(
-            Icons.history_rounded,
-            'Ver historial',
-            AppColors.secondary,
+      ],
+    );
+  }
+
+  Widget _opcion(
+    IconData icono,
+    String texto,
+    Color color,
+  ) {
+    return Row(
+      children: [
+        Icon(icono, color: color, size: 21),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            texto,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _opcion(IconData icono, String texto, Color color) => Row(
-        children: [
-          Icon(icono, color: color, size: 21),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              texto,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      );
-
   Widget _estado(bool activa) {
     final color = activa ? AppColors.success : AppColors.error;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 7,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.17),
-        borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
-        border: Border.all(color: color.withValues(alpha: 0.45)),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.chipRadius,
+        ),
+        border: Border.all(
+          color: color.withValues(alpha: 0.45),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            activa ? Icons.check_circle_rounded : Icons.cancel_rounded,
+            activa
+                ? Icons.check_circle_rounded
+                : Icons.cancel_rounded,
             size: 15,
             color: color,
           ),
@@ -277,56 +320,107 @@ class TarjetaResena extends StatelessWidget {
   void _mostrarHistorial(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => Dialog(
         backgroundColor: AppColors.creamLight,
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: 32,
+          vertical: 32,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: _bordeCafe),
+          borderRadius: BorderRadius.circular(26),
+          side: const BorderSide(
+            color: _bordeCafe,
+            width: 1.3,
+          ),
         ),
-        title: const Row(
-          children: [
-            Icon(Icons.history_rounded, color: AppColors.secondary),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Historial de la reseña',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 370,
+            maxHeight: 620,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.history_rounded,
+                      color: AppColors.secondary,
+                      size: 23,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Historial de la reseña',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _datoHistorial(
+                          'Usuario',
+                          resena.usuario,
+                        ),
+                        _datoHistorial(
+                          'Sitio turístico',
+                          resena.sitio,
+                        ),
+                        _datoHistorial(
+                          'Calificación',
+                          '${resena.calificacion}/5',
+                        ),
+                        _datoHistorial(
+                          'Comentario',
+                          resena.comentario,
+                        ),
+                        _datoHistorial(
+                          'Estado actual',
+                          resena.activo ? 'Activa' : 'Inactiva',
+                        ),
+                        _datoHistorial(
+                          'Fecha de la reseña',
+                          resena.fecha == null
+                              ? null
+                              : _fecha(resena.fecha!),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                    ),
+                    child: const Text(
+                      'Cerrar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _datoHistorial('Usuario', resena.usuario),
-              _datoHistorial('Sitio turístico', resena.sitio),
-              _datoHistorial('Calificación', '${resena.calificacion}/5'),
-              _datoHistorial('Comentario', resena.comentario),
-              _datoHistorial(
-                'Estado actual',
-                resena.activo ? 'Activa' : 'Inactiva',
-              ),
-              _datoHistorial(
-                'Fecha de la reseña',
-                resena.fecha == null ? null : _fecha(resena.fecha!),
-              ),
-            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'Cerrar',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ),
-        ],
       ),
     );
   }
