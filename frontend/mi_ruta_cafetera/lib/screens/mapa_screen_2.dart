@@ -21,6 +21,7 @@ import '../widgets/mapa/mapa_detalle_sitio.dart';
 import '../widgets/mapa/mapa_ruta_panel.dart';
 import '../widgets/mapa/mapa_rutas_predefinidas.dart';
 import '../widgets/mapa/mapa_selector_ruta.dart';
+import 'usuario/detalle_sitio_usuario_screen.dart';
 import '../l10n/textos.dart';
 
 class MapaScreen2 extends StatefulWidget {
@@ -664,6 +665,27 @@ void initState() {
   // ============================================================
 
   void _mostrarDetalles(
+    SitioTuristicoModel sitio,
+  ) {
+    _abrirDetalleSitio(sitio);
+  }
+
+  // Abre la pantalla completa del sitio (categoria y actividades).
+  void _abrirDetalleSitio(
+    SitioTuristicoModel sitio,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DetalleSitioUsuarioScreen(
+          sitio: sitio,
+        ),
+      ),
+    );
+  }
+
+  // Tarjeta inferior anterior: se conserva por si se quiere volver a usar.
+  // ignore: unused_element
+  void _mostrarTarjetaSitio(
     SitioTuristicoModel sitio,
   ) {
     showModalBottomSheet(
