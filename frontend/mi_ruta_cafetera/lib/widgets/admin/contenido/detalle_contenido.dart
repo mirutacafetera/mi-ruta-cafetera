@@ -45,12 +45,6 @@ class DetalleContenido extends StatefulWidget {
 class _DetalleContenidoState extends State<DetalleContenido> {
   bool _actualizando = false;
 
-  static const Color _terracota = Color(0xFFB85C50);
-
-  bool get _pendiente =>
-      widget.contenido.estadoPublicacion.toLowerCase().trim() ==
-      'pendiente_revision';
-
   Future<void> _actualizarDetalle() async {
     if (_actualizando) return;
 
@@ -263,7 +257,7 @@ class _DetalleContenidoState extends State<DetalleContenido> {
 
                           const SizedBox(height: 24),
 
-                          // ACCIONES DEL CONTENIDO
+                          // ÚNICA ACCIÓN: ELIMINAR
                           _acciones(),
 
                           const SizedBox(height: AppDimensions.spacingXl),
@@ -277,7 +271,7 @@ class _DetalleContenidoState extends State<DetalleContenido> {
     );
   }
 
-  // ENCABEZADO: PERMANECE VISIBLE DURANTE LA ACTUALIZACIÓN
+  // ENCABEZADO
   Widget _encabezado() => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -367,10 +361,10 @@ class _DetalleContenidoState extends State<DetalleContenido> {
         width: double.infinity,
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: _terracota.withValues(alpha: .07),
+          color: const Color(0xFFB85C50).withValues(alpha: .07),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: _terracota.withValues(alpha: .45),
+            color: const Color(0xFFB85C50).withValues(alpha: .45),
           ),
         ),
         child: Column(
@@ -380,7 +374,7 @@ class _DetalleContenidoState extends State<DetalleContenido> {
               children: [
                 Icon(
                   Icons.info_outline_rounded,
-                  color: _terracota,
+                  color: Color(0xFFB85C50),
                   size: 22,
                 ),
                 SizedBox(width: AppDimensions.spacingSm),
@@ -388,7 +382,7 @@ class _DetalleContenidoState extends State<DetalleContenido> {
                   child: Text(
                     'Motivo del rechazo',
                     style: TextStyle(
-                      color: _terracota,
+                      color: Color(0xFFB85C50),
                       fontWeight: FontWeight.w800,
                       fontSize: 14,
                     ),
@@ -475,7 +469,7 @@ class _DetalleContenidoState extends State<DetalleContenido> {
                 ],
                 const SizedBox(height: 16),
 
-                // BOTONES CENTRADOS: REPRODUCIR Y DETENER
+                // BOTONES DE AUDIO
                 Center(
                   child: Wrap(
                     alignment: WrapAlignment.center,
@@ -577,108 +571,37 @@ class _DetalleContenidoState extends State<DetalleContenido> {
         ),
       );
 
-  // ACCIONES DEL CONTENIDO
-  Widget _acciones() {
-    final botones = _pendiente
-        ? [
-            _botonAccion(
-              'Aprobar',
-              Icons.check_rounded,
-              widget.onAprobar,
-              AppColors.success,
-              principal: true,
-            ),
-            _botonAccion(
-              'Rechazar',
-              Icons.close_rounded,
-              widget.onRechazar,
-              _terracota,
-            ),
-          ]
-        : [
-            _botonAccion(
-              'Editar',
-              Icons.edit_outlined,
-              widget.onEditar,
-              AppColors.primary,
-            ),
-            _botonAccion(
-              widget.contenido.activo ? 'Desactivar' : 'Activar',
-              widget.contenido.activo
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              widget.onCambiarEstado,
-              AppColors.secondary,
-            ),
-            _botonAccion(
-              'Eliminar',
-              Icons.delete_outline,
-              widget.onEliminar,
-              AppColors.error,
-            ),
-          ];
-
-    return TarjetaDetalleActividad(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Acciones disponibles',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 5),
-            const Text(
-              'Administra el contenido desde aquí.',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 9,
-              runSpacing: 9,
-              children: botones,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _botonAccion(
-    String texto,
-    IconData icono,
-    VoidCallback accion,
-    Color color, {
-    bool principal = false,
-  }) =>
-      OutlinedButton.icon(
-        onPressed: accion,
-        icon: Icon(icono, size: 18),
-        label: Text(texto),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: principal ? AppColors.white : color,
-          backgroundColor: principal ? color : AppColors.surface,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 11,
+  // ÚNICO BOTÓN: ELIMINAR, SIN TARJETA
+  Widget _acciones() => Align(
+        alignment: Alignment.centerRight,
+        child: OutlinedButton.icon(
+          onPressed: widget.onEliminar,
+          icon: const Icon(
+            Icons.delete_outline_rounded,
+            size: 18,
           ),
-          minimumSize: const Size(0, 42),
-          visualDensity: VisualDensity.compact,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          side: BorderSide(
-            color: AppColors.adminBorder,
-            width: 1.1,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+          label: const Text('Eliminar'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.error,
+            backgroundColor: AppColors.surface,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 11,
+            ),
+            minimumSize: const Size(0, 42),
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            side: BorderSide(
+              color: AppColors.adminBorder,
+              width: 1.1,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       );

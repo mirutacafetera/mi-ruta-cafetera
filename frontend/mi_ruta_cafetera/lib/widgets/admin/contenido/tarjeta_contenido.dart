@@ -310,13 +310,16 @@ class TarjetaContenido extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  // Imagen más alta y sin la etiqueta "Contenido turístico".
+  // Imagen con el botón de eliminar en la esquina superior derecha.
   Widget _imagen(String url) {
     return SizedBox(
       height: 150,
       width: double.infinity,
-      child: url.isEmpty
-          ? Container(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (url.isEmpty)
+            Container(
               color: _beige,
               alignment: Alignment.center,
               child: const Icon(
@@ -325,7 +328,8 @@ class TarjetaContenido extends StatelessWidget {
                 size: 32,
               ),
             )
-          : Image.network(
+          else
+            Image.network(
               url,
               width: double.infinity,
               height: 150,
@@ -340,6 +344,41 @@ class TarjetaContenido extends StatelessWidget {
                 ),
               ),
             ),
+
+          // BOTÓN FLOTANTE DE ELIMINAR
+          Positioned(
+            top: 10,
+            right: 10,
+            child: Material(
+              color: _fondo,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(
+                  color: _borde,
+                  width: 1,
+                ),
+              ),
+              elevation: 2,
+              clipBehavior: Clip.antiAlias,
+              child: IconButton(
+                tooltip: 'Eliminar contenido',
+                onPressed: procesando ? null : onEliminar,
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: _terracota,
+                  size: 22,
+                ),
+                iconSize: 22,
+                constraints: const BoxConstraints(
+                  minWidth: 44,
+                  minHeight: 44,
+                ),
+                padding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
