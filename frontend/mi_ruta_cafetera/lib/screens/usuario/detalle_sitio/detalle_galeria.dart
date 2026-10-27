@@ -1,17 +1,24 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
 import '../../../l10n/textos.dart';
+import '../../../widgets/usuario/detalle_sitio/componentes_detalle.dart';
 
 class DetalleGaleria extends StatelessWidget {
   final List<String> imagenes;
   final bool cargando;
 
+  /// Cuando la pantalla que lo contiene ya dibuja el encabezado
+  /// de la sección, se envía `false` para no repetirlo.
+  final bool mostrarEncabezado;
+
   const DetalleGaleria({
     super.key,
     required this.imagenes,
     this.cargando = false,
+    this.mostrarEncabezado = true,
   });
 
   List<String> get _imagenesValidas {
@@ -28,10 +35,10 @@ class DetalleGaleria extends StatelessWidget {
 
     if (cargando) {
       return const Padding(
-        padding: EdgeInsets.all(28),
+        padding: EdgeInsets.all(AppDimensions.spacingXxl),
         child: Center(
           child: CircularProgressIndicator(
-            color: Color(0xFF214F3D),
+            color: AppColors.sitioPrimary,
           ),
         ),
       );
@@ -44,58 +51,28 @@ class DetalleGaleria extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.pageHorizontal,
-        vertical: 22,
+        vertical: AppDimensions.spacingLg,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F0E9),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: const Icon(
-                  Icons.photo_library_rounded,
-                  color: Color(0xFF214F3D),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Tr(
-                      'Galería de imágenes',
-                      style: TextStyle(
-                        color: Color(0xFF292D29),
-                        fontSize: 19,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Tr(
-                      'Conoce cada rincón de este lugar.',
-                      style: TextStyle(
-                        color: Color(0xFF6C746D),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          if (mostrarEncabezado) ...[
+            EncabezadoSeccionDetalle(
+              icono: Icons.photo_library_rounded,
+              titulo: Textos.t('Galería de imágenes'),
+              descripcion: Textos.t('Conoce cada rincón de este lugar.'),
+              padding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: AppDimensions.spacingLg),
+          ],
           SizedBox(
             height: 142,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: fotos.length > 5 ? 5 : fotos.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              separatorBuilder: (_, _) => const SizedBox(
+                width: AppDimensions.spacingMd - 2,
+              ),
               itemBuilder: (context, index) {
                 return SizedBox(
                   width: 164,
@@ -108,22 +85,24 @@ class DetalleGaleria extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: AppDimensions.spacingLg),
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: AppDimensions.buttonHeight,
             child: OutlinedButton.icon(
               onPressed: () => _mostrarGaleriaCompleta(
                 context,
                 fotos,
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF214F3D),
+                foregroundColor: AppColors.sitioPrimary,
                 side: const BorderSide(
-                  color: Color(0xFF214F3D),
+                  color: AppColors.sitioPrimary,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusLg,
+                  ),
                 ),
               ),
               icon: const Icon(Icons.grid_view_rounded),
@@ -141,8 +120,8 @@ class DetalleGaleria extends StatelessWidget {
     int index,
   ) {
     return Material(
-      color: const Color(0xFFE8F0E9),
-      borderRadius: BorderRadius.circular(15),
+      color: AppColors.sitioSurfaceGreen,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => _mostrarImagen(context, fotos, index),
@@ -155,24 +134,24 @@ class DetalleGaleria extends StatelessWidget {
               errorBuilder: (_, _, _) => const Center(
                 child: Icon(
                   Icons.broken_image_outlined,
-                  color: Color(0xFF214F3D),
+                  color: AppColors.sitioPrimary,
                   size: 34,
                 ),
               ),
             ),
             Positioned(
-              right: 8,
-              bottom: 8,
+              right: AppDimensions.spacingSm,
+              bottom: AppDimensions.spacingSm,
               child: Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
+                  color: AppColors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(9),
                 ),
                 child: const Icon(
                   Icons.zoom_in_rounded,
-                  color: Colors.white,
-                  size: 18,
+                  color: AppColors.white,
+                  size: AppDimensions.iconSm,
                 ),
               ),
             ),
@@ -248,10 +227,10 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F0E6),
+      backgroundColor: AppColors.sitioBackground,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF214F3D),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.sitioPrimary,
+        foregroundColor: AppColors.white,
         title: Tr(
           'Galería · {0} de {1}', args: [_indiceActual + 1, widget.imagenes.length],
         ),
@@ -264,18 +243,18 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
 
   Widget _cuadricula() {
     return GridView.builder(
-      padding: const EdgeInsets.all(14),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+      padding: const EdgeInsets.all(AppDimensions.sitioContentPadding),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 260,
+        crossAxisSpacing: AppDimensions.spacingMd,
+        mainAxisSpacing: AppDimensions.spacingMd,
         childAspectRatio: 0.9,
       ),
       itemCount: widget.imagenes.length,
       itemBuilder: (context, index) {
         return Material(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
+          color: AppColors.sitioSurface,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () {
@@ -299,7 +278,7 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
                 child: Icon(
                   Icons.broken_image_outlined,
                   size: 36,
-                  color: Color(0xFF214F3D),
+                  color: AppColors.sitioPrimary,
                 ),
               ),
             ),
@@ -332,7 +311,7 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
                     errorBuilder: (_, _, _) => const Icon(
                       Icons.broken_image_outlined,
                       size: 52,
-                      color: Color(0xFF214F3D),
+                      color: AppColors.sitioPrimary,
                     ),
                   ),
                 ),
@@ -341,11 +320,11 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(18),
-          child: Tr(
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          child: const Tr(
             'Desliza para ver las demás fotografías',
-            style: const TextStyle(
-              color: Color(0xFF6C746D),
+            style: TextStyle(
+              color: AppColors.sitioTextSecondary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -354,3 +333,4 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
     );
   }
 }
+

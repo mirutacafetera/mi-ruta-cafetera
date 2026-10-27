@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/textos.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 
@@ -18,6 +19,7 @@ class PanelDetalleAdaptable extends StatelessWidget {
     this.maxHeightFactor = 0.92,
     this.paddingContenido = const EdgeInsets.all(AppDimensions.spacingLg),
     this.alineacionCentrada = false,
+    this.esPanelInferior = false,
   });
 
   final String titulo;
@@ -27,6 +29,10 @@ class PanelDetalleAdaptable extends StatelessWidget {
   final double maxHeightFactor;
   final EdgeInsetsGeometry paddingContenido;
   final bool alineacionCentrada;
+
+  /// En el panel inferior solo se redondean las esquinas de arriba,
+  /// porque el borde de abajo toca el borde de la pantalla.
+  final bool esPanelInferior;
 
   /// Abre un diálogo centrado en pantallas amplias
   /// o un panel inferior en dispositivos móviles.
@@ -48,8 +54,8 @@ class PanelDetalleAdaptable extends StatelessWidget {
           return Dialog(
             backgroundColor: Colors.transparent,
             insetPadding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 24,
+              horizontal: AppDimensions.spacingXxl,
+              vertical: AppDimensions.spacingXxl,
             ),
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -84,6 +90,7 @@ class PanelDetalleAdaptable extends StatelessWidget {
               titulo: titulo,
               icono: icono,
               maxWidth: maxWidth,
+              esPanelInferior: true,
               child: builder(sheetContext),
             ),
           ),
@@ -97,10 +104,20 @@ class PanelDetalleAdaptable extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     final alturaMaxima = mediaQuery.size.height * maxHeightFactor;
 
+    final radio = Radius.circular(AppDimensions.detalleContentRadius);
+
+    // Deja libre la zona de los gestos del sistema en el panel inferior.
+    final espacioInferior =
+        esPanelInferior ? mediaQuery.viewPadding.bottom : 0.0;
+
+    final padding = paddingContenido.resolve(Directionality.of(context));
+
     return Material(
       color: AppColors.sitioBackground,
       clipBehavior: Clip.antiAlias,
-      borderRadius: BorderRadius.circular(AppDimensions.detalleContentRadius),
+      borderRadius: esPanelInferior
+          ? BorderRadius.only(topLeft: radio, topRight: radio)
+          : BorderRadius.all(radio),
       child: SizedBox(
         width: double.infinity,
         child: ConstrainedBox(
@@ -114,7 +131,9 @@ class PanelDetalleAdaptable extends StatelessWidget {
               _encabezado(context),
               Flexible(
                 child: SingleChildScrollView(
-                  padding: paddingContenido,
+                  padding: padding.copyWith(
+                    bottom: padding.bottom + espacioInferior,
+                  ),
                   child: child,
                 ),
               ),
@@ -128,34 +147,46 @@ class PanelDetalleAdaptable extends StatelessWidget {
   Widget _encabezado(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 14, 12, 14),
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.spacingXl,
+        14,
+        AppDimensions.spacingMd,
+        14,
+      ),
       decoration: const BoxDecoration(color: AppColors.sitioPrimaryDark),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: AppDimensions.buttonHeightSmall,
+            height: AppDimensions.buttonHeightSmall,
             decoration: BoxDecoration(
               color: AppColors.sitioSurfaceGreen,
               borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             ),
-            child: Icon(icono, color: AppColors.sitioPrimary, size: 22),
+            child: Icon(
+              icono,
+              color: AppColors.sitioPrimary,
+              size: AppDimensions.iconMd,
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimensions.spacingMd),
           Expanded(
-            child: Text(
-              titulo,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.sitioTextOnPrimary,
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
+            child: Semantics(
+              header: true,
+              child: Text(
+                titulo,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.sitioTextOnPrimary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),
           IconButton(
-            tooltip: 'Cerrar detalle',
+            tooltip: Textos.t('Cerrar detalle'),
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.close_rounded),
             color: AppColors.sitioTextOnPrimary,

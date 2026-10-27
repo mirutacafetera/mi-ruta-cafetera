@@ -4,6 +4,7 @@ import 'package:just_audio/just_audio.dart';
 
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
+import '../../../../l10n/textos.dart';
 
 class ReproductorHistoriaFlotante extends StatelessWidget {
   const ReproductorHistoriaFlotante({
@@ -32,7 +33,7 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surface,
+      color: AppColors.sitioSurface,
       elevation: 8,
       borderRadius: BorderRadius.circular(
         AppDimensions.radiusLg,
@@ -48,7 +49,7 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.headphones,
-                  color: AppColors.primary,
+                  color: AppColors.sitioPrimary,
                 ),
                 const SizedBox(
                   width: AppDimensions.spacingSm,
@@ -62,27 +63,27 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
                         .textTheme
                         .titleMedium
                         ?.copyWith(
-                          color: AppColors.textPrimary,
+                          color: AppColors.sitioTextPrimary,
                           fontWeight: FontWeight.w700,
                         ),
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Cerrar reproductor',
+                  tooltip: Textos.t('Cerrar reproductor'),
                   onPressed: onCerrar,
                   icon: const Icon(Icons.close),
                 ),
               ],
             ),
             if (cargando)
-              const LinearProgressIndicator()
+              const LinearProgressIndicator(color: AppColors.sitioPrimary)
             else if (error != null)
               Text(
                 error!,
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
-                    ?.copyWith(color: AppColors.error),
+                    ?.copyWith(color: AppColors.sitioError),
               )
             else
               StreamBuilder<Duration?>(
@@ -111,7 +112,7 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
                           Slider(
                             value: valor,
                             max: maximo > 0 ? maximo : 1,
-                            activeColor: AppColors.primary,
+                            activeColor: AppColors.sitioPrimary,
                             onChanged: maximo <= 0
                                 ? null
                                 : (nuevoValor) {
@@ -148,7 +149,7 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
                                     MainAxisAlignment.center,
                                 children: [
                                   IconButton(
-                                    tooltip: 'Retroceder 10 segundos',
+                                    tooltip: Textos.t('Retroceder 10 segundos'),
                                     onPressed: () {
                                       final destino = posicion -
                                           const Duration(seconds: 10);
@@ -162,9 +163,15 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
                                     icon: const Icon(Icons.replay_10),
                                   ),
                                   IconButton.filled(
+                                    style: IconButton.styleFrom(
+                                      backgroundColor:
+                                          AppColors.sitioPrimary,
+                                      foregroundColor:
+                                          AppColors.sitioTextOnPrimary,
+                                    ),
                                     tooltip: reproduciendo
-                                        ? 'Pausar'
-                                        : 'Reproducir',
+                                        ? Textos.t('Pausar')
+                                        : Textos.t('Reproducir'),
                                     onPressed: onAlternarReproduccion,
                                     icon: Icon(
                                       reproduciendo
@@ -173,7 +180,7 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
                                     ),
                                   ),
                                   IconButton(
-                                    tooltip: 'Avanzar 10 segundos',
+                                    tooltip: Textos.t('Avanzar 10 segundos'),
                                     onPressed: () {
                                       final destino = posicion +
                                           const Duration(seconds: 10);
@@ -202,3 +209,4 @@ class ReproductorHistoriaFlotante extends StatelessWidget {
     );
   }
 }
+

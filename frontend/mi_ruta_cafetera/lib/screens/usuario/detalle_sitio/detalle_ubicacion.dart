@@ -1,10 +1,11 @@
-﻿
+
 import 'package:flutter/material.dart';
 
 import '../../../../models/sitio_turistico_model.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
 import '../../../l10n/textos.dart';
+import '../../../widgets/usuario/detalle_sitio/componentes_detalle.dart';
 
 class DetalleUbicacion extends StatelessWidget {
   const DetalleUbicacion({
@@ -31,20 +32,8 @@ class DetalleUbicacion extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.divider,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
-          ),
-        ],
+      decoration: decoracionTarjetaDetalle(
+        radio: AppDimensions.cardRadius,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,19 +43,21 @@ class DetalleUbicacion extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: AppDimensions.sitioHeaderIconSize,
+                height: AppDimensions.sitioHeaderIconSize,
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(15),
+                  color: AppColors.sitioSurfaceGreen,
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusLg,
+                  ),
                   border: Border.all(
-                    color: AppColors.divider,
+                    color: AppColors.sitioBorder,
                   ),
                 ),
                 child: const Icon(
                   Icons.location_on_outlined,
-                  color: AppColors.secondary,
-                  size: 26,
+                  color: AppColors.sitioPrimary,
+                  size: AppDimensions.iconLg,
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingMd),
@@ -77,7 +68,7 @@ class DetalleUbicacion extends StatelessWidget {
                     Tr(
                       'Cómo llegar',
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: AppColors.sitioTextPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                       ),
@@ -86,7 +77,7 @@ class DetalleUbicacion extends StatelessWidget {
                     Tr(
                       'Encuentra este destino',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: AppColors.sitioTextSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -95,8 +86,8 @@ class DetalleUbicacion extends StatelessWidget {
               ),
               const Icon(
                 Icons.explore_outlined,
-                color: AppColors.secondary,
-                size: 23,
+                color: AppColors.sitioAccent,
+                size: AppDimensions.iconLg,
               ),
             ],
           ),
@@ -108,16 +99,16 @@ class DetalleUbicacion extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(AppDimensions.spacingMd),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
+              color: AppColors.sitioSurfaceSoft,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(
                   Icons.place_rounded,
-                  color: AppColors.secondary,
-                  size: 23,
+                  color: AppColors.sitioAccent,
+                  size: AppDimensions.iconMd,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
@@ -126,7 +117,7 @@ class DetalleUbicacion extends StatelessWidget {
                         ? ubicacion
                         : Textos.t('Ubicación no disponible'),
                     style: const TextStyle(
-                      color: AppColors.textSecondary,
+                      color: AppColors.sitioTextSecondary,
                       fontSize: 14,
                       height: 1.6,
                     ),
@@ -141,26 +132,28 @@ class DetalleUbicacion extends StatelessWidget {
           // Acción principal.
           SizedBox(
             width: double.infinity,
-            height: 52,
+            height: AppDimensions.detalleActionHeight,
             child: ElevatedButton.icon(
               onPressed: onVerMapa,
               icon: const Icon(
                 Icons.map_outlined,
-                size: 21,
+                size: AppDimensions.iconMd,
               ),
               label: const Tr(
                 'Ver ubicación en el mapa',
                 textAlign: TextAlign.center,
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 1,
+                backgroundColor: AppColors.sitioPrimary,
+                foregroundColor: AppColors.sitioTextOnPrimary,
+                elevation: AppDimensions.elevationButton,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingMd,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusXxl,
+                  ),
                 ),
                 textStyle: const TextStyle(
                   fontSize: 14,

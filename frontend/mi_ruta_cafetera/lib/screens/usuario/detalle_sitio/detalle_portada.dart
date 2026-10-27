@@ -1,4 +1,4 @@
-﻿
+
 import 'package:flutter/material.dart';
 
 import '../../../../models/sitio_turistico_model.dart';
@@ -31,19 +31,27 @@ class DetallePortada extends StatelessWidget {
       children: [
         Stack(
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 10,
-              child: SizedBox(
-                width: double.infinity,
-                child: imagen.isNotEmpty
-                    ? Image.network(
-                        imagen,
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
-                        errorBuilder: (_, _, _) => _imagenAlternativa(),
-                      )
-                    : _imagenAlternativa(),
-              ),
+            // En pantallas anchas (web) la altura se limita para que la
+            // portada no ocupe toda la pantalla.
+            LayoutBuilder(
+              builder: (context, restricciones) {
+                final alto = (restricciones.maxWidth / (16 / 10))
+                    .clamp(0.0, AppDimensions.heroHeight)
+                    .toDouble();
+
+                return SizedBox(
+                  width: double.infinity,
+                  height: alto,
+                  child: imagen.isNotEmpty
+                      ? Image.network(
+                          imagen,
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          errorBuilder: (_, _, _) => _imagenAlternativa(),
+                        )
+                      : _imagenAlternativa(),
+                );
+              },
             ),
 
             // Degradado para integrar la fotografía con el diseño.
@@ -55,9 +63,9 @@ class DetallePortada extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withValues(alpha: 0.22),
+                        AppColors.black.withValues(alpha: 0.22),
                         Colors.transparent,
-                        Colors.black.withValues(alpha: 0.48),
+                        AppColors.black.withValues(alpha: 0.48),
                       ],
                       stops: const [0, 0.45, 1],
                     ),
@@ -76,10 +84,10 @@ class DetallePortada extends StatelessWidget {
                   vertical: 9,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.cream.withValues(alpha: 0.96),
+                  color: AppColors.sitioSurface.withValues(alpha: 0.96),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.65),
+                    color: AppColors.white.withValues(alpha: 0.65),
                   ),
                 ),
                 child: const Row(
@@ -88,13 +96,13 @@ class DetallePortada extends StatelessWidget {
                     Icon(
                       Icons.local_cafe_outlined,
                       size: 17,
-                      color: AppColors.primary,
+                      color: AppColors.sitioPrimary,
                     ),
                     SizedBox(width: 7),
                     Tr(
                       'EXPERIENCIA CAFETERA',
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: AppColors.sitioPrimary,
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1,
@@ -110,7 +118,7 @@ class DetallePortada extends StatelessWidget {
                 top: AppDimensions.spacingMd,
                 right: AppDimensions.spacingMd,
                 child: Material(
-                  color: AppColors.cream.withValues(alpha: 0.96),
+                  color: AppColors.sitioSurface.withValues(alpha: 0.96),
                   shape: const CircleBorder(),
                   elevation: 3,
                   child: IconButton(
@@ -131,8 +139,8 @@ class DetallePortada extends StatelessWidget {
                                 ? Icons.favorite_rounded
                                 : Icons.favorite_border_rounded,
                             color: esFavorito
-                                ? AppColors.error
-                                : AppColors.primary,
+                                ? AppColors.sitioError
+                                : AppColors.sitioPrimary,
                           ),
                   ),
                 ),
@@ -149,7 +157,7 @@ class DetallePortada extends StatelessWidget {
             AppDimensions.pageHorizontal,
             AppDimensions.spacingLg,
           ),
-          color: AppColors.surface,
+          color: AppColors.sitioBackground,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -159,7 +167,7 @@ class DetallePortada extends StatelessWidget {
                     width: 32,
                     height: 3,
                     decoration: BoxDecoration(
-                      color: AppColors.secondary,
+                      color: AppColors.sitioAccent,
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -174,7 +182,7 @@ class DetallePortada extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: AppColors.secondary,
+                        color: AppColors.sitioAccent,
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.1,
@@ -187,7 +195,7 @@ class DetallePortada extends StatelessWidget {
               Text(
                 sitio.nombre,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: AppColors.sitioTextPrimary,
                       fontWeight: FontWeight.w800,
                       fontSize: 27,
                       height: 1.16,
@@ -198,7 +206,7 @@ class DetallePortada extends StatelessWidget {
                 Text(
                   sitio.descripcion.trim(),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: AppColors.sitioTextSecondary,
                         fontSize: 15,
                         height: 1.65,
                       ),
@@ -207,7 +215,7 @@ class DetallePortada extends StatelessWidget {
               const SizedBox(height: AppDimensions.spacingLg),
               Container(
                 height: 1,
-                color: AppColors.divider,
+                color: AppColors.sitioDivider,
               ),
             ],
           ),
@@ -219,13 +227,14 @@ class DetallePortada extends StatelessWidget {
   Widget _imagenAlternativa() {
     return Container(
       width: double.infinity,
-      color: AppColors.cream,
+      color: AppColors.sitioSurfaceGreen,
       alignment: Alignment.center,
       child: Icon(
         Icons.local_cafe_outlined,
         size: AppDimensions.featuredImageHeight * 0.25,
-        color: AppColors.secondary,
+        color: AppColors.sitioPrimary,
       ),
     );
   }
 }
+

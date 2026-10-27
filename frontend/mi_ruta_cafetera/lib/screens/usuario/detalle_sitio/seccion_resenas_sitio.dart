@@ -10,15 +10,21 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
 import '../../../widgets/sitio/sitio_avatar_perfil.dart';
 import '../../../l10n/textos.dart';
+import '../../../widgets/usuario/detalle_sitio/componentes_detalle.dart';
 
 class SeccionResenasSitio extends StatefulWidget {
   const SeccionResenasSitio({
     super.key,
     required this.sitioId,
     this.onRequiereCuenta,
+    this.mostrarEncabezado = true,
   });
 
   final String sitioId;
+
+  /// Cuando la pantalla que lo contiene ya dibuja el encabezado
+  /// de la sección, se envía `false` para no repetirlo.
+  final bool mostrarEncabezado;
   final VoidCallback? onRequiereCuenta;
 
   @override
@@ -276,21 +282,17 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Tr(
-            'Opiniones de los visitantes',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-          const SizedBox(height: AppDimensions.spacingSm),
-          Tr(
-            'Conoce las experiencias de otros viajeros y comparte la tuya.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          if (widget.mostrarEncabezado) ...[
+            EncabezadoSeccionDetalle(
+              icono: Icons.reviews_outlined,
+              titulo: Textos.t('Opiniones de los visitantes'),
+              descripcion: Textos.t(
+                'Conoce las experiencias de otros viajeros y comparte la tuya.',
+              ),
+              padding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: AppDimensions.spacingLg),
+          ],
           _construirResumen(),
           const SizedBox(height: AppDimensions.spacingLg),
           _construirFormulario(),
@@ -305,16 +307,14 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
-        border: Border.all(color: AppColors.border),
+      decoration: decoracionTarjetaDetalle(
+        radio: AppDimensions.cardRadius,
       ),
       child: Row(
         children: [
           const Icon(
             Icons.star_rounded,
-            color: Colors.amber,
+            color: AppColors.sitioAccent,
             size: 38,
           ),
           const SizedBox(width: AppDimensions.spacingMd),
@@ -328,15 +328,17 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                       : _promedio.toStringAsFixed(1),
                   style:
                       Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: AppColors.textPrimary,
+                            color: AppColors.sitioTextPrimary,
                             fontWeight: FontWeight.w800,
                           ),
                 ),
                 Text(
-                  '${_resenas.length} '
-                  '${_resenas.length == 1 ? 'reseña' : 'reseñas'}',
+                  Textos.t(
+                    _resenas.length == 1 ? '{0} reseña' : '{0} reseñas',
+                    [_resenas.length],
+                  ),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: AppColors.sitioTextSecondary,
                       ),
                 ),
               ],
@@ -351,10 +353,8 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
-        border: Border.all(color: AppColors.border),
+      decoration: decoracionTarjetaDetalle(
+        radio: AppDimensions.cardRadius,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +394,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                         numero <= _calificacion
                             ? Icons.star_rounded
                             : Icons.star_outline_rounded,
-                        color: Colors.amber,
+                        color: AppColors.sitioAccent,
                         size: 32,
                       ),
                     ),
@@ -422,6 +422,13 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.sitioPrimary,
+                foregroundColor: AppColors.sitioTextOnPrimary,
+                minimumSize: const Size.fromHeight(
+                  AppDimensions.buttonHeight,
+                ),
+              ),
               onPressed: _publicando ? null : _publicarResena,
               icon: _publicando
                   ? const SizedBox(
@@ -444,47 +451,33 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
 
   Widget _construirListado() {
     if (_cargando) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.sitioPrimary),
+      );
     }
 
     if (_error != null && _resenas.isEmpty) {
-      return Column(
-        children: [
-          Text(_error!, textAlign: TextAlign.center),
-          const SizedBox(height: AppDimensions.spacingSm),
-          OutlinedButton.icon(
-            onPressed: _cargarResenas,
-            icon: const Icon(Icons.refresh),
-            label: const Tr('Intentar de nuevo'),
+      return TarjetaEstadoDetalle(
+        icono: Icons.cloud_off_outlined,
+        titulo: _error!,
+        accion: OutlinedButton.icon(
+          onPressed: _cargarResenas,
+          icon: const Icon(Icons.refresh),
+          label: const Tr('Intentar de nuevo'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.sitioPrimary,
+            side: const BorderSide(color: AppColors.sitioPrimary),
           ),
-        ],
+        ),
       );
     }
 
     if (_resenas.isEmpty) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppDimensions.spacingXl),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: const Column(
-          children: [
-            Icon(Icons.rate_review_outlined, size: 42),
-            SizedBox(height: AppDimensions.spacingMd),
-            Tr(
-              'Todavía no hay reseñas',
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: AppDimensions.spacingXs),
-            Tr(
-              'Sé la primera persona en compartir su experiencia.',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+      return TarjetaEstadoDetalle(
+        icono: Icons.rate_review_outlined,
+        titulo: Textos.t('Todavía no hay reseñas'),
+        descripcion:
+            Textos.t('Sé la primera persona en compartir su experiencia.'),
       );
     }
 
@@ -518,10 +511,8 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
-        border: Border.all(color: AppColors.border),
+      decoration: decoracionTarjetaDetalle(
+        radio: AppDimensions.cardRadius,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -534,8 +525,8 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                 avatar: resena.avatar,
                 nombre: nombre,
                 radio: 24,
-                colorFondo: AppColors.surfaceGreen,
-                colorIcono: AppColors.primary,
+                colorFondo: AppColors.sitioSurfaceGreen,
+                colorIcono: AppColors.sitioPrimary,
               ),
               const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
@@ -545,7 +536,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                     Text(
                       nombre,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppColors.textPrimary,
+                            color: AppColors.sitioTextPrimary,
                             fontWeight: FontWeight.w800,
                           ),
                     ),
@@ -553,7 +544,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                       Text(
                         fechaTexto,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AppColors.sitioTextSecondary,
                             ),
                       ),
                   ],
@@ -571,7 +562,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                         index < resena.calificacion
                             ? Icons.star_rounded
                             : Icons.star_outline_rounded,
-                        color: Colors.amber,
+                        color: AppColors.sitioAccent,
                         size: 18,
                       ),
                     ),
@@ -592,7 +583,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                             children: [
                               Icon(
                                 Icons.delete_outline_rounded,
-                                color: Colors.red,
+                                color: AppColors.sitioError,
                               ),
                               SizedBox(width: 8),
                               Tr('Eliminar reseña'),
