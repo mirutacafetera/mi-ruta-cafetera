@@ -20,7 +20,7 @@ const obtenerResenasPorSitio = async (req, res) => {
       sitio: sitioId,
       activo: true
     })
-      .select('usuario sitio calificacion comentario activo createdAt')
+      .select('usuario sitio calificacion comentario imagenes activo createdAt')
       .populate('usuario', 'nombre apellido fotoPerfil avatar')
       .sort({ createdAt: -1 })
       .lean();
@@ -76,11 +76,14 @@ const crearResena = async (req, res) => {
       });
     }
 
+    const imagenes = (req.files || []).map((archivo) => archivo.path);
+
     const resena = await Resena.create({
       usuario: req.usuario.id,
       sitio,
       comentario: comentarioLimpio,
-      calificacion: nota
+      calificacion: nota,
+      imagenes
     });
 
     await resena.populate(

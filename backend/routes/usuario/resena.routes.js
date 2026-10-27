@@ -13,6 +13,8 @@ const {
   eliminarResena
 } = require('../../controllers/usuario/resenas.controller');
 
+const uploadResenas = require('../../middlewares/uploadresenas');
+
 // ======================================================
 // MIDDLEWARE DE AUTENTICACIÓN
 // ======================================================
@@ -37,6 +39,7 @@ router.get(
 router.post(
   '/',
   verificarToken,
+  uploadResenas.array('imagenes', 10),
   crearResena
 );
 

@@ -10,6 +10,7 @@ class SitioResenaModel {
   final bool activo;
   final DateTime? creadaEn;
   final String? fotoPerfil;
+  final List<String> imagenes;
 
   // Avatar cafetero de quien escribió la reseña (si lo configuró).
   final AvatarCafeteroModel? avatar;
@@ -25,6 +26,7 @@ class SitioResenaModel {
     this.creadaEn,
     this.fotoPerfil,
     this.avatar,
+    this.imagenes = const [],
   });
 
   factory SitioResenaModel.fromJson(Map<String, dynamic> json) {
@@ -53,6 +55,15 @@ class SitioResenaModel {
     final fotoRaw = usuario['fotoPerfil'];
     final foto = fotoRaw?.toString().trim();
 
+    final imagenesRaw = json['imagenes'];
+
+    final imagenes = imagenesRaw is List
+        ? imagenesRaw
+            .whereType<String>()
+            .where((url) => url.trim().isNotEmpty)
+            .toList()
+        : <String>[];
+
     return SitioResenaModel(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
       sitioId: _idDe(sitioRaw ?? json['sitioId']),
@@ -66,6 +77,7 @@ class SitioResenaModel {
           : DateTime.tryParse(fechaRaw.toString()),
       fotoPerfil: foto == null || foto.isEmpty ? null : foto,
       avatar: AvatarCafeteroModel.desdeDinamico(usuario['avatar']),
+      imagenes: imagenes,
     );
   }
 
