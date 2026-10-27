@@ -20,6 +20,7 @@ import 'detalle_sitio/detalle_productos.dart';
 import 'detalle_sitio/reproductor_historia/reproductor_historia_flotante.dart';
 import 'detalle_sitio/seccion_resenas_sitio.dart';
 import '../../l10n/textos.dart';
+import '../../widgets/usuario/detalle_sitio/componentes_detalle.dart';
 
 class DetalleSitioUsuarioScreen extends StatefulWidget {
   const DetalleSitioUsuarioScreen({
@@ -206,7 +207,9 @@ class _DetalleSitioUsuarioScreenState
       return const Padding(
         padding: EdgeInsets.all(AppDimensions.spacingXxl),
         child: Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            color: AppColors.sitioPrimary,
+          ),
         ),
       );
     }
@@ -262,60 +265,11 @@ class _DetalleSitioUsuarioScreenState
     required String descripcion,
     Widget? accion,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.divider,
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.divider,
-              ),
-            ),
-            child: Icon(
-              icono,
-              size: 28,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingMd),
-          Text(
-            titulo,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingSm),
-          Text(
-            descripcion,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.5,
-            ),
-          ),
-          if (accion != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
-            accion,
-          ],
-        ],
-      ),
+    return TarjetaEstadoDetalle(
+      icono: icono,
+      titulo: titulo,
+      descripcion: descripcion,
+      accion: accion,
     );
   }
 
@@ -338,37 +292,9 @@ class _DetalleSitioUsuarioScreenState
         spacing: AppDimensions.spacingSm,
         runSpacing: AppDimensions.spacingSm,
         children: etiquetas.map((etiqueta) {
-          return Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 13,
-              vertical: 8,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: AppColors.divider,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.eco_outlined,
-                  size: 15,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  etiqueta,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+          return EtiquetaDetalle(
+            texto: etiqueta,
+            icono: Icons.eco_outlined,
           );
         }).toList(),
       ),
@@ -380,21 +306,23 @@ class _DetalleSitioUsuarioScreenState
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: 52,
+          height: AppDimensions.detalleActionHeight,
           child: FilledButton.icon(
             onPressed: () =>
                 DetalleSitioAcciones.agregarRuta(context),
             icon: const Icon(Icons.route_rounded),
             label: const Tr('Agregar a mi ruta'),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              elevation: 1,
+              backgroundColor: AppColors.sitioPrimary,
+              foregroundColor: AppColors.sitioTextOnPrimary,
+              elevation: AppDimensions.elevationButton,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingLg,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.radiusXxl,
+                ),
               ),
               textStyle: const TextStyle(
                 fontSize: 15,
@@ -405,7 +333,7 @@ class _DetalleSitioUsuarioScreenState
         ),
         const SizedBox(height: AppDimensions.spacingSm),
         SizedBox(
-          height: 50,
+          height: AppDimensions.detalleActionHeight,
           child: OutlinedButton.icon(
             onPressed: () {
               DetalleSitioAcciones.mostrarDetalleMapa(
@@ -416,16 +344,18 @@ class _DetalleSitioUsuarioScreenState
             icon: const Icon(Icons.location_on_outlined),
             label: const Tr('Ver detalles de ubicación'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primary,
+              foregroundColor: AppColors.sitioPrimary,
               side: BorderSide(
-                color: AppColors.primary.withValues(alpha: 0.55),
+                color: AppColors.sitioPrimary.withValues(alpha: 0.55),
                 width: 1.3,
               ),
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingLg,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.radiusXxl,
+                ),
               ),
               textStyle: const TextStyle(
                 fontSize: 14,
@@ -443,57 +373,10 @@ class _DetalleSitioUsuarioScreenState
     required String titulo,
     required String descripcion,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.pageHorizontal,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: AppColors.divider,
-              ),
-            ),
-            child: Icon(
-              icono,
-              color: AppColors.primary,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: AppDimensions.spacingMd),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 19,
-                    fontWeight: FontWeight.w800,
-                    height: 1.25,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingXs),
-                Text(
-                  descripcion,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return EncabezadoSeccionDetalle(
+      icono: icono,
+      titulo: titulo,
+      descripcion: descripcion,
     );
   }
 
@@ -531,7 +414,7 @@ class _DetalleSitioUsuarioScreenState
     }.toList();
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.sitioBackground,
       appBar: AppBar(
         leading: const BotonRegresar(),
         title: const Tr('Detalle del sitio'),
@@ -555,8 +438,8 @@ class _DetalleSitioUsuarioScreenState
                         ? Icons.favorite_rounded
                         : Icons.favorite_border_rounded,
                     color: _esFavorito
-                        ? AppColors.error
-                        : AppColors.primary,
+                        ? AppColors.sitioError
+                        : AppColors.sitioPrimary,
                   ),
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -623,6 +506,7 @@ class _DetalleSitioUsuarioScreenState
                 DetalleActividades(
                   actividades: _actividades,
                   cargando: _cargandoActividades,
+                  mostrarEncabezado: false,
                   onSeleccionar: (actividad) {
                     DetalleSitioAcciones.mostrarActividad(
                       context,
@@ -671,6 +555,7 @@ class _DetalleSitioUsuarioScreenState
                 DetalleGaleria(
                   imagenes: imagenes,
                   cargando: _cargandoContenido || _cargandoActividades,
+                  mostrarEncabezado: false,
                 ),
               ],
 
@@ -691,6 +576,7 @@ class _DetalleSitioUsuarioScreenState
                 key: ValueKey('resenas_${widget.sitio.id}'),
                 sitioId: widget.sitio.id,
                 onRequiereCuenta: widget.onRequiereCuenta,
+                mostrarEncabezado: false,
               ),
 
               const SizedBox(height: AppDimensions.spacingSection),
@@ -735,3 +621,4 @@ class _DetalleSitioUsuarioScreenState
     super.dispose();
   }
 }
+

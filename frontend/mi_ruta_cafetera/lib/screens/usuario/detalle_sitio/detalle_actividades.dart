@@ -1,8 +1,9 @@
-﻿
 import 'package:flutter/material.dart';
 
 import '../../../../models/sitio/sitio_actividad_model.dart';
+import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_dimensions.dart';
+import '../../../widgets/usuario/detalle_sitio/componentes_detalle.dart';
 import '../../../l10n/textos.dart';
 
 class DetalleActividades extends StatelessWidget {
@@ -10,12 +11,20 @@ class DetalleActividades extends StatelessWidget {
   final bool cargando;
   final ValueChanged<SitioActividadModel> onSeleccionar;
 
+  /// Cuando la pantalla que lo contiene ya dibuja el encabezado
+  /// de la sección, se envía `false` para no repetirlo.
+  final bool mostrarEncabezado;
+
   const DetalleActividades({
     super.key,
     required this.actividades,
     this.cargando = false,
     required this.onSeleccionar,
+    this.mostrarEncabezado = true,
   });
+
+  static const double _anchoTarjeta = 230;
+  static const double _altoLista = 258;
 
   @override
   Widget build(BuildContext context) {
@@ -28,58 +37,22 @@ class DetalleActividades extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.pageHorizontal,
+          if (mostrarEncabezado) ...[
+            EncabezadoSeccionDetalle(
+              icono: Icons.coffee_rounded,
+              titulo: Textos.t('Actividades para disfrutar'),
+              descripcion: Textos.t(
+                'Explora las experiencias de este lugar.',
+              ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F0E9),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: const Icon(
-                    Icons.coffee_rounded,
-                    color: Color(0xFF214F3D),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Tr(
-                        'Actividades para disfrutar',
-                        style: TextStyle(
-                          color: Color(0xFF292D29),
-                          fontSize: 19,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Tr(
-                        'Explora las experiencias de este lugar.',
-                        style: TextStyle(
-                          color: Color(0xFF6C746D),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingLg),
+          ],
           if (cargando)
             const Padding(
-              padding: EdgeInsets.all(28),
+              padding: EdgeInsets.all(AppDimensions.spacingXxl),
               child: Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF214F3D),
+                  color: AppColors.sitioPrimary,
                 ),
               ),
             )
@@ -88,187 +61,31 @@ class DetalleActividades extends StatelessWidget {
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.pageHorizontal,
               ),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFAF7F0),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: const Color(0xFFDED5C8),
-                  ),
-                ),
-                child: const Column(
-                  children: [
-                    Icon(
-                      Icons.local_activity_outlined,
-                      size: 38,
-                      color: Color(0xFF98651E),
-                    ),
-                    SizedBox(height: 10),
-                    Tr(
-                      'Próximamente nuevas experiencias',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Color(0xFF292D29),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Tr(
-                      'Estamos preparando actividades para tu visita.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Color(0xFF6C746D),
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
+              child: TarjetaEstadoDetalle(
+                icono: Icons.local_activity_outlined,
+                titulo: Textos.t('Próximamente nuevas experiencias'),
+                descripcion: Textos.t(
+                  'Estamos preparando actividades para tu visita.',
                 ),
               ),
             )
           else
             SizedBox(
-              height: 258,
+              height: _altoLista,
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.pageHorizontal,
                 ),
                 scrollDirection: Axis.horizontal,
                 itemCount: visibles.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(width: 14),
+                separatorBuilder: (_, _) => const SizedBox(
+                  width: AppDimensions.spacingMd + 2,
+                ),
                 itemBuilder: (context, index) {
-                  final actividad = visibles[index];
-                  final imagen = actividad.imagenPrincipal.trim();
-
-                  return SizedBox(
-                    width: 230,
-                    child: Material(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(19),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        onTap: () => onSeleccionar(actividad),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: const Color(0xFFDED5C8),
-                            ),
-                            borderRadius: BorderRadius.circular(19),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    if (imagen.isNotEmpty)
-                                      Image.network(
-                                        imagen,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, _, _) =>
-                                            _imagenAlternativa(),
-                                      )
-                                    else
-                                      _imagenAlternativa(),
-                                    if (actividad.imagenes.isNotEmpty)
-                                      Positioned(
-                                        right: 10,
-                                        top: 10,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 9,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.65,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.photo_library_outlined,
-                                                color: Colors.white,
-                                                size: 14,
-                                              ),
-                                              const SizedBox(width: 5),
-                                              Text(
-                                                '${_imagenesActividad(actividad).length}',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(13),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      actividad.nombre,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Color(0xFF292D29),
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      actividad.descripcion.trim().isEmpty
-                                          ? Textos.t('Descubre esta experiencia.')
-                                          : actividad.descripcion.trim(),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Color(0xFF6C746D),
-                                        fontSize: 12,
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Row(
-                                      children: [
-                                        Tr(
-                                          'Ver experiencia',
-                                          style: TextStyle(
-                                            color: Color(0xFF214F3D),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                        SizedBox(width: 5),
-                                        Icon(
-                                          Icons.arrow_forward_rounded,
-                                          size: 15,
-                                          color: Color(0xFF214F3D),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                  return _TarjetaActividad(
+                    actividad: visibles[index],
+                    ancho: _anchoTarjeta,
+                    onTap: () => onSeleccionar(visibles[index]),
                   );
                 },
               ),
@@ -277,33 +94,165 @@ class DetalleActividades extends StatelessWidget {
       ),
     );
   }
+}
 
-  List<String> _imagenesActividad(SitioActividadModel actividad) {
-    final principal = actividad.imagenPrincipal.trim();
-    final urls = <String>[];
+class _TarjetaActividad extends StatelessWidget {
+  const _TarjetaActividad({
+    required this.actividad,
+    required this.ancho,
+    required this.onTap,
+  });
 
-    if (principal.isNotEmpty) {
-      urls.add(principal);
-    }
+  final SitioActividadModel actividad;
+  final double ancho;
+  final VoidCallback onTap;
 
-    for (final imagen in actividad.imagenes) {
-      final url = imagen.trim();
-      if (url.isNotEmpty && !urls.contains(url)) {
-        urls.add(url);
-      }
-    }
+  @override
+  Widget build(BuildContext context) {
+    final imagenes = unirImagenesDetalle(
+      actividad.imagenPrincipal,
+      actividad.imagenes,
+    );
+    final imagen = actividad.imagenPrincipal.trim();
+    final descripcion = actividad.descripcion.trim();
 
-    return urls;
+    return SizedBox(
+      width: ancho,
+      child: Container(
+        decoration: decoracionTarjetaDetalle(),
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (imagen.isNotEmpty)
+                        Image.network(
+                          imagen,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const _FondoActividad(),
+                        )
+                      else
+                        const _FondoActividad(),
+                      if (imagenes.length > 1)
+                        Positioned(
+                          right: AppDimensions.spacingMd,
+                          top: AppDimensions.spacingMd,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppDimensions.spacingSm + 1,
+                              vertical: AppDimensions.spacingSm - 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.black.withValues(alpha: 0.65),
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.chipRadius,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.photo_library_outlined,
+                                  color: AppColors.white,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  '${imagenes.length}',
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(
+                    AppDimensions.sitioContentPadding - 1,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        actividad.nombre,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.sitioTextPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        descripcion.isEmpty
+                            ? Textos.t('Descubre esta experiencia.')
+                            : descripcion,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.sitioTextSecondary,
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingSm),
+                      const Row(
+                        children: [
+                          Tr(
+                            'Ver experiencia',
+                            style: TextStyle(
+                              color: AppColors.sitioPrimary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 15,
+                            color: AppColors.sitioPrimary,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
+}
 
-  Widget _imagenAlternativa() {
+class _FondoActividad extends StatelessWidget {
+  const _FondoActividad();
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFE8F0E9),
+      color: AppColors.sitioSurfaceGreen,
       alignment: Alignment.center,
       child: const Icon(
         Icons.local_cafe_rounded,
         size: 44,
-        color: Color(0xFF214F3D),
+        color: AppColors.sitioPrimary,
       ),
     );
   }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../models/contenido_model.dart';
+import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../l10n/textos.dart';
+import 'detalle_sitio/componentes_detalle.dart';
 import 'detalle_sitio/panel_detalle_adaptable.dart';
 
 class SeccionContenidoSitio extends StatelessWidget {
@@ -42,6 +44,12 @@ class SeccionContenidoSitio extends StatelessWidget {
   }
 }
 
+bool _contenidoTieneAudio(ContenidoModel contenido) {
+  return contenido.audioGuias.any(
+    (audio) => audio.url.trim().isNotEmpty,
+  );
+}
+
 class _ContenidoCard extends StatelessWidget {
   const _ContenidoCard({
     required this.contenido,
@@ -51,27 +59,9 @@ class _ContenidoCard extends StatelessWidget {
   final ContenidoModel contenido;
   final ValueChanged<ContenidoModel>? onReproducirAudioguia;
 
-  List<String> get _imagenes {
-    final resultado = <String>[];
-    final principal = contenido.imagenPrincipal.trim();
-
-    if (principal.isNotEmpty) {
-      resultado.add(principal);
-    }
-
-    for (final imagen in contenido.imagenes) {
-      final url = imagen.trim();
-
-      if (url.isNotEmpty && !resultado.contains(url)) {
-        resultado.add(url);
-      }
-    }
-
-    return resultado;
-  }
-
-  bool get _tieneAudio => contenido.audioGuias.any(
-        (audio) => audio.url.trim().isNotEmpty,
+  List<String> get _imagenes => unirImagenesDetalle(
+        contenido.imagenPrincipal,
+        contenido.imagenes,
       );
 
   @override
@@ -79,19 +69,8 @@ class _ContenidoCard extends StatelessWidget {
     final imagenes = _imagenes;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: const Color(0xFFDED5C8)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
+      decoration: decoracionTarjetaDetalle(),
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,14 +83,8 @@ class _ContenidoCard extends StatelessWidget {
                 AspectRatio(
                   aspectRatio: 16 / 9,
                   child: imagenes.isEmpty
-                      ? Container(
-                          color: const Color(0xFFE8F0E9),
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.auto_stories_rounded,
-                            size: 46,
-                            color: Color(0xFF214F3D),
-                          ),
+                      ? const PlaceholderImagenDetalle(
+                          icono: Icons.auto_stories_rounded,
                         )
                       : Stack(
                           fit: StackFit.expand,
@@ -119,14 +92,10 @@ class _ContenidoCard extends StatelessWidget {
                             Image.network(
                               imagenes.first,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Container(
-                                color: const Color(0xFFE8F0E9),
-                                alignment: Alignment.center,
-                                child: const Icon(
-                                  Icons.broken_image_outlined,
-                                  size: 40,
-                                  color: Color(0xFF214F3D),
-                                ),
+                              errorBuilder: (_, _, _) =>
+                                  const PlaceholderImagenDetalle(
+                                icono: Icons.broken_image_outlined,
+                                compacto: true,
                               ),
                             ),
                             if (imagenes.length > 1)
@@ -139,24 +108,27 @@ class _ContenidoCard extends StatelessWidget {
                                     vertical: 7,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withValues(
+                                    color: AppColors.black.withValues(
                                       alpha: 0.65,
                                     ),
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(
+                                      AppDimensions.radiusXl,
+                                    ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       const Icon(
                                         Icons.photo_library_outlined,
-                                        color: Colors.white,
+                                        color: AppColors.white,
                                         size: 15,
                                       ),
                                       const SizedBox(width: 5),
                                       Tr(
-                                        '{0} fotos', args: [imagenes.length],
+                                        '{0} fotos',
+                                        args: [imagenes.length],
                                         style: const TextStyle(
-                                          color: Colors.white,
+                                          color: AppColors.white,
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -176,7 +148,7 @@ class _ContenidoCard extends StatelessWidget {
                       Text(
                         contenido.titulo,
                         style: const TextStyle(
-                          color: Color(0xFF292D29),
+                          color: AppColors.sitioTextPrimary,
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
                         ),
@@ -188,7 +160,7 @@ class _ContenidoCard extends StatelessWidget {
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Color(0xFF6C746D),
+                            color: AppColors.sitioTextSecondary,
                             fontSize: 13,
                             height: 1.5,
                           ),
@@ -200,7 +172,7 @@ class _ContenidoCard extends StatelessWidget {
                           Tr(
                             'Leer historia completa',
                             style: TextStyle(
-                              color: Color(0xFF214F3D),
+                              color: AppColors.sitioPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: 12,
                             ),
@@ -208,7 +180,7 @@ class _ContenidoCard extends StatelessWidget {
                           SizedBox(width: 5),
                           Icon(
                             Icons.arrow_forward_rounded,
-                            color: Color(0xFF214F3D),
+                            color: AppColors.sitioPrimary,
                             size: 16,
                           ),
                         ],
@@ -219,7 +191,7 @@ class _ContenidoCard extends StatelessWidget {
               ],
             ),
           ),
-          if (_tieneAudio)
+          if (_contenidoTieneAudio(contenido))
             _BotonEscucharHistoria(
               onPressed: onReproducirAudioguia == null
                   ? null
@@ -239,10 +211,17 @@ class _ContenidoCard extends StatelessWidget {
       titulo: contenido.titulo,
       icono: Icons.auto_stories_rounded,
       maxWidth: 820,
-      builder: (_) => _DetalleContenidoScreen(
+      builder: (panelContext) => _ContenidoDetalleHistoria(
         contenido: contenido,
         imagenes: imagenes,
-        onReproducirAudioguia: onReproducirAudioguia,
+        onEscuchar: onReproducirAudioguia == null
+            ? null
+            : () {
+                // Se cierra el panel para que el reproductor flotante
+                // de la pantalla del sitio quede visible.
+                Navigator.of(panelContext).pop();
+                onReproducirAudioguia!(contenido);
+              },
       ),
     );
   }
@@ -260,26 +239,26 @@ class _BotonEscucharHistoria extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingSm,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F0E9),
-        borderRadius: BorderRadius.circular(13),
+        color: AppColors.sitioSurfaceGreen,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: Row(
         children: [
           const Icon(
             Icons.headphones_rounded,
-            color: Color(0xFF214F3D),
-            size: 25,
+            color: AppColors.sitioPrimary,
+            size: AppDimensions.iconLg,
           ),
           const SizedBox(width: 10),
           const Expanded(
             child: Tr(
               'Escuchar esta historia',
               style: TextStyle(
-                color: Color(0xFF214F3D),
+                color: AppColors.sitioPrimary,
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
               ),
@@ -289,8 +268,8 @@ class _BotonEscucharHistoria extends StatelessWidget {
             tooltip: Textos.t('Escuchar historia'),
             onPressed: onPressed,
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF214F3D),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.sitioPrimary,
+              foregroundColor: AppColors.sitioTextOnPrimary,
             ),
             icon: const Icon(Icons.play_arrow_rounded),
           ),
@@ -300,186 +279,52 @@ class _BotonEscucharHistoria extends StatelessWidget {
   }
 }
 
-class _DetalleContenidoScreen extends StatefulWidget {
-  const _DetalleContenidoScreen({
+// =====================================================
+// CONTENIDO DEL PANEL DE UNA HISTORIA
+// =====================================================
+
+class _ContenidoDetalleHistoria extends StatelessWidget {
+  const _ContenidoDetalleHistoria({
     required this.contenido,
     required this.imagenes,
-    required this.onReproducirAudioguia,
+    required this.onEscuchar,
   });
 
   final ContenidoModel contenido;
   final List<String> imagenes;
-  final ValueChanged<ContenidoModel>? onReproducirAudioguia;
-
-  @override
-  State<_DetalleContenidoScreen> createState() =>
-      _DetalleContenidoScreenState();
-}
-
-class _DetalleContenidoScreenState
-    extends State<_DetalleContenidoScreen> {
-  final PageController _pageController = PageController();
-
-  int _indice = 0;
-
-  bool get _tieneAudio => widget.contenido.audioGuias.any(
-        (audio) => audio.url.trim().isNotEmpty,
-      );
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  final VoidCallback? onEscuchar;
 
   @override
   Widget build(BuildContext context) {
-    final imagenes = widget.imagenes;
+    final descripcion = contenido.descripcion.trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (imagenes.isNotEmpty) ...[
-          AspectRatio(
-            aspectRatio: 4 / 3,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                PageView.builder(
-                  controller: _pageController,
-                  itemCount: imagenes.length,
-                  onPageChanged: (index) {
-                    setState(() => _indice = index);
-                  },
-                  itemBuilder: (context, index) {
-                    return Image.network(
-                      imagenes[index],
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        color: const Color(0xFFE8F0E9),
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.broken_image_outlined,
-                          size: 44,
-                          color: Color(0xFF214F3D),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                if (imagenes.length > 1)
-                  Positioned(
-                    bottom: 14,
-                    right: 14,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${_indice + 1} / ${imagenes.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+            child: CarruselImagenesDetalle(
+              imagenes: imagenes,
+              aspectRatio: 4 / 3,
             ),
           ),
-          if (imagenes.length > 1)
-            SizedBox(
-              height: 76,
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                scrollDirection: Axis.horizontal,
-                itemCount: imagenes.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      _pageController.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOut,
-                      );
-                    },
-                    child: Container(
-                      width: 72,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: _indice == index
-                              ? const Color(0xFF214F3D)
-                              : const Color(0xFFDED5C8),
-                          width: _indice == index ? 3 : 1,
-                        ),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Image.network(
-                        imagenes[index],
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const ColoredBox(
-                          color: Color(0xFFE8F0E9),
-                          child: Icon(
-                            Icons.broken_image_outlined,
-                            color: Color(0xFF214F3D),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+          const SizedBox(height: AppDimensions.spacingLg),
         ],
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.contenido.titulo,
-                style: const TextStyle(
-                  color: Color(0xFF214F3D),
-                  fontSize: 25,
-                  fontWeight: FontWeight.w800,
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                widget.contenido.descripcion.trim().isEmpty
-                    ? Textos.t('No hay una descripción adicional disponible.')
-                    : widget.contenido.descripcion.trim(),
-                style: const TextStyle(
-                  color: Color(0xFF535B54),
-                  fontSize: 15,
-                  height: 1.7,
-                ),
-              ),
-              if (_tieneAudio) ...[
-                const SizedBox(height: 24),
-                _BotonEscucharHistoria(
-                  onPressed: widget.onReproducirAudioguia == null
-                      ? null
-                      : () => widget.onReproducirAudioguia!(
-                            widget.contenido,
-                          ),
-                ),
-              ],
-            ],
+        Text(
+          descripcion.isEmpty
+              ? Textos.t('No hay una descripción adicional disponible.')
+              : descripcion,
+          style: const TextStyle(
+            color: AppColors.sitioTextSecondary,
+            fontSize: 15,
+            height: 1.7,
           ),
         ),
+        if (_contenidoTieneAudio(contenido)) ...[
+          const SizedBox(height: AppDimensions.spacingXl),
+          _BotonEscucharHistoria(onPressed: onEscuchar),
+        ],
       ],
     );
   }

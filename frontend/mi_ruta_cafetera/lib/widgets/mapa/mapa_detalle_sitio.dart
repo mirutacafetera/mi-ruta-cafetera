@@ -4,6 +4,7 @@ import '../../models/sitio_turistico_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../l10n/textos.dart';
+import '../usuario/detalle_sitio/componentes_detalle.dart';
 
 class MapaDetalleSitio extends StatelessWidget {
   final SitioTuristicoModel sitio;
@@ -19,6 +20,17 @@ class MapaDetalleSitio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final categoria = sitio.categoriaNombre.trim();
+    final descripcion = sitio.descripcion.trim();
+    final direccion = sitio.direccion.trim();
+    final ciudad = sitio.ciudad.trim();
+    final departamento = sitio.departamento.trim();
+
+    final zona = [
+      if (ciudad.isNotEmpty) ciudad,
+      if (departamento.isNotEmpty) departamento,
+    ].join(', ');
+
     return SafeArea(
       child: DraggableScrollableSheet(
         expand: false,
@@ -30,10 +42,10 @@ class MapaDetalleSitio extends StatelessWidget {
           scrollController,
         ) {
           return Material(
-            color: AppColors.surface,
+            color: AppColors.sitioBackground,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(
-                AppDimensions.radiusXxl,
+                AppDimensions.detalleContentRadius,
               ),
             ),
             clipBehavior: Clip.antiAlias,
@@ -48,16 +60,13 @@ class MapaDetalleSitio extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // =====================================================
-                  // INDICADOR DEL BOTTOM SHEET
-                  // =====================================================
-
+                  // Indicador del bottom sheet.
                   Center(
                     child: Container(
                       width: 45,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: AppColors.border,
+                        color: AppColors.sitioBorder,
                         borderRadius: BorderRadius.circular(
                           AppDimensions.radiusSm,
                         ),
@@ -65,183 +74,127 @@ class MapaDetalleSitio extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(
-                    height: AppDimensions.spacingLg,
-                  ),
+                  const SizedBox(height: AppDimensions.spacingLg),
 
-                  // =====================================================
-                  // NOMBRE DEL SITIO
-                  // =====================================================
-
-                  Text(
-                    sitio.nombre,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                  // Nombre del sitio.
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      sitio.nombre,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                        color: AppColors.sitioTextPrimary,
+                      ),
                     ),
                   ),
 
-                  // =====================================================
-                  // CATEGORÍA
-                  // =====================================================
-
-                  if (sitio.categoriaNombre.isNotEmpty) ...[
-                    const SizedBox(
-                      height: AppDimensions.spacingSm,
-                    ),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.category_outlined,
-                          size: AppDimensions.iconSm,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(
-                          width: AppDimensions.spacingXs + 3,
-                        ),
-                        Expanded(
-                          child: Text(
-                            sitio.categoriaNombre,
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
+                  // Categoría.
+                  if (categoria.isNotEmpty) ...[
+                    const SizedBox(height: AppDimensions.spacingMd),
+                    EtiquetaDetalle(
+                      texto: categoria,
+                      icono: Icons.category_outlined,
                     ),
                   ],
 
-                  // =====================================================
-                  // DESCRIPCIÓN
-                  // =====================================================
-
-                  if (sitio.descripcion.isNotEmpty) ...[
-                    const SizedBox(
-                      height: AppDimensions.spacingLg,
-                    ),
+                  // Descripción.
+                  if (descripcion.isNotEmpty) ...[
+                    const SizedBox(height: AppDimensions.spacingLg),
                     const Tr(
                       'Descripción',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.sitioPrimary,
                       ),
                     ),
-                    const SizedBox(
-                      height: AppDimensions.spacingXs + 3,
-                    ),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     Text(
-                      sitio.descripcion,
+                      descripcion,
                       style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        height: 1.4,
+                        color: AppColors.sitioTextSecondary,
+                        fontSize: 14,
+                        height: 1.6,
                       ),
                     ),
                   ],
 
-                  // =====================================================
-                  // UBICACIÓN
-                  // =====================================================
-
-                  const SizedBox(
-                    height: AppDimensions.spacingLg,
-                  ),
-
-                  Row(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(
-                        width: AppDimensions.spacingSm,
-                      ),
-                      Expanded(
-                        child: Text(
-                          '${sitio.ciudad}, '
-                          '${sitio.departamento}',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // =====================================================
-                  // DIRECCIÓN
-                  // =====================================================
-
-                  if (sitio.direccion.isNotEmpty) ...[
-                    const SizedBox(
-                      height: AppDimensions.spacingMd,
-                    ),
-                    Row(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.place_outlined,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(
-                          width: AppDimensions.spacingSm,
-                        ),
-                        Expanded(
-                          child: Text(
-                            sitio.direccion,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                      ],
+                  // Ubicación.
+                  if (zona.isNotEmpty) ...[
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    FilaDatoDetalle(
+                      icono: Icons.location_on_outlined,
+                      titulo: Textos.t('Ubicación'),
+                      valor: zona,
                     ),
                   ],
 
-                  // =====================================================
-                  // BOTÓN: VER EN EL MAPA
-                  // =====================================================
+                  // Dirección.
+                  if (direccion.isNotEmpty) ...[
+                    const SizedBox(height: AppDimensions.spacingSm),
+                    FilaDatoDetalle(
+                      icono: Icons.place_outlined,
+                      titulo: Textos.t('Dirección'),
+                      valor: direccion,
+                    ),
+                  ],
 
-                  const SizedBox(
-                    height: AppDimensions.spacingXxl,
-                  ),
+                  const SizedBox(height: AppDimensions.spacingXxl),
 
+                  // Botón: ver en el mapa.
                   SizedBox(
                     width: double.infinity,
+                    height: AppDimensions.detalleActionHeight,
                     child: ElevatedButton.icon(
                       onPressed: onVerMapa,
-                      icon: const Icon(
-                        Icons.map_outlined,
-                      ),
-                      label: const Tr(
-                        'Ver en el mapa',
+                      icon: const Icon(Icons.map_outlined),
+                      label: const Tr('Ver en el mapa'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.sitioPrimary,
+                        foregroundColor: AppColors.sitioTextOnPrimary,
+                        elevation: AppDimensions.elevationButton,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusXxl,
+                          ),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
 
-                  // =====================================================
-                  // BOTÓN: AGREGAR A MI RUTA
-                  // =====================================================
+                  const SizedBox(height: AppDimensions.spacingSm),
 
-                  const SizedBox(
-                    height: AppDimensions.spacingSm + 2,
-                  ),
-
+                  // Botón: agregar a mi ruta.
                   SizedBox(
                     width: double.infinity,
+                    height: AppDimensions.detalleActionHeight,
                     child: OutlinedButton.icon(
                       onPressed: onAgregarRuta,
-                      icon: const Icon(
-                        Icons.add_road,
-                      ),
-                      label: const Tr(
-                        'Agregar a mi ruta',
+                      icon: const Icon(Icons.add_road),
+                      label: const Tr('Agregar a mi ruta'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.sitioPrimary,
+                        side: BorderSide(
+                          color: AppColors.sitioPrimary.withValues(
+                            alpha: 0.55,
+                          ),
+                          width: 1.3,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusXxl,
+                          ),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
