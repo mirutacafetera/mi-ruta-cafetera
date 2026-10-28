@@ -169,4 +169,20 @@ class ActividadAdmin {
 
     return _obtenerMensaje(datos);
   }
+
+  // ELIMINAR ACTIVIDAD
+  static Future<String> eliminarActividad(String id) async {
+    final respuesta = await http.delete(
+      Uri.parse('$_baseUrl/admin/actividades/$id'),
+      headers: await _encabezados(),
+    );
+
+    final datos = _procesarRespuesta(respuesta);
+
+    if (respuesta.statusCode != 200) {
+      throw Exception(_obtenerMensaje(datos));
+    }
+
+    return _obtenerMensaje(datos);
+  }
 }

@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const Actividad = require('../../models/sitio/actividad');
@@ -239,9 +240,45 @@ const rechazarActividad = async (req, res) => {
   }
 };
 
+// ELIMINAR ACTIVIDAD POR ADMINISTRADOR
+const eliminarActividad = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        mensaje: 'El ID de la actividad no es válido',
+      });
+    }
+
+    const actividad = await Actividad.findById(id);
+
+    if (!actividad) {
+      return res.status(404).json({
+        mensaje: 'Actividad no encontrada',
+      });
+    }
+
+    await Actividad.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      mensaje: 'Actividad eliminada correctamente',
+      id,
+    });
+  } catch (error) {
+    console.error('Error al eliminar actividad:', error);
+
+    return res.status(500).json({
+      mensaje: 'Error al eliminar actividad',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   obtenerActividadesPendientes,
   obtenerActividad,
   aprobarActividad,
   rechazarActividad,
+  eliminarActividad,
 };
