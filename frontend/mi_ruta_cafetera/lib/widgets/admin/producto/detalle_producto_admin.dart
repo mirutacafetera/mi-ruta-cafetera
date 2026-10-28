@@ -330,49 +330,6 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
     );
   }
 
-  // ENCABEZADO VERDE DEL DETALLE.
-  Widget _encabezadoPrincipal() {
-    return Container(
-      width: double.infinity,
-      color: AppColors.primary,
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: 62,
-          child: Row(
-            children: [
-              const SizedBox(width: 12),
-              IconButton(
-                tooltip: 'Volver',
-                onPressed: widget.onVolver,
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: AppColors.white,
-                  size: 27,
-                ),
-              ),
-              const Expanded(
-                child: Center(
-                  child: Text(
-                    'Productos',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 21,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 51),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   // BARRA DE NAVEGACIÓN Y ACTUALIZACIÓN.
   Widget _encabezadoDetalle(BuildContext context) {
     return Container(
