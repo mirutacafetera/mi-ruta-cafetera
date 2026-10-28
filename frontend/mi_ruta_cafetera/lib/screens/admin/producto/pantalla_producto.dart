@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../controllers/admin/producto/producto_controller.dart';
@@ -22,14 +23,11 @@ class PantallaProducto extends StatefulWidget {
 
 class _PantallaProductoState extends State<PantallaProducto> {
   ProductoController? _controller;
-
-  final TextEditingController _busquedaController =
-      TextEditingController();
+  final _busquedaController = TextEditingController();
 
   bool _inicializando = true;
   String? _errorInicializacion;
   String _filtroActivo = 'todas';
-
   AdminProductoModel? _productoSeleccionado;
 
   @override
@@ -41,7 +39,6 @@ class _PantallaProductoState extends State<PantallaProducto> {
   Future<void> _inicializar() async {
     try {
       await AdminServicioAutenticacion.cargarToken();
-
       final token = AdminServicioAutenticacion.tokenAdmin;
 
       if (token == null || token.trim().isEmpty) {
@@ -51,7 +48,6 @@ class _PantallaProductoState extends State<PantallaProducto> {
       }
 
       final controller = ProductoController(token: token);
-
       if (!mounted) {
         controller.dispose();
         return;
@@ -61,11 +57,9 @@ class _PantallaProductoState extends State<PantallaProducto> {
         _controller = controller;
         _inicializando = false;
       });
-
       await controller.cargarProductosPendientes();
     } catch (e) {
       if (!mounted) return;
-
       setState(() {
         _errorInicializacion =
             e.toString().replaceFirst('Exception: ', '');
@@ -82,20 +76,15 @@ class _PantallaProductoState extends State<PantallaProducto> {
   }
 
   Future<void> _actualizar() async {
-    final controller = _controller;
-    if (controller == null) return;
-
-    await controller.actualizarProductos();
+    if (_controller == null) return;
+    await _controller!.actualizarProductos();
   }
 
   void _seleccionarEstado(String estado) {
     final controller = _controller;
     if (controller == null) return;
 
-    setState(() {
-      _filtroActivo = estado;
-    });
-
+    setState(() => _filtroActivo = estado);
     _busquedaController.clear();
     controller.limpiarBusqueda();
 
@@ -106,16 +95,19 @@ class _PantallaProductoState extends State<PantallaProducto> {
     }
   }
 
-  Future<void> _aprobarProducto(
-    String id,
-    String nombre,
-  ) async {
+  void _mostrarMensaje(String mensaje, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), backgroundColor: color),
+    );
+  }
+
+  Future<void> _aprobarProducto(String id, String nombre) async {
     final controller = _controller;
     if (controller == null) return;
 
     final confirmar = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.creamLight,
         title: const Text('Aceptar producto'),
         content: Text(
@@ -124,11 +116,11 @@ class _PantallaProductoState extends State<PantallaProducto> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Cancelar'),
           ),
           FilledButton.icon(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             icon: const Icon(Icons.check_circle_outline),
             label: const Text('Aceptar producto'),
           ),
@@ -137,9 +129,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
     );
 
     if (confirmar != true || !mounted) return;
-
     final resultado = await controller.aprobarProducto(id);
-
     if (!mounted) return;
 
     _mostrarMensaje(
@@ -150,10 +140,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
     );
   }
 
-  Future<void> _rechazarProducto(
-    String id,
-    String nombre,
-  ) async {
+  Future<void> _rechazarProducto(String id, String nombre) async {
     final controller = _controller;
     if (controller == null) return;
 
@@ -161,14 +148,12 @@ class _PantallaProductoState extends State<PantallaProducto> {
       context,
       nombreProducto: nombre,
     );
-
     if (motivo == null || !mounted) return;
 
     final resultado = await controller.rechazarProducto(
       productoId: id,
       motivoRechazo: motivo,
     );
-
     if (!mounted) return;
 
     _mostrarMensaje(
@@ -179,20 +164,14 @@ class _PantallaProductoState extends State<PantallaProducto> {
     );
   }
 
-  Future<void> _eliminarProducto(
-    String id,
-    String nombre,
-  ) async {
+  Future<void> _eliminarProducto(String id, String nombre) async {
     final controller = _controller;
-
-    if (controller == null || controller.estaProcesando(id)) {
-      return;
-    }
+    if (controller == null || controller.estaProcesando(id)) return;
 
     final confirmar = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 8,
@@ -219,9 +198,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop(false);
-            },
+            onPressed: () => Navigator.pop(ctx, false),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
               padding: const EdgeInsets.symmetric(
@@ -236,13 +213,8 @@ class _PantallaProductoState extends State<PantallaProducto> {
             child: const Text('Cancelar'),
           ),
           FilledButton.icon(
-            onPressed: () {
-              Navigator.of(dialogContext).pop(true);
-            },
-            icon: const Icon(
-              Icons.delete_outline_rounded,
-              size: 18,
-            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.delete_outline_rounded, size: 18),
             label: const Text('Eliminar'),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -265,9 +237,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
     );
 
     if (confirmar != true || !mounted) return;
-
     final resultado = await controller.eliminarProducto(id);
-
     if (!mounted) return;
 
     _mostrarMensaje(
@@ -278,19 +248,8 @@ class _PantallaProductoState extends State<PantallaProducto> {
     );
 
     if (resultado && _productoSeleccionado?.id == id) {
-      setState(() {
-        _productoSeleccionado = null;
-      });
+      setState(() => _productoSeleccionado = null);
     }
-  }
-
-  void _mostrarMensaje(String mensaje, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        backgroundColor: color,
-      ),
-    );
   }
 
   String _tituloEstado(String estado) => switch (estado) {
@@ -319,8 +278,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
       };
 
   IconData _iconoVacio(String estado) => switch (estado) {
-        ProductoController.estadoAprobado =>
-          Icons.check_circle_outline,
+        ProductoController.estadoAprobado => Icons.check_circle_outline,
         ProductoController.estadoRechazado => Icons.cancel_outlined,
         _ => Icons.inventory_2_outlined,
       };
@@ -329,64 +287,44 @@ class _PantallaProductoState extends State<PantallaProducto> {
   Widget build(BuildContext context) {
     if (_inicializando) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primary,
-        ),
+        child: CircularProgressIndicator(color: AppColors.primary),
       );
     }
-
     if (_errorInicializacion != null) {
       return _construirErrorInicializacion();
     }
 
     final controller = _controller;
-
     if (controller == null) {
       return const Center(
-        child: Text(
-          'No se pudo inicializar la pantalla de productos.',
-        ),
+        child: Text('No se pudo inicializar la pantalla de productos.'),
       );
     }
 
     return AnimatedBuilder(
       animation: controller,
       builder: (context, _) {
-        final cargando =
-            controller.cargando || controller.actualizando;
+        final cargando = controller.cargando || controller.actualizando;
+        final seleccionado = _productoSeleccionado;
 
-        final productoSeleccionado = _productoSeleccionado;
-
-        if (productoSeleccionado != null) {
+        if (seleccionado != null) {
           return DetalleProductoAdmin(
-            producto: productoSeleccionado,
-            procesando: controller.estaProcesando(
-              productoSeleccionado.id,
-            ),
-            onAprobar: () => _aprobarProducto(
-              productoSeleccionado.id,
-              productoSeleccionado.nombre,
-            ),
-            onRechazar: () => _rechazarProducto(
-              productoSeleccionado.id,
-              productoSeleccionado.nombre,
-            ),
+            producto: seleccionado,
+            procesando: controller.estaProcesando(seleccionado.id),
+            onAprobar: () =>
+                _aprobarProducto(seleccionado.id, seleccionado.nombre),
+            onRechazar: () =>
+                _rechazarProducto(seleccionado.id, seleccionado.nombre),
             onConfirmarRechazo: (motivo) {
               controller.rechazarProducto(
-                productoId: productoSeleccionado.id,
+                productoId: seleccionado.id,
                 motivoRechazo: motivo,
               );
             },
             onActualizar: _actualizar,
-            onEliminar: () => _eliminarProducto(
-              productoSeleccionado.id,
-              productoSeleccionado.nombre,
-            ),
-            onVolver: () {
-              setState(() {
-                _productoSeleccionado = null;
-              });
-            },
+            onEliminar: () =>
+                _eliminarProducto(seleccionado.id, seleccionado.nombre),
+            onVolver: () => setState(() => _productoSeleccionado = null),
           );
         }
 
@@ -478,40 +416,43 @@ class _PantallaProductoState extends State<PantallaProducto> {
   }
 
   Widget _construirContenido(ProductoController controller) {
-    final productosBase = _filtroActivo == 'todas'
+    final base = _filtroActivo == 'todas'
         ? controller.todosLosProductos
         : controller.productos;
-
     final consulta = controller.busqueda.trim().toLowerCase();
 
     final productos = consulta.isEmpty
-        ? productosBase
-        : productosBase.where((producto) {
-            return [
-              producto.nombre,
-              producto.categoria,
-              producto.sitioNombre,
-              producto.ciudad,
-              producto.departamento,
-            ].any(
-              (dato) => dato.toLowerCase().contains(consulta),
-            );
-          }).toList();
+        ? base
+        : base.where((p) => [
+              p.nombre,
+              p.categoria,
+              p.sitioNombre,
+              p.ciudad,
+              p.departamento,
+            ].any((dato) => dato.toLowerCase().contains(consulta))).toList();
 
     if (productos.isEmpty) {
       final hayBusqueda = consulta.isNotEmpty;
+      final sinProductos = _filtroActivo == 'todas' && !hayBusqueda;
 
-      return _construirEstadoVacio(
-        icono: hayBusqueda
-            ? Icons.search_off
-            : _iconoVacio(_filtroActivo),
-        titulo: hayBusqueda
-            ? 'No se encontraron productos'
-            : _tituloEstado(_filtroActivo),
-        descripcion: hayBusqueda
-            ? 'Prueba con otro nombre, categoría o sitio turístico.'
-            : _mensajeVacio(_filtroActivo),
-        mostrarActualizar: !hayBusqueda,
+      return SizedBox(
+        height: MediaQuery.of(context).size.height * 0.42,
+        child: Center(
+          child: _construirEstadoVacio(
+            icono: hayBusqueda ? Icons.search_off : _iconoVacio(_filtroActivo),
+            titulo: sinProductos
+                ? 'No hay productos registrados'
+                : hayBusqueda
+                    ? 'No se encontraron productos'
+                    : _tituloEstado(_filtroActivo),
+            descripcion: sinProductos
+                ? ''
+                : hayBusqueda
+                    ? 'Prueba con otro nombre, categoría o sitio turístico.'
+                    : _mensajeVacio(_filtroActivo),
+            mostrarActualizar: !hayBusqueda,
+          ),
+        ),
       );
     }
 
@@ -522,18 +463,12 @@ class _PantallaProductoState extends State<PantallaProducto> {
             key: ValueKey(producto.id),
             producto: producto,
             procesando: controller.estaProcesando(producto.id),
-            onAprobar: () => _aprobarProducto(
-              producto.id,
-              producto.nombre,
-            ),
-            onRechazar: () => _rechazarProducto(
-              producto.id,
-              producto.nombre,
-            ),
-            onEliminar: () => _eliminarProducto(
-              producto.id,
-              producto.nombre,
-            ),
+            onAprobar: () =>
+                _aprobarProducto(producto.id, producto.nombre),
+            onRechazar: () =>
+                _rechazarProducto(producto.id, producto.nombre),
+            onEliminar: () =>
+                _eliminarProducto(producto.id, producto.nombre),
             onConfirmarRechazo: (motivo) {
               controller.rechazarProducto(
                 productoId: producto.id,
@@ -541,11 +476,8 @@ class _PantallaProductoState extends State<PantallaProducto> {
               );
             },
             onActualizar: _actualizar,
-            onVerDetalle: () {
-              setState(() {
-                _productoSeleccionado = producto;
-              });
-            },
+            onVerDetalle: () =>
+                setState(() => _productoSeleccionado = producto),
           ),
         const SizedBox(height: AppDimensions.spacingLg),
       ],
@@ -562,29 +494,27 @@ class _PantallaProductoState extends State<PantallaProducto> {
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(
-            icono,
-            size: 64,
-            color: AppColors.textSecondary,
-          ),
+          Icon(icono, size: 54, color: AppColors.primary),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             titulo,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
-          Text(
-            descripcion,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+          if (descripcion.isNotEmpty) ...[
+            const SizedBox(height: AppDimensions.spacingSm),
+            Text(
+              descripcion,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
-          ),
+          ],
           if (mostrarActualizar) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             OutlinedButton.icon(
@@ -608,17 +538,12 @@ class _PantallaProductoState extends State<PantallaProducto> {
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: AppColors.error,
-            ),
+            const Icon(Icons.error_outline, color: AppColors.error),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
                 controller.error!,
-                style: const TextStyle(
-                  color: AppColors.error,
-                ),
+                style: const TextStyle(color: AppColors.error),
               ),
             ),
             IconButton(
@@ -639,11 +564,7 @@ class _PantallaProductoState extends State<PantallaProducto> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.lock_outline,
-              color: AppColors.error,
-              size: 48,
-            ),
+            const Icon(Icons.lock_outline, color: AppColors.error, size: 48),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               _errorInicializacion ?? 'No se pudo cargar la pantalla.',
@@ -656,7 +577,6 @@ class _PantallaProductoState extends State<PantallaProducto> {
                   _inicializando = true;
                   _errorInicializacion = null;
                 });
-
                 _inicializar();
               },
               icon: const Icon(Icons.refresh),

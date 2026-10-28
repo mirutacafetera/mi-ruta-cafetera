@@ -81,73 +81,14 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
     }
   }
 
-  // CONFIRMACIÓN Y ELIMINACIÓN DEL PRODUCTO.
+  // EJECUTA LA ELIMINACIÓN DESDE PANTALLAPRODUCTO.
+  // Allí se confirma la acción y se muestra el mensaje de resultado.
   Future<void> _confirmarEliminar() async {
     if (widget.procesando ||
         _eliminando ||
         widget.onEliminar == null) {
       return;
     }
-
-    final confirmar = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.white,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        title: const Text(
-          'Eliminar producto',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: Text(
-          '¿Deseas eliminar el producto "${widget.producto.nombre}"? '
-          'Esta acción no se puede deshacer.',
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-            height: 1.4,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(false),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          FilledButton.icon(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(true),
-            icon: const Icon(
-              Icons.delete_outline_rounded,
-              size: 18,
-            ),
-            label: const Text('Eliminar'),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmar != true || !mounted) return;
 
     setState(() => _eliminando = true);
 
@@ -163,6 +104,7 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
             content: Text(
               'No se pudo eliminar el producto. Inténtalo nuevamente.',
             ),
+            backgroundColor: AppColors.error,
           ),
         );
       }

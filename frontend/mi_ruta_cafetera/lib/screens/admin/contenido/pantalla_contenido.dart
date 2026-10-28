@@ -233,7 +233,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
       case 'rechazado':
         return 'No hay contenidos rechazados.';
       default:
-        return 'No hay contenidos disponibles.';
+        return 'No hay contenidos registrados';
     }
   }
 
@@ -280,25 +280,55 @@ class _PantallaContenidoState extends State<PantallaContenido> {
   }
 
   Widget _vacio(String texto, VoidCallback accion) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.perm_media_outlined,
-              size: 48,
-              color: Color(0xFF76513B),
-            ),
-            const SizedBox(height: 12),
-            Text(texto, textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: accion,
-              child: const Text('Actualizar o limpiar búsqueda'),
-            ),
-          ],
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.42,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.perm_media_outlined,
+                size: 42,
+                color: AppColors.success,
+              ),
+              const SizedBox(height: AppDimensions.spacingMd),
+              Text(
+                texto,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingMd),
+              OutlinedButton.icon(
+                onPressed: accion,
+                icon: const Icon(Icons.refresh, size: 20),
+                label: const Text('Actualizar'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF285B48),
+                  side: const BorderSide(
+                    color: Color(0xFF285B48),
+                    width: 1.3,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -520,7 +550,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
     }
 
     _mensaje(
-      ok ? 'Contenido eliminado.' : _controller.error ?? 'No se pudo eliminar.',
+      ok ? 'Contenido eliminado correctamente.' : _controller.error ?? 'No se pudo eliminar el contenido.',
       !ok,
     );
   }
