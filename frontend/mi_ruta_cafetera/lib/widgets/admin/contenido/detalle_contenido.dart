@@ -287,7 +287,7 @@ class _DetalleContenidoState extends State<DetalleContenido> {
               vertical: AppDimensions.spacingSm,
             ),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.creamLight,
               border: Border(
                 bottom: BorderSide(
                   color: AppColors.adminBorder.withValues(alpha: .65),

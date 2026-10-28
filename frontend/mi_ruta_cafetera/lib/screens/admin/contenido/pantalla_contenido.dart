@@ -47,15 +47,12 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
   Future<void> _cargar() async {
     if (_actualizandoLista) return;
-
     setState(() => _actualizandoLista = true);
 
     try {
       await _audio.stop();
       await _controller.cargarContenidos();
-
       if (!mounted) return;
-
       if (_controller.error != null) {
         _mensaje('No se pudieron actualizar los contenidos.', true);
       }
@@ -64,9 +61,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
         _mensaje('No fue posible actualizar los contenidos.', true);
       }
     } finally {
-      if (mounted) {
-        setState(() => _actualizandoLista = false);
-      }
+      if (mounted) setState(() => _actualizandoLista = false);
     }
   }
 
@@ -88,7 +83,6 @@ class _PantallaContenidoState extends State<PantallaContenido> {
       animation: _controller,
       builder: (_, _) {
         AdminContenidoModel? contenido;
-
         for (final c in _controller.contenidos) {
           if (c.id == _seleccionado) {
             contenido = c;
@@ -96,9 +90,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
           }
         }
 
-        if (contenido != null) {
-          return _detalle(contenido);
-        }
+        if (contenido != null) return _detalle(contenido);
 
         return SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -264,15 +256,12 @@ class _PantallaContenidoState extends State<PantallaContenido> {
 
   Future<void> _actualizarDetalle() async {
     if (_actualizandoLista) return;
-
     setState(() => _actualizandoLista = true);
 
     try {
       await _audio.stop();
       await _controller.cargarContenidos();
-
       if (!mounted) return;
-
       if (_controller.error != null) {
         _mensaje('No se pudo actualizar el detalle del contenido.', true);
       }
@@ -281,18 +270,13 @@ class _PantallaContenidoState extends State<PantallaContenido> {
         _mensaje('No fue posible actualizar el detalle del contenido.', true);
       }
     } finally {
-      if (mounted) {
-        setState(() => _actualizandoLista = false);
-      }
+      if (mounted) setState(() => _actualizandoLista = false);
     }
   }
 
   Future<void> _ver(AdminContenidoModel c) async {
     await _audio.stop();
-
-    if (mounted) {
-      setState(() => _seleccionado = c.id);
-    }
+    if (mounted) setState(() => _seleccionado = c.id);
   }
 
   Widget _vacio(String texto, VoidCallback accion) {
@@ -308,10 +292,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
               color: Color(0xFF76513B),
             ),
             const SizedBox(height: 12),
-            Text(
-              texto,
-              textAlign: TextAlign.center,
-            ),
+            Text(texto, textAlign: TextAlign.center),
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: accion,
@@ -353,12 +334,8 @@ class _PantallaContenidoState extends State<PantallaContenido> {
     }
 
     final ok = await _controller.aprobarContenido(c.id);
-
     if (!mounted) return;
-
-    if (ok) {
-      setState(() => _seleccionado = null);
-    }
+    if (ok) setState(() => _seleccionado = null);
 
     _mensaje(
       ok ? 'Contenido aprobado.' : _controller.error ?? 'No se pudo aprobar.',
@@ -408,10 +385,7 @@ class _PantallaContenidoState extends State<PantallaContenido> {
       );
 
       if (!mounted) return;
-
-      if (ok) {
-        setState(() => _seleccionado = null);
-      }
+      if (ok) setState(() => _seleccionado = null);
 
       _mensaje(
         ok ? 'Contenido rechazado.' : _controller.error ?? 'No se pudo rechazar.',
@@ -530,18 +504,17 @@ class _PantallaContenidoState extends State<PantallaContenido> {
   Future<void> _eliminar(AdminContenidoModel c) async {
     if (await _confirmar(
           'Eliminar contenido',
-          '¿Eliminar "${c.titulo}"? Esta acción no se puede deshacer.',
+          '¿Deseas eliminar el contenido "${c.titulo}"? '
+          'Esta acción no se puede deshacer.',
         ) !=
         true) {
       return;
     }
 
     await _audio.stop();
-
     final ok = await _controller.eliminarContenido(c.id);
 
     if (!mounted) return;
-
     if (ok && _seleccionado == c.id) {
       setState(() => _seleccionado = null);
     }

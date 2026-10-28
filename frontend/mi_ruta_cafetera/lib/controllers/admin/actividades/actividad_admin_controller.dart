@@ -117,4 +117,27 @@ class ActividadAdminController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // ELIMINAR ACTIVIDAD
+  Future<String?> eliminarActividad(String id) async {
+    if (procesando) {
+      return 'Ya hay una operación en curso.';
+    }
+
+    procesando = true;
+    notifyListeners();
+
+    try {
+      final mensaje = await ActividadAdmin.eliminarActividad(id);
+
+      actividades.removeWhere((actividad) => actividad.id == id);
+
+      return mensaje;
+    } catch (e) {
+      return e.toString().replaceFirst('Exception: ', '');
+    } finally {
+      procesando = false;
+      notifyListeners();
+    }
+  }
 }

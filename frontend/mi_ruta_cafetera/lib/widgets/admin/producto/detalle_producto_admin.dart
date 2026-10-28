@@ -18,9 +18,8 @@ class DetalleProductoAdmin extends StatefulWidget {
   final VoidCallback onRechazar;
   final ValueChanged<String>? onConfirmarRechazo;
   final Future<void> Function()? onActualizar;
-
-  // Menú lateral existente del panel de administración.
-  final Widget menuLateral;
+  final Future<void> Function()? onEliminar;
+  final VoidCallback onVolver;
 
   const DetalleProductoAdmin({
     super.key,
@@ -30,7 +29,8 @@ class DetalleProductoAdmin extends StatefulWidget {
     required this.onRechazar,
     this.onConfirmarRechazo,
     this.onActualizar,
-    required this.menuLateral,
+    this.onEliminar,
+    required this.onVolver,
   });
 
   @override
@@ -40,9 +40,7 @@ class DetalleProductoAdmin extends StatefulWidget {
 
 class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
   bool _actualizando = false;
-
-  final GlobalKey<ScaffoldState> _claveScaffold =
-      GlobalKey<ScaffoldState>();
+  bool _eliminando = false;
 
   static const Color _terracota = Color(0xFFB85C50);
 
@@ -50,16 +48,11 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
     final fotos = <String>[];
     final principal = widget.producto.imagenPrincipal.trim();
 
-    if (principal.isNotEmpty) {
-      fotos.add(principal);
-    }
+    if (principal.isNotEmpty) fotos.add(principal);
 
     for (final imagen in widget.producto.imagenes) {
       final url = imagen.trim();
-
-      if (url.isNotEmpty && !fotos.contains(url)) {
-        fotos.add(url);
-      }
+      if (url.isNotEmpty && !fotos.contains(url)) fotos.add(url);
     }
 
     return fotos;
@@ -68,18 +61,113 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
   Future<void> _actualizarDetalle() async {
     if (_actualizando || widget.onActualizar == null) return;
 
-    setState(() {
-      _actualizando = true;
-    });
+    setState(() => _actualizando = true);
 
     try {
       await widget.onActualizar!();
-    } finally {
+    } catch (e, stackTrace) {
+      debugPrint('Error al actualizar el producto: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
       if (mounted) {
-        setState(() {
-          _actualizando = false;
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo actualizar el producto.'),
+          ),
+        );
       }
+    } finally {
+      if (mounted) setState(() => _actualizando = false);
+    }
+  }
+
+  // CONFIRMACIÓN Y ELIMINACIÓN DEL PRODUCTO.
+  Future<void> _confirmarEliminar() async {
+    if (widget.procesando ||
+        _eliminando ||
+        widget.onEliminar == null) {
+      return;
+    }
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        title: const Text(
+          'Eliminar producto',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          '¿Deseas eliminar el producto "${widget.producto.nombre}"? '
+          'Esta acción no se puede deshacer.',
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(false),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          FilledButton.icon(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(true),
+            icon: const Icon(
+              Icons.delete_outline_rounded,
+              size: 18,
+            ),
+            label: const Text('Eliminar'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true || !mounted) return;
+
+    setState(() => _eliminando = true);
+
+    try {
+      await widget.onEliminar!();
+    } catch (e, stackTrace) {
+      debugPrint('Error al eliminar el producto: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se pudo eliminar el producto. Inténtalo nuevamente.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _eliminando = false);
     }
   }
 
@@ -89,12 +177,9 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
 
     return FondoAdmin(
       child: Scaffold(
-        key: _claveScaffold,
         backgroundColor: Colors.transparent,
-        drawer: widget.menuLateral,
         body: Column(
           children: [
-            _encabezadoPrincipal(),
             _encabezadoDetalle(context),
             Expanded(
               child: _actualizando
@@ -125,14 +210,13 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
                               widget.producto.estadoPublicacion,
                             ),
                           ),
-
                           const SizedBox(height: 16),
-
                           TarjetaDetalleActividad(
                             child: Padding(
                               padding: const EdgeInsets.all(18),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                 children: [
                                   const TituloDetalleActividad(
                                     texto: 'Información del producto',
@@ -155,12 +239,11 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
                                               widget.producto.precio,
                                             ),
                                           ),
-
                                           const SizedBox(height: 22),
-
                                           DatoDetalleActividad(
                                             ancho: ancho,
-                                            icono: Icons.storefront_outlined,
+                                            icono:
+                                                Icons.storefront_outlined,
                                             titulo: 'Sitio turístico',
                                             valor: widget.producto.sitioNombre
                                                     .trim()
@@ -168,9 +251,7 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
                                                 ? 'No especificado'
                                                 : widget.producto.sitioNombre,
                                           ),
-
                                           const SizedBox(height: 22),
-
                                           DatoDetalleActividad(
                                             ancho: ancho,
                                             icono:
@@ -180,22 +261,18 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
                                                 ? 'Activo'
                                                 : 'Inactivo',
                                           ),
-
                                           const SizedBox(height: 22),
-
                                           DatoDetalleActividad(
                                             ancho: ancho,
                                             icono: Icons.event_outlined,
                                             titulo: 'Fecha de creación',
-                                            valor:
-                                                widget.producto.createdAt ==
-                                                        null
-                                                    ? 'No disponible'
-                                                    : FormateadorFechaActividad
-                                                        .formatear(
-                                                        widget.producto
-                                                            .createdAt!,
-                                                      ),
+                                            valor: widget.producto.createdAt ==
+                                                    null
+                                                ? 'No disponible'
+                                                : FormateadorFechaActividad
+                                                    .formatear(
+                                                    widget.producto.createdAt!,
+                                                  ),
                                           ),
                                         ],
                                       );
@@ -205,9 +282,7 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 16),
-
                           GaleriaDetalleActividad(
                             imagenes: fotos,
                             onMostrarGaleria: (imagenes, indice) {
@@ -218,14 +293,16 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
                               );
                             },
                           ),
-
+                          const SizedBox(height: 22),
+                          _acciones(),
                           if (widget.producto.estaPendiente) ...[
                             const SizedBox(height: 18),
                             Row(
                               children: [
                                 Expanded(
                                   child: OutlinedButton.icon(
-                                    onPressed: widget.procesando
+                                    onPressed: widget.procesando ||
+                                            _eliminando
                                         ? null
                                         : () {
                                             mostrarDialogoRechazoAdmin(
@@ -270,12 +347,11 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
                                     ),
                                   ),
                                 ),
-
                                 const SizedBox(width: 12),
-
                                 Expanded(
                                   child: FilledButton.icon(
-                                    onPressed: widget.procesando
+                                    onPressed: widget.procesando ||
+                                            _eliminando
                                         ? null
                                         : widget.onAprobar,
                                     icon: const Icon(
@@ -312,54 +388,7 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
     );
   }
 
-  // ENCABEZADO VERDE CON MENÚ LATERAL.
-  Widget _encabezadoPrincipal() {
-    return Container(
-      width: double.infinity,
-      color: AppColors.primary,
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: 62,
-          child: Row(
-            children: [
-              const SizedBox(width: 12),
-
-              IconButton(
-                tooltip: 'Abrir menú',
-                onPressed: () {
-                  _claveScaffold.currentState?.openDrawer();
-                },
-                icon: const Icon(
-                  Icons.menu_rounded,
-                  color: AppColors.white,
-                  size: 27,
-                ),
-              ),
-
-              const Expanded(
-                child: Center(
-                  child: Text(
-                    'Productos',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 21,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 51),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
+  // BARRA DE NAVEGACIÓN Y ACTUALIZACIÓN.
   Widget _encabezadoDetalle(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -368,7 +397,7 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
         vertical: 10,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.creamLight,
         border: Border(
           bottom: BorderSide(
             color: AppColors.adminBorder.withValues(alpha: 0.65),
@@ -380,11 +409,9 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
           BotonNavegacionAdmin(
             icono: Icons.arrow_back_rounded,
             tooltip: 'Volver',
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: widget.onVolver,
           ),
-
           const SizedBox(width: 12),
-
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,13 +440,15 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
               ],
             ),
           ),
-
           const SizedBox(width: 8),
-
           BotonNavegacionAdmin(
             icono: Icons.refresh_rounded,
-            tooltip: 'Actualizar producto',
-            onPressed: _actualizando || widget.procesando
+            tooltip: _actualizando
+                ? 'Actualizando...'
+                : 'Actualizar producto',
+            onPressed: _actualizando ||
+                    widget.procesando ||
+                    _eliminando
                 ? null
                 : _actualizarDetalle,
           ),
@@ -428,6 +457,56 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
     );
   }
 
+  // BOTÓN DE ELIMINAR Y SU INDICADOR DE CARGA.
+  Widget _acciones() => Align(
+        alignment: Alignment.centerRight,
+        child: OutlinedButton.icon(
+          onPressed: widget.procesando ||
+                  _eliminando ||
+                  widget.onEliminar == null
+              ? null
+              : _confirmarEliminar,
+          icon: _eliminando
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: _terracota,
+                  ),
+                )
+              : const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 18,
+                ),
+          label: Text(_eliminando ? 'Eliminando...' : 'Eliminar'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.error,
+            disabledForegroundColor: _terracota,
+            backgroundColor: AppColors.surface,
+            disabledBackgroundColor: AppColors.surface,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 11,
+            ),
+            minimumSize: const Size(0, 42),
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            side: const BorderSide(
+              color: AppColors.adminBorder,
+              width: 1.1,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
+
   String _estadoParaTarjeta(String estado) {
     switch (estado.toLowerCase().trim()) {
       case 'aprobado':
@@ -435,17 +514,14 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
       case 'aprobado_manual':
       case 'aprobada_manual':
         return 'aprobada';
-
       case 'rechazado':
       case 'rechazada':
       case 'rechazado_manual':
       case 'rechazada_manual':
         return 'rechazada';
-
       case 'pendiente':
       case 'pendiente_revision':
         return 'pendiente_revision';
-
       default:
         return estado;
     }
@@ -457,7 +533,6 @@ class _DetalleProductoAdminState extends State<DetalleProductoAdmin> {
 
     for (var i = 0; i < numero.length; i++) {
       buffer.write(numero[i]);
-
       if (i < numero.length - 1 &&
           (numero.length - i - 1) % 3 == 0) {
         buffer.write('.');

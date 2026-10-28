@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -21,18 +22,13 @@ class AdminIconoMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool seleccionado = opcion == opcionSeleccionada;
+    final seleccionado = opcion == opcionSeleccionada;
 
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 4,
-        vertical: 3,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       decoration: BoxDecoration(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.radiusMd,
-        ),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       ),
       child: ListTile(
         dense: true,
@@ -48,9 +44,8 @@ class AdminIconoMenu extends StatelessWidget {
           titulo,
           style: TextStyle(
             fontSize: 14,
-            fontWeight: seleccionado
-                ? FontWeight.w700
-                : FontWeight.w500,
+            fontWeight:
+                seleccionado ? FontWeight.w700 : FontWeight.w500,
             color: AppColors.textPrimary,
           ),
         ),
@@ -65,13 +60,11 @@ class AdminIconoMenu extends StatelessWidget {
               )
             : null,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusMd,
-          ),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         ),
         onTap: () {
-          onOpcionSeleccionada(opcion);
           Navigator.pop(context);
+          onOpcionSeleccionada(opcion);
         },
       ),
     );

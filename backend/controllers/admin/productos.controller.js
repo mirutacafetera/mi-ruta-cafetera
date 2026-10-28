@@ -248,10 +248,45 @@ const rechazarProducto = async (req, res) => {
   }
 };
 
+// ELIMINAR PRODUCTO
+const eliminarProducto = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        mensaje: 'El ID del producto no es válido'
+      });
+    }
+
+    const producto = await Producto.findById(id);
+
+    if (!producto) {
+      return res.status(404).json({
+        mensaje: 'Producto no encontrado'
+      });
+    }
+
+    await Producto.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      mensaje: 'Producto eliminado correctamente',
+      id
+    });
+  } catch (error) {
+    console.error('Error al eliminar producto:', error);
+
+    return res.status(500).json({
+      mensaje: 'No se pudo eliminar el producto'
+    });
+  }
+};
+
 module.exports = {
   obtenerProductosPendientes,
   obtenerProductosPorEstado,
   obtenerProducto,
   aprobarProducto,
-  rechazarProducto
+  rechazarProducto,
+  eliminarProducto
 };

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../../models/admin/admin_contenido_model.dart';
@@ -347,12 +346,12 @@ class TarjetaContenido extends StatelessWidget {
 
           // BOTÓN FLOTANTE DE ELIMINAR
           Positioned(
-            top: 10,
-            right: 10,
+            top: 8,
+            right: 8,
             child: Material(
               color: _fondo,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 side: const BorderSide(
                   color: _borde,
                   width: 1,
@@ -360,20 +359,23 @@ class TarjetaContenido extends StatelessWidget {
               ),
               elevation: 2,
               clipBehavior: Clip.antiAlias,
-              child: IconButton(
-                tooltip: 'Eliminar contenido',
-                onPressed: procesando ? null : onEliminar,
-                icon: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: _terracota,
-                  size: 22,
+              child: SizedBox(
+                width: 36,
+                height: 36,
+                child: IconButton(
+                  tooltip: 'Eliminar contenido',
+                  onPressed: procesando ? null : onEliminar,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 36,
+                    height: 36,
+                  ),
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: _terracota,
+                    size: 18,
+                  ),
                 ),
-                iconSize: 22,
-                constraints: const BoxConstraints(
-                  minWidth: 44,
-                  minHeight: 44,
-                ),
-                padding: EdgeInsets.zero,
               ),
             ),
           ),

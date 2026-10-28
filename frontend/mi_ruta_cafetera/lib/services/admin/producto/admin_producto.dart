@@ -206,4 +206,21 @@ class AdminProducto {
       Map<String, dynamic>.from(datos['producto'] as Map),
     );
   }
+
+  // ============================================================
+  // ELIMINAR PRODUCTO
+  // DELETE /api/admin/productos/:id
+  // ============================================================
+
+  static Future<void> eliminarProducto({
+    required String id,
+    required String token,
+  }) async {
+    final respuesta = await http.delete(
+      Uri.parse('$_baseUrl/${Uri.encodeComponent(id)}'),
+      headers: _headers(token),
+    );
+
+    _procesarRespuesta(respuesta);
+  }
 }
