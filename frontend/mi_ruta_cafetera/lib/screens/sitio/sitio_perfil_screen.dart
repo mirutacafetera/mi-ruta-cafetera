@@ -200,7 +200,10 @@ class _SitioPerfilScreenState extends State<SitioPerfilScreen> {
           label: 'Teléfono',
           icono: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
+          ],
           habilitado: _editando && !_guardando,
         ),
         CampoFormularioSitio(controller: _helper.correoController, label: 'Correos', icono: Icons.email_outlined, habilitado: _editando && !_guardando),
@@ -223,7 +226,10 @@ class _SitioPerfilScreenState extends State<SitioPerfilScreen> {
           label: 'Precio desde',
           icono: Icons.attach_money_rounded,
           keyboardType: const TextInputType.numberWithOptions(decimal: false),
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          inputFormatters: [
+           FilteringTextInputFormatter.digitsOnly,
+           LengthLimitingTextInputFormatter(10),
+          ],
           habilitado: _editando && !_guardando,
         ),
       ],

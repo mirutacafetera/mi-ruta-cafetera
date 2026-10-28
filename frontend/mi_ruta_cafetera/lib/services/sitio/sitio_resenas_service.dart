@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-
+import 'package:image_picker/image_picker.dart';
 import '../../config/api_config.dart';
 import '../../models/sitio/sitio_resena_model.dart';
 import '../usuario/usuario_sesion_service.dart';
@@ -108,14 +108,17 @@ class SitioResenasService {
         .toList();
   }
 
+
   Future<SitioResenaModel> crear({
     required String sitioId,
     required int calificacion,
     required String comentario,
+    List<XFile> imagenes = const [],
   }) async {
+    final id = sitioId.trim();
     final texto = comentario.trim();
 
-    if (sitioId.trim().isEmpty) {
+    if (id.isEmpty) {
       throw Exception('El sitio turístico no es válido.');
     }
 
@@ -131,16 +134,42 @@ class SitioResenasService {
       );
     }
 
-    final respuesta = await http.post(
+    if (imagenes.length > 10) {
+      throw Exception(
+        'Solo puedes adjuntar hasta 10 imágenes.',
+      );
+    }
+
+    final request = http.MultipartRequest(
+      'POST',
       _uri(''),
-      headers: await _headers(autenticado: true),
-      body: jsonEncode({
-        'sitio': sitioId.trim(),
-        'calificacion': calificacion,
-        'comentario': texto,
-      }),
     );
 
+    final headers = await _headers(autenticado: true);
+
+    // MultipartRequest establece automáticamente el Content-Type
+    // con su boundary. No debemos enviar application/json.
+    headers.remove('Content-Type');
+
+    request.headers.addAll(headers);
+
+    request.fields.addAll({
+      'sitio': id,
+      'calificacion': calificacion.toString(),
+      'comentario': texto,
+    });
+
+    for (final imagen in imagenes) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'imagenes',
+          imagen.path,
+        ),
+      );
+    }
+
+    final enviada = await request.send();
+    final respuesta = await http.Response.fromStream(enviada);
     final datos = _decodificar(respuesta);
 
     if (datos is Map && datos['resena'] is Map) {
@@ -159,6 +188,7 @@ class SitioResenasService {
       'El servidor no devolvió la reseña creada.',
     );
   }
+
 
   Future<void> eliminar(String resenaId) async {
     final id = resenaId.trim();

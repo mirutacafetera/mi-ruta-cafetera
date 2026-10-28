@@ -1,4 +1,6 @@
+import 'dart:io';
 
+import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -38,6 +40,10 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
       UsuarioSesionService.instance;
   final TextEditingController _comentarioController =
       TextEditingController();
+
+  final ImagePicker _selectorImagenes = ImagePicker();
+  final List<XFile> _imagenesSeleccionadas = [];
+  static const int _maximoImagenes = 10;
 
   List<SitioResenaModel> _resenas = [];
   String? _usuarioIdActual;
@@ -150,6 +156,60 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
     }
   }
 
+  Future<void> _seleccionarImagenes() async {
+    if (_publicando) return;
+
+    final disponibles =
+        _maximoImagenes - _imagenesSeleccionadas.length;
+
+    if (disponibles <= 0) {
+      _mostrarMensaje(
+        Textos.t('Solo puedes adjuntar hasta 10 imágenes.'),
+      );
+      return;
+    }
+
+    try {
+      final seleccionadas = await _selectorImagenes.pickMultiImage(
+        imageQuality: 85,
+      );
+
+      if (!mounted || seleccionadas.isEmpty) return;
+
+      final nuevas = seleccionadas
+          .where(
+            (archivo) => !_imagenesSeleccionadas.any(
+              (actual) => actual.path == archivo.path,
+            ),
+          )
+          .take(disponibles)
+          .toList();
+
+      setState(() {
+        _imagenesSeleccionadas.addAll(nuevas);
+      });
+
+      if (seleccionadas.length > disponibles) {
+        _mostrarMensaje(
+        Textos.t('Puedes adjuntar hasta 10 imágenes en total.'),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _mostrarMensaje(
+        Textos.t('No fue posible seleccionar las imágenes.'),
+      );
+    }
+  }
+
+  void _quitarImagen(int indice) {
+    if (_publicando) return;
+
+    setState(() {
+      _imagenesSeleccionadas.removeAt(indice);
+    });
+  }
+
   Future<void> _publicarResena() async {
     final comentario = _comentarioController.text.trim();
 
@@ -167,12 +227,16 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
         sitioId: widget.sitioId,
         calificacion: _calificacion,
         comentario: comentario,
+        imagenes: List<XFile>.from(_imagenesSeleccionadas),
       );
 
       if (!mounted) return;
 
       _comentarioController.clear();
-      setState(() => _calificacion = 5);
+      setState(() {
+        _calificacion = 5;
+        _imagenesSeleccionadas.clear();
+      });
 
       await _cargarResenas();
       await _cargarUsuarioActual();
@@ -419,6 +483,70 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
+          Row(
+            children: [
+              OutlinedButton.icon(
+                onPressed: _publicando ||
+                        _imagenesSeleccionadas.length >= _maximoImagenes
+                    ? null
+                    : _seleccionarImagenes,
+                icon: const Icon(Icons.add_photo_alternate_outlined),
+                label: Text(
+                  Textos.t(
+                    'Añadir fotos ({0}/10)',
+                    [_imagenesSeleccionadas.length],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_imagenesSeleccionadas.isNotEmpty) ...[
+            const SizedBox(height: AppDimensions.spacingSm),
+            Wrap(
+              spacing: AppDimensions.spacingSm,
+              runSpacing: AppDimensions.spacingSm,
+              children: [
+                for (int i = 0; i < _imagenesSeleccionadas.length; i++)
+                  SizedBox(
+                    width: 88,
+                    height: 88,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            File(_imagenesSeleccionadas[i].path),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          top: 2,
+                          right: 2,
+                          child: IconButton(
+                            tooltip: Textos.t('Quitar imagen'),
+                            onPressed: _publicando
+                                ? null
+                                : () => _quitarImagen(i),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.black54,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(30, 30),
+                              padding: EdgeInsets.zero,
+                            ),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ],
+          const SizedBox(height: AppDimensions.spacingSm),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -603,6 +731,32 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                 : resena.comentario,
             softWrap: true,
           ),
+          if (resena.imagenes.isNotEmpty) ...[
+            const SizedBox(height: AppDimensions.spacingMd),
+            Wrap(
+              spacing: AppDimensions.spacingSm,
+              runSpacing: AppDimensions.spacingSm,
+              children: [
+                for (final url in resena.imagenes)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      url,
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const SizedBox(
+                          width: 100,
+                          height: 100,
+                          child: Icon(Icons.broken_image_outlined),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ],
           if (_eliminandoId == resena.id) ...[
             const SizedBox(height: AppDimensions.spacingSm),
             const LinearProgressIndicator(),
