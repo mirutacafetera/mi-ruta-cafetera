@@ -43,6 +43,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
 
   Future<void> _actualizarDetalle() async {
     if (_actualizandoDetalle || _controlador.procesando) return;
+
     setState(() => _actualizandoDetalle = true);
 
     try {
@@ -55,7 +56,9 @@ class _PantallaActividadesState extends State<PantallaActividades> {
         );
       }
     } finally {
-      if (mounted) setState(() => _actualizandoDetalle = false);
+      if (mounted) {
+        setState(() => _actualizandoDetalle = false);
+      }
     }
 
     if (mounted && _controlador.error != null) {
@@ -66,14 +69,17 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     }
   }
 
+  // Muestra los mensajes de éxito en verde y los errores en rojo.
   void _mostrarMensaje(String mensaje, {bool error = false}) {
     if (!mounted) return;
+
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           content: Text(mensaje),
-          backgroundColor: error ? AppColors.error : AppColors.success,
+          backgroundColor:
+              error ? AppColors.error : const Color(0xFF27864D),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -100,6 +106,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     );
 
     if (confirmar != true || !mounted) return;
+
     final resultado = await _controlador.aprobarActividad(actividad.id);
     if (!mounted) return;
 
@@ -119,6 +126,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
 
     if (motivo == null) {
       final campo = TextEditingController();
+
       try {
         motivo = await showDialog<String>(
           context: context,
@@ -148,6 +156,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                 ),
                 onPressed: () {
                   final texto = campo.text.trim();
+
                   if (texto.length < 3) {
                     ScaffoldMessenger.of(ctx).showSnackBar(
                       const SnackBar(
@@ -158,6 +167,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                     );
                     return;
                   }
+
                   Navigator.pop(ctx, texto);
                 },
                 child: const Text('Rechazar'),
@@ -171,6 +181,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     }
 
     if (motivo == null || !mounted) return;
+
     if (motivo.trim().length < 3) {
       _mostrarMensaje(
         'Escribe un motivo de al menos 3 caracteres.',
@@ -183,6 +194,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
       actividad.id,
       motivo.trim(),
     );
+
     if (!mounted) return;
 
     if (resultado == null) {
@@ -193,23 +205,37 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     }
   }
 
+  // ELIMINAR ACTIVIDAD
   Future<void> _eliminar(ActividadAdminModel actividad) async {
     if (_controlador.procesando) return;
+
     setState(() => _actividadEliminandoId = actividad.id);
 
     try {
       final resultado =
           await _controlador.eliminarActividad(actividad.id);
+
       if (!mounted) return;
 
-      if (resultado == null) {
+      // El controlador puede devolver el mensaje de éxito del servidor.
+      // No debemos confundir ese mensaje con un error.
+      final esExito = resultado == null ||
+          resultado.toLowerCase().contains('eliminada correctamente');
+
+      if (esExito) {
         setState(() => _actividadSeleccionada = null);
-        _mostrarMensaje('Actividad eliminada correctamente.');
+
+        _mostrarMensaje(
+          'Actividad eliminada correctamente.',
+          error: false,
+        );
       } else {
         _mostrarMensaje(resultado, error: true);
       }
     } finally {
-      if (mounted) setState(() => _actividadEliminandoId = null);
+      if (mounted) {
+        setState(() => _actividadEliminandoId = null);
+      }
     }
   }
 
@@ -227,19 +253,6 @@ class _PantallaActividadesState extends State<PantallaActividades> {
       .where((a) => a.estadoPublicacion == estado)
       .length;
 
-  String _textoEstado() {
-    switch (_estado) {
-      case 'todas':
-        return 'registradas';
-      case 'aprobado':
-        return 'aprobadas';
-      case 'rechazado':
-        return 'rechazadas';
-      default:
-        return 'pendientes';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -253,6 +266,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
 
         if (_actividadSeleccionada != null) {
           final actual = _obtenerActividad(_actividadSeleccionada!.id);
+
           if (actual != null) {
             return DetalleActividadAdmin(
               actividad: actual,
@@ -381,12 +395,8 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: _estadoVacio(
-                        _controlador.busqueda.isNotEmpty
-                            ? 'No se encontraron actividades'
-                            : 'No hay actividades ${_textoEstado()}.',
-                        _controlador.busqueda.isNotEmpty
-                            ? 'Prueba con otro nombre o sitio turístico.'
-                            : 'No hay registros para mostrar en este estado.',
+                        'No hay actividades registradas',
+                        '',
                         _cargar,
                       ),
                     )
@@ -397,6 +407,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             final actividad = actividades[index];
+
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 14),
                               child: TarjetaActividadAdmin(
@@ -433,6 +444,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     bool error = false,
   }) {
     final colores = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -444,7 +456,7 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                   ? Icons.cloud_off_rounded
                   : Icons.event_available_rounded,
               size: 54,
-              color: error ? colores.error : colores.primary,
+              color: error ? colores.error : AppColors.primary,
             ),
             const SizedBox(height: 14),
             Text(
@@ -454,14 +466,16 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                   .textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            Text(
-              descripcion,
-              textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme.bodyMedium
-                  ?.copyWith(color: colores.onSurfaceVariant),
-            ),
+            if (descripcion.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                descripcion,
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme.bodyMedium
+                    ?.copyWith(color: colores.onSurfaceVariant),
+              ),
+            ],
             const SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: accion,

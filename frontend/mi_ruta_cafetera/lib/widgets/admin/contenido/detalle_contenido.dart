@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -47,26 +46,17 @@ class _DetalleContenidoState extends State<DetalleContenido> {
 
   Future<void> _actualizarDetalle() async {
     if (_actualizando) return;
-
     setState(() => _actualizando = true);
 
     try {
       await widget.onActualizar();
-
-      if (mounted) {
-        widget.onMensaje('Contenido actualizado correctamente.');
-      }
+      if (mounted) widget.onMensaje('Contenido actualizado correctamente.');
     } catch (e, stackTrace) {
       debugPrint('Error al actualizar el contenido: $e');
       debugPrintStack(stackTrace: stackTrace);
-
-      if (mounted) {
-        widget.onMensaje('No se pudo actualizar el contenido.');
-      }
+      if (mounted) widget.onMensaje('No se pudo actualizar el contenido.');
     } finally {
-      if (mounted) {
-        setState(() => _actualizando = false);
-      }
+      if (mounted) setState(() => _actualizando = false);
     }
   }
 
@@ -74,18 +64,14 @@ class _DetalleContenidoState extends State<DetalleContenido> {
     final resultado = <String>[];
     final principal = widget.contenido.imagenPrincipal.trim();
 
-    if (principal.isNotEmpty) {
-      resultado.add(principal);
-    }
+    if (principal.isNotEmpty) resultado.add(principal);
 
     for (final imagen in widget.contenido.imagenes) {
       final url = imagen.trim();
-
       if (url.isNotEmpty && !resultado.contains(url)) {
         resultado.add(url);
       }
     }
-
     return resultado;
   }
 
@@ -118,7 +104,6 @@ class _DetalleContenidoState extends State<DetalleContenido> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // TARJETA PRINCIPAL
                           TarjetaPrincipalActividad(
                             titulo: widget.contenido.titulo.trim().isEmpty
                                 ? 'Contenido sin título'
@@ -130,10 +115,7 @@ class _DetalleContenidoState extends State<DetalleContenido> {
                               widget.contenido.estadoPublicacion,
                             ),
                           ),
-
                           const SizedBox(height: 16),
-
-                          // INFORMACIÓN DEL CONTENIDO
                           TarjetaDetalleActividad(
                             child: Padding(
                               padding: const EdgeInsets.all(18),
@@ -226,40 +208,29 @@ class _DetalleContenidoState extends State<DetalleContenido> {
                               ),
                             ),
                           ),
-
-                          // MOTIVO DEL RECHAZO
                           if (widget.contenido.motivoRechazo
                               .trim()
                               .isNotEmpty) ...[
                             const SizedBox(height: 16),
                             _motivoRechazo(),
                           ],
-
-                          // GALERÍA DE IMÁGENES
                           const SizedBox(height: 16),
                           GaleriaDetalleActividad(
                             imagenes: imagenes,
                             onMostrarGaleria: widget.onMostrarGaleria,
                           ),
-
-                          // AUDIOGUÍAS
                           const SizedBox(height: 22),
                           const TituloDetalleActividad(
                             texto: 'Audioguías',
                             icono: Icons.headphones_rounded,
                           ),
                           const SizedBox(height: 12),
-
                           if (widget.contenido.audioGuias.isEmpty)
                             _vacio('No hay audioguías disponibles.')
                           else
                             ...widget.contenido.audioGuias.map(_audioguia),
-
                           const SizedBox(height: 24),
-
-                          // ÚNICA ACCIÓN: ELIMINAR
                           _acciones(),
-
                           const SizedBox(height: AppDimensions.spacingXl),
                         ],
                       ),
@@ -271,7 +242,6 @@ class _DetalleContenidoState extends State<DetalleContenido> {
     );
   }
 
-  // ENCABEZADO
   Widget _encabezado() => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -342,21 +312,18 @@ class _DetalleContenidoState extends State<DetalleContenido> {
         ],
       );
 
-  // DATO REUTILIZABLE
   Widget _dato({
     required IconData icono,
     required String titulo,
     required String valor,
-  }) {
-    return DatoDetalleActividad(
-      ancho: double.infinity,
-      icono: icono,
-      titulo: titulo,
-      valor: valor,
-    );
-  }
+  }) =>
+      DatoDetalleActividad(
+        ancho: double.infinity,
+        icono: icono,
+        titulo: titulo,
+        valor: valor,
+      );
 
-  // MOTIVO DEL RECHAZO
   Widget _motivoRechazo() => Container(
         width: double.infinity,
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
@@ -403,11 +370,8 @@ class _DetalleContenidoState extends State<DetalleContenido> {
         ),
       );
 
-  // TARJETA DE AUDIOGUÍA
   Widget _audioguia(AdminAudioGuiaModel guia) => Padding(
-        padding: const EdgeInsets.only(
-          bottom: AppDimensions.spacingMd,
-        ),
+        padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
         child: TarjetaDetalleActividad(
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingMd),
@@ -468,8 +432,6 @@ class _DetalleContenidoState extends State<DetalleContenido> {
                   ),
                 ],
                 const SizedBox(height: 16),
-
-                // BOTONES DE AUDIO
                 Center(
                   child: Wrap(
                     alignment: WrapAlignment.center,
@@ -511,7 +473,6 @@ class _DetalleContenidoState extends State<DetalleContenido> {
     }
   }
 
-  // BOTONES DE AUDIO
   Widget _botonAudio(
     String texto,
     IconData icono,
@@ -523,17 +484,12 @@ class _DetalleContenidoState extends State<DetalleContenido> {
         icon: Icon(icono, size: 20),
         label: Text(texto),
         style: OutlinedButton.styleFrom(
-          foregroundColor:
-              principal ? AppColors.white : AppColors.primary,
-          backgroundColor:
-              principal ? AppColors.primary : AppColors.surface,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 13,
-            vertical: 11,
-          ),
+          foregroundColor: principal ? AppColors.white : AppColors.primary,
+          backgroundColor: principal ? AppColors.primary : AppColors.surface,
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
           minimumSize: const Size(0, 42),
           visualDensity: VisualDensity.compact,
-          side: BorderSide(
+          side: const BorderSide(
             color: AppColors.adminBorder,
             width: 1.1,
           ),
@@ -547,7 +503,6 @@ class _DetalleContenidoState extends State<DetalleContenido> {
         ),
       );
 
-  // ESTADO SIN CONTENIDO
   Widget _vacio(String texto) => TarjetaDetalleActividad(
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingLg),
@@ -562,36 +517,27 @@ class _DetalleContenidoState extends State<DetalleContenido> {
               Text(
                 texto,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                ),
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
             ],
           ),
         ),
       );
 
-  // ÚNICO BOTÓN: ELIMINAR, SIN TARJETA
   Widget _acciones() => Align(
         alignment: Alignment.centerRight,
         child: OutlinedButton.icon(
           onPressed: widget.onEliminar,
-          icon: const Icon(
-            Icons.delete_outline_rounded,
-            size: 18,
-          ),
+          icon: const Icon(Icons.delete_outline_rounded, size: 18),
           label: const Text('Eliminar'),
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.error,
             backgroundColor: AppColors.surface,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 11,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
             minimumSize: const Size(0, 42),
             visualDensity: VisualDensity.compact,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            side: BorderSide(
+            side: const BorderSide(
               color: AppColors.adminBorder,
               width: 1.1,
             ),
