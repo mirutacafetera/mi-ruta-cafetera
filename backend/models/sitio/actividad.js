@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const actividadSchema = new mongoose.Schema(
@@ -50,6 +51,13 @@ const actividadSchema = new mongoose.Schema(
     activo: {
       type: Boolean,
       default: true
+    },
+
+    // Oculta la actividad únicamente en el panel administrativo.
+    // No cambia su publicación en el sitio.
+    ocultoEnAdmin: {
+      type: Boolean,
+      default: false
     },
 
     estadoPublicacion: {

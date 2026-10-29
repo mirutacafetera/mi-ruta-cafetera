@@ -1,3 +1,4 @@
+
 const Contenido = require('../../models/sitio/contenido');
 const {
   procesarSolicitudAutomatica,
@@ -131,6 +132,7 @@ const crearContenido = async (req, res) => {
       audioGuias: audioGuias || [],
       estadoPublicacion: 'borrador',
       activo: true,
+      ocultoEnAdmin: false,
     });
 
     return res.status(201).json({
@@ -324,6 +326,10 @@ const enviarContenidoRevision = async (req, res) => {
     contenido.revisadoPor = null;
     contenido.revisadoAt = null;
 
+    // Si estaba oculto del panel administrativo,
+    // vuelve a mostrarse al enviarlo a revisión.
+    contenido.ocultoEnAdmin = false;
+
     await contenido.save();
 
     // La IA revisa el contenido y registra su decisión en el historial.
@@ -364,7 +370,7 @@ const enviarContenidoRevision = async (req, res) => {
 };
 
 // ======================================================
-// ELIMINAR CONTENIDO
+// ELIMINAR CONTENIDO DEL SITIO PROPIETARIO
 // ======================================================
 
 const eliminarContenido = async (req, res) => {
@@ -394,6 +400,7 @@ const eliminarContenido = async (req, res) => {
       });
     }
 
+    // Se conserva la eliminación original del propietario.
     await Contenido.findByIdAndDelete(contenido._id);
 
     return res.status(200).json({
@@ -401,7 +408,7 @@ const eliminarContenido = async (req, res) => {
       id: contenido._id,
     });
   } catch (error) {
-    console.error('Error al eliminar contenido:', error);
+    console.error('Error al eliminar el contenido:', error);
 
     return res.status(500).json({
       mensaje: 'Error al eliminar el contenido',
