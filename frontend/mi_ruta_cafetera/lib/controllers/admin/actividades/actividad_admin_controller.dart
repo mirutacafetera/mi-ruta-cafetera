@@ -118,7 +118,7 @@ class ActividadAdminController extends ChangeNotifier {
     }
   }
 
-  // ELIMINAR ACTIVIDAD
+  // Ocultar actividad únicamente del panel administrativo.
   Future<String?> eliminarActividad(String id) async {
     if (procesando) {
       return 'Ya hay una operación en curso.';
@@ -130,7 +130,10 @@ class ActividadAdminController extends ChangeNotifier {
     try {
       final mensaje = await ActividadAdmin.eliminarActividad(id);
 
+      // La operación del servidor fue exitosa:
+      // quitamos la actividad de la lista local del administrador.
       actividades.removeWhere((actividad) => actividad.id == id);
+      error = null;
 
       return mensaje;
     } catch (e) {
