@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const productoSchema = new mongoose.Schema(
@@ -56,6 +57,13 @@ const productoSchema = new mongoose.Schema(
     activo: {
       type: Boolean,
       default: true
+    },
+
+    // Ocultamiento exclusivo del panel administrativo.
+    ocultoEnAdmin: {
+      type: Boolean,
+      default: false,
+      index: true
     },
 
     estadoPublicacion: {

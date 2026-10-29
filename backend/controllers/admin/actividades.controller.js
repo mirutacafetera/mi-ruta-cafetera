@@ -64,9 +64,15 @@ const obtenerActividadesPendientes = async (req, res) => {
       'rechazado',
     ];
 
-    const filtro = estadosPermitidos.includes(estado)
+    const filtroEstado = estadosPermitidos.includes(estado)
       ? { estadoPublicacion: estado }
       : { estadoPublicacion: { $in: estadosPermitidos } };
+
+    // Excluir del panel las actividades ocultadas por el administrador.
+    const filtro = {
+      ...filtroEstado,
+      ocultoEnAdmin: { $ne: true },
+    };
 
     const actividades = await Actividad.find(filtro)
       .populate('sitio', 'nombre ciudad departamento')
@@ -240,7 +246,7 @@ const rechazarActividad = async (req, res) => {
   }
 };
 
-// ELIMINAR ACTIVIDAD POR ADMINISTRADOR
+// OCULTAR ACTIVIDAD ÚNICAMENTE DEL PANEL ADMINISTRATIVO
 const eliminarActividad = async (req, res) => {
   try {
     const { id } = req.params;
@@ -251,25 +257,46 @@ const eliminarActividad = async (req, res) => {
       });
     }
 
-    const actividad = await Actividad.findById(id);
+    // Solo actualizamos la marca administrativa.
+    // No se elimina el documento ni se modifica su publicación.
+    const actividad = await Actividad.findOneAndUpdate(
+      {
+        _id: id,
+        ocultoEnAdmin: { $ne: true },
+      },
+      {
+        $set: { ocultoEnAdmin: true },
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
 
     if (!actividad) {
-      return res.status(404).json({
-        mensaje: 'Actividad no encontrada',
+      const existente = await Actividad.exists({ _id: id });
+
+      if (!existente) {
+        return res.status(404).json({
+          mensaje: 'Actividad no encontrada',
+        });
+      }
+
+      return res.status(200).json({
+        mensaje: 'La actividad ya estaba oculta del panel administrativo',
+        id,
       });
     }
 
-    await Actividad.findByIdAndDelete(id);
-
     return res.status(200).json({
-      mensaje: 'Actividad eliminada correctamente',
+      mensaje: 'Actividad ocultada del panel administrativo correctamente',
       id,
     });
   } catch (error) {
-    console.error('Error al eliminar actividad:', error);
+    console.error('Error al ocultar actividad del panel:', error);
 
     return res.status(500).json({
-      mensaje: 'Error al eliminar actividad',
+      mensaje: 'Error al ocultar actividad del panel administrativo',
       error: error.message,
     });
   }

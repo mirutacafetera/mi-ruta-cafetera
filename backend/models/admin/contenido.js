@@ -50,7 +50,6 @@ const contenidoSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Campos conservados del modelo administrativo.
     tipo: {
       type: String,
       default: 'contenido',
@@ -81,14 +80,12 @@ const contenidoSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Imagen principal.
     imagenPrincipal: {
       type: String,
       default: '',
       trim: true,
     },
 
-    // Galería de imágenes.
     imagenes: [
       {
         type: String,
@@ -96,10 +93,16 @@ const contenidoSchema = new mongoose.Schema(
       },
     ],
 
-    // Audioguías.
     audioGuias: [audioGuiaSchema],
 
-    // Estado de revisión.
+    // Ocultamiento exclusivo del panel administrativo.
+    // No modifica la publicación ni el estado del contenido.
+    ocultoEnAdmin: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
     estadoPublicacion: {
       type: String,
       enum: [

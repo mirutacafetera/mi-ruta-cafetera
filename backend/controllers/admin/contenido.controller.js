@@ -5,11 +5,12 @@ const ContenidoAdmin = require('../../models/admin/contenido');
 const HistorialRevisionIA = require('../../models/admin/historial_revision_ia');
 
 // AGREGAR DATOS DE REVISION IA
-
 const agregarDatosRevision = async (contenidos) => {
   const lista = Array.isArray(contenidos)
     ? contenidos
-    : contenidos ? [contenidos] : [];
+    : contenidos
+      ? [contenidos]
+      : [];
 
   if (!lista.length) {
     return Array.isArray(contenidos) ? [] : null;
@@ -18,7 +19,9 @@ const agregarDatosRevision = async (contenidos) => {
   const historial = await HistorialRevisionIA.find({
     tipoSolicitud: 'contenido',
     solicitudId: { $in: lista.map((c) => c._id) },
-  }).sort({ fechaDecision: -1 }).lean();
+  })
+    .sort({ fechaDecision: -1 })
+    .lean();
 
   const evaluaciones = new Map();
 
@@ -38,17 +41,19 @@ const agregarDatosRevision = async (contenidos) => {
 
   const resultado = lista.map((contenido) => ({
     ...(contenido.toObject ? contenido.toObject() : contenido),
-    evaluacionIA: evaluaciones.get(contenido._id.toString()) || null,
+    evaluacionIA:
+      evaluaciones.get(contenido._id.toString()) || null,
   }));
 
   return Array.isArray(contenidos) ? resultado : resultado[0];
 };
 
-// OBTENER CONTENIDOS
-
+// OBTENER CONTENIDOS DEL PANEL ADMINISTRATIVO
 const obtenerContenidos = async (req, res) => {
   try {
-    const filtro = {};
+    const filtro = {
+      ocultoEnAdmin: { $ne: true },
+    };
 
     if (req.query.estado) {
       filtro.estadoPublicacion = req.query.estado;
@@ -64,14 +69,14 @@ const obtenerContenidos = async (req, res) => {
     );
   } catch (error) {
     console.error('Error al obtener contenidos:', error);
+
     return res.status(500).json({
       mensaje: 'Error al obtener los contenidos',
     });
   }
 };
 
-// OBTENER UN CONTENIDO
-
+// OBTENER UN CONTENIDO VISIBLE EN EL PANEL
 const obtenerContenido = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
@@ -80,7 +85,10 @@ const obtenerContenido = async (req, res) => {
       });
     }
 
-    const contenido = await ContenidoAdmin.findById(req.params.id)
+    const contenido = await ContenidoAdmin.findOne({
+      _id: req.params.id,
+      ocultoEnAdmin: { $ne: true },
+    })
       .populate('sitio', 'nombre ciudad departamento')
       .populate('revisadoPor', 'nombre nombreCompleto correo');
 
@@ -95,6 +103,7 @@ const obtenerContenido = async (req, res) => {
     );
   } catch (error) {
     console.error('Error al obtener contenido:', error);
+
     return res.status(500).json({
       mensaje: 'Error al obtener el contenido',
     });
@@ -102,7 +111,6 @@ const obtenerContenido = async (req, res) => {
 };
 
 // ACTUALIZAR CONTENIDO
-
 const actualizarContenido = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
@@ -137,7 +145,10 @@ const actualizarContenido = async (req, res) => {
 
     await contenido.save();
     await contenido.populate('sitio', 'nombre ciudad departamento');
-    await contenido.populate('revisadoPor', 'nombre nombreCompleto correo');
+    await contenido.populate(
+      'revisadoPor',
+      'nombre nombreCompleto correo'
+    );
 
     return res.status(200).json({
       mensaje: 'Contenido actualizado correctamente',
@@ -145,6 +156,7 @@ const actualizarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al actualizar contenido:', error);
+
     return res.status(500).json({
       mensaje: 'Error al actualizar el contenido',
     });
@@ -152,7 +164,6 @@ const actualizarContenido = async (req, res) => {
 };
 
 // OBTENER ID DEL ADMINISTRADOR
-
 const obtenerAdministradorId = (req) => {
   const id =
     req.usuario?.id ||
@@ -163,7 +174,6 @@ const obtenerAdministradorId = (req) => {
 };
 
 // APROBAR CONTENIDO
-
 const aprobarContenido = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
@@ -174,12 +184,7 @@ const aprobarContenido = async (req, res) => {
 
     const administradorId = obtenerAdministradorId(req);
 
-    console.log('USUARIO AUTENTICADO:', req.usuario);
-    console.log('ID DEL ADMINISTRADOR:', administradorId);
-
     if (!administradorId) {
-      console.error('No se identificó al administrador');
-
       return res.status(401).json({
         mensaje:
           'No se pudo identificar al administrador. Verifica el token de sesión.',
@@ -208,7 +213,10 @@ const aprobarContenido = async (req, res) => {
 
     await contenido.save();
     await contenido.populate('sitio', 'nombre ciudad departamento');
-    await contenido.populate('revisadoPor', 'nombre nombreCompleto correo');
+    await contenido.populate(
+      'revisadoPor',
+      'nombre nombreCompleto correo'
+    );
 
     return res.status(200).json({
       mensaje: 'Contenido aprobado correctamente',
@@ -216,6 +224,7 @@ const aprobarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al aprobar contenido:', error);
+
     return res.status(500).json({
       mensaje: 'Error al aprobar el contenido',
     });
@@ -223,7 +232,6 @@ const aprobarContenido = async (req, res) => {
 };
 
 // RECHAZAR CONTENIDO
-
 const rechazarContenido = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
@@ -242,12 +250,7 @@ const rechazarContenido = async (req, res) => {
 
     const administradorId = obtenerAdministradorId(req);
 
-    console.log('USUARIO AUTENTICADO:', req.usuario);
-    console.log('ID DEL ADMINISTRADOR:', administradorId);
-
     if (!administradorId) {
-      console.error('No se identificó al administrador');
-
       return res.status(401).json({
         mensaje:
           'No se pudo identificar al administrador. Verifica el token de sesión.',
@@ -276,7 +279,10 @@ const rechazarContenido = async (req, res) => {
 
     await contenido.save();
     await contenido.populate('sitio', 'nombre ciudad departamento');
-    await contenido.populate('revisadoPor', 'nombre nombreCompleto correo');
+    await contenido.populate(
+      'revisadoPor',
+      'nombre nombreCompleto correo'
+    );
 
     return res.status(200).json({
       mensaje: 'Contenido rechazado correctamente',
@@ -284,6 +290,7 @@ const rechazarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al rechazar contenido:', error);
+
     return res.status(500).json({
       mensaje: 'Error al rechazar el contenido',
     });
@@ -291,7 +298,6 @@ const rechazarContenido = async (req, res) => {
 };
 
 // DESACTIVAR CONTENIDO
-
 const desactivarContenido = async (req, res) => {
   try {
     const contenido = await ContenidoAdmin.findByIdAndUpdate(
@@ -312,6 +318,7 @@ const desactivarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al desactivar contenido:', error);
+
     return res.status(500).json({
       mensaje: 'Error al desactivar el contenido',
     });
@@ -319,7 +326,6 @@ const desactivarContenido = async (req, res) => {
 };
 
 // ACTIVAR CONTENIDO
-
 const activarContenido = async (req, res) => {
   try {
     const contenido = await ContenidoAdmin.findByIdAndUpdate(
@@ -340,39 +346,69 @@ const activarContenido = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al activar contenido:', error);
+
     return res.status(500).json({
       mensaje: 'Error al activar el contenido',
     });
   }
 };
 
-// ELIMINAR CONTENIDO
-
+// OCULTAR CONTENIDO SOLO DEL PANEL ADMINISTRATIVO
 const eliminarContenido = async (req, res) => {
   try {
-    const contenido = await ContenidoAdmin.findByIdAndDelete(
-      req.params.id
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        mensaje: 'Identificador no válido',
+      });
+    }
+
+    const contenido = await ContenidoAdmin.findOneAndUpdate(
+      {
+        _id: id,
+        ocultoEnAdmin: { $ne: true },
+      },
+      {
+        $set: {
+          ocultoEnAdmin: true,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
     );
 
     if (!contenido) {
-      return res.status(404).json({
-        mensaje: 'Contenido no encontrado',
+      const existente = await ContenidoAdmin.exists({ _id: id });
+
+      if (!existente) {
+        return res.status(404).json({
+          mensaje: 'Contenido no encontrado',
+        });
+      }
+
+      return res.status(200).json({
+        mensaje: 'El contenido ya estaba oculto del panel administrativo',
+        id,
       });
     }
 
     return res.status(200).json({
-      mensaje: 'Contenido eliminado correctamente',
+      mensaje: 'Contenido ocultado del panel administrativo correctamente',
+      id: contenido._id,
     });
   } catch (error) {
-    console.error('Error al eliminar contenido:', error);
+    console.error('Error al ocultar contenido del panel:', error);
+
     return res.status(500).json({
-      mensaje: 'Error al eliminar el contenido',
+      mensaje: 'Error al ocultar el contenido del panel administrativo',
     });
   }
 };
 
 // EXPORTAR FUNCIONES
-
 module.exports = {
   obtenerContenidos,
   obtenerContenido,
