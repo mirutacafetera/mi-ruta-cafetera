@@ -16,11 +16,13 @@ class PantallaActividades extends StatefulWidget {
   const PantallaActividades({super.key});
 
   @override
-  State<PantallaActividades> createState() => _PantallaActividadesState();
+  State<PantallaActividades> createState() =>
+      _PantallaActividadesState();
 }
 
 class _PantallaActividadesState extends State<PantallaActividades> {
   late final ActividadAdminController _controlador;
+
   String _estado = 'todas';
   String? _actividadEliminandoId;
   ActividadAdminModel? _actividadSeleccionada;
@@ -39,7 +41,9 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     super.dispose();
   }
 
-  Future<void> _cargar() async => _controlador.cargarActividades();
+  Future<void> _cargar() async {
+    await _controlador.cargarActividades();
+  }
 
   Future<void> _actualizarDetalle() async {
     if (_actualizandoDetalle || _controlador.procesando) return;
@@ -69,17 +73,24 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     }
   }
 
-  // Muestra los mensajes de éxito en verde y los errores en rojo.
-  void _mostrarMensaje(String mensaje, {bool error = false}) {
+  // Muestra un único mensaje personalizado.
+  // Los éxitos aparecen en verde y los errores en el color de error.
+  void _mostrarMensaje(
+    String mensaje, {
+    bool error = false,
+  }) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context)
+    final messenger = ScaffoldMessenger.of(context);
+
+    messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           content: Text(mensaje),
-          backgroundColor:
-              error ? AppColors.error : const Color(0xFF27864D),
+          backgroundColor: error
+              ? AppColors.error
+              : const Color(0xFF27864D),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -107,7 +118,9 @@ class _PantallaActividadesState extends State<PantallaActividades> {
 
     if (confirmar != true || !mounted) return;
 
-    final resultado = await _controlador.aprobarActividad(actividad.id);
+    final resultado =
+        await _controlador.aprobarActividad(actividad.id);
+
     if (!mounted) return;
 
     if (resultado == null) {
@@ -205,7 +218,9 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     }
   }
 
-  // ELIMINAR ACTIVIDAD
+  // Oculta la actividad del panel administrativo.
+  // La eliminación lógica del backend debe conservar el registro
+  // y permitir que siga visible en el panel del sitio propietario.
   Future<void> _eliminar(ActividadAdminModel actividad) async {
     if (_controlador.procesando) return;
 
@@ -217,14 +232,20 @@ class _PantallaActividadesState extends State<PantallaActividades> {
 
       if (!mounted) return;
 
-      // El controlador puede devolver el mensaje de éxito del servidor.
-      // No debemos confundir ese mensaje con un error.
+      final mensaje = resultado?.toLowerCase().trim() ?? '';
+
+      // Reconocer los mensajes de éxito que puede devolver el backend.
       final esExito = resultado == null ||
-          resultado.toLowerCase().contains('eliminada correctamente');
+          mensaje.contains('ocultada del panel administrativo') ||
+          mensaje.contains('ya estaba oculta') ||
+          mensaje.contains('eliminada correctamente');
 
       if (esExito) {
-        setState(() => _actividadSeleccionada = null);
+        setState(() {
+          _actividadSeleccionada = null;
+        });
 
+        // Mostrar solamente el mensaje diseñado en Flutter.
         _mostrarMensaje(
           'Actividad eliminada correctamente.',
           error: false,
@@ -232,6 +253,13 @@ class _PantallaActividadesState extends State<PantallaActividades> {
       } else {
         _mostrarMensaje(resultado, error: true);
       }
+    } catch (_) {
+      if (!mounted) return;
+
+      _mostrarMensaje(
+        'No fue posible ocultar la actividad del panel administrativo.',
+        error: true,
+      );
     } finally {
       if (mounted) {
         setState(() => _actividadEliminandoId = null);
@@ -243,11 +271,13 @@ class _PantallaActividadesState extends State<PantallaActividades> {
     for (final actividad in _controlador.actividades) {
       if (actividad.id == id) return actividad;
     }
+
     return null;
   }
 
-  void _mostrarGaleria(List<String> imagenes, int inicial) =>
-      GaleriaImagenes.mostrar(context, imagenes, inicial);
+  void _mostrarGaleria(List<String> imagenes, int inicial) {
+    GaleriaImagenes.mostrar(context, imagenes, inicial);
+  }
 
   int _contarEstado(String estado) => _controlador.actividades
       .where((a) => a.estadoPublicacion == estado)
@@ -259,13 +289,16 @@ class _PantallaActividadesState extends State<PantallaActividades> {
       animation: _controlador,
       builder: (context, _) {
         final actividades = _controlador.actividadesFiltradas
-            .where((a) =>
-                _estado == 'todas' ||
-                a.estadoPublicacion == _estado)
+            .where(
+              (a) =>
+                  _estado == 'todas' ||
+                  a.estadoPublicacion == _estado,
+            )
             .toList();
 
         if (_actividadSeleccionada != null) {
-          final actual = _obtenerActividad(_actividadSeleccionada!.id);
+          final actual =
+              _obtenerActividad(_actividadSeleccionada!.id);
 
           if (actual != null) {
             return DetalleActividadAdmin(
@@ -306,18 +339,21 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                               '${_controlador.actividades.length} '
                               'Actividades registradas',
                               style: Theme.of(context)
-                                  .textTheme.titleMedium
+                                  .textTheme
+                                  .titleMedium
                                   ?.copyWith(
                                     fontSize: 14,
                                     color: Theme.of(context)
-                                        .colorScheme.onSurfaceVariant,
+                                        .colorScheme
+                                        .onSurfaceVariant,
                                   ),
                             ),
                           ),
                           IconButton(
                             tooltip: 'Actualizar',
-                            onPressed:
-                                _controlador.cargando ? null : _cargar,
+                            onPressed: _controlador.cargando
+                                ? null
+                                : _cargar,
                             icon: const Icon(Icons.refresh_rounded),
                           ),
                         ],
@@ -329,7 +365,8 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                       tarjetas: [
                         ResumenTarjetaConfig(
                           titulo: 'Pendientes',
-                          cantidad: _contarEstado('pendiente_revision'),
+                          cantidad:
+                              _contarEstado('pendiente_revision'),
                           icono: Icons.pending_actions_rounded,
                           color: AppColors.secondary,
                           estado: 'pendiente_revision',
@@ -356,7 +393,8 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                     sliver: SliverToBoxAdapter(
                       child: BarraBusqueda(
                         valor: _controlador.busqueda,
-                        textoAyuda: 'Buscar actividad o sitio turístico...',
+                        textoAyuda:
+                            'Buscar actividad o sitio turístico...',
                         onChanged: _controlador.buscar,
                         onLimpiar: () => _controlador.buscar(''),
                       ),
@@ -365,14 +403,17 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                   SliverToBoxAdapter(
                     child: FiltrosContenido(
                       seleccionado: _estado,
-                      onSeleccionar: (estado) =>
-                          setState(() => _estado = estado),
+                      onSeleccionar: (estado) {
+                        setState(() => _estado = estado);
+                      },
                     ),
                   ),
                   if (_controlador.cargando)
                     const SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.all(AppDimensions.spacingLg),
+                        padding: EdgeInsets.all(
+                          AppDimensions.spacingLg,
+                        ),
                         child: Center(
                           child: CircularProgressIndicator(
                             color: AppColors.primary,
@@ -409,15 +450,19 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                             final actividad = actividades[index];
 
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 14),
+                              padding:
+                                  const EdgeInsets.only(bottom: 14),
                               child: TarjetaActividadAdmin(
                                 actividad: actividad,
                                 procesando:
-                                    _actividadEliminandoId == actividad.id,
+                                    _actividadEliminandoId ==
+                                        actividad.id,
                                 seleccionado: false,
-                                onVerDetalles: () => setState(
-                                  () => _actividadSeleccionada = actividad,
-                                ),
+                                onVerDetalles: () {
+                                  setState(() {
+                                    _actividadSeleccionada = actividad;
+                                  });
+                                },
                                 onAprobar: () => _aprobar(actividad),
                                 onRechazar: () => _rechazar(actividad),
                                 onEliminar: () => _eliminar(actividad),
@@ -463,7 +508,8 @@ class _PantallaActividadesState extends State<PantallaActividades> {
               titulo,
               textAlign: TextAlign.center,
               style: Theme.of(context)
-                  .textTheme.titleMedium
+                  .textTheme
+                  .titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
             if (descripcion.isNotEmpty) ...[
@@ -472,8 +518,11 @@ class _PantallaActividadesState extends State<PantallaActividades> {
                 descripcion,
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
-                    .textTheme.bodyMedium
-                    ?.copyWith(color: colores.onSurfaceVariant),
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(
+                      color: colores.onSurfaceVariant,
+                    ),
               ),
             ],
             const SizedBox(height: 16),

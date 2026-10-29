@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const Actividad = require('../../models/sitio/actividad');
@@ -190,7 +191,9 @@ const rechazarActividad = async (req, res) => {
     const { id } = req.params;
     const { motivoRechazo } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(id)
+    ) {
       return res.status(400).json({
         mensaje: 'El ID de la actividad no es válido',
       });
@@ -283,12 +286,18 @@ const eliminarActividad = async (req, res) => {
         });
       }
 
-      // Ya estaba oculta. Respuesta sin mensaje de éxito.
-      return res.status(200).json({ id });
+      // La actividad ya estaba oculta del panel administrativo.
+      return res.status(200).json({
+        mensaje: 'La actividad ya estaba oculta del panel administrativo',
+        id,
+      });
     }
 
-    // Respuesta exitosa sin el texto de la notificación roja.
-    return res.status(200).json({ id });
+    // Ocultación realizada correctamente.
+    return res.status(200).json({
+      mensaje: 'Actividad ocultada del panel administrativo correctamente',
+      id: actividad._id,
+    });
   } catch (error) {
     console.error('Error al ocultar actividad del panel:', error);
 
