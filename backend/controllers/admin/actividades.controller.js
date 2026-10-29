@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const Actividad = require('../../models/sitio/actividad');
@@ -8,7 +7,9 @@ const HistorialRevisionIA = require('../../models/admin/historial_revision_ia');
 const agregarEvaluacionIA = async (actividades) => {
   const lista = Array.isArray(actividades)
     ? actividades
-    : [actividades];
+    : actividades
+      ? [actividades]
+      : [];
 
   if (!lista.length) {
     return Array.isArray(actividades) ? [] : null;
@@ -68,7 +69,7 @@ const obtenerActividadesPendientes = async (req, res) => {
       ? { estadoPublicacion: estado }
       : { estadoPublicacion: { $in: estadosPermitidos } };
 
-    // Excluir del panel las actividades ocultadas por el administrador.
+    // Excluir las actividades ocultadas por el administrador.
     const filtro = {
       ...filtroEstado,
       ocultoEnAdmin: { $ne: true },
@@ -257,8 +258,8 @@ const eliminarActividad = async (req, res) => {
       });
     }
 
-    // Solo actualizamos la marca administrativa.
-    // No se elimina el documento ni se modifica su publicación.
+    // Ocultar del panel administrativo sin borrar el documento
+    // ni modificar la publicación del sitio.
     const actividad = await Actividad.findOneAndUpdate(
       {
         _id: id,
@@ -282,16 +283,12 @@ const eliminarActividad = async (req, res) => {
         });
       }
 
-      return res.status(200).json({
-        mensaje: 'La actividad ya estaba oculta del panel administrativo',
-        id,
-      });
+      // Ya estaba oculta. Respuesta sin mensaje de éxito.
+      return res.status(200).json({ id });
     }
 
-    return res.status(200).json({
-      mensaje: 'Actividad ocultada del panel administrativo correctamente',
-      id,
-    });
+    // Respuesta exitosa sin el texto de la notificación roja.
+    return res.status(200).json({ id });
   } catch (error) {
     console.error('Error al ocultar actividad del panel:', error);
 
