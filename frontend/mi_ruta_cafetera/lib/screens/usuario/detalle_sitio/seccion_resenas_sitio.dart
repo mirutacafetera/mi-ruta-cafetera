@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart'; // <-- Importante para kIsWeb
 import 'package:flutter/material.dart';
 
 import '../../../models/sitio/sitio_resena_model.dart';
@@ -515,10 +516,16 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.file(
-                            File(_imagenesSeleccionadas[i].path),
-                            fit: BoxFit.cover,
-                          ),
+                          // CORREGIDO PARA SOPORTAR FLUTTER WEB Y MÓVIL
+                          child: kIsWeb
+                              ? Image.network(
+                                  _imagenesSeleccionadas[i].path,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.file(
+                                  File(_imagenesSeleccionadas[i].path),
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                         Positioned(
                           top: 2,

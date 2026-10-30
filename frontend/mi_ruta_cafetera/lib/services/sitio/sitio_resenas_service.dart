@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -98,7 +97,7 @@ class SitioResenasService {
     final datos = _decodificar(respuesta);
 
     return _listaDesde(datos)
-        .whereType<Map>()
+        .whereType()
         .map(
           (json) => SitioResenaModel.fromJson(
             Map<String, dynamic>.from(json),
@@ -107,7 +106,6 @@ class SitioResenasService {
         .where((resena) => resena.activo)
         .toList();
   }
-
 
   Future<SitioResenaModel> crear({
     required String sitioId,
@@ -159,11 +157,14 @@ class SitioResenasService {
       'comentario': texto,
     });
 
+    // CORREGIDO: Usamos fromBytes para total compatibilidad Web y Móvil
     for (final imagen in imagenes) {
+      final bytes = await imagen.readAsBytes();
       request.files.add(
-        await http.MultipartFile.fromPath(
+        http.MultipartFile.fromBytes(
           'imagenes',
-          imagen.path,
+          bytes,
+          filename: imagen.name.isNotEmpty ? imagen.name : 'resena_imagen.jpg',
         ),
       );
     }
@@ -188,7 +189,6 @@ class SitioResenasService {
       'El servidor no devolvió la reseña creada.',
     );
   }
-
 
   Future<void> eliminar(String resenaId) async {
     final id = resenaId.trim();
