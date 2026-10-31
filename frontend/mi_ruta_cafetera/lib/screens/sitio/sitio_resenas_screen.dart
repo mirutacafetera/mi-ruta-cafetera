@@ -601,7 +601,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: resena.imagenes.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final urlImagen = resena.imagenes[index];
                   return ClipRRect(
