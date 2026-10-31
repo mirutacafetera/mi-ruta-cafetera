@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../models/sitio/sitio_resena_model.dart';
@@ -593,7 +592,68 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
                   ),
             ),
           ),
+
+          // --- VISOR DE IMÁGENES ADJUNTAS EN LA RESEÑA ---
+          if (resena.imagenes.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 84,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: resena.imagenes.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final urlImagen = resena.imagenes[index];
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: InkWell(
+                      onTap: () => _mostrarVisorImagen(context, urlImagen),
+                      child: Image.network(
+                        urlImagen,
+                        width: 84,
+                        height: 84,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 84,
+                          height: 84,
+                          color: AppColors.sitioSurfaceSoft,
+                          child: const Icon(
+                            Icons.broken_image_rounded,
+                            color: AppColors.sitioTextSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  void _mostrarVisorImagen(BuildContext context, String url) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(url),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
       ),
     );
   }
