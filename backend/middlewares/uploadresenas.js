@@ -2,13 +2,6 @@
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('../config/cloudinary');
 
-const formatosPermitidos = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/avif'
-];
-
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -21,17 +14,26 @@ const storage = new CloudinaryStorage({
 const uploadResenas = multer({
   storage,
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: 10 * 1024 * 1024, // 10 MB
     files: 10
   },
   fileFilter: (req, file, callback) => {
-    if (!formatosPermitidos.includes(file.mimetype)) {
-      return callback(
-        new Error('Solo se permiten imágenes JPG, PNG, WEBP o AVIF.')
-      );
+    // Permitir si mimetype es de imagen o si viene como binario genérico de la web
+    const mimetypesValidos = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/avif',
+      'application/octet-stream'
+    ];
+
+    if (!file.mimetype || mimetypesValidos.includes(file.mimetype)) {
+      return callback(null, true);
     }
 
-    callback(null, true);
+    callback(
+      new Error('Solo se permiten archivos de imagen válidos (JPG, PNG, WEBP, AVIF).')
+    );
   }
 });
 
