@@ -76,9 +76,18 @@ const crearResena = async (req, res) => {
       });
     }
 
+    // --- AQUÍ ESTÁ EL CÓDIGO DE DEPURACIÓN EN EL ARCHIVO .JS ---
+    console.log("Archivos recibidos de multer:", req.files);
+
     const imagenes = (req.files || [])
-    .map((archivo) => archivo.path || archivo.url)
-    .filter((url) => typeof url === 'string' && url.trim().length > 0);
+      .map((archivo) => {
+        console.log("Archivo individual:", archivo);
+        return archivo.path || archivo.url || archivo.secure_url || '';
+      })
+      .filter((url) => typeof url === 'string' && url.trim().length > 0);
+
+    console.log("URLs finales a guardar en MongoDB:", imagenes);
+    // -----------------------------------------------------------
 
     const resena = await Resena.create({
       usuario: req.usuario.id,
