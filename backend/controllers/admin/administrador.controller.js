@@ -1,3 +1,4 @@
+
 // =====================================================
 // CONTROLADOR DE AUTENTICACIÓN Y GESTIÓN DE ADMINISTRADORES
 // =====================================================
@@ -611,7 +612,7 @@ const actualizarAdministrador = async (req, res) => {
           telefono
         },
         {
-          new: true,
+          returnDocument: 'after',
           runValidators: true
         }
       )
@@ -675,7 +676,7 @@ const subirFotoAdministrador = async (req, res) => {
           fotoPerfil: req.file.path
         },
         {
-          new: true,
+          returnDocument: 'after',
           runValidators: true
         }
       )
@@ -730,7 +731,7 @@ const cambiarEstadoAdministrador = async (
         req.params.id,
         { activo },
         {
-          new: true,
+          returnDocument: 'after',
           runValidators: true
         }
       )

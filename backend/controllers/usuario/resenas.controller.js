@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const Resena = require('../../models/sitio/resena');
 const SitioTuristico = require('../../models/admin/sitio');
@@ -178,7 +179,7 @@ const actualizarResena = async (req, res) => {
       },
       { $set: cambios },
       {
-        new: true,
+        returnDocument: 'after',
         runValidators: true
       }
     ).populate('usuario', 'nombre apellido fotoPerfil avatar');

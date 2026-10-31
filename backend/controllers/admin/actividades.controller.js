@@ -272,7 +272,8 @@ const eliminarActividad = async (req, res) => {
         $set: { ocultoEnAdmin: true },
       },
       {
-        new: true,
+        // CORRECCIÓN: opción actual de Mongoose.
+        returnDocument: 'after',
         runValidators: true,
       },
     );
