@@ -123,7 +123,7 @@ const actualizarCategoria = async (req, res) => {
       id,
       req.body,
       {
-        new: true,
+        returnDocument: 'after',
         runValidators: true
       }
     );

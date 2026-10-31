@@ -53,7 +53,7 @@ const desactivarResena = async (req, res) => {
     const resena = await Resena.findByIdAndUpdate(
       req.params.id,
       { activo: false },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!resena) {
@@ -81,7 +81,7 @@ const activarResena = async (req, res) => {
     const resena = await Resena.findByIdAndUpdate(
       req.params.id,
       { activo: true },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!resena) {

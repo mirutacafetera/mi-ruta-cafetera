@@ -1,3 +1,4 @@
+
 const Reserva = require('../../models/sitio/reserva');
 const Actividad = require('../../models/sitio/actividad');
 const SitioTuristico = require('../../models/admin/sitio');
@@ -157,7 +158,6 @@ const avisar = async (tarea, contexto) => {
 
 const obtenerReservas = async (req, res) => {
   try {
-
     const reservas = await Reserva.find({
       usuario: req.usuario.id
     })
@@ -176,14 +176,12 @@ const obtenerReservas = async (req, res) => {
     res.status(200).json(reservas);
 
   } catch (error) {
-
     errorInterno(
       res,
       'Error al obtener reservas:',
       error,
       'No se pudieron obtener tus reservas.'
     );
-
   }
 };
 
@@ -201,7 +199,6 @@ const obtenerReservas = async (req, res) => {
 
 const crearReserva = async (req, res) => {
   try {
-
     const body = cuerpoDe(req);
     const usuarioId = req.usuario.id;
 
@@ -429,14 +426,12 @@ const crearReserva = async (req, res) => {
     });
 
   } catch (error) {
-
     errorInterno(
       res,
       'Error al crear reserva:',
       error,
       'No se pudo registrar la solicitud de reserva.'
     );
-
   }
 };
 
@@ -451,7 +446,6 @@ const crearReserva = async (req, res) => {
 
 const actualizarReserva = async (req, res) => {
   try {
-
     const id = req.params.id;
 
     if (!esId(id)) {
@@ -528,7 +522,7 @@ const actualizarReserva = async (req, res) => {
       },
       cambios,
       {
-        new: true,
+        returnDocument: 'after',
         runValidators: true
       }
     );
@@ -546,14 +540,12 @@ const actualizarReserva = async (req, res) => {
     });
 
   } catch (error) {
-
     errorInterno(
       res,
       'Error al actualizar reserva:',
       error,
       'No se pudo actualizar la solicitud.'
     );
-
   }
 };
 
@@ -566,7 +558,6 @@ const actualizarReserva = async (req, res) => {
 
 const cancelarReserva = async (req, res) => {
   try {
-
     const id = req.params.id;
 
     if (!esId(id)) {
@@ -588,7 +579,7 @@ const cancelarReserva = async (req, res) => {
         estado: 'cancelada'
       },
       {
-        new: true,
+        returnDocument: 'after',
         runValidators: true
       }
     );
@@ -631,14 +622,12 @@ const cancelarReserva = async (req, res) => {
     });
 
   } catch (error) {
-
     errorInterno(
       res,
       'Error al cancelar reserva:',
       error,
       'No se pudo cancelar la reserva.'
     );
-
   }
 };
 
