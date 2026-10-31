@@ -1,4 +1,3 @@
-
 const { groq } = require('../controllers/usuario/chat.controller');
 
 const Contenido = require('../models/sitio/contenido');
@@ -233,7 +232,7 @@ async function aplicarDecision(tipo, solicitud, sitioId, resultado) {
       $set: camposActualizacion
     },
     {
-      new: true,
+      returnDocument: 'after',
       runValidators: true
     }
   );
