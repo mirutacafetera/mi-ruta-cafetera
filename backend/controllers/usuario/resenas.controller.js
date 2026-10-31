@@ -76,7 +76,9 @@ const crearResena = async (req, res) => {
       });
     }
 
-    const imagenes = (req.files || []).map((archivo) => archivo.path);
+    const imagenes = (req.files || [])
+    .map((archivo) => archivo.path || archivo.url)
+    .filter((url) => typeof url === 'string' && url.trim().length > 0);
 
     const resena = await Resena.create({
       usuario: req.usuario.id,
