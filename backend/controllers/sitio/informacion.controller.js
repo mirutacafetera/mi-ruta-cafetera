@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const SitioTuristico = require('../../models/admin/sitio');
 
+const cloudinary = require('../../config/cloudinary');
+
 // ======================================================
 // OBTENER INFORMACIÓN DEL SITIO AUTENTICADO
 // ======================================================
@@ -257,6 +259,123 @@ const subirImagenPrincipal = async (req, res) => {
   }
 };
 
+// ======================================================
+// ELIMINAR IMAGEN PRINCIPAL DEL SITIO
+// ======================================================
+
+const eliminarImagenPrincipal = async (req, res) => {
+  try {
+    const sitioId = req.usuario.sitioId;
+
+    if (!sitioId) {
+      return res.status(400).json({
+        mensaje: 'La cuenta no tiene un sitio asociado'
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(sitioId)) {
+      return res.status(400).json({
+        mensaje: 'El sitio asociado no es válido'
+      });
+    }
+
+    const sitio = await SitioTuristico.findById(sitioId);
+
+    if (!sitio) {
+      return res.status(404).json({
+        mensaje: 'Sitio turístico no encontrado'
+      });
+    }
+
+    // Si no tiene imagen personalizada, no hay nada que eliminar.
+    if (!sitio.imagen) {
+      return res.status(200).json({
+        mensaje: 'El sitio ya utiliza su imagen predeterminada',
+        sitio: await SitioTuristico
+          .findById(sitioId)
+          .populate('categoria')
+      });
+    }
+
+    // Obtener el public_id desde la URL de Cloudinary.
+    const urlImagen = new URL(sitio.imagen);
+
+    if (urlImagen.hostname !== 'res.cloudinary.com') {
+      return res.status(400).json({
+        mensaje: 'La imagen principal no pertenece a Cloudinary'
+      });
+    }
+
+    const segmentos = urlImagen.pathname
+      .split('/')
+      .filter(Boolean);
+
+    const indiceCarpeta = segmentos.findIndex(
+      (segmento, indice) =>
+        segmento === 'mi-ruta-cafetera' &&
+        segmentos[indice + 1] === 'sitios'
+    );
+
+    if (indiceCarpeta === -1) {
+      return res.status(400).json({
+        mensaje: 'No se pudo identificar la imagen principal'
+      });
+    }
+
+    const publicIdPartes = segmentos.slice(indiceCarpeta);
+
+    const ultimoIndice = publicIdPartes.length - 1;
+
+    publicIdPartes[ultimoIndice] =
+      publicIdPartes[ultimoIndice].replace(/\.[^.]+$/, '');
+
+    const publicId = publicIdPartes
+      .map(decodeURIComponent)
+      .join('/');
+
+    // Eliminar únicamente la imagen principal de Cloudinary.
+    const resultado = await cloudinary.uploader.destroy(
+      publicId,
+      {
+        resource_type: 'image',
+        invalidate: true
+      }
+    );
+
+    if (
+      resultado.result !== 'ok' &&
+      resultado.result !== 'not found'
+    ) {
+      throw new Error('Cloudinary no pudo eliminar la imagen');
+    }
+
+    // Limpiar únicamente el campo de imagen principal.
+    sitio.imagen = '';
+
+    await sitio.save();
+
+    const sitioActualizado = await SitioTuristico
+      .findById(sitioId)
+      .populate('categoria');
+
+    return res.status(200).json({
+      mensaje: 'Imagen principal eliminada correctamente',
+      sitio: sitioActualizado
+    });
+
+  } catch (error) {
+    console.error(
+      '❌ Error al eliminar la imagen principal:',
+      error
+    );
+
+    return res.status(500).json({
+      mensaje: 'Error al eliminar la imagen principal',
+      error: error.message
+    });
+  }
+};
+
 
 // ======================================================
 // EXPORTAR
@@ -265,5 +384,6 @@ const subirImagenPrincipal = async (req, res) => {
 module.exports = {
   obtenerInformacion,
   actualizarInformacion,
-  subirImagenPrincipal
+  subirImagenPrincipal,
+  eliminarImagenPrincipal
 };
