@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const SitioTuristico = require('../../models/admin/sitio');
@@ -153,7 +154,7 @@ const actualizarInformacion = async (req, res) => {
           $set: datosActualizar
         },
         {
-          new: true,
+          returnDocument: 'after',
           runValidators: true
         }
       )

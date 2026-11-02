@@ -1,3 +1,4 @@
+
 const Reserva = require('../../models/sitio/reserva');
 const Notificacion = require('../../models/usuario/notificacion');
 
@@ -240,7 +241,7 @@ const actualizarEstadoReserva = async (req, res) => {
         },
         cambios,
         {
-          new: true,
+          returnDocument: 'after',
           runValidators: true
         }
       )
@@ -371,7 +372,7 @@ const marcarNotificacionSitioLeida = async (req, res) => {
         sitio: req.usuario.sitioId
       },
       { leida: true },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!notificacion) {

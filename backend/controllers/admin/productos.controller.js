@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const Producto = require('../../models/sitio/producto');
@@ -334,7 +335,7 @@ const eliminarProducto = async (req, res) => {
         }
       },
       {
-        new: true,
+        returnDocument: 'after',
         runValidators: true
       }
     );

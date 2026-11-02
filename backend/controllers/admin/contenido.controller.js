@@ -303,7 +303,7 @@ const desactivarContenido = async (req, res) => {
     const contenido = await ContenidoAdmin.findByIdAndUpdate(
       req.params.id,
       { activo: false },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!contenido) {
@@ -331,7 +331,7 @@ const activarContenido = async (req, res) => {
     const contenido = await ContenidoAdmin.findByIdAndUpdate(
       req.params.id,
       { activo: true },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!contenido) {
@@ -375,7 +375,7 @@ const eliminarContenido = async (req, res) => {
         },
       },
       {
-        new: true,
+        returnDocument: 'after',
         runValidators: true,
       }
     );
