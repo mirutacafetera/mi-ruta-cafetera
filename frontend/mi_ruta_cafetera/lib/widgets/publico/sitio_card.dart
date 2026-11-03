@@ -106,13 +106,27 @@ class _SitioCardState extends State<SitioCard> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
+          widget.sitio.imagen.trim().isNotEmpty
+    ? Image.network(
+        widget.sitio.imagen.trim(),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
             widget.imagen,
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) {
+            errorBuilder: (context, error, stackTrace) {
               return _construirImagenRespaldo(colorCategoria);
             },
-          ),
+          );
+        },
+      )
+    : Image.asset(
+        widget.imagen,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _construirImagenRespaldo(colorCategoria);
+        },
+      ),
 
           Positioned.fill(
             child: DecoratedBox(

@@ -593,7 +593,7 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
             ),
           ),
 
-          // --- VISOR DE IMÁGENES ADJUNTAS EN LA RESEÑA ---
+          // --- VISOR DE IMÁGENES ADJUNTAS EN LA RESEÑA (Optimizado para Web y móvil) ---
           if (resena.imagenes.isNotEmpty) ...[
             const SizedBox(height: 12),
             SizedBox(
@@ -606,20 +606,23 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
                   final urlImagen = resena.imagenes[index];
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: InkWell(
-                      onTap: () => _mostrarVisorImagen(context, urlImagen),
-                      child: Image.network(
-                        urlImagen,
-                        width: 84,
-                        height: 84,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                    child: Material(
+                      color: AppColors.sitioSurfaceSoft, // Capa táctil garantizada para la Web
+                      child: InkWell(
+                        onTap: () => _mostrarVisorImagen(context, urlImagen),
+                        child: Image.network(
+                          urlImagen,
                           width: 84,
                           height: 84,
-                          color: AppColors.sitioSurfaceSoft,
-                          child: const Icon(
-                            Icons.broken_image_rounded,
-                            color: AppColors.sitioTextSecondary,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            width: 84,
+                            height: 84,
+                            color: AppColors.sitioSurfaceSoft,
+                            child: const Icon(
+                              Icons.broken_image_rounded,
+                              color: AppColors.sitioTextSecondary,
+                            ),
                           ),
                         ),
                       ),
@@ -634,23 +637,51 @@ class _SitioResenasScreenState extends State<SitioResenasScreen> {
     );
   }
 
+  // --- VISOR CON ZOOM Y SOPORTE WEB ---
   void _mostrarVisorImagen(BuildContext context, String url) {
+    final size = MediaQuery.sizeOf(context);
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.black.withValues(alpha: 0.92),
+        insetPadding: EdgeInsets.zero,
         child: Stack(
-          alignment: Alignment.topRight,
+          alignment: Alignment.center,
           children: [
-            Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(url),
+            SizedBox(
+              width: size.width * 0.9,
+              height: size.height * 0.9,
+              child: InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Center(
+                  child: Image.network(
+                    url,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.broken_image_rounded, color: Colors.white, size: 48),
+                        SizedBox(height: 8),
+                        Text(
+                          'No se pudo cargar la imagen',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
-              onPressed: () => Navigator.pop(context),
+            Positioned(
+              top: 20,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 34),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
           ],
         ),

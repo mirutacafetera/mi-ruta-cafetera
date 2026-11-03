@@ -1,9 +1,10 @@
+
 import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart'; // <-- Importante para kIsWeb
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../models/sitio/sitio_resena_model.dart';
@@ -192,7 +193,7 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
 
       if (seleccionadas.length > disponibles) {
         _mostrarMensaje(
-        Textos.t('Puedes adjuntar hasta 10 imágenes en total.'),
+          Textos.t('Puedes adjuntar hasta 10 imágenes en total.'),
         );
       }
     } catch (e) {
@@ -334,6 +335,56 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
   void _mostrarMensaje(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensaje)),
+    );
+  }
+
+  // VISOR DE IMÁGENES DE LAS RESEÑAS
+  void _mostrarVisorImagen(String url) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(12),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Image.network(
+                  url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.white,
+                      size: 60,
+                    );
+                  },
+                ),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  tooltip: Textos.t('Cerrar imagen'),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -516,7 +567,6 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          // CORREGIDO PARA SOPORTAR FLUTTER WEB Y MÓVIL
                           child: kIsWeb
                               ? Image.network(
                                   _imagenesSeleccionadas[i].path,
@@ -575,7 +625,9 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
                     )
                   : const Icon(Icons.send_rounded),
               label: Text(
-                _publicando ? Textos.t('Publicando...') : Textos.t('Publicar reseña'),
+                _publicando
+                    ? Textos.t('Publicando...')
+                    : Textos.t('Publicar reseña'),
               ),
             ),
           ),
@@ -745,20 +797,24 @@ class _SeccionResenasSitioState extends State<SeccionResenasSitio> {
               runSpacing: AppDimensions.spacingSm,
               children: [
                 for (final url in resena.imagenes)
-                  ClipRRect(
+                  InkWell(
+                    onTap: () => _mostrarVisorImagen(url),
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      url,
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const SizedBox(
-                          width: 100,
-                          height: 100,
-                          child: Icon(Icons.broken_image_outlined),
-                        );
-                      },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        url,
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: Icon(Icons.broken_image_outlined),
+                          );
+                        },
+                      ),
                     ),
                   ),
               ],

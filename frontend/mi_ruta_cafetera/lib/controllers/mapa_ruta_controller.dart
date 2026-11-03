@@ -231,12 +231,18 @@ class MapaRutaController extends ChangeNotifier {
       estado.sitiosSeleccionados,
     );
 
-    if (seleccionados.length < 2) {
+    if (seleccionados.isEmpty) {
       _mensaje =
-          Textos.t('Selecciona mínimo 2 sitios para calcular la ruta.');
-
+          Textos.t('Selecciona al menos un sitio para calcular la ruta.');
       notifyListeners();
+      return false;
+    }
 
+    if (seleccionados.length == 1 && origen == null) {
+      _mensaje = Textos.t(
+        'Necesitas activar tu ubicación o seleccionar al menos 2 sitios para calcular la ruta.',
+      );
+      notifyListeners();
       return false;
     }
 
@@ -396,7 +402,7 @@ class MapaRutaController extends ChangeNotifier {
     int maxSitios = MapaEstadoRuta.maxSitios,
     List<ParadaRutaModel> paradas = const [],
   }) async {
-    if (sitios.length < 2) {
+    if (sitios.isEmpty) {
       _mensaje =
           Textos.t('La ruta guardada no tiene suficientes sitios.');
 
@@ -412,7 +418,7 @@ class MapaRutaController extends ChangeNotifier {
         .take(maxSitios)
         .toList();
 
-    if (sitiosValidos.length < 2) {
+    if (sitiosValidos.isEmpty) {
       _mensaje =
           Textos.t('Los sitios de esta ruta no tienen coordenadas válidas.');
 
@@ -492,11 +498,6 @@ class MapaRutaController extends ChangeNotifier {
   // ============================================================
   // PERSISTENCIA
   // ============================================================
-  //
-  // El guardado en la API lo hace la pantalla con RutaService.
-  // El controlador solo recuerda el resultado para no guardar
-  // dos veces la misma ruta.
-  // ============================================================
 
   void marcarRutaPersistida({
     required String id,
@@ -575,14 +576,7 @@ class MapaRutaController extends ChangeNotifier {
   // ============================================================
   // RUTA PREDEFINIDA (PLANTILLA)
   // ============================================================
-  //
-  // Una plantilla describe QUÉ sitios buscar (municipios y/o
-  // categorías). Abrirla NO guarda nada: solo una ruta que el
-  // usuario confirma y decide guardar se convierte en ruta
-  // personal.
-  // ============================================================
 
-  /// Todos los sitios válidos que coinciden con la plantilla.
   List<SitioTuristicoModel>
       buscarSitiosParaRutaPredefinida({
     required RutaPredefinidaModel ruta,
@@ -594,15 +588,6 @@ class MapaRutaController extends ChangeNotifier {
     );
   }
 
-  /// Elige, en orden de visita, hasta [MapaEstadoRuta.maxSitios]
-  /// sitios para la plantilla.
-  ///
-  /// * Plantillas por municipio (corredores): reparte los sitios
-  ///   entre los municipios y respeta el orden de la plantilla
-  ///   (por ejemplo Gigante -> Zuluaga -> Garzón).
-  /// * Plantillas por categoría: reparte entre las categorías y
-  ///   ordena los sitios por cercanía para evitar recorridos en
-  ///   zigzag.
   List<SitioTuristicoModel>
       seleccionarSitiosParaRutaPredefinida({
     required RutaPredefinidaModel ruta,
@@ -614,8 +599,6 @@ class MapaRutaController extends ChangeNotifier {
     );
   }
 
-  /// Selecciona los sitios de la plantilla en el modo de creación
-  /// del mapa. NO guarda nada.
   Future<void> seleccionarRutaPredefinida({
     required RutaPredefinidaModel ruta,
     required List<SitioTuristicoModel> sitios,
@@ -652,8 +635,6 @@ class MapaRutaController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Calcula y muestra una plantilla directamente (por ejemplo,
-  /// al abrirla desde la sección Rutas). NO guarda nada.
   Future<bool> cargarRutaPredefinida({
     required RutaPredefinidaModel ruta,
     required List<SitioTuristicoModel> sitios,
@@ -682,26 +663,13 @@ class MapaRutaController extends ChangeNotifier {
   // ============================================================
   // RUTA PREDEFINIDA DE LA API
   // ============================================================
-  //
-  // Las rutas predefinidas se administran en MongoDB (colección
-  // de rutas, tipo "predefinida") y llegan con un itinerario
-  // (paradas) en orden de visita. Abrirlas NO guarda nada.
-  // ============================================================
 
-  /// Minutos de actividad por id de sitio, tomados de las paradas.
   Map<String, int> _minutosDeParadas(
     List<ParadaRutaModel> paradas,
   ) {
     return ItinerarioRutaHelper.minutosDeParadas(paradas);
   }
 
-  /// Sitios de una ruta de la API en orden de visita (primero por
-  /// las paradas; si no hay, por `ruta.sitios`).
-  ///
-  /// Devuelve una lista vacía si algún sitio de la ruta no está
-  /// disponible o no tiene coordenadas válidas dentro del corredor:
-  /// una ruta temática incompleta no debe mostrarse como si lo
-  /// estuviera.
   List<SitioTuristicoModel> sitiosDeRutaApi({
     required RutaModel ruta,
     required List<SitioTuristicoModel> sitios,
@@ -712,9 +680,6 @@ class MapaRutaController extends ChangeNotifier {
     );
   }
 
-  /// Selecciona los sitios de una ruta predefinida de la API en el
-  /// modo de creación del mapa, para que el usuario la calcule
-  /// (con su ubicación como origen) y la confirme. NO guarda nada.
   Future<bool> seleccionarRutaApi({
     required RutaModel ruta,
     required List<SitioTuristicoModel> sitios,
@@ -753,10 +718,6 @@ class MapaRutaController extends ChangeNotifier {
     return true;
   }
 
-  /// Calcula y muestra directamente una ruta predefinida de la API
-  /// (por ejemplo, al abrirla desde la sección Rutas). NO guarda
-  /// nada. Si se recibe [origen] la ruta empieza en la ubicación
-  /// del usuario; si no, se explica el motivo en [avisoOrigen].
   Future<bool> cargarRutaApi({
     required RutaModel ruta,
     required List<SitioTuristicoModel> sitios,
