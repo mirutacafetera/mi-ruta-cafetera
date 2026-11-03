@@ -17,10 +17,10 @@ import '../widgets/mapa/mapa_buscador.dart';
 import '../widgets/mapa/mapa_capas.dart';
 import '../widgets/mapa/mapa_categorias.dart';
 import '../widgets/mapa/mapa_controles.dart';
-import '../widgets/mapa/mapa_detalle_sitio.dart';
 import '../widgets/mapa/mapa_ruta_panel.dart';
 import '../widgets/mapa/mapa_rutas_predefinidas.dart';
 import '../widgets/mapa/mapa_selector_ruta.dart';
+import '../widgets/mapa/mapa_tarjeta_sitio.dart';
 import 'usuario/detalle_sitio_usuario_screen.dart';
 import '../l10n/textos.dart';
 
@@ -29,6 +29,7 @@ class MapaScreen2 extends StatefulWidget {
     super.key,
     this.rutaController,
     this.sitioInicial,
+    this.iniciarCreacionRuta = false,
   });
 
   final MapaRutaController? rutaController;
@@ -39,6 +40,8 @@ class MapaScreen2 extends StatefulWidget {
   /// Si es null, el mapa funciona normalmente
   /// mostrando todos los sitios.
   final SitioTuristicoModel? sitioInicial;
+
+  final bool iniciarCreacionRuta;
 
   @override
   State<MapaScreen2> createState() =>
@@ -66,13 +69,14 @@ class _MapaScreen2State extends State<MapaScreen2> {
   LatLng? _ubicacionUsuario;
 
   // ============================================================
-// MODO SITIO PÚBLICO
-// ============================================================
+  // MODO SITIO PÚBLICO
+  // ============================================================
 
-bool _sitioInicialCentrado = false;
+  bool _sitioInicialCentrado = false;
 
-bool get _modoSitioPublico =>
-    widget.sitioInicial != null;
+  bool get _modoSitioPublico =>
+      widget.sitioInicial != null &&
+      !widget.iniciarCreacionRuta;
 
   // Solo se dibujan sitios con coordenadas válidas dentro del
   // corredor Garzón – Gigante. Una coordenada errónea (por
@@ -83,6 +87,9 @@ bool get _modoSitioPublico =>
 
     if (_rutaController.rutaGuardada) {
       lista = _rutaController.rutaGuardadaSitios;
+    } else if (_rutaController.modoCrearRuta) {
+      // Durante la creación se muestran todos los sitios disponibles.
+      lista = _mapaController.sitiosFiltrados;
     } else if (_modoSitioPublico) {
       lista = <SitioTuristicoModel>[widget.sitioInicial!];
     } else {
@@ -94,7 +101,6 @@ bool get _modoSitioPublico =>
         .toList();
   }
 
-
   // Indica que estamos mostrando el resumen de la ruta recién calculada.
   bool _mostrarResumenRuta = false;
 
@@ -102,53 +108,81 @@ bool get _modoSitioPublico =>
   // CICLO DE VIDA
   // ============================================================
 
- @override
-void initState() {
-  super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  _mapaController = MapaController();
+    _mapaController = MapaController();
 
-  _controladorRutaExterno =
-      widget.rutaController != null;
+    _controladorRutaExterno =
+        widget.rutaController != null;
 
-  _rutaController =
-      widget.rutaController ??
-          MapaRutaController();
+    _rutaController =
+        widget.rutaController ??
+            MapaRutaController();
 
-  _mapaController.addListener(
-    _actualizarPantalla,
-  );
+    // Si el mapa se abre desde "Agregar a mi ruta",
+    // inicia la selección y agrega el sitio como primera parada.
+    final sitioInicial = widget.sitioInicial;
 
-  _rutaController.addListener(
-    _actualizarPantalla,
-  );
+    if (widget.iniciarCreacionRuta &&
+        sitioInicial != null &&
+        sitioInicial.enAreaTuristica) {
+      _rutaController.iniciar();
+      _rutaController.alternarSitio(sitioInicial);
+    }
 
-  _mapaController.cargarDatos();
-
-  // Cuando el mapa se abre desde un sitio público,
-  // esperamos a que exista el primer frame para
-  // centrar la cámara sobre ese sitio.
-  if (widget.sitioInicial != null) {
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        _centrarSitioInicial();
-      },
+    _mapaController.addListener(
+      _actualizarPantalla,
     );
-  }
 
-  // Cuando el mapa se abre con una ruta ya cargada (por ejemplo
-  // desde la sección Rutas), la cámara se ajusta al recorrido.
-  if (_rutaController.rutaGuardada &&
-      _rutaController.mostrarRutaGuardada) {
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        if (mounted) {
-          _ajustarARuta();
-        }
-      },
+    _rutaController.addListener(
+      _actualizarPantalla,
     );
+
+    _mapaController.cargarDatos().then((_) {
+      if (!mounted) {
+        return;
+      }
+
+      if (_rutaController.modoCrearRuta) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) {
+            return;
+          }
+
+          _ajustarMapa(
+            sitios: _mapaController.todosLosSitios,
+          );
+        });
+      }
+    });
+
+    // Cuando el mapa se abre desde un sitio público,
+    // esperamos a que exista el primer frame para
+    // centrar la cámara sobre ese sitio.
+    if (widget.sitioInicial != null &&
+        !_rutaController.modoCrearRuta) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          _centrarSitioInicial();
+        },
+      );
+    }
+
+    // Cuando el mapa se abre con una ruta ya cargada (por ejemplo
+    // desde la sección Rutas), la cámara se ajusta al recorrido.
+    if (_rutaController.rutaGuardada &&
+        _rutaController.mostrarRutaGuardada) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          if (mounted) {
+            _ajustarARuta();
+          }
+        },
+      );
+    }
   }
-}
 
   @override
   void dispose() {
@@ -319,15 +353,10 @@ void initState() {
   // ============================================================
 
   Future<void> _calcularRuta() async {
-    if (_rutaController.sitiosSeleccionados.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Tr(
-            'Selecciona mínimo 2 sitios para calcular la ruta.',
-          ),
-        ),
+    if (_rutaController.sitiosSeleccionados.isEmpty) {
+      _mostrarMensajeUbicacion(
+        Textos.t('Selecciona al menos un sitio para calcular la ruta.'),
       );
-
       return;
     }
 
@@ -415,14 +444,6 @@ void initState() {
 
   // ============================================================
   // GUARDAR LA RUTA CONFIRMADA
-  // ============================================================
-  //
-  // Usa el mismo servicio y el mismo endpoint (POST /api/rutas)
-  // que la pantalla "Crear ruta" de la sección Rutas, por lo que
-  // la ruta guardada aquí aparece allí y viceversa.
-  //
-  // Solo se guarda si el usuario lo acepta. Abrir una plantilla
-  // o calcular una ruta nunca guarda nada por sí solo.
   // ============================================================
 
   Future<void> _ofrecerGuardarRuta() async {
@@ -667,7 +688,30 @@ void initState() {
   void _mostrarDetalles(
     SitioTuristicoModel sitio,
   ) {
-    _abrirDetalleSitio(sitio);
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => MapaTarjetaSitio(
+        sitio: sitio,
+        onVerSitio: () {
+          Navigator.of(sheetContext).pop();
+          _abrirDetalleSitio(sitio);
+        },
+        onAgregarRuta: () {
+          Navigator.of(sheetContext).pop();
+
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => MapaScreen2(
+                sitioInicial: sitio,
+                iniciarCreacionRuta: true,
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   // Abre la pantalla completa del sitio (categoria y actividades).
@@ -680,42 +724,6 @@ void initState() {
           sitio: sitio,
         ),
       ),
-    );
-  }
-
-  // Tarjeta inferior anterior: se conserva por si se quiere volver a usar.
-  // ignore: unused_element
-  void _mostrarTarjetaSitio(
-    SitioTuristicoModel sitio,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return MapaDetalleSitio(
-          sitio: sitio,
-          onVerMapa: () {
-            Navigator.pop(context);
-
-            if (sitio.enAreaTuristica) {
-              _mapController.move(
-                sitio.ubicacion,
-                AppDimensions.mapaDetalleZoom,
-              );
-            }
-          },
-          onAgregarRuta: () {
-            Navigator.pop(context);
-
-            if (!_rutaController.modoCrearRuta) {
-              _iniciarRuta();
-            }
-
-            _seleccionarSitio(sitio);
-          },
-        );
-      },
     );
   }
 
@@ -832,10 +840,6 @@ void initState() {
   // ============================================================
   // AJUSTAR A LA RUTA (GEOMETRÍA DE CARRETERA)
   // ============================================================
-  //
-  // Encuadra la geometría real de la ruta; si no hay geometría
-  // se encuadran los sitios de la ruta.
-  // ============================================================
 
   void _ajustarARuta() {
     final resultado = _rutaController.rutaResultado;
@@ -899,8 +903,6 @@ void initState() {
     });
 
     try {
-      // Única implementación de geolocalización de la app:
-      // comprueba servicio, permisos y obtiene el GPS real.
       final resultado = await UbicacionService.obtener(
         precision: LocationAccuracy.high,
       );
@@ -967,9 +969,6 @@ void initState() {
         ubicacion.longitud,
       );
 
-      // El mapa está limitado al corredor. Si el usuario está
-      // fuera de él se le dice con claridad y no se finge una
-      // posición.
       if (!MapaCorredor.contienePunto(ubicacionActual)) {
         final km =
             MapaCorredor.distanciaAlCentroKm(ubicacionActual);
@@ -1046,7 +1045,7 @@ void initState() {
     );
   }
 
-   // ============================================================
+  // ============================================================
   // BOTÓN DE MAPA: RESTABLECER LA VISTA DEL CORREDOR
   // ============================================================
 
@@ -1073,7 +1072,6 @@ void initState() {
 
     _mapaController.mostrarTodos();
 
-    // Restablece la vista del corredor Garzón – Gigante.
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
         if (!mounted) {
@@ -1219,23 +1217,13 @@ void initState() {
           _calcularRuta,
       mostrarBotonGenerar:
           _rutaController
-                  .sitiosSeleccionados
-                  .length >=
-              2,
+              .sitiosSeleccionados
+              .isNotEmpty,
     );
   }
 
   // ============================================================
   // ZONA INFERIOR: PANEL DE RUTA + BARRA "CREAR MI RUTA"
-  // ============================================================
-  //
-  // El panel de la ruta (título, sitios y cierre) y la barra
-  // "Crear mi ruta" se muestran a la vez al abrir una ruta
-  // predefinida. Antes eran dos Positioned anclados a la misma
-  // altura y se tapaban entre sí. Ahora van juntos en una sola
-  // columna: el panel arriba, la barra debajo y un espacio entre
-  // ambos. Si falta altura, el panel se encoge y se desplaza por
-  // dentro; en pantallas muy bajas se desplaza toda la zona.
   // ============================================================
 
   static const double _alturaMinimaZonaInferior = 320;
@@ -1248,7 +1236,9 @@ void initState() {
           _rutaController.rutaResultado != null);
 
   bool get _mostrarBarraInferior =>
-      !_modoSitioPublico && !_mostrarResumenRuta;
+      (!_modoSitioPublico ||
+          _rutaController.modoCrearRuta) &&
+      !_mostrarResumenRuta;
 
   Widget _zonaInferiorRuta(double topReservado) {
     final bottom = _rutaController.modoCrearRuta
@@ -1289,8 +1279,6 @@ void initState() {
               ],
             ];
 
-            // Poca altura (pantalla baja o horizontal): todo se
-            // desplaza, con los botones siempre al final.
             if (restricciones.maxHeight <
                 _alturaMinimaZonaInferior) {
               return Align(
@@ -1307,9 +1295,6 @@ void initState() {
               );
             }
 
-            // Altura suficiente: la barra conserva su tamaño y el
-            // panel usa el espacio restante (con desplazamiento
-            // interno si su contenido no cabe).
             return Column(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment:
@@ -1626,12 +1611,6 @@ void initState() {
   // ============================================================
   // TIEMPOS: VIAJE vs ACTIVIDADES EN LOS SITIOS
   // ============================================================
-  //
-  // El tiempo de viaje sale del cálculo por carretera. El tiempo en
-  // los sitios es el planificado en el itinerario de la ruta
-  // predefinida (estimado). Se muestran por separado y también se
-  // da la jornada total estimada (viaje + sitios).
-  // ============================================================
 
   String _formatoMinutos(int minutos) {
     final horas = minutos ~/ 60;
@@ -1679,11 +1658,6 @@ void initState() {
 
   // ============================================================
   // ORIGEN DE LA RUTA EN EL RESUMEN
-  // ============================================================
-  //
-  // Muestra el tramo desde la ubicación real del usuario hasta
-  // el primer sitio, o explica por qué la ruta empieza en el
-  // primer sitio.
   // ============================================================
 
   Widget _bloqueOrigenResumen() {
@@ -1928,32 +1902,19 @@ void initState() {
               MapaCapas(
                 mapController:
                     _mapController,
-
-                // Mientras se crea la ruta se muestran los sitios
-                // disponibles. Cuando existe una ruta guardada,
-                // mostramos únicamente sus sitios.
                 sitios: _sitiosVisiblesEnMapa,
-
                 ruta:
                     _rutaController
                         .rutaResultado,
-
-                // IMPORTANTE:
-                // El controller solo pone esto en true después
-                // de "Confirmar ruta".
                 mostrarRuta:
                     _rutaController
                         .mostrarRutaGuardada,
-
                 ubicacionUsuario:
                     _ubicacionUsuario,
-
                 estaSeleccionado:
                     _estaSeleccionado,
-
                 numeroDeSitio:
                     _numeroDeSitio,
-
                 onTapSitio:
                     (sitio) {
                   if (_rutaController
@@ -1969,80 +1930,49 @@ void initState() {
                 },
               ),
 
-                            // ==================================================
+              // ==================================================
               // BUSCADOR + CATEGORÍAS
               // ==================================================
-              //
-              // Ambos elementos están dentro de la misma columna.
-              //
-              // Cuando MapaBuscador despliega sus resultados,
-              // la columna aumenta su altura y las categorías
-              // se desplazan hacia abajo automáticamente.
-              //
-              // De esta manera las categorías nunca quedan
-              // encima de los resultados de búsqueda.
-              //
 
               if (!_modoSitioPublico)
               Positioned(
                 top:
                     AppDimensions.spacingMd,
-
                 left:
                     AppDimensions.spacingMd,
-
                 right:
                     AppDimensions.spacingMd,
-
                 child: SafeArea(
                   bottom: false,
-
                   child: Column(
                     crossAxisAlignment:
                         CrossAxisAlignment.stretch,
-
                     children: [
-                      // ------------------------------------------
-                      // BUSCADOR
-                      // ------------------------------------------
-
                       MapaBuscador(
                         controller:
                             _busquedaController,
-
                         resultados:
                             _mapaController
                                 .resultadosBusqueda,
-
                         onChanged:
                             _mapaController
                                 .buscar,
-
                         onSeleccionar:
                             _seleccionarResultado,
-
                         onLimpiar:
                             _limpiarBusqueda,
                       ),
-
                       const SizedBox(
                         height:
                             AppDimensions.spacingSm,
                       ),
-
-                      // ------------------------------------------
-                      // CATEGORÍAS
-                      // ------------------------------------------
-
                       MapaCategorias(
                         categorias:
                             _mapaController
                                 .categorias,
-
                         categoriaSeleccionada:
                             _mapaController
                                 .categoriaSeleccionada,
-
                         onCategoriaSeleccionada:
                             _seleccionarCategoria,
                       ),
@@ -2091,8 +2021,6 @@ void initState() {
               // ==================================================
               // PANEL DE RUTA + BARRA INFERIOR
               // ==================================================
-              //
-              // Van en una misma columna para que no se superpongan.
 
               if (_mostrarPanelRuta ||
                   _mostrarBarraInferior)
@@ -2136,13 +2064,11 @@ void initState() {
                               child:
                                   CircularProgressIndicator(),
                             ),
-
                             SizedBox(
                               width:
                                   AppDimensions
                                       .spacingMd,
                             ),
-
                             Expanded(
                               child: Tr(
                                 'Cargando sitios turísticos...',
@@ -2196,13 +2122,11 @@ void initState() {
                                       AppColors
                                           .error,
                                 ),
-
                                 SizedBox(
                                   width:
                                       AppDimensions
                                           .spacingSm,
                                 ),
-
                                 Expanded(
                                   child: Tr(
                                     'No se pudieron cargar los datos',
@@ -2216,13 +2140,11 @@ void initState() {
                                 ),
                               ],
                             ),
-
                             const SizedBox(
                               height:
                                   AppDimensions
                                       .spacingSm,
                             ),
-
                             Text(
                               _mapaController
                                   .error!,
@@ -2237,7 +2159,6 @@ void initState() {
                                         .textSecondary,
                               ),
                             ),
-
                             const SizedBox(
                               height:
                                   AppDimensions
@@ -2245,7 +2166,6 @@ void initState() {
                                       AppDimensions
                                           .spacingXs,
                             ),
-
                             ElevatedButton
                                 .icon(
                               onPressed:
@@ -2273,5 +2193,3 @@ void initState() {
     );
   }
 }
-
-

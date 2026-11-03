@@ -57,7 +57,7 @@ class DetalleSitioAcciones {
       builder: (_) => MapaDetalleSitio(
         sitio: sitio,
         onVerMapa: () => verMapa(context, sitio),
-        onAgregarRuta: () => agregarRuta(context),
+        onAgregarRuta: () => agregarRuta(context, sitio),
       ),
     );
   }
@@ -66,15 +66,31 @@ class DetalleSitioAcciones {
   // AGREGAR A LA RUTA
   // =====================================================
 
-  static void agregarRuta(BuildContext context) {
+  static void agregarRuta(
+  BuildContext context,
+  SitioTuristicoModel sitio,
+) {
+  if (!sitio.enAreaTuristica) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Tr(
-          'La selección de sitios para tu ruta estará disponible aquí.',
+          'Este sitio no tiene una ubicación válida para agregarlo a la ruta.',
         ),
       ),
     );
+    return;
   }
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => MapaScreen2(
+      sitioInicial: sitio,
+      iniciarCreacionRuta: true,
+    ),
+    ),
+  );
+}
 
   // =====================================================
   // DETALLE DE ACTIVIDAD
