@@ -362,6 +362,7 @@ class _SitioRecuperarPasswordScreenState
                             controller: _passwordController,
                             label: 'Nueva contraseña',
                             icono: Icons.lock_outline_rounded,
+                            keyboardType: TextInputType.visiblePassword,
                             obscureText: !_mostrarPassword,
                             suffixIcon: IconButton(
                               tooltip: _mostrarPassword
