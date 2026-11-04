@@ -1,3 +1,4 @@
+
 const SitioTuristico = require('../../models/admin/sitio');
 const CuentaSitio = require('../../models/sitio/auth');
 
@@ -387,7 +388,8 @@ const obtenerCuentas = async (req, res) => {
         apellido: cuenta.apellido,
         correo: cuenta.correo,
         telefono: cuenta.telefono || '',
-        activo: cuenta.activo
+        activo: cuenta.activo,
+        correoVerificado: cuenta.correoVerificado
       }))
     });
   } catch (error) {
@@ -409,7 +411,14 @@ const obtenerCuentas = async (req, res) => {
 const actualizarCuenta = async (req, res) => {
   try {
     const { cuentaId } = req.params;
-    const { nombre, apellido, correo, telefono } = req.body;
+
+    const {
+      nombre,
+      apellido,
+      correo,
+      telefono,
+      password
+    } = req.body;
 
     if (
       typeof nombre !== 'string' ||
@@ -434,22 +443,36 @@ const actualizarCuenta = async (req, res) => {
 
     const correoNormalizado = correo.trim().toLowerCase();
 
-    const correoExistente = await CuentaSitio.findOne({
-      correo: correoNormalizado,
-      _id: { $ne: cuenta._id }
-    });
-
-    if (correoExistente) {
-      return res.status(409).json({
-        mensaje: 'El correo ya está registrado en otra cuenta.'
+    // El correo no puede cambiarse sin verificar el código.
+    if (correoNormalizado !== cuenta.correo) {
+      return res.status(403).json({
+        mensaje:
+          'Para cambiar el correo debes solicitar y verificar el código de autorización.'
       });
     }
 
+    // La contraseña tampoco puede cambiarse desde esta ruta.
+    if (
+      password !== undefined &&
+      password !== null &&
+      password !== ''
+    ) {
+      return res.status(403).json({
+        mensaje:
+          'Para cambiar la contraseña debes solicitar y verificar el código de autorización.'
+      });
+    }
+
+    // Actualizar únicamente los datos personales.
     cuenta.nombre = nombre.trim();
     cuenta.apellido = apellido.trim();
-    cuenta.correo = correoNormalizado;
-    cuenta.telefono =
-      typeof telefono === 'string' ? telefono.trim() : '';
+
+    if (telefono !== undefined) {
+      cuenta.telefono =
+        typeof telefono === 'string'
+          ? telefono.trim()
+          : '';
+    }
 
     await cuenta.save();
 
