@@ -229,7 +229,10 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
 
     switch (indice) {
       case 0:
-        return HomePublicoScreen(key: llave);
+      return HomePublicoScreen(
+        key: llave,
+        onAbrirMapa: () => _cambiarSeccion(_indiceMapa),
+      );
 
       case 1:
         return _mapaCreado ? const MapaScreen2() : const SizedBox.shrink();

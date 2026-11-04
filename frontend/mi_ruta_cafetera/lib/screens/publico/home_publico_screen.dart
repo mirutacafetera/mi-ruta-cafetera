@@ -38,7 +38,13 @@ import '../../l10n/textos.dart';
 /// carrusel (todas las imágenes), el saludo y las acciones
 /// disponibles (mapa general, favoritos persistentes).
 class HomePublicoScreen extends StatefulWidget {
-  const HomePublicoScreen({super.key});
+
+  const HomePublicoScreen({
+    super.key,
+    this.onAbrirMapa,
+  });
+  
+  final VoidCallback? onAbrirMapa;
 
   @override
   State<HomePublicoScreen> createState() => _HomePublicoScreenState();
@@ -725,7 +731,12 @@ class _HomePublicoScreenState extends State<HomePublicoScreen> {
       return;
     }
 
-    Navigator.pushNamed(context, '/mapa');
+    final abrirMapa = widget.onAbrirMapa;
+
+    if (abrirMapa != null) {
+      abrirMapa();
+      return;
+    }
   }
 
   // ============================================================
