@@ -208,7 +208,68 @@ class CuentaSitioController extends ChangeNotifier {
   }
 
   // =====================================================
-  // ACTUALIZAR CUENTA
+  // SOLICITAR CÓDIGO PARA CAMBIAR CORREO O CONTRASEÑA
+  // =====================================================
+
+  Future<Map<String, dynamic>> solicitarCodigoCambioCuenta({
+    required String cuentaId,
+    String? correo,
+    String? password,
+  }) async {
+    guardando = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      return await CuentaSitio.solicitarCodigoCambioCuenta(
+        token: _token,
+        cuentaId: cuentaId,
+        correo: correo,
+        password: password,
+      );
+    } catch (e) {
+      error = e.toString();
+      rethrow;
+    } finally {
+      guardando = false;
+      notifyListeners();
+    }
+  }
+
+  // =====================================================
+  // VERIFICAR CÓDIGO Y APLICAR CAMBIOS
+  // =====================================================
+
+  Future<Map<String, dynamic>> verificarCodigoCambioCuenta({
+    required String cuentaId,
+    required String codigo,
+  }) async {
+    guardando = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      final respuesta =
+          await CuentaSitio.verificarCodigoCambioCuenta(
+        token: _token,
+        cuentaId: cuentaId,
+        codigo: codigo,
+      );
+
+      await cargarDatos(token: _token);
+
+      return respuesta;
+    } catch (e) {
+      error = e.toString();
+      rethrow;
+    } finally {
+      guardando = false;
+      notifyListeners();
+    }
+  }
+
+  // =====================================================
+  // ACTUALIZAR DATOS DE LA CUENTA
   // =====================================================
 
   Future<void> actualizarCuenta({
