@@ -75,6 +75,10 @@ class _VerificarCodigoCuentaSitioState
     return AlertDialog(
       backgroundColor: AppColors.creamLight,
       elevation: 5,
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: 40,
+        vertical: 24,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
         side: const BorderSide(
@@ -82,17 +86,18 @@ class _VerificarCodigoCuentaSitioState
           width: 1.2,
         ),
       ),
-      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-      contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      titlePadding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
+      contentPadding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
       title: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 62,
-            height: 62,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               color: _naranja.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(15),
               border: Border.all(
                 color: _naranja.withValues(alpha: 0.35),
               ),
@@ -100,16 +105,16 @@ class _VerificarCodigoCuentaSitioState
             child: const Icon(
               Icons.mark_email_read_outlined,
               color: _naranja,
-              size: 32,
+              size: 26,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           Text(
             widget.titulo,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 21,
+              fontSize: 19,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -125,21 +130,21 @@ class _VerificarCodigoCuentaSitioState
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                height: 1.5,
+                fontSize: 13,
+                height: 1.4,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 9),
             Text(
               widget.correo,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: 13,
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 15),
             TextFormField(
               controller: _codigoController,
               keyboardType: TextInputType.number,
@@ -151,11 +156,16 @@ class _VerificarCodigoCuentaSitioState
               ],
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 23,
+                fontSize: 21,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 9,
+                letterSpacing: 8,
               ),
               decoration: InputDecoration(
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 10,
+                ),
                 labelText: 'Código de verificación',
                 hintText: '000000',
                 counterText: '',
@@ -164,9 +174,11 @@ class _VerificarCodigoCuentaSitioState
                 prefixIcon: const Icon(
                   Icons.lock_outline_rounded,
                   color: _naranja,
+                  size: 20,
                 ),
                 labelStyle: const TextStyle(
                   color: AppColors.textSecondary,
+                  fontSize: 13,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(
@@ -221,7 +233,7 @@ class _VerificarCodigoCuentaSitioState
               },
             ),
             if (_error != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 _error!,
                 textAlign: TextAlign.center,
@@ -231,56 +243,53 @@ class _VerificarCodigoCuentaSitioState
                 ),
               ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             const Text(
               'El código tiene una vigencia de 10 minutos.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 12,
+                fontSize: 11,
               ),
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _verificando
-              ? null
-              : () => Navigator.pop(context, false),
-          child: const Text(
-            'Ahora no',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        ElevatedButton.icon(
-          onPressed: _verificando ? null : _verificar,
-          icon: _verificando
-              ? const SizedBox(
-                  width: 17,
-                  height: 17,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
+        Center(
+          child: ElevatedButton.icon(
+            onPressed: _verificando ? null : _verificar,
+            icon: _verificando
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(
+                    Icons.verified_outlined,
+                    size: 18,
                   ),
-                )
-              : const Icon(Icons.verified_outlined),
-          label: Text(
-            _verificando ? 'Verificando...' : widget.textoBoton,
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _verde,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: _verde.withValues(alpha: 0.6),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                AppDimensions.cardRadius,
+            label: Text(
+              _verificando ? 'Verificando...' : widget.textoBoton,
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _verde,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: _verde.withValues(alpha: 0.6),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
               ),
-              side: const BorderSide(color: _bordeCafe),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.cardRadius,
+                ),
+                side: const BorderSide(color: _bordeCafe),
+              ),
             ),
           ),
         ),
