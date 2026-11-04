@@ -1,3 +1,4 @@
+
 class CuentaSitioModel {
   final String id;
   final String sitioId;
@@ -6,6 +7,7 @@ class CuentaSitioModel {
   final String correo;
   final String telefono;
   final bool activo;
+  final bool correoVerificado;
 
   const CuentaSitioModel({
     required this.id,
@@ -15,6 +17,7 @@ class CuentaSitioModel {
     required this.correo,
     required this.telefono,
     required this.activo,
+    this.correoVerificado = false,
   });
 
   factory CuentaSitioModel.fromJson(
@@ -36,6 +39,9 @@ class CuentaSitioModel {
       correo: _texto(cuenta['correo']),
       telefono: _texto(cuenta['telefono']),
       activo: _booleano(cuenta['activo']),
+      correoVerificado: _booleano(
+        cuenta['correoVerificado'],
+      ),
     );
   }
 
@@ -48,6 +54,7 @@ class CuentaSitioModel {
       'correo': correo,
       'telefono': telefono,
       'activo': activo,
+      'correoVerificado': correoVerificado,
     };
   }
 
@@ -81,6 +88,11 @@ class CuentaSitioModel {
 
   @override
   String toString() {
-    return 'CuentaSitioModel(id: $id, sitioId: $sitioId, correo: $correo)';
+    return 'CuentaSitioModel('
+        'id: $id, '
+        'sitioId: $sitioId, '
+        'correo: $correo, '
+        'correoVerificado: $correoVerificado'
+        ')';
   }
 }

@@ -1,7 +1,9 @@
+
 const express = require('express');
 
 const {
   crearCuentaSitio,
+  verificarCorreoSitio,
   iniciarSesion,
   recuperarPassword,
   verificarCodigoRecuperacion,
@@ -36,6 +38,7 @@ router.get(
 
 // ============================================================
 // CREAR CUENTA DEL SITIO
+// SOLO ADMINISTRADOR
 // ============================================================
 
 router.post(
@@ -85,6 +88,15 @@ router.delete(
 router.post(
   '/login',
   iniciarSesion
+);
+
+// ============================================================
+// VERIFICAR CORREO DEL SITIO
+// ============================================================
+
+router.post(
+  '/verificar-correo',
+  verificarCorreoSitio
 );
 
 // ============================================================
