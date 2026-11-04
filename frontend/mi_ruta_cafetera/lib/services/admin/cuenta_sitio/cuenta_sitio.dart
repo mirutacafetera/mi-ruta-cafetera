@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -15,6 +16,12 @@ class CuentaSitio {
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
+    };
+  }
+
+  static Map<String, String> get _headersPublicos {
+    return {
+      'Content-Type': 'application/json',
     };
   }
 
@@ -117,6 +124,29 @@ class CuentaSitio {
 
     return CuentaSitioModel.fromJson(
       Map<String, dynamic>.from(cuenta),
+    );
+  }
+
+  // =====================================================
+  // VERIFICAR CORREO DE LA CUENTA DEL SITIO
+  // =====================================================
+
+  static Future<Map<String, dynamic>> verificarCorreo({
+    required String correo,
+    required String codigo,
+  }) async {
+    final respuesta = await http.post(
+      Uri.parse('$_ruta/verificar-correo'),
+      headers: _headersPublicos,
+      body: jsonEncode({
+        'correo': correo.trim(),
+        'codigo': codigo.trim(),
+      }),
+    );
+
+    return _procesarRespuesta(
+      respuesta,
+      'No se pudo verificar el correo.',
     );
   }
 
