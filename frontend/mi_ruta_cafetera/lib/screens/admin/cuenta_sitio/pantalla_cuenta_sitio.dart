@@ -115,21 +115,28 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
   }) async {
     String? correoCreado;
 
-    final resultado = await showModalBottomSheet<bool>(
+    // Variable final para conservar la referencia de la cuenta.
+    final CuentaSitioModel? cuentaActual = cuenta;
+
+    final resultado = await showModalBottomSheet<dynamic>(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
-      builder: (context) => SafeArea(
+      builder: (contextFormulario) => SafeArea(
         child: Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+            bottom: MediaQuery.of(contextFormulario).viewInsets.bottom,
           ),
           child: FormularioCuentaSitio(
-            cuenta: cuenta,
+            cuenta: cuentaActual,
             cargando: _controller.guardando,
             onGuardar: (datos) async {
               try {
-                if (cuenta == null) {
+                // =========================================
+                // CREAR CUENTA
+                // =========================================
+
+                if (cuentaActual == null) {
                   await _controller.crearCuenta(
                     sitioId: sitio.id,
                     nombre: datos['nombre']!,
@@ -140,67 +147,80 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
                   );
 
                   correoCreado = datos['correo']!.trim();
-                } else {
-                  final correoNuevo = datos['correo']!.trim();
-                  final correoOriginal = cuenta.correo.trim();
-                  final passwordNuevo = datos['password'] ?? '';
 
-                  final correoCambio = correoNuevo.toLowerCase() !=
-                      correoOriginal.toLowerCase();
-                  final passwordCambio = passwordNuevo.isNotEmpty;
-
-                  if (correoCambio && !passwordCambio) {
-                    throw Exception(
-                      'Para cambiar el correo debes ingresar una contraseña. '
-                      'Puedes escribir la contraseña actual.',
-                    );
+                  if (contextFormulario.mounted) {
+                    Navigator.of(contextFormulario).pop(true);
                   }
 
-                  // Los cambios de correo o contraseña requieren código.
-                  if (correoCambio || passwordCambio) {
-                    final respuesta =
-                        await _controller.solicitarCodigoCambioCuenta(
-                      cuentaId: cuenta.id,
-                      correo: correoCambio ? correoNuevo : null,
-                      password: passwordCambio ? passwordNuevo : null,
-                    );
+                  return;
+                }
 
-                    final correoDestino =
-                        respuesta['correoDestino']?.toString() ??
-                        (correoCambio ? correoNuevo : correoOriginal);
+                // Desde aquí la cuenta existe.
+                final cuentaEdicion = cuentaActual;
 
-                    if (!mounted) return;
+                // =========================================
+                // EDITAR CUENTA
+                // =========================================
 
-                    final verificado = await _mostrarDialogoCodigo(
-                      correo: correoDestino,
-                      titulo: 'Autorizar cambios',
-                      descripcion:
-                          'Hemos enviado un código de autorización para '
-                          'confirmar los cambios de acceso de la cuenta.',
-                      textoBoton: 'Confirmar cambios',
-                      onVerificar: (codigo) async {
-                        await _controller.verificarCodigoCambioCuenta(
-                          cuentaId: cuenta.id,
-                          codigo: codigo,
-                        );
-                      },
-                    );
+                final correoNuevo = datos['correo']!.trim();
+                final correoOriginal = cuentaEdicion.correo.trim();
+                final passwordNuevo = datos['password'] ?? '';
 
-                    if (verificado != true) return;
-                  }
+                final correoCambio = correoNuevo.toLowerCase() !=
+                    correoOriginal.toLowerCase();
 
-                  // Después de autorizar, se actualizan los datos personales.
-                  await _controller.actualizarCuenta(
-                    cuentaId: cuenta.id,
-                    nombre: datos['nombre']!,
-                    apellido: datos['apellido']!,
-                    correo: correoNuevo,
-                    telefono: datos['telefono']!,
+                final passwordCambio = passwordNuevo.isNotEmpty;
+
+                if (correoCambio && !passwordCambio) {
+                  throw Exception(
+                    'Para cambiar el correo debes ingresar una contraseña. '
+                    'Puedes escribir la contraseña actual.',
                   );
                 }
 
-                if (context.mounted) {
-                  Navigator.pop(context, true);
+                // =========================================
+                // SOLICITAR CÓDIGO DE AUTORIZACIÓN
+                // =========================================
+
+                if (correoCambio || passwordCambio) {
+                  final respuesta =
+                      await _controller.solicitarCodigoCambioCuenta(
+                    cuentaId: cuentaEdicion.id,
+                    correo: correoCambio ? correoNuevo : null,
+                    password: passwordCambio ? passwordNuevo : null,
+                  );
+
+                  final correoDestino =
+                      respuesta['correoDestino']?.toString() ??
+                          (correoCambio ? correoNuevo : correoOriginal);
+
+                  if (!contextFormulario.mounted) return;
+
+                  // Cierra el formulario.
+                  // La pantalla principal permanece debajo.
+                  Navigator.of(contextFormulario).pop({
+                    'tipo': 'autorizar',
+                    'datos': Map<String, String>.from(datos),
+                    'correoDestino': correoDestino,
+                  });
+
+                  return;
+                }
+
+                // =========================================
+                // ACTUALIZAR SOLO DATOS PERSONALES
+                // =========================================
+
+                await _controller.actualizarCuenta(
+                  cuentaId: cuentaEdicion.id,
+                  nombre: datos['nombre']!,
+                  apellido: datos['apellido']!,
+                  correo: correoNuevo,
+                  telefono: datos['telefono']!,
+                );
+
+                if (contextFormulario.mounted) {
+                  Navigator.of(contextFormulario).pop(true);
                 }
               } catch (e) {
                 _mostrarMensaje('No se pudo guardar: $e');
@@ -211,10 +231,80 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
       ),
     );
 
+    if (!mounted) return;
+
+    // =====================================================
+    // MOSTRAR AUTORIZACIÓN SOBRE LA PANTALLA PRINCIPAL
+    // =====================================================
+
+    if (resultado is Map && resultado['tipo'] == 'autorizar') {
+      // Comprobamos que realmente sea una edición.
+      final cuentaEdicion = cuentaActual;
+
+      if (cuentaEdicion == null) return;
+
+      final datos = Map<String, String>.from(
+        resultado['datos'] as Map,
+      );
+
+      final correoDestino =
+          resultado['correoDestino']?.toString() ?? '';
+
+      // El formulario ya está cerrado.
+      // El diálogo aparece encima de Cuentas de sitios turísticos.
+      final verificado = await _mostrarDialogoCodigo(
+        correo: correoDestino,
+        titulo: 'Autorizar cambios',
+        descripcion:
+            'Hemos enviado un código de autorización para '
+            'confirmar los cambios de acceso de la cuenta.',
+        textoBoton: 'Confirmar cambios',
+        onVerificar: (codigo) async {
+          await _controller.verificarCodigoCambioCuenta(
+            cuentaId: cuentaEdicion.id,
+            codigo: codigo,
+          );
+        },
+      );
+
+      if (verificado != true || !mounted) return;
+
+      try {
+        // El correo y la contraseña ya fueron autorizados.
+        // Ahora se actualizan los demás datos de la cuenta.
+
+        await _controller.actualizarCuenta(
+          cuentaId: cuentaEdicion.id,
+          nombre: datos['nombre']!,
+          apellido: datos['apellido']!,
+          correo: datos['correo']!,
+          telefono: datos['telefono']!,
+        );
+
+        await _cargarDatos();
+
+        if (mounted) {
+          _mostrarMensaje('Cuenta actualizada correctamente');
+        }
+      } catch (e) {
+        _mostrarMensaje('No se pudo guardar: $e');
+      }
+
+      return;
+    }
+
+    // =====================================================
+    // RESULTADO DE CREAR O ACTUALIZAR CUENTA
+    // =====================================================
+
     if (resultado == true && mounted) {
       await _cargarDatos();
 
-      if (cuenta == null && correoCreado != null) {
+      // =========================================
+      // VERIFICAR CORREO DE CUENTA RECIÉN CREADA
+      // =========================================
+
+      if (cuentaActual == null && correoCreado != null) {
         _mostrarMensaje(
           'Cuenta creada. Se envió un código a $correoCreado',
         );
@@ -407,6 +497,7 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
                     onActualizar: _cargarDatos,
                     onNuevo: () {},
                   ),
+
                   if (_controller.error != null)
                     Padding(
                       padding: const EdgeInsets.all(
@@ -419,6 +510,7 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
                         ),
                       ),
                     ),
+
                   ResumenCuentaSitio(
                     totalSitios: _controller.totalSitios,
                     conCuenta: _controller.totalConCuenta,
@@ -426,6 +518,7 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
                     activas: _controller.cuentasActivas,
                     inactivas: _controller.cuentasInactivas,
                   ),
+
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.pageHorizontalSmall,
@@ -441,10 +534,12 @@ class _PantallaCuentasSitioState extends State<PantallaCuentasSitio> {
                       },
                     ),
                   ),
+
                   FiltrosCuentaSitio(
                     filtroSeleccionado: _controller.filtro,
                     onChanged: _controller.cambiarFiltro,
                   ),
+
                   if (_actualizando)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
