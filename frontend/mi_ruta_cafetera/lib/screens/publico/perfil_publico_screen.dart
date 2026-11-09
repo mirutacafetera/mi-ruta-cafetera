@@ -462,24 +462,6 @@ class _PerfilCuentaState extends State<_PerfilCuenta> {
               height: AppDimensions.spacingMd,
             ),
             _OpcionCuenta(
-              icono: Icons.favorite_rounded,
-              titulo: context.t('perfil.misFavoritos'),
-              descripcion: context.t('perfil.misFavoritos.desc'),
-              onTap: _abrirFavoritos,
-            ),
-            const SizedBox(
-              height: AppDimensions.spacingMd,
-            ),
-            _OpcionCuenta(
-              icono: Icons.route_rounded,
-              titulo: context.t('perfil.misRutas'),
-              descripcion: context.t('perfil.misRutas.desc'),
-              onTap: _abrirRutas,
-            ),
-            const SizedBox(
-              height: AppDimensions.spacingMd,
-            ),
-            _OpcionCuenta(
               icono: Icons.event_available_rounded,
               titulo: context.t('perfil.misReservas'),
               descripcion: context.t('perfil.misReservas.desc'),
@@ -873,4 +855,3 @@ class _OpcionCuenta extends StatelessWidget {
     );
   }
 }
-
