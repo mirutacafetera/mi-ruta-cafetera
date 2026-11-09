@@ -87,7 +87,7 @@ class _SitioCardState extends State<SitioCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _construirImagen(colorCategoria),
-              _construirContenido(colorCategoria),
+              _construirContenido(),
             ],
           ),
         ),
@@ -107,26 +107,26 @@ class _SitioCardState extends State<SitioCard> {
         fit: StackFit.expand,
         children: [
           widget.sitio.imagen.trim().isNotEmpty
-    ? Image.network(
-        widget.sitio.imagen.trim(),
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Image.asset(
-            widget.imagen,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return _construirImagenRespaldo(colorCategoria);
-            },
-          );
-        },
-      )
-    : Image.asset(
-        widget.imagen,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return _construirImagenRespaldo(colorCategoria);
-        },
-      ),
+              ? Image.network(
+                  widget.sitio.imagen.trim(),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      widget.imagen,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _construirImagenRespaldo(colorCategoria);
+                      },
+                    );
+                  },
+                )
+              : Image.asset(
+                  widget.imagen,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _construirImagenRespaldo(colorCategoria);
+                  },
+                ),
 
           Positioned.fill(
             child: DecoratedBox(
@@ -146,30 +146,34 @@ class _SitioCardState extends State<SitioCard> {
           // ==================================================
           // CATEGORÍA
           // ==================================================
+          // La etiqueta ocupa como máximo el ancho de la tarjeta y recorta
+          // el texto con puntos suspensivos, así no se desborda en
+          // pantallas estrechas.
           Positioned(
             left: AppDimensions.spacingMd,
+            right: AppDimensions.spacingMd,
             bottom: AppDimensions.spacingMd,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingSm + 2,
-                vertical: AppDimensions.spacingXs + 2,
-              ),
-              decoration: BoxDecoration(
-                color: colorCategoria,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _iconoCategoria,
-                    size: AppDimensions.iconSm,
-                    color: AppColors.textOnDark,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingXs),
-                  Flexible(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 165),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingSm + 2,
+                  vertical: AppDimensions.spacingXs + 2,
+                ),
+                decoration: BoxDecoration(
+                  color: colorCategoria,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _iconoCategoria,
+                      size: AppDimensions.iconSm,
+                      color: AppColors.textOnDark,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingXs),
+                    Flexible(
                       child: Text(
                         widget.sitio.categoriaNombre,
                         maxLines: 1,
@@ -180,8 +184,8 @@ class _SitioCardState extends State<SitioCard> {
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -246,7 +250,37 @@ class _SitioCardState extends State<SitioCard> {
   // CONTENIDO
   // ============================================================
 
-  Widget _construirContenido(Color colorCategoria) {
+  Widget _construirContenido() {
+    final tema = Theme.of(context).textTheme;
+    final escala = MediaQuery.textScalerOf(context);
+
+    final estiloNombre = tema.titleMedium?.copyWith(
+      color: AppColors.textPrimary,
+      fontWeight: FontWeight.w800,
+      height: 1.15,
+    );
+
+    final estiloDescripcion = tema.bodySmall?.copyWith(
+      color: AppColors.textSecondary,
+      height: 1.25,
+    );
+
+    // Botón e icono de ubicación en el color principal de la app, iguales
+    // en todas las tarjetas. Solo la etiqueta de categoría conserva el
+    // color de su categoría.
+    //
+    // Altura fija equivalente a 2 líneas de texto. Así el nombre y la
+    // descripción ocupan siempre el mismo espacio y el botón queda a la
+    // misma altura en todas las tarjetas, aunque el texto sea corto.
+    // Se calcula con el tamaño de letra del dispositivo para que el
+    // texto no se corte si el usuario lo agranda.
+    final altoNombre =
+        (escala.scale(estiloNombre?.fontSize ?? 16) * 1.15 * 2).ceilToDouble();
+
+    final altoDescripcion =
+        (escala.scale(estiloDescripcion?.fontSize ?? 12) * 1.25 * 2)
+            .ceilToDouble();
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.sitioContentPadding,
@@ -257,29 +291,29 @@ class _SitioCardState extends State<SitioCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.sitio.nombre,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w800,
-              height: 1.15,
+          SizedBox(
+            height: altoNombre,
+            width: double.infinity,
+            child: Text(
+              widget.sitio.nombre,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: estiloNombre,
             ),
           ),
 
-          if (widget.sitio.descripcion.trim().isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingXs + 2),
-            Text(
-              widget.sitio.descripcion,
-              maxLines: 1,
+          const SizedBox(height: AppDimensions.spacingXs + 2),
+
+          SizedBox(
+            height: altoDescripcion,
+            width: double.infinity,
+            child: Text(
+              widget.sitio.descripcion.trim(),
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.25,
-              ),
+              style: estiloDescripcion,
             ),
-          ],
+          ),
 
           const SizedBox(height: AppDimensions.spacingSm),
 
@@ -288,7 +322,7 @@ class _SitioCardState extends State<SitioCard> {
               Icon(
                 Icons.location_on_outlined,
                 size: AppDimensions.iconSm,
-                color: colorCategoria,
+                color: AppColors.primary,
               ),
 
               const SizedBox(width: AppDimensions.spacingXs),
@@ -315,8 +349,10 @@ class _SitioCardState extends State<SitioCard> {
             child: OutlinedButton.icon(
               onPressed: widget.onTap,
               style: OutlinedButton.styleFrom(
-                foregroundColor: colorCategoria,
-                side: BorderSide(color: colorCategoria.withValues(alpha: 0.45)),
+                foregroundColor: AppColors.primary,
+                side: BorderSide(
+                  color: AppColors.primary.withValues(alpha: 0.45),
+                ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingMd,
                 ),

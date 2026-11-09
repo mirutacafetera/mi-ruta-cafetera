@@ -186,10 +186,10 @@ class _HomeHeroState extends State<HomeHero> {
     final nombre = widget.nombre?.trim() ?? '';
 
     if (widget.usuarioAutenticado && nombre.isNotEmpty) {
-      return Textos.t('Hola, {0} 👋', [nombre]);
+      return Textos.t('Hola, {0} ', [nombre]);
     }
 
-    return Textos.t('Hola, explorador 👋');
+    return Textos.t('Hola, explorador ');
   }
 
   @override

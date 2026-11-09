@@ -703,19 +703,6 @@ class _BienvenidaScreenState
           ),
 
           // ========================================================
-          // ELEMENTO DECORATIVO DE LA EXPERIENCIA
-          // ========================================================
-
-          Positioned(
-            top: -80,
-            right: -60,
-            child: _IconoDecorativo(
-              imagen:
-                  _imagenes[_paginaActual],
-            ),
-          ),
-
-          // ========================================================
           // CONTENIDO
           // ========================================================
 
@@ -1683,57 +1670,6 @@ class _BotonGoogle
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ============================================================================
-// ICONO DECORATIVO
-// ============================================================================
-
-class _IconoDecorativo
-    extends StatelessWidget {
-  final _ImagenBienvenida imagen;
-
-  const _IconoDecorativo({
-    required this.imagen,
-  });
-
-  @override
-  Widget build(
-    BuildContext context,
-  ) {
-    return IgnorePointer(
-      child: Container(
-        width: 300,
-        height: 300,
-        alignment:
-            Alignment.center,
-        decoration:
-            BoxDecoration(
-          shape:
-              BoxShape.circle,
-          gradient:
-              RadialGradient(
-            colors: [
-              imagen.color.withValues(
-                alpha: 0.22,
-              ),
-              imagen.color.withValues(
-                alpha: 0.0,
-              ),
-            ],
-          ),
-        ),
-        child: Icon(
-          imagen.icono,
-          size: 190,
-          color: AppColors.white
-              .withValues(
-            alpha: 0.075,
           ),
         ),
       ),

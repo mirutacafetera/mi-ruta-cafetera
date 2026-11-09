@@ -224,7 +224,35 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
   // CONTENIDO
   // ============================================================
 
+  // Alto total que ocupa el menú inferior flotante, incluida la zona
+  // segura del sistema Android.
+  double _alturaMenu(BuildContext context) {
+    return MediaQuery.viewPaddingOf(context).bottom +
+        AppDimensions.navigationBarHeight +
+        AppDimensions.navigationBarBottomMargin;
+  }
+
+  // El menú flota sobre el cuerpo (extendBody). El Inicio se extiende
+  // detrás de los botones para que se vea su fondo; el resto de las
+  // secciones conservan su espacio de siempre, sin quedar tapadas.
   Widget _construirSeccion(int indice, UsuarioSesionModel sesion) {
+    final seccion = _seccion(indice, sesion);
+
+    if (indice == 0) {
+      return seccion;
+    }
+
+    return MediaQuery.removePadding(
+      context: context,
+      removeBottom: true,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: _alturaMenu(context)),
+        child: seccion,
+      ),
+    );
+  }
+
+  Widget _seccion(int indice, UsuarioSesionModel sesion) {
     final llave = ValueKey<String>('seccion-$indice-${_versiones[indice]}');
 
     switch (indice) {
@@ -270,44 +298,41 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
       _DatosItem(Icons.person_rounded, 'Perfil'),
     ];
 
+    // Cada icono es un botón flotante independiente. No hay barra,
+    // fondo ni borde que los agrupe: entre los botones se ve el fondo de
+    // la pantalla. Se conservan SafeArea y el margen inferior para no
+    // chocar con la barra del sistema Android.
     return SafeArea(
       top: false,
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
           AppDimensions.pageHorizontalSmall,
           0,
           AppDimensions.pageHorizontalSmall,
           AppDimensions.navigationBarBottomMargin,
         ),
-        height: AppDimensions.navigationBarHeight,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(
-            AppDimensions.bottomNavigationRadius,
-          ),
-          border: Border.all(color: AppColors.border),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.cardShadow,
-              blurRadius: 16,
-              offset: Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            for (var i = 0; i < items.length; i++)
-              Expanded(
-                child: _ItemNavegacion(
-                  icono: items[i].icono,
-                  etiqueta: items[i].etiqueta,
-                  seleccionado: _indiceActual == i,
-                  onTap: () {
-                    _cambiarSeccion(i);
-                  },
+        child: SizedBox(
+          height: AppDimensions.navigationBarHeight,
+          child: Row(
+            children: [
+              for (var i = 0; i < items.length; i++)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingXs,
+                    ),
+                    child: _ItemNavegacion(
+                      icono: items[i].icono,
+                      etiqueta: items[i].etiqueta,
+                      seleccionado: _indiceActual == i,
+                      onTap: () {
+                        _cambiarSeccion(i);
+                      },
+                    ),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -341,8 +366,18 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
 
     // Ocupa toda el área del cuerpo para poder moverse libremente;
     // las zonas vacías dejan pasar los toques al contenido.
+    // Se mantiene por encima del menú, en la misma posición de siempre.
     return Positioned.fill(
-      child: BotonIaFlotante(inicioIzquierda: _indiceActual == _indiceMapa),
+      child: MediaQuery.removePadding(
+        context: context,
+        removeBottom: true,
+        child: Padding(
+          padding: EdgeInsets.only(bottom: _alturaMenu(context)),
+          child: BotonIaFlotante(
+            inicioIzquierda: _indiceActual == _indiceMapa,
+          ),
+        ),
+      ),
     );
   }
 
@@ -383,6 +418,7 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      extendBody: true,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -444,53 +480,63 @@ class _ItemNavegacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = seleccionado ? AppColors.primary : AppColors.textSecondary;
+    final colorContenido =
+        seleccionado ? AppColors.white : AppColors.textSecondary;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
+    // Botón flotante propio de cada sección. La activa se rellena con el
+    // verde principal; las demás son blancas. El área táctil es todo el
+    // botón.
+    return Semantics(
+      button: true,
+      selected: seleccionado,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.bottomNavigationRadius,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingXs,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(
-                  milliseconds: AppDimensions.animationFast,
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(
+              milliseconds: AppDimensions.animationFast,
+            ),
+            curve: Curves.easeOut,
+            height: AppDimensions.navigationBarHeight - 12,
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingXs,
+            ),
+            decoration: BoxDecoration(
+              color: seleccionado ? AppColors.primary : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.black.withValues(alpha: 0.22),
+                  blurRadius: 12,
+                  offset: const Offset(0, 5),
                 ),
-                width: AppDimensions.iconLg + 8,
-                height: AppDimensions.iconLg + 8,
-                decoration: BoxDecoration(
-                  color: seleccionado
-                      ? AppColors.getSoftColorForCategory('naturaleza')
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                ),
-                child: Icon(
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
                   icono,
                   size: AppDimensions.navigationIcon,
-                  color: color,
+                  color: colorContenido,
                 ),
-              ),
-              const SizedBox(height: AppDimensions.spacingXs),
-              Tr(
-                etiqueta,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 11,
-                  fontWeight: seleccionado ? FontWeight.w700 : FontWeight.w500,
+                const SizedBox(height: AppDimensions.spacingXs),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Tr(
+                    etiqueta,
+                    style: TextStyle(
+                      color: colorContenido,
+                      fontSize: 11,
+                      fontWeight:
+                          seleccionado ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
