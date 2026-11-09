@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const Resena = require('../../models/sitio/resena');
 const SitioTuristico = require('../../models/admin/sitio');
@@ -20,7 +21,7 @@ const obtenerResenasPorSitio = async (req, res) => {
       sitio: sitioId,
       activo: true
     })
-      .select('usuario sitio calificacion comentario activo createdAt')
+      .select('usuario sitio calificacion comentario imagenes activo createdAt')
       .populate('usuario', 'nombre apellido fotoPerfil avatar')
       .sort({ createdAt: -1 })
       .lean();
@@ -76,11 +77,25 @@ const crearResena = async (req, res) => {
       });
     }
 
+    // --- AQUÍ ESTÁ EL CÓDIGO DE DEPURACIÓN EN EL ARCHIVO .JS ---
+    console.log("Archivos recibidos de multer:", req.files);
+
+    const imagenes = (req.files || [])
+      .map((archivo) => {
+        console.log("Archivo individual:", archivo);
+        return archivo.path || archivo.url || archivo.secure_url || '';
+      })
+      .filter((url) => typeof url === 'string' && url.trim().length > 0);
+
+    console.log("URLs finales a guardar en MongoDB:", imagenes);
+    // -----------------------------------------------------------
+
     const resena = await Resena.create({
       usuario: req.usuario.id,
       sitio,
       comentario: comentarioLimpio,
-      calificacion: nota
+      calificacion: nota,
+      imagenes
     });
 
     await resena.populate(
@@ -175,7 +190,7 @@ const actualizarResena = async (req, res) => {
       },
       { $set: cambios },
       {
-        new: true,
+        returnDocument: 'after',
         runValidators: true
       }
     ).populate('usuario', 'nombre apellido fotoPerfil avatar');

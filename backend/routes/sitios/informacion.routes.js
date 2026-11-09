@@ -14,7 +14,8 @@ const {
 const {
   obtenerInformacion,
   actualizarInformacion,
-  subirImagenPrincipal
+  subirImagenPrincipal,
+  eliminarImagenPrincipal
 } = require(
   '../../controllers/sitio/informacion.controller'
 );
@@ -53,7 +54,14 @@ router.post(
   verificarToken,
   verificarSitio,
   upload.single('imagen'),
-  subirImagenPrincipal
+  subirImagenPrincipal,
+);
+
+router.delete(
+  '/imagen',
+  verificarToken,
+  verificarSitio,
+  eliminarImagenPrincipal
 );
 
 

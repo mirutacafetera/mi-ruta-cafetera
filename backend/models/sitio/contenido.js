@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 /**
@@ -128,6 +129,16 @@ const contenidoSchema = new mongoose.Schema(
     activo: {
       type: Boolean,
       default: true,
+    },
+
+    /**
+     * Oculta el contenido únicamente del panel administrativo.
+     * No elimina el registro de MongoDB ni sus archivos.
+     * Al enviarlo nuevamente a revisión, debe volver a mostrarse.
+     */
+    ocultoEnAdmin: {
+      type: Boolean,
+      default: false,
     },
   },
   {

@@ -59,9 +59,7 @@ class SeccionFormularioSitio extends StatelessWidget {
                   size: AppDimensions.sitioActionIconSize + 4,
                 ),
               ),
-              const SizedBox(
-                width: AppDimensions.spacingMd,
-              ),
+              const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

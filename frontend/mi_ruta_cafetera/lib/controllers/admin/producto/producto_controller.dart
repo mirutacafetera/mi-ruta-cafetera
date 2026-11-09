@@ -221,6 +221,47 @@ class ProductoController extends ChangeNotifier {
     }
   }
 
+  // ============================================================
+  // ELIMINAR PRODUCTO
+  // ============================================================
+
+  Future<bool> eliminarProducto(String productoId) async {
+    if (_productosProcesando.contains(productoId)) {
+      return false;
+    }
+
+    _productosProcesando.add(productoId);
+    _error = null;
+    notifyListeners();
+
+    try {
+      await AdminProducto.eliminarProducto(
+        id: productoId,
+        token: token,
+      );
+
+      _productosPendientes.removeWhere(
+        (producto) => producto.id == productoId,
+      );
+
+      _productosAceptados.removeWhere(
+        (producto) => producto.id == productoId,
+      );
+
+      _productosRechazados.removeWhere(
+        (producto) => producto.id == productoId,
+      );
+
+      return true;
+    } catch (e) {
+      _error = _limpiarError(e);
+      return false;
+    } finally {
+      _productosProcesando.remove(productoId);
+      notifyListeners();
+    }
+  }
+
   Future<void> _recargarEstadosDespuesDeRevision() async {
     final resultados = await Future.wait([
       AdminProducto.obtenerProductosPendientes(

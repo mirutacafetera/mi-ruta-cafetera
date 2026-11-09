@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-
 import '../../../models/admin/admin_actividad_model.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_dimensions.dart';
@@ -9,11 +7,8 @@ import 'hoja_detalles_evaluacion_actividad.dart';
 
 class TarjetaActividadAdmin extends StatelessWidget {
   final ActividadAdminModel actividad;
-  final VoidCallback onVerDetalles;
-  final VoidCallback onAprobar;
-  final VoidCallback onRechazar;
-  final bool procesando;
-  final bool seleccionado;
+  final VoidCallback onVerDetalles, onAprobar, onRechazar, onEliminar;
+  final bool procesando, seleccionado;
 
   const TarjetaActividadAdmin({
     super.key,
@@ -21,6 +16,7 @@ class TarjetaActividadAdmin extends StatelessWidget {
     required this.onVerDetalles,
     required this.onAprobar,
     required this.onRechazar,
+    required this.onEliminar,
     this.procesando = false,
     this.seleccionado = false,
   });
@@ -66,11 +62,9 @@ class TarjetaActividadAdmin extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _construirImagen(actividad.imagenPrincipal),
+                  _imagenConBotonEliminar(context),
                   Padding(
-                    padding: const EdgeInsets.all(
-                      AppDimensions.spacingMd,
-                    ),
+                    padding: const EdgeInsets.all(AppDimensions.spacingMd),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -83,25 +77,18 @@ class TarjetaActividadAdmin extends StatelessWidget {
                                     ? 'Actividad sin nombre'
                                     : actividad.nombre,
                                 style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
+                                    .textTheme.titleMedium
                                     ?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.textPrimary,
                                     ),
                               ),
                             ),
-                            const SizedBox(
-                              width: AppDimensions.spacingSm,
-                            ),
+                            const SizedBox(width: AppDimensions.spacingSm),
                             EstadoProducto(estado: estado),
                           ],
                         ),
-
-                        const SizedBox(
-                          height: AppDimensions.spacingSm,
-                        ),
-
+                        const SizedBox(height: AppDimensions.spacingSm),
                         Text(
                           actividad.descripcion.isEmpty
                               ? 'Sin descripción'
@@ -113,36 +100,18 @@ class TarjetaActividadAdmin extends StatelessWidget {
                             height: 1.4,
                           ),
                         ),
-
-                        const SizedBox(
-                          height: AppDimensions.spacingMd,
-                        ),
-
+                        const SizedBox(height: AppDimensions.spacingMd),
                         if (actividad.nombreSitio.isNotEmpty)
-                          _fila(
-                            Icons.place_outlined,
-                            actividad.nombreSitio,
-                          ),
-
+                          _fila(Icons.place_outlined, actividad.nombreSitio),
                         if (actividad.ciudad.isNotEmpty ||
                             actividad.departamento.isNotEmpty)
                           _fila(
                             Icons.location_city_outlined,
-                            [
-                              actividad.ciudad,
-                              actividad.departamento,
-                            ]
-                                .where(
-                                  (dato) => dato.trim().isNotEmpty,
-                                )
+                            [actividad.ciudad, actividad.departamento]
+                                .where((d) => d.trim().isNotEmpty)
                                 .join(', '),
                           ),
-
-                        const SizedBox(
-                          height: AppDimensions.spacingMd,
-                        ),
-
-                        // Etiquetas con fondo crema e iconos naranjas.
+                        const SizedBox(height: AppDimensions.spacingMd),
                         Wrap(
                           spacing: AppDimensions.spacingSm,
                           runSpacing: AppDimensions.spacingXs,
@@ -163,19 +132,12 @@ class TarjetaActividadAdmin extends StatelessWidget {
                               ),
                           ],
                         ),
-
-                        // Evaluación final.
                         if (!pendiente && _tieneEvaluacionFinal) ...[
-                          const SizedBox(
-                            height: AppDimensions.spacingLg,
-                          ),
+                          const SizedBox(height: AppDimensions.spacingLg),
                           _tarjetaEvaluacion(context),
                         ],
-
                         if (actividad.fechaCreacion != null) ...[
-                          const SizedBox(
-                            height: AppDimensions.spacingLg,
-                          ),
+                          const SizedBox(height: AppDimensions.spacingLg),
                           _fila(
                             Icons.calendar_today_outlined,
                             'Creada el ${_formatearFecha(actividad.fechaCreacion!)}',
@@ -187,8 +149,6 @@ class TarjetaActividadAdmin extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Botones de administración con tamaño intermedio.
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppDimensions.spacingMd,
@@ -199,18 +159,13 @@ class TarjetaActividadAdmin extends StatelessWidget {
               child: Column(
                 children: [
                   if (pendiente) ...[
-                    const SizedBox(
-                      height: AppDimensions.spacingSm,
-                    ),
+                    const SizedBox(height: AppDimensions.spacingSm),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: procesando ? null : onRechazar,
-                            icon: const Icon(
-                              Icons.close_rounded,
-                              size: 20,
-                            ),
+                            icon: const Icon(Icons.close_rounded, size: 20),
                             label: const Text('Rechazar'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.terracota,
@@ -218,13 +173,6 @@ class TarjetaActividadAdmin extends StatelessWidget {
                                 color: AppColors.terracota,
                               ),
                               minimumSize: const Size(0, 42),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 9,
-                              ),
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: VisualDensity.standard,
                               textStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -232,9 +180,7 @@ class TarjetaActividadAdmin extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(
-                          width: AppDimensions.spacingSm,
-                        ),
+                        const SizedBox(width: AppDimensions.spacingSm),
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: procesando ? null : onAprobar,
@@ -247,13 +193,6 @@ class TarjetaActividadAdmin extends StatelessWidget {
                               backgroundColor: AppColors.primary,
                               foregroundColor: AppColors.white,
                               minimumSize: const Size(0, 42),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 9,
-                              ),
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: VisualDensity.standard,
                               textStyle: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -264,13 +203,6 @@ class TarjetaActividadAdmin extends StatelessWidget {
                       ],
                     ),
                   ],
-
-                  if (procesando) ...[
-                    const SizedBox(
-                      height: AppDimensions.spacingMd,
-                    ),
-                    const LinearProgressIndicator(),
-                  ],
                 ],
               ),
             ),
@@ -280,22 +212,102 @@ class TarjetaActividadAdmin extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // EVALUACIÓN FINAL
-  // ============================================================
+  Widget _imagenConBotonEliminar(BuildContext context) => Stack(
+        children: [
+          _construirImagen(actividad.imagenPrincipal),
+          Positioned(
+            top: 10,
+            right: 10,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.creamLight,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _cafe, width: 1.3),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: procesando
+                    ? null
+                    : () => _confirmarEliminacion(context),
+                child: const SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    color: AppColors.error,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
 
-  bool get _tieneEvaluacionFinal {
-    return actividad.revisado ||
-        actividad.evaluacionIA?.decision == 'aprobado' ||
-        actividad.evaluacionIA?.decision == 'rechazado';
+  Future<void> _confirmarEliminacion(BuildContext context) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        title: const Text(
+          'Eliminar actividad',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            fontSize: 20,
+          ),
+        ),
+        content: Text(
+          '¿Deseas eliminar la actividad "${actividad.nombre}"? '
+          'Esta acción no se puede deshacer.',
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+            ),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.delete_outline_rounded, size: 17),
+            label: const Text('Eliminar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 10,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) onEliminar();
   }
+
+  bool get _tieneEvaluacionFinal =>
+      actividad.revisado ||
+      actividad.evaluacionIA?.decision == 'aprobado' ||
+      actividad.evaluacionIA?.decision == 'rechazado';
 
   Color get _colorEvaluacion {
     final estado = actividad.estadoPublicacion.toLowerCase();
-
     if (estado == 'aprobado') return _verde;
     if (estado == 'rechazado') return AppColors.terracota;
-
     return _naranja;
   }
 
@@ -304,11 +316,8 @@ class TarjetaActividadAdmin extends StatelessWidget {
     final rechazado =
         actividad.estadoPublicacion.toLowerCase() == 'rechazado';
     final color = _colorEvaluacion;
-
-    final titulo = esAdmin
-        ? 'Revisión del administrador'
-        : 'Evaluación de IA';
-
+    final titulo =
+        esAdmin ? 'Revisión del administrador' : 'Evaluación de IA';
     final resultado = esAdmin
         ? '${rechazado ? 'Rechazado' : 'Aprobado'} manualmente'
         : actividad.evaluacionIA?.decision == 'aprobado'
@@ -316,29 +325,18 @@ class TarjetaActividadAdmin extends StatelessWidget {
             : 'Rechazado por IA';
 
     return InkWell(
-      onTap: () {
-        HojaDetallesEvaluacionActividad.mostrar(
-          context,
-          actividad: actividad,
-        );
-      },
-      borderRadius: BorderRadius.circular(
-        AppDimensions.radiusLg,
+      onTap: () => HojaDetallesEvaluacionActividad.mostrar(
+        context,
+        actividad: actividad,
       ),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(
-          AppDimensions.spacingMd,
-        ),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
           color: AppColors.creamLight,
-          borderRadius: BorderRadius.circular(
-            AppDimensions.radiusLg,
-          ),
-          border: Border.all(
-            color: AppColors.adminBorder,
-            width: 1.2,
-          ),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+          border: Border.all(color: AppColors.adminBorder, width: 1.2),
         ),
         child: Row(
           children: [
@@ -349,9 +347,7 @@ class TarjetaActividadAdmin extends StatelessWidget {
               color: color,
               size: 25,
             ),
-            const SizedBox(
-              width: AppDimensions.spacingMd,
-            ),
+            const SizedBox(width: AppDimensions.spacingMd),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,9 +364,7 @@ class TarjetaActividadAdmin extends StatelessWidget {
                   Row(
                     children: [
                       Icon(
-                        rechazado
-                            ? Icons.cancel
-                            : Icons.check_circle,
+                        rechazado ? Icons.cancel : Icons.check_circle,
                         color: color,
                         size: 16,
                       ),
@@ -390,132 +384,89 @@ class TarjetaActividadAdmin extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: color,
-            ),
+            Icon(Icons.chevron_right, color: color),
           ],
         ),
       ),
     );
   }
 
-  // ============================================================
-  // IMAGEN
-  // ============================================================
-
   Widget _construirImagen(String url) {
-    if (url.trim().isEmpty) {
-      return _imagenVacia();
-    }
-
+    if (url.trim().isEmpty) return _imagenVacia();
     return Image.network(
       url,
       height: AppDimensions.cardImageHeight,
       width: double.infinity,
       fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return _imagenVacia();
-      },
+      errorBuilder: (_, _, _) => _imagenVacia(),
     );
   }
 
-  Widget _imagenVacia() {
-    return Container(
-      height: AppDimensions.cardImageHeight,
-      width: double.infinity,
-      alignment: Alignment.center,
-      color: AppColors.cream,
-      child: Icon(
-        Icons.image_not_supported_outlined,
-        size: 48,
-        color: AppColors.secondary,
-      ),
-    );
-  }
+  Widget _imagenVacia() => Container(
+        height: AppDimensions.cardImageHeight,
+        width: double.infinity,
+        alignment: Alignment.center,
+        color: AppColors.cream,
+        child: Icon(
+          Icons.image_not_supported_outlined,
+          size: 48,
+          color: AppColors.secondary,
+        ),
+      );
 
-  // ============================================================
-  // FILAS DE INFORMACIÓN
-  // ============================================================
-
-  Widget _fila(IconData icono, String texto) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        bottom: AppDimensions.spacingXs,
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icono,
-            size: AppDimensions.iconSm,
-            color: AppColors.secondary,
-          ),
-          const SizedBox(
-            width: AppDimensions.spacingSm,
-          ),
-          Expanded(
-            child: Text(
-              texto,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+  Widget _fila(IconData icono, String texto) => Padding(
+        padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+        child: Row(
+          children: [
+            Icon(
+              icono,
+              size: AppDimensions.iconSm,
+              color: AppColors.secondary,
+            ),
+            const SizedBox(width: AppDimensions.spacingSm),
+            Expanded(
+              child: Text(
+                texto,
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ============================================================
-  // ETIQUETAS: IMÁGENES, PRECIO Y DURACIÓN
-  // ============================================================
-
-  Widget _etiqueta(IconData icono, String texto) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.creamLight,
-        borderRadius: BorderRadius.circular(
-          AppDimensions.chipRadius,
+          ],
         ),
-        border: Border.all(
-          color: AppColors.adminBorder.withValues(alpha: 0.65),
+      );
+
+  Widget _etiqueta(IconData icono, String texto) => Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingSm,
+          vertical: AppDimensions.spacingXs,
         ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icono,
-            size: AppDimensions.iconSm,
-            color: AppColors.secondary,
+        decoration: BoxDecoration(
+          color: AppColors.creamLight,
+          borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+          border: Border.all(
+            color: AppColors.adminBorder.withValues(alpha: 0.65),
           ),
-          const SizedBox(
-            width: AppDimensions.spacingXs,
-          ),
-          Text(
-            texto,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textPrimary,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icono,
+              size: AppDimensions.iconSm,
+              color: AppColors.secondary,
             ),
-          ),
-        ],
-      ),
-    );
-  }
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              texto,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      );
 
-  // ============================================================
-  // FECHAS
-  // ============================================================
-
-  String _formatearFecha(DateTime fecha) {
-    final dia = fecha.day.toString().padLeft(2, '0');
-    final mes = fecha.month.toString().padLeft(2, '0');
-
-    return '$dia/$mes/${fecha.year}';
-  }
+  String _formatearFecha(DateTime fecha) =>
+      '${fecha.day.toString().padLeft(2, '0')}/'
+      '${fecha.month.toString().padLeft(2, '0')}/${fecha.year}';
 }

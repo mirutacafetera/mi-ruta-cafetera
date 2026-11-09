@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const Actividad = require('../../models/sitio/actividad');
@@ -7,7 +8,9 @@ const HistorialRevisionIA = require('../../models/admin/historial_revision_ia');
 const agregarEvaluacionIA = async (actividades) => {
   const lista = Array.isArray(actividades)
     ? actividades
-    : [actividades];
+    : actividades
+      ? [actividades]
+      : [];
 
   if (!lista.length) {
     return Array.isArray(actividades) ? [] : null;
@@ -63,9 +66,15 @@ const obtenerActividadesPendientes = async (req, res) => {
       'rechazado',
     ];
 
-    const filtro = estadosPermitidos.includes(estado)
+    const filtroEstado = estadosPermitidos.includes(estado)
       ? { estadoPublicacion: estado }
       : { estadoPublicacion: { $in: estadosPermitidos } };
+
+    // Excluir las actividades ocultadas por el administrador.
+    const filtro = {
+      ...filtroEstado,
+      ocultoEnAdmin: { $ne: true },
+    };
 
     const actividades = await Actividad.find(filtro)
       .populate('sitio', 'nombre ciudad departamento')
@@ -182,7 +191,9 @@ const rechazarActividad = async (req, res) => {
     const { id } = req.params;
     const { motivoRechazo } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(id)
+    ) {
       return res.status(400).json({
         mensaje: 'El ID de la actividad no es válido',
       });
@@ -239,9 +250,69 @@ const rechazarActividad = async (req, res) => {
   }
 };
 
+// OCULTAR ACTIVIDAD ÚNICAMENTE DEL PANEL ADMINISTRATIVO
+const eliminarActividad = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        mensaje: 'El ID de la actividad no es válido',
+      });
+    }
+
+    // Ocultar del panel administrativo sin borrar el documento
+    // ni modificar la publicación del sitio.
+    const actividad = await Actividad.findOneAndUpdate(
+      {
+        _id: id,
+        ocultoEnAdmin: { $ne: true },
+      },
+      {
+        $set: { ocultoEnAdmin: true },
+      },
+      {
+        // CORRECCIÓN: opción actual de Mongoose.
+        returnDocument: 'after',
+        runValidators: true,
+      },
+    );
+
+    if (!actividad) {
+      const existente = await Actividad.exists({ _id: id });
+
+      if (!existente) {
+        return res.status(404).json({
+          mensaje: 'Actividad no encontrada',
+        });
+      }
+
+      // La actividad ya estaba oculta del panel administrativo.
+      return res.status(200).json({
+        mensaje: 'La actividad ya estaba oculta del panel administrativo',
+        id,
+      });
+    }
+
+    // Ocultación realizada correctamente.
+    return res.status(200).json({
+      mensaje: 'Actividad ocultada del panel administrativo correctamente',
+      id: actividad._id,
+    });
+  } catch (error) {
+    console.error('Error al ocultar actividad del panel:', error);
+
+    return res.status(500).json({
+      mensaje: 'Error al ocultar actividad del panel administrativo',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   obtenerActividadesPendientes,
   obtenerActividad,
   aprobarActividad,
   rechazarActividad,
+  eliminarActividad,
 };

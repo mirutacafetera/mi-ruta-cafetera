@@ -1,3 +1,4 @@
+
 const Notificacion = require('../../models/usuario/notificacion');
 
 const ID_VALIDO = /^[a-f\d]{24}$/i;
@@ -53,7 +54,7 @@ const marcarLeida = async (req, res) => {
         leida: true
       },
       {
-        new: true
+        returnDocument: 'after'
       }
     );
 
@@ -76,7 +77,6 @@ const marcarLeida = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   obtenerNotificaciones,

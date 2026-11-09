@@ -1,3 +1,4 @@
+
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
@@ -7,7 +8,7 @@ const { enviarCodigoRecuperacion } = require('../../utils/mailer');
 // =====================================================
 // RECUPERACIÓN DE CONTRASEÑA DEL USUARIO (VISITANTE)
 // =====================================================
-//
+
 // Flujo (el contrato de las 3 rutas no cambia):
 //
 //   1. POST /usuarios/recuperar-password

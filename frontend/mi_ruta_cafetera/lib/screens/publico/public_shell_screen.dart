@@ -74,7 +74,9 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
   void initState() {
     super.initState();
 
-    _indiceActual = widget.initialIndex.clamp(0, _totalSecciones - 1);
+    _indiceActual = widget.initialIndex
+    .clamp(0, _totalSecciones - 1)
+    .toInt();
 
     _mapaCreado = _indiceActual == _indiceMapa;
 
@@ -227,7 +229,10 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
 
     switch (indice) {
       case 0:
-        return HomePublicoScreen(key: llave);
+      return HomePublicoScreen(
+        key: llave,
+        onAbrirMapa: () => _cambiarSeccion(_indiceMapa),
+      );
 
       case 1:
         return _mapaCreado ? const MapaScreen2() : const SizedBox.shrink();

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../models/contenido_model.dart';
@@ -308,8 +307,10 @@ class _DetalleSitioUsuarioScreenState
         SizedBox(
           height: AppDimensions.detalleActionHeight,
           child: FilledButton.icon(
-            onPressed: () =>
-                DetalleSitioAcciones.agregarRuta(context),
+            onPressed: () => DetalleSitioAcciones.agregarRuta(
+              context,
+              widget.sitio,
+            ),
             icon: const Icon(Icons.route_rounded),
             label: const Tr('Agregar a mi ruta'),
             style: FilledButton.styleFrom(
@@ -390,11 +391,17 @@ class _DetalleSitioUsuarioScreenState
           orElse: () => '',
         );
 
-    final imagenPrincipal = imagenContenido.isNotEmpty
-        ? imagenContenido
-        : widget.imagen;
+    final imagenSitio = widget.sitio.imagen.trim();
+
+    final imagenPrincipal = imagenSitio.isNotEmpty
+      ? imagenSitio
+      : (widget.imagen?.trim().isNotEmpty == true
+        ? widget.imagen!.trim()
+        : imagenContenido);
 
     final imagenes = <String>{
+      if (widget.sitio.imagen.trim().isNotEmpty)
+        widget.sitio.imagen.trim(),
       if (widget.imagen?.trim().isNotEmpty == true)
         widget.imagen!.trim(),
       ..._contenidos
@@ -417,33 +424,37 @@ class _DetalleSitioUsuarioScreenState
       backgroundColor: AppColors.sitioBackground,
       appBar: AppBar(
         leading: const BotonRegresar(),
-        title: const Tr('Detalle del sitio'),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            onPressed: _procesandoFavorito ? null : _cambiarFavorito,
-            tooltip: _esFavorito
-                ? Textos.t('Quitar de favoritos')
-                : Textos.t('Agregar a favoritos'),
-            icon: _procesandoFavorito
-                ? const SizedBox(
-                    width: AppDimensions.iconMd,
-                    height: AppDimensions.iconMd,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
+        title: Row(
+          children: [
+            const Expanded(
+              child: Tr('Detalle del sitio'),
+            ),
+            IconButton(
+              onPressed: _procesandoFavorito ? null : _cambiarFavorito,
+              tooltip: _esFavorito
+                  ? Textos.t('Quitar de favoritos')
+                  : Textos.t('Agregar a favoritos'),
+              icon: _procesandoFavorito
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Icon(
+                      _esFavorito
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      color: _esFavorito
+                          ? AppColors.sitioError
+                          : AppColors.sitioPrimary,
                     ),
-                  )
-                : Icon(
-                    _esFavorito
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    color: _esFavorito
-                        ? AppColors.sitioError
-                        : AppColors.sitioPrimary,
-                  ),
-          ),
-          const SizedBox(width: AppDimensions.spacingSm),
-        ],
+            ),
+          ],
+        ),
+        centerTitle: false,
+        actions: const [],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -621,4 +632,3 @@ class _DetalleSitioUsuarioScreenState
     super.dispose();
   }
 }
-

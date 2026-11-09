@@ -15,6 +15,7 @@ class SitioTuristicoModel {
   final double longitud;
   final List<String> etiquetas;
   final bool activo;
+  final String imagen;
 
   const SitioTuristicoModel({
     required this.id,
@@ -28,6 +29,7 @@ class SitioTuristicoModel {
     required this.longitud,
     required this.etiquetas,
     required this.activo,
+    this.imagen = '',
   });
 
   // ============================================================
@@ -41,7 +43,7 @@ class SitioTuristicoModel {
     );
   }
 
-    // ============================================================
+  // ============================================================
   // VALIDAR COORDENADAS
   // ============================================================
 
@@ -159,6 +161,10 @@ class SitioTuristicoModel {
       activo: _bool(
         json['activo'] ?? json['estado'],
         fallback: true,
+      ),
+
+      imagen: _stringValue(
+        json['imagen'],
       ),
     );
   }

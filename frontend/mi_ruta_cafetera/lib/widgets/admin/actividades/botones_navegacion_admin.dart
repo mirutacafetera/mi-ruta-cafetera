@@ -22,7 +22,7 @@ class BotonNavegacionAdmin extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: const BoxDecoration(
-        color: AppColors.orangeSoft,
+        color: AppColors.creamLight,
         shape: BoxShape.circle,
       ),
       child: IconButton(

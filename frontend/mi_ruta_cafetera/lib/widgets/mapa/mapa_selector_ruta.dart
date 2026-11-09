@@ -110,12 +110,14 @@ class MapaSelectorRuta extends StatelessWidget {
                           'Selecciona mínimo 2 sitios para calcular la ruta.',
                         ))
                   : cantidad == 1
-                      ? Textos.t('Selecciona al menos un sitio más.')
-                      : Textos.t('{0} sitios seleccionados.', [cantidad]),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-              ),
-            ),
+                  ? Textos.t(
+                    'Puedes calcular la ruta desde tu ubicación hasta este sitio.',
+                 )
+                   : Textos.t('{0} sitios seleccionados.', [cantidad]),
+                   style: const TextStyle(
+                   color: AppColors.textSecondary,
+                   ),
+                   ),
 
             if (sitiosSeleccionados.isNotEmpty) ...[
               const SizedBox(
@@ -211,9 +213,9 @@ class MapaSelectorRuta extends StatelessWidget {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(
-                    onPressed: cantidad >= 2
-                        ? onCalcular
-                        : null,
+                    onPressed: cantidad >= 1
+                    ? onCalcular
+                    : null,
                     icon: const Icon(Icons.route),
                     label: const Tr(
                       'Calcular ruta',

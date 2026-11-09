@@ -7,7 +7,7 @@ class MapaEstadoRuta extends ChangeNotifier {
   // CONFIGURACIÓN DE LA RUTA
   // =====================================================
 
-  static const int minSitios = 2;
+  static const int minSitios = 1;
   static const int maxSitios = 4;
 
   // Las rutas predefinidas de la API pueden tener hasta 9 paradas

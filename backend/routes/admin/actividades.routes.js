@@ -12,9 +12,10 @@ const {
   obtenerActividad,
   aprobarActividad,
   rechazarActividad,
+  eliminarActividad,
 } = require('../../controllers/admin/actividades.controller');
 
-// Obtener actividades pendientes
+// Obtener actividades por estado
 router.get(
   '/pendientes',
   verificarToken,
@@ -44,6 +45,14 @@ router.put(
   verificarToken,
   verificarAdministrador,
   rechazarActividad
+);
+
+// Eliminar actividad
+router.delete(
+  '/:id',
+  verificarToken,
+  verificarAdministrador,
+  eliminarActividad
 );
 
 module.exports = router;

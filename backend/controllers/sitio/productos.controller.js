@@ -15,6 +15,10 @@ const CATEGORIAS_PRODUCTO = [
   'Otros'
 ];
 
+// ======================================================
+// OBTENER PRODUCTOS PÚBLICOS DE UN SITIO
+// ======================================================
+
 const obtenerProductos = async (req, res) => {
   try {
     const { id } = req.params;
@@ -57,6 +61,10 @@ const obtenerProductos = async (req, res) => {
   }
 };
 
+// ======================================================
+// OBTENER PRODUCTOS DEL PROPIETARIO
+// ======================================================
+
 const obtenerProductosPropietario = async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,6 +81,7 @@ const obtenerProductosPropietario = async (req, res) => {
       });
     }
 
+    // Incluye los productos ocultos del panel administrativo.
     const productos = await Producto.find({
       sitio: id
     }).sort({
@@ -94,9 +103,14 @@ const obtenerProductosPropietario = async (req, res) => {
   }
 };
 
+// ======================================================
+// CREAR PRODUCTO
+// ======================================================
+
 const crearProducto = async (req, res) => {
   try {
     const { id } = req.params;
+
     const {
       nombre,
       descripcion,
@@ -122,7 +136,8 @@ const crearProducto = async (req, res) => {
       nombre.trim().length > 120
     ) {
       return res.status(400).json({
-        mensaje: 'El nombre es obligatorio y no puede superar 120 caracteres'
+        mensaje:
+          'El nombre es obligatorio y no puede superar 120 caracteres'
       });
     }
 
@@ -148,7 +163,8 @@ const crearProducto = async (req, res) => {
       precioNumerico < 0
     ) {
       return res.status(400).json({
-        mensaje: 'Debes indicar un precio válido igual o superior a cero'
+        mensaje:
+          'Debes indicar un precio válido igual o superior a cero'
       });
     }
 
@@ -176,7 +192,8 @@ const crearProducto = async (req, res) => {
       precio: precioNumerico,
       categoria,
       activo: true,
-      estadoPublicacion: 'borrador'
+      estadoPublicacion: 'borrador',
+      ocultoEnAdmin: false
     });
 
     return res.status(201).json({
@@ -191,6 +208,10 @@ const crearProducto = async (req, res) => {
     });
   }
 };
+
+// ======================================================
+// ACTUALIZAR PRODUCTO
+// ======================================================
 
 const actualizarProducto = async (req, res) => {
   try {
@@ -211,6 +232,7 @@ const actualizarProducto = async (req, res) => {
       });
     }
 
+    // No se excluyen los productos ocultos del panel.
     const producto = await Producto.findOne({
       _id: productoId,
       sitio: id
@@ -236,7 +258,8 @@ const actualizarProducto = async (req, res) => {
         nombre.trim().length > 120
       ) {
         return res.status(400).json({
-          mensaje: 'El nombre es obligatorio y no puede superar 120 caracteres'
+          mensaje:
+            'El nombre es obligatorio y no puede superar 120 caracteres'
         });
       }
 
@@ -266,7 +289,8 @@ const actualizarProducto = async (req, res) => {
         precioNumerico < 0
       ) {
         return res.status(400).json({
-          mensaje: 'Debes indicar un precio válido igual o superior a cero'
+          mensaje:
+            'Debes indicar un precio válido igual o superior a cero'
         });
       }
 
@@ -291,7 +315,8 @@ const actualizarProducto = async (req, res) => {
     await producto.save();
 
     return res.status(200).json({
-      mensaje: 'Producto actualizado. Debes enviarlo nuevamente a revisión.',
+      mensaje:
+        'Producto actualizado. Debes enviarlo nuevamente a revisión.',
       producto
     });
   } catch (error) {
@@ -302,6 +327,10 @@ const actualizarProducto = async (req, res) => {
     });
   }
 };
+
+// ======================================================
+// ENVIAR PRODUCTO A REVISIÓN CON IA
+// ======================================================
 
 const enviarProductoRevision = async (req, res) => {
   try {
@@ -339,13 +368,15 @@ const enviarProductoRevision = async (req, res) => {
       producto.precio < 0
     ) {
       return res.status(400).json({
-        mensaje: 'Completa la información obligatoria antes de enviarlo a revisión'
+        mensaje:
+          'Completa la información obligatoria antes de enviarlo a revisión'
       });
     }
 
     if (!producto.imagenPrincipal) {
       return res.status(400).json({
-        mensaje: 'Debes subir al menos una fotografía antes de enviarlo a revisión'
+        mensaje:
+          'Debes subir al menos una fotografía antes de enviarlo a revisión'
       });
     }
 
@@ -366,18 +397,25 @@ const enviarProductoRevision = async (req, res) => {
     producto.revisadoPor = null;
     producto.revisadoAt = null;
 
+    // Si estaba oculto del panel administrativo,
+    // vuelve a mostrarse al enviarlo a revisión.
+    producto.ocultoEnAdmin = false;
+
     await producto.save();
 
-    // NUEVO: enviar el producto a la moderación automática por IA.
+    // Enviar el producto a la moderación automática por IA.
     const resultadoIA = await procesarSolicitudAutomatica(
       'producto',
       producto._id
     );
 
-    // NUEVO: consultar el producto con el estado actualizado por la IA.
-    const productoActualizado = await Producto.findById(producto._id);
+    // Consultar el producto con el estado actualizado por la IA.
+    const productoActualizado = await Producto.findById(
+      producto._id
+    );
 
-    let mensaje = 'El producto continúa pendiente de revisión manual.';
+    let mensaje =
+      'El producto continúa pendiente de revisión manual.';
 
     if (resultadoIA.decision === 'aprobado') {
       mensaje = 'La IA aprobó el producto.';
@@ -402,6 +440,10 @@ const enviarProductoRevision = async (req, res) => {
   }
 };
 
+// ======================================================
+// ELIMINAR PRODUCTO DESDE EL SITIO PROPIETARIO
+// ======================================================
+
 const eliminarProducto = async (req, res) => {
   try {
     const { id, productoId } = req.params;
@@ -421,6 +463,7 @@ const eliminarProducto = async (req, res) => {
       });
     }
 
+    // Se conserva la eliminación definitiva del propietario.
     const producto = await Producto.findOneAndDelete({
       _id: productoId,
       sitio: id
@@ -444,6 +487,10 @@ const eliminarProducto = async (req, res) => {
   }
 };
 
+// ======================================================
+// SUBIR IMÁGENES DEL PRODUCTO
+// ======================================================
+
 const subirImagenesProducto = async (req, res) => {
   try {
     const producto = await Producto.findOne({
@@ -453,7 +500,8 @@ const subirImagenesProducto = async (req, res) => {
 
     if (!producto) {
       return res.status(404).json({
-        mensaje: 'Producto no encontrado o no pertenece a este sitio'
+        mensaje:
+          'Producto no encontrado o no pertenece a este sitio'
       });
     }
 
@@ -511,13 +559,20 @@ const subirImagenesProducto = async (req, res) => {
       producto
     });
   } catch (error) {
-    console.error('Error al subir imágenes del producto:', error);
+    console.error(
+      'Error al subir imágenes del producto:',
+      error
+    );
 
     return res.status(500).json({
       mensaje: 'No se pudieron subir las imágenes del producto'
     });
   }
 };
+
+// ======================================================
+// ELIMINAR IMAGEN DEL PRODUCTO
+// ======================================================
 
 const eliminarImagenProducto = async (req, res) => {
   try {
@@ -528,7 +583,8 @@ const eliminarImagenProducto = async (req, res) => {
 
     if (!producto) {
       return res.status(404).json({
-        mensaje: 'Producto no encontrado o no pertenece a este sitio'
+        mensaje:
+          'Producto no encontrado o no pertenece a este sitio'
       });
     }
 
@@ -542,7 +598,8 @@ const eliminarImagenProducto = async (req, res) => {
 
     if (producto.imagenPrincipal === url) {
       return res.status(400).json({
-        mensaje: 'Selecciona otra imagen principal antes de eliminar esta'
+        mensaje:
+          'Selecciona otra imagen principal antes de eliminar esta'
       });
     }
 
@@ -575,13 +632,20 @@ const eliminarImagenProducto = async (req, res) => {
       producto
     });
   } catch (error) {
-    console.error('Error al eliminar imagen del producto:', error);
+    console.error(
+      'Error al eliminar imagen del producto:',
+      error
+    );
 
     return res.status(500).json({
       mensaje: 'No se pudo eliminar la imagen del producto'
     });
   }
 };
+
+// ======================================================
+// ESTABLECER IMAGEN PRINCIPAL
+// ======================================================
 
 const establecerImagenPrincipalProducto = async (req, res) => {
   try {
@@ -592,7 +656,8 @@ const establecerImagenPrincipalProducto = async (req, res) => {
 
     if (!producto) {
       return res.status(404).json({
-        mensaje: 'Producto no encontrado o no pertenece a este sitio'
+        mensaje:
+          'Producto no encontrado o no pertenece a este sitio'
       });
     }
 
@@ -641,13 +706,20 @@ const establecerImagenPrincipalProducto = async (req, res) => {
       producto
     });
   } catch (error) {
-    console.error('Error al establecer imagen principal:', error);
+    console.error(
+      'Error al establecer imagen principal:',
+      error
+    );
 
     return res.status(500).json({
       mensaje: 'No se pudo establecer la imagen principal'
     });
   }
 };
+
+// ======================================================
+// EXPORTACIONES
+// ======================================================
 
 module.exports = {
   obtenerProductos,

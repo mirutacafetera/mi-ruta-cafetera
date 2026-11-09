@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../models/admin/admin_actividad_model.dart';
@@ -16,6 +15,7 @@ class DetalleActividadAdmin extends StatelessWidget {
   final VoidCallback onAprobar;
   final ValueChanged<String> onRechazar;
   final VoidCallback? onActualizar;
+  final VoidCallback? onEliminar;
   final bool procesando;
   final Function(List<String>, int)? onMostrarGaleria;
 
@@ -26,6 +26,7 @@ class DetalleActividadAdmin extends StatelessWidget {
     required this.onAprobar,
     required this.onRechazar,
     this.onActualizar,
+    this.onEliminar,
     this.procesando = false,
     this.onMostrarGaleria,
   });
@@ -68,7 +69,7 @@ class DetalleActividadAdmin extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 1. TARJETA PRINCIPAL CON ESTADO AL LADO DEL NOMBRE
+                        // 1. TARJETA PRINCIPAL
                         TarjetaPrincipalActividad(
                           titulo: actividad.nombre.trim().isEmpty
                               ? 'Actividad sin nombre'
@@ -94,7 +95,6 @@ class DetalleActividadAdmin extends StatelessWidget {
                                   icono: Icons.explore_outlined,
                                 ),
                                 const SizedBox(height: 22),
-
                                 LayoutBuilder(
                                   builder: (context, constraints) {
                                     final ancho =
@@ -203,7 +203,7 @@ class DetalleActividadAdmin extends StatelessWidget {
 
                         const SizedBox(height: 16),
 
-                        // 3. GALERÍA REUTILIZABLE
+                        // 3. GALERÍA
                         GaleriaDetalleActividad(
                           imagenes: imagenes,
                           onMostrarGaleria: onMostrarGaleria,
@@ -280,6 +280,120 @@ class DetalleActividadAdmin extends StatelessWidget {
                             ],
                           ),
                         ],
+
+                        // 5. ELIMINAR: ESQUINA INFERIOR DERECHA
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: OutlinedButton.icon(
+                            onPressed:
+                                (procesando || onEliminar == null)
+                                    ? null
+                                    : () async {
+                                        final confirmar =
+                                            await showDialog<bool>(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (contexto) =>
+                                              AlertDialog(
+                                            backgroundColor: AppColors.white,
+                                            surfaceTintColor:
+                                                Colors.transparent,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                            ),
+                                            title: const Text(
+                                              'Eliminar actividad',
+                                              style: TextStyle(
+                                                color:
+                                                    AppColors.textPrimary,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            content: Text(
+                                             '¿Deseas eliminar la actividad "${actividad.nombre}"? '
+                                             'Esta acción no se puede deshacer.',
+                                             style: const TextStyle(
+                                             color: AppColors.textSecondary,
+                                             fontSize: 14,
+                                             height: 1.4,
+                                            ),
+                                          ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.of(contexto)
+                                                        .pop(false),
+                                                child: const Text(
+                                                  'Cancelar',
+                                                  style: TextStyle(
+                                                    color: AppColors.textPrimary,
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                              FilledButton.icon(
+                                                onPressed: () =>
+                                                    Navigator.of(contexto)
+                                                        .pop(true),
+                                                icon: const Icon(
+                                                  Icons
+                                                      .delete_outline_rounded,
+                                                  size: 18,
+                                                ),
+                                                label: const Text('Eliminar'),
+                                                style: FilledButton.styleFrom(
+                                                  backgroundColor:
+                                                      AppColors.primary,
+                                                  foregroundColor:
+                                                      AppColors.white,
+                                                  shape:
+                                                      RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+
+                                        if (confirmar == true) {
+                                          onEliminar!.call();
+                                        }
+                                      },
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 19,
+                            ),
+                            label: const Text('Eliminar'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.error,
+                              iconColor: AppColors.error,
+                              backgroundColor: AppColors.creamLight,
+                              side: const BorderSide(
+                                color: AppColors.adminBorder,
+                                width: 1.2,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              minimumSize: const Size(0, 20),
+                              textStyle: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -289,7 +403,7 @@ class DetalleActividadAdmin extends StatelessWidget {
     );
   }
 
-  // ENCABEZADO ORIGINAL CONSERVADO
+  // ENCABEZADO CONSERVADO
   Widget _encabezado() => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -305,7 +419,7 @@ class DetalleActividadAdmin extends StatelessWidget {
               vertical: AppDimensions.spacingSm,
             ),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.creamLight,
               border: Border(
                 bottom: BorderSide(
                   color: _cafe.withValues(alpha: .65),

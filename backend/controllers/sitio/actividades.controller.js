@@ -1,4 +1,6 @@
+
 const Actividad = require('../../models/sitio/actividad');
+
 const cloudinary = require('../../config/cloudinary');
 
 const {
@@ -442,9 +444,13 @@ const enviarActividadRevision = async (req, res) => {
     actividad.revisadoPor = null;
     actividad.revisadoAt = null;
 
+    // ÚNICO CAMBIO: volver a mostrarla en el panel administrativo
+    // cuando el propietario la envía nuevamente a revisión.
+    actividad.ocultoEnAdmin = false;
+
     await actividad.save();
 
-    // NUEVO: revisar automáticamente la actividad con la IA.
+    // Revisar automáticamente la actividad con la IA.
     const resultadoIA = await procesarSolicitudAutomatica(
       'actividad',
       actividad._id,

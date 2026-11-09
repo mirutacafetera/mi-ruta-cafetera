@@ -27,6 +27,20 @@ const resenaSchema = new mongoose.Schema(
       trim: true
     },
 
+
+    imagenes: {
+      type: [{
+        type: String,
+        trim: true
+      }],
+      default: [],
+      validate: {
+        validator: (imagenes) => imagenes.length <= 10,
+        message: 'Una reseña puede tener máximo 10 imágenes.'
+      }
+    },
+
+
     activo: {
       type: Boolean,
       default: true

@@ -6,7 +6,6 @@ import '../../../theme/app_dimensions.dart';
 import '../actividades/dialogo_rechazo_actividad.dart';
 import '../chatbot/evaluacion_ia.dart';
 import '../chatbot/revision_administrador.dart';
-import 'detalle_producto_admin.dart';
 import 'estado_producto.dart';
 
 class TarjetaProducto extends StatelessWidget {
@@ -14,12 +13,10 @@ class TarjetaProducto extends StatelessWidget {
   final bool procesando;
   final VoidCallback onAprobar;
   final VoidCallback onRechazar;
+  final VoidCallback onEliminar;
   final ValueChanged<String>? onConfirmarRechazo;
   final VoidCallback? onVerDetalle;
   final Future<void> Function()? onActualizar;
-
-  // Menú lateral existente del administrador.
-  final Widget menuLateral;
 
   const TarjetaProducto({
     super.key,
@@ -27,10 +24,10 @@ class TarjetaProducto extends StatelessWidget {
     required this.procesando,
     required this.onAprobar,
     required this.onRechazar,
+    required this.onEliminar,
     this.onConfirmarRechazo,
     this.onVerDetalle,
     this.onActualizar,
-    required this.menuLateral,
   });
 
   static const Color _terracota = Color(0xFFB85C50);
@@ -75,7 +72,7 @@ class TarjetaProducto extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 InkWell(
-                  onTap: onVerDetalle ?? () => _abrirDetalle(context),
+                  onTap: onVerDetalle,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
@@ -201,24 +198,6 @@ class TarjetaProducto extends StatelessWidget {
     );
   }
 
-  // ABRIR DETALLE DEL PRODUCTO.
-  void _abrirDetalle(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => DetalleProductoAdmin(
-          producto: producto,
-          procesando: procesando,
-          onAprobar: onAprobar,
-          onRechazar: onRechazar,
-          onConfirmarRechazo: onConfirmarRechazo,
-          onActualizar: onActualizar,
-          menuLateral: menuLateral,
-        ),
-      ),
-    );
-  }
-
   // EVALUACIÓN DE IA Y REVISIÓN DEL ADMINISTRADOR.
   Widget _evaluacion() {
     if (producto.tieneRevisionManual) {
@@ -331,20 +310,61 @@ class TarjetaProducto extends StatelessWidget {
     );
   }
 
-  // IMÁGENES.
+  // IMAGEN CON BOTÓN DE ELIMINAR.
   Widget _imagen(String url, double ancho, double alto) {
     return SizedBox(
       width: ancho,
       height: alto,
-      child: url.trim().isEmpty
-          ? _imagenVacia()
-          : Image.network(
-              url,
-              width: ancho,
-              height: alto,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _imagenVacia(),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          url.trim().isEmpty
+              ? _imagenVacia()
+              : Image.network(
+                  url,
+                  width: ancho,
+                  height: alto,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => _imagenVacia(),
+                ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: Material(
+              color: AppColors.creamLight,
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(
+                  color: AppColors.adminBorder,
+                  width: 1.2,
+                ),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: SizedBox(
+                width: 36,
+                height: 36,
+                child: IconButton(
+                  tooltip: 'Eliminar producto',
+                  onPressed: procesando ? null : onEliminar,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 36,
+                    height: 36,
+                  ),
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    color: procesando
+                        ? AppColors.textSecondary
+                        : _terracota,
+                    size: 18,
+                  ),
+                ),
+              ),
             ),
+          ),
+        ],
+      ),
     );
   }
 

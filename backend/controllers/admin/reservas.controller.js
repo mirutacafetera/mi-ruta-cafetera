@@ -83,7 +83,7 @@ const actualizarEstadoReserva = async (req, res) => {
     const reserva = await Reserva.findByIdAndUpdate(
       req.params.id,
       { estado },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     )
       .populate('usuario', 'nombre apellido correo')
       .populate('sitio', 'nombre')

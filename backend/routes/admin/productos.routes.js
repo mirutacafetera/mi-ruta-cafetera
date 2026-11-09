@@ -13,7 +13,8 @@ const {
   obtenerProductosPorEstado,
   obtenerProducto,
   aprobarProducto,
-  rechazarProducto
+  rechazarProducto,
+  eliminarProducto
 } = require('../../controllers/admin/productos.controller');
 
 router.get(
@@ -49,6 +50,13 @@ router.put(
   verificarToken,
   verificarAdministrador,
   rechazarProducto
+);
+
+router.delete(
+  '/:id',
+  verificarToken,
+  verificarAdministrador,
+  eliminarProducto
 );
 
 module.exports = router;

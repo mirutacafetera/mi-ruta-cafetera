@@ -143,8 +143,6 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
     controlador.cambiarOpcion(opcionNormalizada);
   }
 
- 
-
   void _abrirMapa() {
     Navigator.push(
       context,
@@ -201,15 +199,7 @@ class _PantallaAdministradorState extends State<PantallaAdministrador> {
         return const PantallaActividades();
 
       case 'productos':
-        return PantallaProducto(
-          menuLateral: AdminMenuLateral(
-            nombre: widget.nombre,
-            email: widget.email,
-            fotoPerfilControlador: fotoPerfilControlador,
-            onOpcionSeleccionada: _manejarOpcion,
-            opcionSeleccionada: controlador.opcion,
-          ),
-        );
+        return const PantallaProducto();
 
       case 'contenido':
         return const PantallaContenido();

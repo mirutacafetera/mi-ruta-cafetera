@@ -16,7 +16,7 @@
     {
       "label": "Iniciar Frontend Flutter",
       "type": "shell",
-      "command": "flutter run -d chrome --web-port 52774",
+      "command": "flutter run",
       "options": {
         "cwd": "${workspaceFolder}/frontend/mi_ruta_cafetera"
       },

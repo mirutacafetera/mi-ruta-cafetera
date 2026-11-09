@@ -44,13 +44,13 @@ class MapaCapas extends StatelessWidget {
 
         // La cámara no puede salir del área turística.
         cameraConstraint: MapaCorredor.restringirCamara
-            ? CameraConstraint.contain(
-                bounds: LatLngBounds(
-                  MapaCorredor.limiteSuroeste,
-                  MapaCorredor.limiteNoreste,
-                ),
-              )
-            : const CameraConstraint.unconstrained(),
+          ? CameraConstraint.containCenter(
+          bounds: LatLngBounds(
+            MapaCorredor.limiteSuroeste,
+            MapaCorredor.limiteNoreste,
+          ),
+        )
+        : const CameraConstraint.unconstrained(),
 
         interactionOptions: const InteractionOptions(
           flags: InteractiveFlag.all,
