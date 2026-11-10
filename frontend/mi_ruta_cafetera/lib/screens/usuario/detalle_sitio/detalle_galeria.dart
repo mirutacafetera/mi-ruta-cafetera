@@ -57,10 +57,13 @@ class DetalleGaleria extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (mostrarEncabezado) ...[
+            _construirSeparadorGaleria(),
+            const SizedBox(height: AppDimensions.spacingLg),
             EncabezadoSeccionDetalle(
               icono: Icons.photo_library_rounded,
-              titulo: Textos.t('Galería de imágenes'),
-              descripcion: Textos.t('Conoce cada rincón de este lugar.'),
+              titulo: Textos.t('Galería del sitio'),
+              descripcion:
+                  Textos.t('Explora en imágenes los espacios y rincones de este destino.'),
               padding: EdgeInsets.zero,
             ),
             const SizedBox(height: AppDimensions.spacingLg),
@@ -106,11 +109,53 @@ class DetalleGaleria extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.grid_view_rounded),
-              label: Tr('Ver toda la galería ({0})', args: [fotos.length]),
+              label: Tr(
+                'Ver toda la galería ({0})',
+                args: [fotos.length],
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _construirSeparadorGaleria() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 1,
+            color: AppColors.adminBorder.withValues(alpha: 0.45),
+          ),
+        ),
+        Container(
+          width: 48,
+          height: 48,
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+          ),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.sitioSurfaceSoft,
+            border: Border.all(
+              color: AppColors.adminBorder.withValues(alpha: 0.60),
+              width: 0.5,
+            ),
+          ),
+          child: const Icon(
+            Icons.photo_library_rounded,
+            color: AppColors.sitioAccent,
+            size: 22,
+          ),
+        ),
+        Expanded(
+          child: Container(
+            height: 1,
+            color: AppColors.adminBorder.withValues(alpha: 0.45),
+          ),
+        ),
+      ],
     );
   }
 
@@ -119,43 +164,57 @@ class DetalleGaleria extends StatelessWidget {
     List<String> fotos,
     int index,
   ) {
-    return Material(
-      color: AppColors.sitioSurfaceGreen,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _mostrarImagen(context, fotos, index),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.network(
-              fotos[index],
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const Center(
-                child: Icon(
-                  Icons.broken_image_outlined,
-                  color: AppColors.sitioPrimary,
-                  size: 34,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusLg,
+        ),
+        border: Border.all(
+          color: AppColors.adminBorder.withValues(alpha: 0.60),
+          width: 0.5,
+        ),
+      ),
+      padding: const EdgeInsets.all(1),
+      child: Material(
+        color: AppColors.sitioSurfaceGreen,
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusLg,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _mostrarImagen(context, fotos, index),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.network(
+                fotos[index],
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const Center(
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: AppColors.sitioPrimary,
+                    size: 34,
+                  ),
                 ),
               ),
-            ),
-            Positioned(
-              right: AppDimensions.spacingSm,
-              bottom: AppDimensions.spacingSm,
-              child: Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: AppColors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                child: const Icon(
-                  Icons.zoom_in_rounded,
-                  color: AppColors.white,
-                  size: AppDimensions.iconSm,
+              Positioned(
+                right: AppDimensions.spacingSm,
+                bottom: AppDimensions.spacingSm,
+                child: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: AppColors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: const Icon(
+                    Icons.zoom_in_rounded,
+                    color: AppColors.white,
+                    size: AppDimensions.iconSm,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -167,7 +226,9 @@ class DetalleGaleria extends StatelessWidget {
   ) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _GaleriaCompletaScreen(imagenes: fotos),
+        builder: (_) => _GaleriaCompletaScreen(
+          imagenes: fotos,
+        ),
       ),
     );
   }
@@ -205,7 +266,8 @@ class _GaleriaCompletaScreen extends StatefulWidget {
       _GaleriaCompletaScreenState();
 }
 
-class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
+class _GaleriaCompletaScreenState
+    extends State<_GaleriaCompletaScreen> {
   late final PageController _pageController;
   late int _indiceActual;
 
@@ -232,7 +294,11 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
         backgroundColor: AppColors.sitioPrimary,
         foregroundColor: AppColors.white,
         title: Tr(
-          'Galería · {0} de {1}', args: [_indiceActual + 1, widget.imagenes.length],
+          'Galería · {0} de {1}',
+          args: [
+            _indiceActual + 1,
+            widget.imagenes.length,
+          ],
         ),
       ),
       body: widget.modoCarrusel
@@ -243,8 +309,11 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
 
   Widget _cuadricula() {
     return GridView.builder(
-      padding: const EdgeInsets.all(AppDimensions.sitioContentPadding),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+      padding: const EdgeInsets.all(
+        AppDimensions.sitioContentPadding,
+      ),
+      gridDelegate:
+          const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 260,
         crossAxisSpacing: AppDimensions.spacingMd,
         mainAxisSpacing: AppDimensions.spacingMd,
@@ -254,13 +323,16 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
       itemBuilder: (context, index) {
         return Material(
           color: AppColors.sitioSurface,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+          borderRadius: BorderRadius.circular(
+            AppDimensions.radiusLg,
+          ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () {
               setState(() {
                 _indiceActual = index;
               });
+
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => _GaleriaCompletaScreen(
@@ -320,7 +392,9 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          padding: const EdgeInsets.all(
+            AppDimensions.spacingLg,
+          ),
           child: const Tr(
             'Desliza para ver las demás fotografías',
             style: TextStyle(
@@ -333,4 +407,3 @@ class _GaleriaCompletaScreenState extends State<_GaleriaCompletaScreen> {
     );
   }
 }
-

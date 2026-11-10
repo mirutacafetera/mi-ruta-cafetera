@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../models/sitio/sitio_actividad_model.dart';
@@ -10,9 +11,6 @@ class DetalleActividades extends StatelessWidget {
   final List<SitioActividadModel> actividades;
   final bool cargando;
   final ValueChanged<SitioActividadModel> onSeleccionar;
-
-  /// Cuando la pantalla que lo contiene ya dibuja el encabezado
-  /// de la sección, se envía `false` para no repetirlo.
   final bool mostrarEncabezado;
 
   const DetalleActividades({
@@ -23,29 +21,32 @@ class DetalleActividades extends StatelessWidget {
     this.mostrarEncabezado = true,
   });
 
-  static const double _anchoTarjeta = 230;
-  static const double _altoLista = 258;
+  static const double _anchoTarjeta = 175;
+  static const double _altoLista = 215;
 
   @override
   Widget build(BuildContext context) {
     final visibles = actividades.where((a) => a.activo).toList();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.spacingLg,
+      padding: const EdgeInsets.only(
+        top: 0,
+        bottom: 0,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (mostrarEncabezado) ...[
+            const _SeparadorExperiencias(),
+            const SizedBox(height: AppDimensions.spacingLg),
             EncabezadoSeccionDetalle(
-              icono: Icons.coffee_rounded,
-              titulo: Textos.t('Actividades para disfrutar'),
+              icono: Icons.explore_rounded,
+              titulo: Textos.t('Experiencias para disfrutar'),
               descripcion: Textos.t(
-                'Explora las experiencias de este lugar.',
+                'Conoce las actividades que puedes vivir durante tu visita.',
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.spacingMd),
           ],
           if (cargando)
             const Padding(
@@ -79,13 +80,15 @@ class DetalleActividades extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 itemCount: visibles.length,
                 separatorBuilder: (_, _) => const SizedBox(
-                  width: AppDimensions.spacingMd + 2,
+                  width: AppDimensions.spacingMd,
                 ),
                 itemBuilder: (context, index) {
+                  final actividad = visibles[index];
+
                   return _TarjetaActividad(
-                    actividad: visibles[index],
+                    actividad: actividad,
                     ancho: _anchoTarjeta,
-                    onTap: () => onSeleccionar(visibles[index]),
+                    onTap: () => onSeleccionar(actividad),
                   );
                 },
               ),
@@ -95,6 +98,61 @@ class DetalleActividades extends StatelessWidget {
     );
   }
 }
+
+// =====================================================
+// SEPARADOR DE LA SECCIÓN
+// =====================================================
+
+class _SeparadorExperiencias extends StatelessWidget {
+  const _SeparadorExperiencias();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 1.3,
+              color: AppColors.sitioPrimary.withValues(alpha: 0.65),
+            ),
+          ),
+          Container(
+            width: 38,
+            height: 38,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: AppColors.sitioSurfaceGreen,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.sitioBorder,
+                width: 0.8,
+              ),
+            ),
+            child: const Icon(
+              Icons.hiking_rounded,
+              color: AppColors.sitioPrimary,
+              size: 21,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 1.3,
+              color: AppColors.sitioPrimary.withValues(alpha: 0.65),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =====================================================
+// TARJETA DE ACTIVIDAD
+// =====================================================
 
 class _TarjetaActividad extends StatelessWidget {
   const _TarjetaActividad({
@@ -113,126 +171,198 @@ class _TarjetaActividad extends StatelessWidget {
       actividad.imagenPrincipal,
       actividad.imagenes,
     );
+
     final imagen = actividad.imagenPrincipal.trim();
-    final descripcion = actividad.descripcion.trim();
+    final nombre = actividad.nombre.trim();
+    final duracion = actividad.duracion.trim();
+
+    final precio = actividad.precio > 0
+        ? 'Precio: ${formatearPrecioCop(actividad.precio)}'
+        : 'Precio: por consultar';
 
     return SizedBox(
       width: ancho,
       child: Container(
-        decoration: decoracionTarjetaDetalle(),
-        clipBehavior: Clip.antiAlias,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      if (imagen.isNotEmpty)
-                        Image.network(
-                          imagen,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const _FondoActividad(),
-                        )
-                      else
-                        const _FondoActividad(),
-                      if (imagenes.length > 1)
-                        Positioned(
-                          right: AppDimensions.spacingMd,
-                          top: AppDimensions.spacingMd,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.spacingSm + 1,
-                              vertical: AppDimensions.spacingSm - 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.black.withValues(alpha: 0.65),
-                              borderRadius: BorderRadius.circular(
-                                AppDimensions.chipRadius,
+        // MARCO EXTERIOR CAFÉ
+        decoration: decoracionTarjetaDetalle().copyWith(
+          border: Border.all(
+            color: AppColors.adminBorder.withValues(alpha: 0.60),
+            width: 0.5,
+          ),
+        ),
+
+        // ESPACIO PARA CONSERVAR VISIBLE EL BORDE
+        padding: const EdgeInsets.all(1),
+
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(
+            AppDimensions.cardRadius - 1,
+          ),
+          child: Material(
+            color: AppColors.sitioSurface,
+            child: InkWell(
+              onTap: onTap,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // IMAGEN
+                  SizedBox(
+                    height: 96,
+                    width: double.infinity,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (imagen.isNotEmpty)
+                          Image.network(
+                            imagen,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) =>
+                                const _FondoActividad(),
+                          )
+                        else
+                          const _FondoActividad(),
+
+                        if (imagenes.length > 1)
+                          Positioned(
+                            right: 8,
+                            bottom: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.black.withValues(
+                                  alpha: 0.65,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.photo_library_outlined,
+                                    color: AppColors.white,
+                                    size: 12,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${imagenes.length}',
+                                    style: const TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // INFORMACIÓN DE LA ACTIVIDAD
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        9,
+                        8,
+                        9,
+                        8,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            nombre.isNotEmpty
+                                ? nombre
+                                : Textos.t('Experiencia turística'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.sitioTextPrimary,
+                              fontSize: 12,
+                              height: 1.2,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+
+                          const SizedBox(height: 9),
+
+                          // VALOR Y BOTÓN
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.confirmation_number_outlined,
+                                color: AppColors.sitioPrimary,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  precio,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: AppColors.sitioPrimaryDark,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              Material(
+                                color: AppColors.sitioPrimary,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  onTap: onTap,
+                                  customBorder: const CircleBorder(),
+                                  child: const SizedBox(
+                                    width: 26,
+                                    height: 26,
+                                    child: Icon(
+                                      Icons.arrow_forward_rounded,
+                                      color: AppColors.sitioTextOnPrimary,
+                                      size: 15,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // DURACIÓN
+                          if (duracion.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Row(
                               children: [
                                 const Icon(
-                                  Icons.photo_library_outlined,
-                                  color: AppColors.white,
-                                  size: 14,
+                                  Icons.access_time_rounded,
+                                  color: AppColors.sitioAccent,
+                                  size: 13,
                                 ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  '${imagenes.length}',
-                                  style: const TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    'Duración: $duracion',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.sitioTextSecondary,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(
-                    AppDimensions.sitioContentPadding - 1,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        actividad.nombre,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.sitioTextPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        descripcion.isEmpty
-                            ? Textos.t('Descubre esta experiencia.')
-                            : descripcion,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.sitioTextSecondary,
-                          fontSize: 12,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.spacingSm),
-                      const Row(
-                        children: [
-                          Tr(
-                            'Ver experiencia',
-                            style: TextStyle(
-                              color: AppColors.sitioPrimary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          SizedBox(width: 5),
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 15,
-                            color: AppColors.sitioPrimary,
-                          ),
+                          ],
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -240,6 +370,10 @@ class _TarjetaActividad extends StatelessWidget {
     );
   }
 }
+
+// =====================================================
+// IMAGEN ALTERNATIVA
+// =====================================================
 
 class _FondoActividad extends StatelessWidget {
   const _FondoActividad();
@@ -251,7 +385,7 @@ class _FondoActividad extends StatelessWidget {
       alignment: Alignment.center,
       child: const Icon(
         Icons.local_cafe_rounded,
-        size: 44,
+        size: 40,
         color: AppColors.sitioPrimary,
       ),
     );

@@ -26,13 +26,25 @@ class DetallePortada extends StatelessWidget {
   Widget build(BuildContext context) {
     final imagen = (imagenPrincipal ?? '').trim();
 
+    final ubicacion = [
+      sitio.ciudad.trim(),
+      sitio.departamento.trim(),
+    ].where((texto) => texto.isNotEmpty).join(' · ');
+
+    final nombreCategoria = sitio.categoriaNombre.trim().isNotEmpty
+        ? sitio.categoriaNombre.trim()
+        : 'Sitio turístico';
+
+    // Reutiliza el mapa de iconos de AppColors.
+    final iconoCategoria =
+        AppColors.getIconForCategory(sitio.categoriaNombre);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // PORTADA PRINCIPAL
         Stack(
           children: [
-            // En pantallas anchas (web) la altura se limita para que la
-            // portada no ocupe toda la pantalla.
             LayoutBuilder(
               builder: (context, restricciones) {
                 final alto = (restricciones.maxWidth / (16 / 10))
@@ -54,7 +66,7 @@ class DetallePortada extends StatelessWidget {
               },
             ),
 
-            // Degradado para integrar la fotografía con el diseño.
+            // DEGRADADO DE LA PORTADA
             Positioned.fill(
               child: IgnorePointer(
                 child: DecoratedBox(
@@ -63,49 +75,59 @@ class DetallePortada extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        AppColors.black.withValues(alpha: 0.22),
+                        AppColors.black.withValues(alpha: 0.18),
                         Colors.transparent,
-                        AppColors.black.withValues(alpha: 0.48),
+                        AppColors.black.withValues(alpha: 0.42),
                       ],
-                      stops: const [0, 0.45, 1],
+                      stops: const [0, 0.48, 1],
                     ),
                   ),
                 ),
               ),
             ),
 
-            // Identidad turística sobre la fotografía.
+            // DISTINTIVO DINÁMICO DE CATEGORÍA
             Positioned(
               left: AppDimensions.pageHorizontal,
               bottom: AppDimensions.spacingLg,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 13,
-                  vertical: 9,
+                  horizontal: 9,
+                  vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.sitioSurface.withValues(alpha: 0.96),
-                  borderRadius: BorderRadius.circular(24),
+                  color: AppColors.sitioPrimaryDark.withValues(alpha: 0.94),
+                  borderRadius: BorderRadius.circular(11),
                   border: Border.all(
-                    color: AppColors.white.withValues(alpha: 0.65),
+                    color: AppColors.sitioAccent.withValues(alpha: 0.65),
+                    width: 0.8,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.black.withValues(alpha: 0.16),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.local_cafe_outlined,
-                      size: 17,
-                      color: AppColors.sitioPrimary,
+                      iconoCategoria,
+                      size: 15,
+                      color: AppColors.sitioAccent,
                     ),
-                    SizedBox(width: 7),
-                    Tr(
-                      'EXPERIENCIA CAFETERA',
-                      style: TextStyle(
-                        color: AppColors.sitioPrimary,
-                        fontSize: 10,
+                    const SizedBox(width: 7),
+                    Text(
+                      nombreCategoria.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.sitioTextOnPrimary,
+                        fontSize: 9,
                         fontWeight: FontWeight.w800,
-                        letterSpacing: 1,
+                        letterSpacing: 0.7,
                       ),
                     ),
                   ],
@@ -113,12 +135,13 @@ class DetallePortada extends StatelessWidget {
               ),
             ),
 
+            // BOTÓN FAVORITOS
             if (onFavorito != null)
               Positioned(
-                top: AppDimensions.spacingMd,
-                right: AppDimensions.spacingMd,
+                top: AppDimensions.spacingLg,
+                right: AppDimensions.pageHorizontal,
                 child: Material(
-                  color: AppColors.sitioSurface.withValues(alpha: 0.96),
+                  color: AppColors.sitioSurface,
                   shape: const CircleBorder(),
                   elevation: 3,
                   child: IconButton(
@@ -132,6 +155,7 @@ class DetallePortada extends StatelessWidget {
                             height: AppDimensions.iconMd,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
+                              color: AppColors.sitioPrimary,
                             ),
                           )
                         : Icon(
@@ -148,71 +172,88 @@ class DetallePortada extends StatelessWidget {
           ],
         ),
 
-        // Presentación editorial del sitio.
+        // INFORMACIÓN DEL SITIO
         Container(
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(
             AppDimensions.pageHorizontal,
             AppDimensions.spacingXl,
             AppDimensions.pageHorizontal,
-            AppDimensions.spacingLg,
+            AppDimensions.spacingXl,
           ),
           color: AppColors.sitioBackground,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 3,
-                    decoration: BoxDecoration(
+              // UBICACIÓN
+              if (ubicacion.isNotEmpty)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.location_on_rounded,
+                      size: 17,
                       color: AppColors.sitioAccent,
-                      borderRadius: BorderRadius.circular(3),
                     ),
-                  ),
-                  const SizedBox(width: 9),
-                  Flexible(
-                    child: Text(
-                      [
-                        sitio.ciudad.trim(),
-                        sitio.departamento.trim(),
-                      ].where((texto) => texto.isNotEmpty).join(' · ')
-                          .toUpperCase(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.sitioAccent,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.1,
+                    const SizedBox(width: 5),
+                    Flexible(
+                      child: Text(
+                        ubicacion,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.sitioAccent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+
               const SizedBox(height: AppDimensions.spacingMd),
+
+              // NOMBRE DEL SITIO
               Text(
                 sitio.nombre,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: AppColors.sitioTextPrimary,
                       fontWeight: FontWeight.w800,
-                      fontSize: 27,
-                      height: 1.16,
+                      fontSize: 29,
+                      height: 1.20,
+                      letterSpacing: -0.5,
                     ),
               ),
+
+              // DETALLE DECORATIVO
+              const SizedBox(height: AppDimensions.spacingMd),
+              Container(
+                width: 45,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: AppColors.sitioAccent,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+
+              // DESCRIPCIÓN
               if (sitio.descripcion.trim().isNotEmpty) ...[
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.spacingLg),
                 Text(
                   sitio.descripcion.trim(),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.sitioTextSecondary,
                         fontSize: 15,
-                        height: 1.65,
+                        height: 1.7,
+                        letterSpacing: 0.1,
                       ),
                 ),
               ],
-              const SizedBox(height: AppDimensions.spacingLg),
+
+              const SizedBox(height: AppDimensions.spacingXl),
+
+              // SEPARADOR
               Container(
                 height: 1,
                 color: AppColors.sitioDivider,
@@ -224,6 +265,7 @@ class DetallePortada extends StatelessWidget {
     );
   }
 
+  // IMAGEN ALTERNATIVA
   Widget _imagenAlternativa() {
     return Container(
       width: double.infinity,
@@ -237,4 +279,3 @@ class DetallePortada extends StatelessWidget {
     );
   }
 }
-

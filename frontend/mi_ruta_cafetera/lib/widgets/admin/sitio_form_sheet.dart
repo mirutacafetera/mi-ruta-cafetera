@@ -1,3 +1,4 @@
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -265,12 +266,16 @@ class _SitioFormSheetState extends State<SitioFormSheet> {
       return;
     }
 
-    final precio = double.tryParse(
-          _precioDesdeController.text
-              .trim()
-              .replaceAll(',', '.'),
-        ) ??
-        0;
+    // CONVERTIR EL PRECIO ELIMINANDO LOS SEPARADORES DE MILES.
+    // Ejemplo: 13.000 se convierte en 13000.
+    final precioTexto = _precioDesdeController.text.trim();
+
+    final precioLimpio = precioTexto.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
+
+    final precio = double.tryParse(precioLimpio) ?? 0.0;
 
     if (!widget.esEdicion &&
         (_nombreCuentaController.text.trim().isEmpty ||

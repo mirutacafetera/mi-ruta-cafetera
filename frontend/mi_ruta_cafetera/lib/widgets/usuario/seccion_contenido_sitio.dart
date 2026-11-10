@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../models/contenido_model.dart';
@@ -17,6 +18,9 @@ class SeccionContenidoSitio extends StatelessWidget {
   final List<ContenidoModel> contenidos;
   final ValueChanged<ContenidoModel>? onReproducirAudioguia;
 
+  static const double _anchoTarjeta = 175;
+  static const double _altoTarjeta = 215;
+
   @override
   Widget build(BuildContext context) {
     final visibles = contenidos.where((item) => item.activo).toList();
@@ -25,20 +29,27 @@ class SeccionContenidoSitio extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.pageHorizontal,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...visibles.map(
-            (contenido) => _ContenidoCard(
-              contenido: contenido,
+    return SizedBox(
+      height: _altoTarjeta,
+      child: ListView.separated(
+        // SEPARACIÓN LATERAL DE LAS TARJETAS
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.pageHorizontal,
+        ),
+        scrollDirection: Axis.horizontal,
+        itemCount: visibles.length,
+        separatorBuilder: (_, _) => const SizedBox(
+          width: AppDimensions.spacingMd,
+        ),
+        itemBuilder: (context, index) {
+          return SizedBox(
+            width: _anchoTarjeta,
+            child: _ContenidoCard(
+              contenido: visibles[index],
               onReproducirAudioguia: onReproducirAudioguia,
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -49,6 +60,10 @@ bool _contenidoTieneAudio(ContenidoModel contenido) {
     (audio) => audio.url.trim().isNotEmpty,
   );
 }
+
+// =====================================================
+// TARJETA DE HISTORIA
+// =====================================================
 
 class _ContenidoCard extends StatelessWidget {
   const _ContenidoCard({
@@ -67,24 +82,35 @@ class _ContenidoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imagenes = _imagenes;
+    final descripcion = contenido.descripcion.trim();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
-      decoration: decoracionTarjetaDetalle(),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
-            onTap: () => _abrirDetalle(context, imagenes),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AspectRatio(
-                  aspectRatio: 16 / 9,
+      decoration: decoracionTarjetaDetalle().copyWith(
+        border: Border.all(
+          color: AppColors.adminBorder.withValues(alpha: 0.60),
+          width: 0.5,
+        ),
+      ),
+      padding: const EdgeInsets.all(1),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(
+          AppDimensions.cardRadius - 1,
+        ),
+        child: Material(
+          color: AppColors.sitioSurface,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // IMAGEN DE LA HISTORIA
+              InkWell(
+                onTap: () => _abrirDetalle(context, imagenes),
+                child: SizedBox(
+                  height: 96,
+                  width: double.infinity,
                   child: imagenes.isEmpty
                       ? const PlaceholderImagenDetalle(
                           icono: Icons.auto_stories_rounded,
+                          compacto: true,
                         )
                       : Stack(
                           fit: StackFit.expand,
@@ -100,20 +126,18 @@ class _ContenidoCard extends StatelessWidget {
                             ),
                             if (imagenes.length > 1)
                               Positioned(
-                                right: 10,
-                                bottom: 10,
+                                right: 6,
+                                bottom: 6,
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 7,
+                                    horizontal: 6,
+                                    vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
                                     color: AppColors.black.withValues(
                                       alpha: 0.65,
                                     ),
-                                    borderRadius: BorderRadius.circular(
-                                      AppDimensions.radiusXl,
-                                    ),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -121,15 +145,14 @@ class _ContenidoCard extends StatelessWidget {
                                       const Icon(
                                         Icons.photo_library_outlined,
                                         color: AppColors.white,
-                                        size: 15,
+                                        size: 12,
                                       ),
-                                      const SizedBox(width: 5),
-                                      Tr(
-                                        '{0} fotos',
-                                        args: [imagenes.length],
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        '${imagenes.length}',
                                         style: const TextStyle(
                                           color: AppColors.white,
-                                          fontSize: 11,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
@@ -140,64 +163,112 @@ class _ContenidoCard extends StatelessWidget {
                           ],
                         ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(15, 14, 15, 12),
+              ),
+
+              // INFORMACIÓN DE LA HISTORIA
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(9, 7, 9, 6),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         contenido.titulo,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.sitioTextPrimary,
-                          fontSize: 17,
+                          fontSize: 12,
+                          height: 1.2,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      if (contenido.descripcion.trim().isNotEmpty) ...[
-                        const SizedBox(height: 7),
-                        Text(
-                          contenido.descripcion.trim(),
-                          maxLines: 3,
+
+                      const SizedBox(height: 4),
+
+                      Expanded(
+                        child: Text(
+                          descripcion.isEmpty
+                              ? Textos.t(
+                                  'Descubre esta historia del lugar.',
+                                )
+                              : descripcion,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: AppColors.sitioTextSecondary,
-                            fontSize: 13,
-                            height: 1.5,
+                            fontSize: 10,
+                            height: 1.3,
                           ),
                         ),
-                      ],
-                      const SizedBox(height: 10),
-                      const Row(
+                      ),
+
+                      // LEER HISTORIA Y ESCUCHAR AUDIO
+                      Row(
                         children: [
-                          Tr(
-                            'Leer historia completa',
-                            style: TextStyle(
-                              color: AppColors.sitioPrimary,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _abrirDetalle(
+                                context,
+                                imagenes,
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Tr(
+                                      'Leer historia',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: AppColors.sitioPrimary,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 3),
+                                  Icon(
+                                    Icons.arrow_forward_rounded,
+                                    color: AppColors.sitioPrimary,
+                                    size: 13,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          SizedBox(width: 5),
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            color: AppColors.sitioPrimary,
-                            size: 16,
-                          ),
+
+                          if (_contenidoTieneAudio(contenido))
+                            Material(
+                              color: AppColors.sitioPrimary,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                onTap: onReproducirAudioguia == null
+                                    ? null
+                                    : () => onReproducirAudioguia!(
+                                          contenido,
+                                        ),
+                                customBorder: const CircleBorder(),
+                                child: const SizedBox(
+                                  width: 26,
+                                  height: 26,
+                                  child: Icon(
+                                    Icons.headphones_rounded,
+                                    color: AppColors.sitioTextOnPrimary,
+                                    size: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          if (_contenidoTieneAudio(contenido))
-            _BotonEscucharHistoria(
-              onPressed: onReproducirAudioguia == null
-                  ? null
-                  : () => onReproducirAudioguia!(contenido),
-            ),
-        ],
+        ),
       ),
     );
   }
@@ -217,8 +288,6 @@ class _ContenidoCard extends StatelessWidget {
         onEscuchar: onReproducirAudioguia == null
             ? null
             : () {
-                // Se cierra el panel para que el reproductor flotante
-                // de la pantalla del sitio quede visible.
                 Navigator.of(panelContext).pop();
                 onReproducirAudioguia!(contenido);
               },
@@ -226,6 +295,65 @@ class _ContenidoCard extends StatelessWidget {
     );
   }
 }
+
+// =====================================================
+// CONTENIDO COMPLETO DE LA HISTORIA
+// =====================================================
+
+class _ContenidoDetalleHistoria extends StatelessWidget {
+  const _ContenidoDetalleHistoria({
+    required this.contenido,
+    required this.imagenes,
+    required this.onEscuchar,
+  });
+
+  final ContenidoModel contenido;
+  final List<String> imagenes;
+  final VoidCallback? onEscuchar;
+
+  @override
+  Widget build(BuildContext context) {
+    final descripcion = contenido.descripcion.trim();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (imagenes.isNotEmpty) ...[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusLg,
+            ),
+            child: CarruselImagenesDetalle(
+              imagenes: imagenes,
+              aspectRatio: 4 / 3,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingLg),
+        ],
+        Text(
+          descripcion.isEmpty
+              ? Textos.t('No hay una descripción adicional disponible.')
+              : descripcion,
+          style: const TextStyle(
+            color: AppColors.sitioTextSecondary,
+            fontSize: 15,
+            height: 1.7,
+          ),
+        ),
+        if (_contenidoTieneAudio(contenido)) ...[
+          const SizedBox(height: AppDimensions.spacingXl),
+          _BotonEscucharHistoria(
+            onPressed: onEscuchar,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// =====================================================
+// BOTÓN PARA ESCUCHAR LA HISTORIA
+// =====================================================
 
 class _BotonEscucharHistoria extends StatelessWidget {
   const _BotonEscucharHistoria({
@@ -244,7 +372,9 @@ class _BotonEscucharHistoria extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.sitioSurfaceGreen,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        borderRadius: BorderRadius.circular(
+          AppDimensions.radiusMd,
+        ),
       ),
       child: Row(
         children: [
@@ -275,57 +405,6 @@ class _BotonEscucharHistoria extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// =====================================================
-// CONTENIDO DEL PANEL DE UNA HISTORIA
-// =====================================================
-
-class _ContenidoDetalleHistoria extends StatelessWidget {
-  const _ContenidoDetalleHistoria({
-    required this.contenido,
-    required this.imagenes,
-    required this.onEscuchar,
-  });
-
-  final ContenidoModel contenido;
-  final List<String> imagenes;
-  final VoidCallback? onEscuchar;
-
-  @override
-  Widget build(BuildContext context) {
-    final descripcion = contenido.descripcion.trim();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (imagenes.isNotEmpty) ...[
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-            child: CarruselImagenesDetalle(
-              imagenes: imagenes,
-              aspectRatio: 4 / 3,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingLg),
-        ],
-        Text(
-          descripcion.isEmpty
-              ? Textos.t('No hay una descripción adicional disponible.')
-              : descripcion,
-          style: const TextStyle(
-            color: AppColors.sitioTextSecondary,
-            fontSize: 15,
-            height: 1.7,
-          ),
-        ),
-        if (_contenidoTieneAudio(contenido)) ...[
-          const SizedBox(height: AppDimensions.spacingXl),
-          _BotonEscucharHistoria(onPressed: onEscuchar),
-        ],
-      ],
     );
   }
 }

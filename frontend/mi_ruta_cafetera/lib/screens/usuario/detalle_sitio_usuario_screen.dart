@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../models/contenido_model.dart';
@@ -52,9 +53,6 @@ class _DetalleSitioUsuarioScreenState
 
   late final DetalleSitioAudio _audioController;
   late bool _esFavorito;
-
-  // Copia del sitio que se refresca desde el servidor para mostrar los
-  // últimos cambios hechos desde el panel del sitio (dirección, horario).
   late SitioTuristicoModel _sitio;
 
   List<ContenidoModel> _contenidos = [];
@@ -264,15 +262,17 @@ class _DetalleSitioUsuarioScreenState
         child: _tarjetaEstado(
           icono: Icons.auto_stories_outlined,
           titulo: Textos.t('Próximamente habrá nuevas historias'),
-          descripcion:
-              Textos.t('Estamos preparando más contenido para que descubras las tradiciones y experiencias de {0}.', [_sitio.nombre]),
+          descripcion: Textos.t(
+            'Estamos preparando más contenido para que descubras las tradiciones y experiencias de {0}.',
+            [_sitio.nombre],
+          ),
         ),
       );
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.spacingLg,
+      padding: const EdgeInsets.only(
+        top: AppDimensions.spacingLg,
       ),
       child: SeccionContenidoSitio(
         contenidos: _contenidos,
@@ -316,74 +316,101 @@ class _DetalleSitioUsuarioScreenState
         children: etiquetas.map((etiqueta) {
           return EtiquetaDetalle(
             texto: etiqueta,
-            icono: Icons.eco_outlined,
+            icono: Icons.local_offer_outlined,
           );
         }).toList(),
       ),
     );
   }
 
+  // =====================================================
+  // ACCIONES DEL SITIO
+  // =====================================================
+
   Widget _construirAcciones() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Row(
       children: [
-        SizedBox(
-          height: AppDimensions.detalleActionHeight,
-          child: FilledButton.icon(
-            onPressed: () => DetalleSitioAcciones.agregarRuta(
-              context,
-              _sitio,
-            ),
-            icon: const Icon(Icons.route_rounded),
-            label: const Tr('Agregar a mi ruta'),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.sitioPrimary,
-              foregroundColor: AppColors.sitioTextOnPrimary,
-              elevation: AppDimensions.elevationButton,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingLg,
+        Expanded(
+          child: SizedBox(
+            height: 66,
+            child: OutlinedButton(
+              onPressed: () => DetalleSitioAcciones.agregarRuta(
+                context,
+                _sitio,
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusXxl,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.sitioPrimary,
+                backgroundColor: AppColors.sitioSurface,
+                side: BorderSide(
+                  color: AppColors.sitioPrimary.withValues(alpha: 0.65),
+                  width: 1.2,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 7,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              textStyle: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.route_rounded, size: 19),
+                  SizedBox(height: 4),
+                  Tr(
+                    'Agregar a mi ruta',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
-        SizedBox(
-          height: AppDimensions.detalleActionHeight,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              DetalleSitioAcciones.mostrarDetalleMapa(
-                context,
-                _sitio,
-              );
-            },
-            icon: const Icon(Icons.location_on_outlined),
-            label: const Tr('Ver detalles de ubicación'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.sitioPrimary,
-              side: BorderSide(
-                color: AppColors.sitioPrimary.withValues(alpha: 0.55),
-                width: 1.3,
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingLg,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusXxl,
+        const SizedBox(width: 10),
+        Expanded(
+          child: SizedBox(
+            height: 66,
+            child: OutlinedButton(
+              onPressed: () {
+                DetalleSitioAcciones.mostrarDetalleMapa(
+                  context,
+                  _sitio,
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.sitioPrimary,
+                backgroundColor: AppColors.sitioSurface,
+                side: BorderSide(
+                  color: AppColors.sitioPrimary.withValues(alpha: 0.65),
+                  width: 1.2,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 7,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              textStyle: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.location_on_outlined, size: 19),
+                  SizedBox(height: 4),
+                  Tr(
+                    'Ver detalles de ubicación',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -391,6 +418,10 @@ class _DetalleSitioUsuarioScreenState
       ],
     );
   }
+
+  // =====================================================
+  // ENCABEZADO DE SECCIONES
+  // =====================================================
 
   Widget _construirEncabezadoSeccion({
     required IconData icono,
@@ -401,6 +432,385 @@ class _DetalleSitioUsuarioScreenState
       icono: icono,
       titulo: titulo,
       descripcion: descripcion,
+    );
+  }
+
+  // =====================================================
+  // SEPARADOR DE EXPERIENCIAS
+  // =====================================================
+
+  Widget _construirSeparadorExperiencias() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 1,
+              color: AppColors.adminBorder.withValues(alpha: 0.45),
+            ),
+          ),
+          Container(
+            width: 34,
+            height: 34,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: AppColors.sitioSurfaceSoft,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.adminBorder.withValues(alpha: 0.60),
+                width: 0.5,
+              ),
+            ),
+            child: const Icon(
+              Icons.hiking_rounded,
+              color: AppColors.sitioAccent,
+              size: 19,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: AppColors.adminBorder.withValues(alpha: 0.45),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =====================================================
+  // ENCABEZADO VISUAL DE EXPERIENCIAS
+  // =====================================================
+
+  Widget _construirEncabezadoExperiencias() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 54,
+            height: 76,
+            child: Center(
+              child: Icon(
+                Icons.hiking_rounded,
+                color: AppColors.sitioAccent,
+                size: 42,
+              ),
+            ),
+          ),
+          Container(
+            width: 2,
+            height: 50,
+            decoration: BoxDecoration(
+              color: AppColors.sitioPrimary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  Textos.t('Experiencias para disfrutar'),
+                  style: const TextStyle(
+                    color: AppColors.sitioPrimaryDark,
+                    fontSize: 18,
+                    height: 1.2,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  Textos.t(
+                    'Conoce las actividades que puedes vivir durante tu visita.',
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.sitioTextSecondary,
+                    fontSize: 13,
+                    height: 1.35,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =====================================================
+  // SEPARADOR DE HISTORIAS Y CONTENIDO
+  // =====================================================
+
+  Widget _construirSeparadorHistorias() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 1,
+              color: AppColors.adminBorder.withValues(alpha: 0.45),
+            ),
+          ),
+          Container(
+            width: 34,
+            height: 34,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: AppColors.sitioSurfaceSoft,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.adminBorder.withValues(alpha: 0.60),
+                width: 0.5,
+              ),
+            ),
+            child: const Icon(
+              Icons.auto_stories_outlined,
+              color: AppColors.sitioAccent,
+              size: 19,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: AppColors.adminBorder.withValues(alpha: 0.45),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =====================================================
+  // ENCABEZADO VISUAL DE HISTORIAS
+  // =====================================================
+
+  Widget _construirEncabezadoHistorias() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 54,
+            height: 76,
+            child: Center(
+              child: Icon(
+                Icons.auto_stories_outlined,
+                color: AppColors.sitioAccent,
+                size: 42,
+              ),
+            ),
+          ),
+          Container(
+            width: 2,
+            height: 50,
+            decoration: BoxDecoration(
+              color: AppColors.sitioPrimary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  Textos.t('Historias y contenido'),
+                  style: const TextStyle(
+                    color: AppColors.sitioPrimaryDark,
+                    fontSize: 18,
+                    height: 1.2,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  Textos.t(
+                    'Descubre las historias, tradiciones y experiencias que hacen especial a este lugar.',
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.sitioTextSecondary,
+                    fontSize: 13,
+                    height: 1.35,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =====================================================
+  // SEPARADOR DE GALERÍA
+  // =====================================================
+
+  Widget _construirSeparadorGaleria() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 1,
+              color: AppColors.adminBorder.withValues(alpha: 0.45),
+            ),
+          ),
+          Container(
+            width: 34,
+            height: 34,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: AppColors.sitioSurfaceSoft,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.adminBorder.withValues(alpha: 0.60),
+                width: 0.5,
+              ),
+            ),
+            child: const Icon(
+              Icons.photo_library_outlined,
+              color: AppColors.sitioAccent,
+              size: 19,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: AppColors.adminBorder.withValues(alpha: 0.45),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =====================================================
+  // SEPARADOR DE OPINIONES DE VIAJEROS
+  // =====================================================
+
+  Widget _construirSeparadorResenas() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 1,
+              color: AppColors.adminBorder.withValues(alpha: 0.45),
+            ),
+          ),
+          Container(
+            width: 34,
+            height: 34,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: AppColors.sitioSurfaceSoft,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.adminBorder.withValues(alpha: 0.60),
+                width: 0.5,
+              ),
+            ),
+            child: const Icon(
+              Icons.star_outline_rounded,
+              color: AppColors.sitioAccent,
+              size: 19,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: AppColors.adminBorder.withValues(alpha: 0.45),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =====================================================
+  // ENCABEZADO VISUAL DE OPINIONES DE VIAJEROS
+  // =====================================================
+
+  Widget _construirEncabezadoResenas() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.pageHorizontal,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 54,
+            height: 76,
+            child: Center(
+              child: Icon(
+                Icons.star_outline_rounded,
+                color: AppColors.sitioAccent,
+                size: 42,
+              ),
+            ),
+          ),
+          Container(
+            width: 2,
+            height: 50,
+            decoration: BoxDecoration(
+              color: AppColors.sitioPrimary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  Textos.t('Opiniones de viajeros'),
+                  style: const TextStyle(
+                    color: AppColors.sitioPrimaryDark,
+                    fontSize: 18,
+                    height: 1.2,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  Textos.t(
+                    'Consulta las experiencias y valoraciones de otros visitantes.',
+                  ),
+                  style: const TextStyle(
+                    color: AppColors.sitioTextSecondary,
+                    fontSize: 13,
+                    height: 1.35,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -417,14 +827,13 @@ class _DetalleSitioUsuarioScreenState
     final imagenSitio = _sitio.imagen.trim();
 
     final imagenPrincipal = imagenSitio.isNotEmpty
-      ? imagenSitio
-      : (widget.imagen?.trim().isNotEmpty == true
-        ? widget.imagen!.trim()
-        : imagenContenido);
+        ? imagenSitio
+        : (widget.imagen?.trim().isNotEmpty == true
+            ? widget.imagen!.trim()
+            : imagenContenido);
 
     final imagenes = <String>{
-      if (_sitio.imagen.trim().isNotEmpty)
-        _sitio.imagen.trim(),
+      if (_sitio.imagen.trim().isNotEmpty) _sitio.imagen.trim(),
       if (widget.imagen?.trim().isNotEmpty == true)
         widget.imagen!.trim(),
       ..._contenidos
@@ -489,7 +898,7 @@ class _DetalleSitioUsuarioScreenState
                 imagenPrincipal: imagenPrincipal,
               ),
 
-              // Etiquetas del sitio.
+              // ETIQUETAS DEL SITIO
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.pageHorizontal,
@@ -497,7 +906,7 @@ class _DetalleSitioUsuarioScreenState
                 child: _construirEtiquetas(),
               ),
 
-              // Ubicación y acciones principales.
+              // UBICACIÓN Y ACCIONES PRINCIPALES
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppDimensions.pageHorizontal,
@@ -523,20 +932,13 @@ class _DetalleSitioUsuarioScreenState
                 ),
               ),
 
-              // Actividades turísticas.
+              // ACTIVIDADES TURÍSTICAS
               if (_cargandoActividades || _actividades.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: AppDimensions.spacingSm,
-                    bottom: AppDimensions.spacingMd,
-                  ),
-                  child: _construirEncabezadoSeccion(
-                    icono: Icons.explore_outlined,
-                    titulo: Textos.t('Experiencias para disfrutar'),
-                    descripcion:
-                        Textos.t('Conoce las actividades que puedes vivir durante tu visita.'),
-                  ),
-                ),
+                const SizedBox(height: AppDimensions.spacingLg),
+                _construirSeparadorExperiencias(),
+                const SizedBox(height: AppDimensions.spacingLg),
+                _construirEncabezadoExperiencias(),
+                const SizedBox(height: AppDimensions.spacingSm),
                 DetalleActividades(
                   actividades: _actividades,
                   cargando: _cargandoActividades,
@@ -550,40 +952,40 @@ class _DetalleSitioUsuarioScreenState
                 ),
               ],
 
-              // Productos del establecimiento.
+              // PRODUCTOS DEL ESTABLECIMIENTO
               DetalleProductos(
                 key: ValueKey('productos_${_sitio.id}'),
                 sitioId: _sitio.id,
               ),
 
-              // Historias, contenido y audioguías.
+              // HISTORIAS, CONTENIDO Y AUDIOGUÍAS
               Padding(
                 padding: const EdgeInsets.only(
-                  top: AppDimensions.spacingLg,
+                  top: AppDimensions.spacingSm,
                 ),
-                child: _construirEncabezadoSeccion(
-                  icono: Icons.auto_stories_outlined,
-                  titulo: Textos.t('Historias y contenido'),
-                  descripcion:
-                      Textos.t('Descubre las historias, tradiciones y experiencias que hacen especial a este lugar.'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _construirSeparadorHistorias(),
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    _construirEncabezadoHistorias(),
+                  ],
                 ),
               ),
               _construirSeccionContenido(),
 
-              // Galería de fotografías.
+              // GALERÍA DE FOTOGRAFÍAS
               if (_cargandoContenido ||
                   _cargandoActividades ||
                   imagenes.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: AppDimensions.spacingLg,
-                    bottom: AppDimensions.spacingMd,
-                  ),
-                  child: _construirEncabezadoSeccion(
-                    icono: Icons.photo_library_outlined,
-                    titulo: Textos.t('Galería del sitio'),
-                    descripcion:
-                        Textos.t('Explora en imágenes los espacios y rincones de este destino.'),
+                const SizedBox(height: AppDimensions.spacingLg),
+                _construirSeparadorGaleria(),
+                const SizedBox(height: AppDimensions.spacingLg),
+                _construirEncabezadoSeccion(
+                  icono: Icons.photo_library_outlined,
+                  titulo: Textos.t('Galería del sitio'),
+                  descripcion: Textos.t(
+                    'Explora en imágenes los espacios y rincones de este destino.',
                   ),
                 ),
                 DetalleGaleria(
@@ -593,17 +995,19 @@ class _DetalleSitioUsuarioScreenState
                 ),
               ],
 
-              // Reseñas y calificaciones.
+              // RESEÑAS Y CALIFICACIONES
               Padding(
                 padding: const EdgeInsets.only(
                   top: AppDimensions.spacingLg,
-                  bottom: AppDimensions.spacingSm,
+                  bottom: AppDimensions.spacingMd,
                 ),
-                child: _construirEncabezadoSeccion(
-                  icono: Icons.star_outline_rounded,
-                  titulo: Textos.t('Opiniones de viajeros'),
-                  descripcion:
-                      Textos.t('Consulta las experiencias y valoraciones de otros visitantes.'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _construirSeparadorResenas(),
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    _construirEncabezadoResenas(),
+                  ],
                 ),
               ),
               SeccionResenasSitio(
@@ -619,7 +1023,7 @@ class _DetalleSitioUsuarioScreenState
         ),
       ),
 
-      // Reproductor persistente de audioguías.
+      // REPRODUCTOR PERSISTENTE DE AUDIOGUÍAS
       bottomNavigationBar: AnimatedBuilder(
         animation: _audioController,
         builder: (context, _) {
