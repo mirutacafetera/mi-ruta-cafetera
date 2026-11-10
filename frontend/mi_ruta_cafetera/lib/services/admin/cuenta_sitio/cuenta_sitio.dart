@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -15,6 +16,12 @@ class CuentaSitio {
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
+    };
+  }
+
+  static Map<String, String> get _headersPublicos {
+    return {
+      'Content-Type': 'application/json',
     };
   }
 
@@ -51,6 +58,10 @@ class CuentaSitio {
     return {'datos': datos};
   }
 
+  // =====================================================
+  // OBTENER CUENTAS
+  // =====================================================
+
   static Future<List<CuentaSitioModel>> obtenerCuentas({
     required String token,
   }) async {
@@ -79,6 +90,10 @@ class CuentaSitio {
         )
         .toList();
   }
+
+  // =====================================================
+  // CREAR CUENTA
+  // =====================================================
 
   static Future<CuentaSitioModel> crearCuenta({
     required String token,
@@ -120,6 +135,83 @@ class CuentaSitio {
     );
   }
 
+  // =====================================================
+  // VERIFICAR CORREO AL CREAR LA CUENTA
+  // =====================================================
+
+  static Future<Map<String, dynamic>> verificarCorreo({
+    required String correo,
+    required String codigo,
+  }) async {
+    final respuesta = await http.post(
+      Uri.parse('$_ruta/verificar-correo'),
+      headers: _headersPublicos,
+      body: jsonEncode({
+        'correo': correo.trim(),
+        'codigo': codigo.trim(),
+      }),
+    );
+
+    return _procesarRespuesta(
+      respuesta,
+      'No se pudo verificar el correo.',
+    );
+  }
+
+  // =====================================================
+  // SOLICITAR CÓDIGO PARA CAMBIAR CORREO O CONTRASEÑA
+  // =====================================================
+
+  static Future<Map<String, dynamic>> solicitarCodigoCambioCuenta({
+    required String token,
+    required String cuentaId,
+    String? correo,
+    String? password,
+  }) async {
+    final respuesta = await http.post(
+      Uri.parse('$_ruta/cuentas/$cuentaId/solicitar-codigo-cambio'),
+      headers: _headers(token),
+      body: jsonEncode({
+        if (correo != null && correo.trim().isNotEmpty)
+          'correo': correo.trim(),
+        if (password != null && password.isNotEmpty)
+          'password': password,
+      }),
+    );
+
+    return _procesarRespuesta(
+      respuesta,
+      'No se pudo enviar el código de autorización.',
+    );
+  }
+
+  // =====================================================
+  // VERIFICAR CÓDIGO Y APLICAR CAMBIOS
+  // =====================================================
+
+  static Future<Map<String, dynamic>> verificarCodigoCambioCuenta({
+    required String token,
+    required String cuentaId,
+    required String codigo,
+  }) async {
+    final respuesta = await http.post(
+      Uri.parse('$_ruta/cuentas/$cuentaId/verificar-codigo-cambio'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'codigo': codigo.trim(),
+      }),
+    );
+
+    return _procesarRespuesta(
+      respuesta,
+      'No se pudo verificar el código de autorización.',
+    );
+  }
+
+  // =====================================================
+  // ACTUALIZAR DATOS PERSONALES DE LA CUENTA
+  // =====================================================
+
   static Future<Map<String, dynamic>> actualizarCuenta({
     required String token,
     required String cuentaId,
@@ -145,6 +237,10 @@ class CuentaSitio {
     );
   }
 
+  // =====================================================
+  // CAMBIAR ESTADO DE LA CUENTA
+  // =====================================================
+
   static Future<Map<String, dynamic>> cambiarEstado({
     required String token,
     required String cuentaId,
@@ -161,6 +257,10 @@ class CuentaSitio {
       'No se pudo cambiar el estado de la cuenta.',
     );
   }
+
+  // =====================================================
+  // ELIMINAR SITIO Y CUENTA
+  // =====================================================
 
   static Future<Map<String, dynamic>> eliminarSitioYCuenta({
     required String token,

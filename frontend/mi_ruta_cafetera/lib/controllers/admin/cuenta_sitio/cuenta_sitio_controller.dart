@@ -18,6 +18,10 @@ class CuentaSitioController extends ChangeNotifier {
   String filtro = 'Todos';
   String _token = '';
 
+  // =====================================================
+  // SITIOS FILTRADOS
+  // =====================================================
+
   List<SitioAdminModel> get sitiosFiltrados {
     final consulta = busqueda.trim().toLowerCase();
 
@@ -50,11 +54,19 @@ class CuentaSitioController extends ChangeNotifier {
     }).toList();
   }
 
+  // =====================================================
+  // SITIOS CON Y SIN CUENTA
+  // =====================================================
+
   List<SitioAdminModel> get sitiosConCuenta =>
       sitios.where((sitio) => cuentaDeSitio(sitio.id) != null).toList();
 
   List<SitioAdminModel> get sitiosSinCuenta =>
       sitios.where((sitio) => cuentaDeSitio(sitio.id) == null).toList();
+
+  // =====================================================
+  // ESTADÍSTICAS
+  // =====================================================
 
   int get totalSitios => sitios.length;
   int get totalCuentas => cuentas.length;
@@ -63,12 +75,20 @@ class CuentaSitioController extends ChangeNotifier {
   int get cuentasActivas => cuentas.where((c) => c.activo).length;
   int get cuentasInactivas => cuentas.where((c) => !c.activo).length;
 
+  // =====================================================
+  // OBTENER CUENTA DE UN SITIO
+  // =====================================================
+
   CuentaSitioModel? cuentaDeSitio(String sitioId) {
     for (final cuenta in cuentas) {
       if (cuenta.sitioId == sitioId) return cuenta;
     }
     return null;
   }
+
+  // =====================================================
+  // BÚSQUEDA Y FILTROS
+  // =====================================================
 
   void cambiarBusqueda(String valor) {
     busqueda = valor;
@@ -79,6 +99,10 @@ class CuentaSitioController extends ChangeNotifier {
     filtro = valor;
     notifyListeners();
   }
+
+  // =====================================================
+  // CARGAR DATOS
+  // =====================================================
 
   Future<void> cargarDatos({required String token}) async {
     if (cargando) return;
@@ -96,6 +120,7 @@ class CuentaSitioController extends ChangeNotifier {
 
       final cuentasActualizadas =
           resultados[0] as List<CuentaSitioModel>;
+
       final sitiosActualizados =
           resultados[1] as List<SitioAdminModel>;
 
@@ -112,6 +137,10 @@ class CuentaSitioController extends ChangeNotifier {
   Future<void> cargarCuentas({required String token}) async {
     await cargarDatos(token: token);
   }
+
+  // =====================================================
+  // CREAR CUENTA
+  // =====================================================
 
   Future<CuentaSitioModel> crearCuenta({
     required String sitioId,
@@ -137,6 +166,7 @@ class CuentaSitioController extends ChangeNotifier {
       );
 
       await cargarDatos(token: _token);
+
       return cuenta;
     } catch (e) {
       error = e.toString();
@@ -146,6 +176,101 @@ class CuentaSitioController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // =====================================================
+  // VERIFICAR CORREO DE LA CUENTA DEL SITIO
+  // =====================================================
+
+  Future<Map<String, dynamic>> verificarCorreo({
+    required String correo,
+    required String codigo,
+  }) async {
+    guardando = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      final respuesta = await CuentaSitio.verificarCorreo(
+        correo: correo,
+        codigo: codigo,
+      );
+
+      await cargarDatos(token: _token);
+
+      return respuesta;
+    } catch (e) {
+      error = e.toString();
+      rethrow;
+    } finally {
+      guardando = false;
+      notifyListeners();
+    }
+  }
+
+  // =====================================================
+  // SOLICITAR CÓDIGO PARA CAMBIAR CORREO O CONTRASEÑA
+  // =====================================================
+
+  Future<Map<String, dynamic>> solicitarCodigoCambioCuenta({
+    required String cuentaId,
+    String? correo,
+    String? password,
+  }) async {
+    guardando = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      return await CuentaSitio.solicitarCodigoCambioCuenta(
+        token: _token,
+        cuentaId: cuentaId,
+        correo: correo,
+        password: password,
+      );
+    } catch (e) {
+      error = e.toString();
+      rethrow;
+    } finally {
+      guardando = false;
+      notifyListeners();
+    }
+  }
+
+  // =====================================================
+  // VERIFICAR CÓDIGO Y APLICAR CAMBIOS
+  // =====================================================
+
+  Future<Map<String, dynamic>> verificarCodigoCambioCuenta({
+    required String cuentaId,
+    required String codigo,
+  }) async {
+    guardando = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      final respuesta =
+          await CuentaSitio.verificarCodigoCambioCuenta(
+        token: _token,
+        cuentaId: cuentaId,
+        codigo: codigo,
+      );
+
+      await cargarDatos(token: _token);
+
+      return respuesta;
+    } catch (e) {
+      error = e.toString();
+      rethrow;
+    } finally {
+      guardando = false;
+      notifyListeners();
+    }
+  }
+
+  // =====================================================
+  // ACTUALIZAR DATOS DE LA CUENTA
+  // =====================================================
 
   Future<void> actualizarCuenta({
     required String cuentaId,
@@ -178,6 +303,10 @@ class CuentaSitioController extends ChangeNotifier {
     }
   }
 
+  // =====================================================
+  // CAMBIAR ESTADO DE LA CUENTA
+  // =====================================================
+
   Future<void> cambiarEstado({
     required String cuentaId,
     required bool activo,
@@ -203,6 +332,10 @@ class CuentaSitioController extends ChangeNotifier {
     }
   }
 
+  // =====================================================
+  // ELIMINAR SITIO Y CUENTA
+  // =====================================================
+
   Future<void> eliminarSitioYCuenta({
     required String sitioId,
   }) async {
@@ -225,6 +358,10 @@ class CuentaSitioController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // =====================================================
+  // LIMPIAR ERROR
+  // =====================================================
 
   void limpiarError() {
     error = null;

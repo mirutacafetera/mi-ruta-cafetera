@@ -862,11 +862,15 @@ class _HomePublicoScreenState extends State<HomePublicoScreen> {
             // ==================================================
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(
+                // El último bloque suma el espacio inferior que ocupa el menú
+                // flotante, para que no quede tapado por los botones.
+                padding: EdgeInsets.fromLTRB(
                   AppDimensions.spacingLg + 4,
                   AppDimensions.spacingLg + 6,
                   AppDimensions.spacingLg + 4,
-                  AppDimensions.spacingSection + 3,
+                  AppDimensions.spacingSection +
+                      3 +
+                      MediaQuery.paddingOf(context).bottom,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

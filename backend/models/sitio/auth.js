@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const authSitioSchema = new mongoose.Schema(
@@ -44,10 +45,7 @@ const authSitioSchema = new mongoose.Schema(
       default: ''
     },
 
-    // Identificador estable ("sub") de la cuenta de Google vinculada.
-    // Es opcional: solo existe si la cuenta inició sesión con Google.
-    // El índice único y disperso impide que dos cuentas compartan la
-    // misma identidad de Google sin afectar a las cuentas sin vincular.
+    // Identificador de Google
     googleId: {
       type: String,
       unique: true,
@@ -55,11 +53,31 @@ const authSitioSchema = new mongoose.Schema(
       trim: true
     },
 
+    // Estado de la cuenta
     activo: {
       type: Boolean,
       default: true
     },
 
+    // VERIFICACIÓN DEL CORREO
+    correoVerificado: {
+      type: Boolean,
+      default: false
+    },
+
+    codigoVerificacionCorreo: {
+      type: String,
+      default: null,
+      select: false
+    },
+
+    codigoVerificacionExpiracion: {
+      type: Date,
+      default: null,
+      select: false
+    },
+
+    // RECUPERACIÓN DE CONTRASEÑA
     codigoRecuperacion: {
       type: String,
       default: null
