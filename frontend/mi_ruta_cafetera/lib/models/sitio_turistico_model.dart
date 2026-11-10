@@ -1,3 +1,4 @@
+
 import 'package:latlong2/latlong.dart';
 
 import '../config/mapa_corredor.dart';
@@ -17,6 +18,7 @@ class SitioTuristicoModel {
   final bool activo;
   final String imagen;
   final String horario;
+  final double precioDesde;
 
   const SitioTuristicoModel({
     required this.id,
@@ -32,47 +34,26 @@ class SitioTuristicoModel {
     required this.activo,
     this.imagen = '',
     this.horario = '',
+    this.precioDesde = 0.0,
   });
 
-  // ============================================================
   // UBICACIÓN PARA FLUTTER MAP
-  // ============================================================
-
   LatLng get ubicacion {
-    return LatLng(
-      latitud,
-      longitud,
-    );
+    return LatLng(latitud, longitud);
   }
 
-  // ============================================================
   // VALIDAR COORDENADAS
-  // ============================================================
-
   bool get tieneCoordenadas {
-    return latitud != 0.0 &&
-        longitud != 0.0;
+    return latitud != 0.0 && longitud != 0.0;
   }
 
-  // ============================================================
-  // DENTRO DEL ÁREA TURÍSTICA (CORREDOR GARZÓN – GIGANTE)
-  // ============================================================
-  //
-  // Una coordenada fuera del área (signo invertido, latitud y
-  // longitud intercambiadas, etc.) hace que el mapa salte a
-  // otro continente. El mapa y las rutas solo usan sitios con
-  // coordenadas dentro del área.
-  // ============================================================
-
+  // DENTRO DEL ÁREA TURÍSTICA
   bool get enAreaTuristica {
     return tieneCoordenadas &&
         MapaCorredor.contiene(latitud, longitud);
   }
 
-  // ============================================================
   // DATOS DE CATEGORÍA
-  // ============================================================
-
   String get categoriaId {
     return categoria?.id.trim() ?? '';
   }
@@ -81,10 +62,7 @@ class SitioTuristicoModel {
     return categoria?.nombre.trim() ?? '';
   }
 
-  // ============================================================
   // JSON → MODELO
-  // ============================================================
-
   factory SitioTuristicoModel.fromJson(
     Map<String, dynamic> json,
   ) {
@@ -93,18 +71,12 @@ class SitioTuristicoModel {
     final dynamic categoriaJson = json['categoria'];
 
     if (categoriaJson is Map<String, dynamic>) {
-      categoria = CategoriaModel.fromJson(
-        categoriaJson,
-      );
+      categoria = CategoriaModel.fromJson(categoriaJson);
     } else if (categoriaJson is Map) {
       categoria = CategoriaModel.fromJson(
-        Map<String, dynamic>.from(
-          categoriaJson,
-        ),
+        Map<String, dynamic>.from(categoriaJson),
       );
     } else if (categoriaJson != null) {
-      // Si el backend solamente devuelve el ID de la categoría,
-      // dejamos una categoría mínima para conservar la relación.
       categoria = CategoriaModel(
         id: _stringValue(categoriaJson),
         nombre: '',
@@ -116,69 +88,41 @@ class SitioTuristicoModel {
     }
 
     return SitioTuristicoModel(
-      id: _stringValue(
-        json['_id'] ?? json['id'],
-      ),
-
+      id: _stringValue(json['_id'] ?? json['id']),
       nombre: _stringValue(
         json['nombre'],
         fallback: 'Sin nombre',
       ),
-
       descripcion: _stringValue(
         json['descripcion'],
         fallback: 'Sin descripción disponible.',
       ),
-
       categoria: categoria,
-
-      direccion: _stringValue(
-        json['direccion'],
-      ),
-
+      direccion: _stringValue(json['direccion']),
       ciudad: _stringValue(
         json['ciudad'],
         fallback: 'Garzón',
       ),
-
       departamento: _stringValue(
         json['departamento'],
         fallback: 'Huila',
       ),
-
-      latitud: _doubleValue(
-        json['latitud'],
-      ),
-
-      longitud: _doubleValue(
-        json['longitud'],
-      ),
-
-      etiquetas: _stringList(
-        json['etiquetas'],
-      ),
-
-      // MongoDB actualmente puede manejar "activo"
-      // o "estado", por eso aceptamos ambos.
+      latitud: _doubleValue(json['latitud']),
+      longitud: _doubleValue(json['longitud']),
+      etiquetas: _stringList(json['etiquetas']),
       activo: _bool(
         json['activo'] ?? json['estado'],
         fallback: true,
       ),
+      imagen: _stringValue(json['imagen']),
+      horario: _stringValue(json['horario']),
 
-      imagen: _stringValue(
-        json['imagen'],
-      ),
-
-      horario: _stringValue(
-        json['horario'],
-      ),
+      // PRECIO REGISTRADO POR EL ADMINISTRADOR
+      precioDesde: _doubleValue(json['precioDesde']),
     );
   }
 
-  // ============================================================
   // CONVERSIÓN SEGURA A STRING
-  // ============================================================
-
   static String _stringValue(
     dynamic value, {
     String fallback = '',
@@ -187,8 +131,6 @@ class SitioTuristicoModel {
       return fallback;
     }
 
-    // Soporte para ObjectId serializado como:
-    // { "$oid": "..." }
     if (value is Map) {
       final dynamic oid = value[r'$oid'];
 
@@ -210,13 +152,8 @@ class SitioTuristicoModel {
     return texto;
   }
 
-  // ============================================================
   // CONVERSIÓN SEGURA A DOUBLE
-  // ============================================================
-
-  static double _doubleValue(
-    dynamic value,
-  ) {
+  static double _doubleValue(dynamic value) {
     if (value == null) {
       return 0.0;
     }
@@ -229,59 +166,37 @@ class SitioTuristicoModel {
       return double.tryParse(value) ?? 0.0;
     }
 
-    // Soporte para valores MongoDB serializados
-    // como objetos que contienen "$numberDouble".
     if (value is Map) {
       final dynamic numberDouble = value[r'$numberDouble'];
 
       if (numberDouble != null) {
-        return double.tryParse(
-              numberDouble.toString(),
-            ) ??
-            0.0;
+        return double.tryParse(numberDouble.toString()) ?? 0.0;
       }
 
       final dynamic numberInt = value[r'$numberInt'];
 
       if (numberInt != null) {
-        return double.tryParse(
-              numberInt.toString(),
-            ) ??
-            0.0;
+        return double.tryParse(numberInt.toString()) ?? 0.0;
       }
     }
 
     return 0.0;
   }
 
-  // ============================================================
   // LISTA DE ETIQUETAS
-  // ============================================================
-
-  static List<String> _stringList(
-    dynamic value,
-  ) {
+  static List<String> _stringList(dynamic value) {
     if (value is! List) {
       return [];
     }
 
     return value
-        .where(
-          (item) => item != null,
-        )
-        .map(
-          (item) => item.toString().trim(),
-        )
-        .where(
-          (item) => item.isNotEmpty,
-        )
+        .where((item) => item != null)
+        .map((item) => item.toString().trim())
+        .where((item) => item.isNotEmpty)
         .toList();
   }
 
-  // ============================================================
   // CONVERSIÓN SEGURA A BOOLEAN
-  // ============================================================
-
   static bool _bool(
     dynamic value, {
     bool fallback = false,
@@ -301,10 +216,7 @@ class SitioTuristicoModel {
     return fallback;
   }
 
-  // ============================================================
   // DEBUG
-  // ============================================================
-
   @override
   String toString() {
     return 'SitioTuristicoModel('
@@ -312,7 +224,8 @@ class SitioTuristicoModel {
         'nombre: $nombre, '
         'categoria: $categoriaNombre, '
         'latitud: $latitud, '
-        'longitud: $longitud'
+        'longitud: $longitud, '
+        'precioDesde: $precioDesde'
         ')';
   }
 }

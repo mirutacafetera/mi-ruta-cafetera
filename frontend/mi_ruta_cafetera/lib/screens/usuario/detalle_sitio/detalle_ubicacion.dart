@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../../../../models/sitio_turistico_model.dart';
@@ -29,175 +30,265 @@ class DetalleUbicacion extends StatelessWidget {
       if (departamento.isNotEmpty) departamento,
     ].join(', ');
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      decoration: decoracionTarjetaDetalle(
-        radio: AppDimensions.cardRadius,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Encabezado de ubicación.
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+    final precio = sitio.precioDesde > 0
+    ? '${_formatearPrecio(sitio.precioDesde)} COP'
+    : 'No especificado';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // TARJETA DE INFORMACIÓN
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: decoracionTarjetaDetalle(
+            radio: AppDimensions.cardRadius,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: AppDimensions.sitioHeaderIconSize,
-                height: AppDimensions.sitioHeaderIconSize,
-                decoration: BoxDecoration(
-                  color: AppColors.sitioSurfaceGreen,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusLg,
+              // ENCABEZADO
+              Row(
+                children: [
+                  Container(
+                    width: 43,
+                    height: 43,
+                    decoration: BoxDecoration(
+                      color: AppColors.sitioPrimary,
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: const Icon(
+                      Icons.near_me_rounded,
+                      color: AppColors.sitioTextOnPrimary,
+                      size: 22,
+                    ),
                   ),
-                  border: Border.all(
-                    color: AppColors.sitioBorder,
+                  const SizedBox(width: 11),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Tr(
+                          'Cómo llegar',
+                          style: TextStyle(
+                            color: AppColors.sitioTextPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Tr(
+                          'Encuentra este destino',
+                          style: TextStyle(
+                            color: AppColors.sitioTextSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                child: const Icon(
-                  Icons.location_on_outlined,
-                  color: AppColors.sitioPrimary,
-                  size: AppDimensions.iconLg,
-                ),
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.sitioSurfaceGreen,
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: const Icon(
+                      Icons.explore_outlined,
+                      color: AppColors.sitioAccent,
+                      size: 20,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: AppDimensions.spacingMd),
-              const Expanded(
-                child: Column(
+
+              const SizedBox(height: 17),
+
+              // TÍTULO DE INFORMACIÓN
+              Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: AppColors.sitioAccent,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'INFORMACIÓN DE VISITA',
+                    style: TextStyle(
+                      color: AppColors.sitioTextSecondary,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // DIRECCIÓN, HORARIO Y PRECIO
+              IntrinsicHeight(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Tr(
-                      'Cómo llegar',
-                      style: TextStyle(
-                        color: AppColors.sitioTextPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
+                    // DIRECCIÓN
+                    Expanded(
+                      flex: 5,
+                      child: _datoVisita(
+                        icono: Icons.location_on_rounded,
+                        titulo: 'Dirección',
+                        contenido: ubicacion.isNotEmpty
+                            ? ubicacion
+                            : Textos.t('Ubicación no disponible'),
                       ),
                     ),
-                    SizedBox(height: 3),
-                    Tr(
-                      'Encuentra este destino',
-                      style: TextStyle(
-                        color: AppColors.sitioTextSecondary,
-                        fontSize: 12,
+
+                    _separador(),
+
+                    // HORARIO
+                    Expanded(
+                      flex: 4,
+                      child: _datoVisita(
+                        icono: Icons.access_time_rounded,
+                        titulo: 'Horario de atención',
+                        contenido: horario.isNotEmpty
+                            ? horario
+                            : 'No especificado',
+                      ),
+                    ),
+
+                    _separador(),
+
+                    // PRECIO DE ENTRADA
+                    Expanded(
+                      flex: 4,
+                      child: _datoVisita(
+                        icono: Icons.confirmation_number_outlined,
+                        titulo: 'Precio de entrada',
+                        contenido: precio,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
-                Icons.explore_outlined,
-                color: AppColors.sitioAccent,
-                size: AppDimensions.iconLg,
-              ),
             ],
           ),
+        ),
 
-          const SizedBox(height: AppDimensions.spacingLg),
+        const SizedBox(height: 14),
 
-          // Dirección.
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
-            decoration: BoxDecoration(
-              color: AppColors.sitioSurfaceSoft,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+        // BOTÓN INDEPENDIENTE DEL MAPA
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: onVerMapa,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.sitioPrimary,
+              foregroundColor: AppColors.sitioTextOnPrimary,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(
-                  Icons.place_rounded,
-                  color: AppColors.sitioAccent,
-                  size: AppDimensions.iconMd,
+                  Icons.map_outlined,
+                  size: 21,
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Expanded(
-                  child: Text(
-                    ubicacion.isNotEmpty
-                        ? ubicacion
-                        : Textos.t('Ubicación no disponible'),
-                    style: const TextStyle(
-                      color: AppColors.sitioTextSecondary,
-                      fontSize: 14,
-                      height: 1.6,
-                    ),
+                const SizedBox(width: 10),
+                const Tr(
+                  'Ver ubicación en el mapa',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
                   ),
+                ),
+                const SizedBox(width: 9),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 17,
                 ),
               ],
             ),
           ),
-
-          // Horario (lo edita el sitio desde su panel).
-          if (horario.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
-              decoration: BoxDecoration(
-                color: AppColors.sitioSurfaceSoft,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.schedule_rounded,
-                    color: AppColors.sitioAccent,
-                    size: AppDimensions.iconMd,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Expanded(
-                    child: Text(
-                      horario,
-                      style: const TextStyle(
-                        color: AppColors.sitioTextSecondary,
-                        fontSize: 14,
-                        height: 1.6,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          const SizedBox(height: AppDimensions.spacingMd),
-
-          // Acción principal.
-          SizedBox(
-            width: double.infinity,
-            height: AppDimensions.detalleActionHeight,
-            child: ElevatedButton.icon(
-              onPressed: onVerMapa,
-              icon: const Icon(
-                Icons.map_outlined,
-                size: AppDimensions.iconMd,
-              ),
-              label: const Tr(
-                'Ver ubicación en el mapa',
-                textAlign: TextAlign.center,
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.sitioPrimary,
-                foregroundColor: AppColors.sitioTextOnPrimary,
-                elevation: AppDimensions.elevationButton,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusXxl,
-                  ),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  // SEPARADOR VERTICAL
+  Widget _separador() {
+    return Container(
+      width: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 9),
+      color: AppColors.sitioBorder,
+    );
+  }
+
+  // INFORMACIÓN INDIVIDUAL
+  Widget _datoVisita({
+    required IconData icono,
+    required String titulo,
+    required String contenido,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: AppColors.sitioSurfaceGreen,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icono,
+            color: AppColors.sitioAccent,
+            size: 19,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          titulo,
+          style: const TextStyle(
+            color: AppColors.sitioTextPrimary,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          contenido,
+          style: const TextStyle(
+            color: AppColors.sitioTextSecondary,
+            fontSize: 11.5,
+            height: 1.45,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // FORMATO DE PRECIO: $5.000
+  String _formatearPrecio(double valor) {
+    final entero = valor.round();
+    final digitos = entero.toString();
+
+    final resultado = digitos.replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (coincidencia) => '.',
+    );
+
+    return '\$$resultado';
   }
 }
