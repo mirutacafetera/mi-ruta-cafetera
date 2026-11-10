@@ -4,6 +4,7 @@ import '../../models/contenido_model.dart';
 import '../../models/sitio_turistico_model.dart';
 import '../../models/sitio/sitio_actividad_model.dart';
 import '../../services/contenido_service.dart';
+import '../../services/sitio_service.dart';
 import '../../services/sitio/sitio_actividades_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
@@ -52,6 +53,10 @@ class _DetalleSitioUsuarioScreenState
   late final DetalleSitioAudio _audioController;
   late bool _esFavorito;
 
+  // Copia del sitio que se refresca desde el servidor para mostrar los
+  // últimos cambios hechos desde el panel del sitio (dirección, horario).
+  late SitioTuristicoModel _sitio;
+
   List<ContenidoModel> _contenidos = [];
   List<SitioActividadModel> _actividades = [];
 
@@ -65,11 +70,29 @@ class _DetalleSitioUsuarioScreenState
   void initState() {
     super.initState();
 
+    _sitio = widget.sitio;
     _esFavorito = widget.esFavorito;
     _audioController = DetalleSitioAudio();
 
+    _refrescarSitio();
     _cargarContenido();
     _cargarActividades();
+  }
+
+  Future<void> _refrescarSitio() async {
+    try {
+      final actualizado = await SitioService().obtenerSitioPorId(
+        widget.sitio.id,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _sitio = actualizado;
+      });
+    } catch (_) {
+      // Si falla, se mantienen los datos con los que se abrió la pantalla.
+    }
   }
 
   Future<void> _cargarContenido() async {
@@ -79,7 +102,7 @@ class _DetalleSitioUsuarioScreenState
     });
 
     try {
-      final sitioId = widget.sitio.id.trim();
+      final sitioId = _sitio.id.trim();
 
       if (sitioId.isEmpty) {
         throw Exception('No se pudo identificar el sitio turístico.');
@@ -114,7 +137,7 @@ class _DetalleSitioUsuarioScreenState
 
   Future<void> _cargarActividades() async {
     try {
-      final sitioId = widget.sitio.id.trim();
+      final sitioId = _sitio.id.trim();
 
       if (sitioId.isEmpty) return;
 
@@ -242,7 +265,7 @@ class _DetalleSitioUsuarioScreenState
           icono: Icons.auto_stories_outlined,
           titulo: Textos.t('Próximamente habrá nuevas historias'),
           descripcion:
-              Textos.t('Estamos preparando más contenido para que descubras las tradiciones y experiencias de {0}.', [widget.sitio.nombre]),
+              Textos.t('Estamos preparando más contenido para que descubras las tradiciones y experiencias de {0}.', [_sitio.nombre]),
         ),
       );
     }
@@ -273,7 +296,7 @@ class _DetalleSitioUsuarioScreenState
   }
 
   Widget _construirEtiquetas() {
-    final etiquetas = widget.sitio.etiquetas
+    final etiquetas = _sitio.etiquetas
         .map((etiqueta) => etiqueta.trim())
         .where((etiqueta) => etiqueta.isNotEmpty)
         .toList();
@@ -309,7 +332,7 @@ class _DetalleSitioUsuarioScreenState
           child: FilledButton.icon(
             onPressed: () => DetalleSitioAcciones.agregarRuta(
               context,
-              widget.sitio,
+              _sitio,
             ),
             icon: const Icon(Icons.route_rounded),
             label: const Tr('Agregar a mi ruta'),
@@ -339,7 +362,7 @@ class _DetalleSitioUsuarioScreenState
             onPressed: () {
               DetalleSitioAcciones.mostrarDetalleMapa(
                 context,
-                widget.sitio,
+                _sitio,
               );
             },
             icon: const Icon(Icons.location_on_outlined),
@@ -391,7 +414,7 @@ class _DetalleSitioUsuarioScreenState
           orElse: () => '',
         );
 
-    final imagenSitio = widget.sitio.imagen.trim();
+    final imagenSitio = _sitio.imagen.trim();
 
     final imagenPrincipal = imagenSitio.isNotEmpty
       ? imagenSitio
@@ -400,8 +423,8 @@ class _DetalleSitioUsuarioScreenState
         : imagenContenido);
 
     final imagenes = <String>{
-      if (widget.sitio.imagen.trim().isNotEmpty)
-        widget.sitio.imagen.trim(),
+      if (_sitio.imagen.trim().isNotEmpty)
+        _sitio.imagen.trim(),
       if (widget.imagen?.trim().isNotEmpty == true)
         widget.imagen!.trim(),
       ..._contenidos
@@ -462,7 +485,7 @@ class _DetalleSitioUsuarioScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               DetallePortada(
-                sitio: widget.sitio,
+                sitio: _sitio,
                 imagenPrincipal: imagenPrincipal,
               ),
 
@@ -486,11 +509,11 @@ class _DetalleSitioUsuarioScreenState
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     DetalleUbicacion(
-                      sitio: widget.sitio,
+                      sitio: _sitio,
                       onVerMapa: () {
                         DetalleSitioAcciones.verMapa(
                           context,
-                          widget.sitio,
+                          _sitio,
                         );
                       },
                     ),
@@ -529,8 +552,8 @@ class _DetalleSitioUsuarioScreenState
 
               // Productos del establecimiento.
               DetalleProductos(
-                key: ValueKey('productos_${widget.sitio.id}'),
-                sitioId: widget.sitio.id,
+                key: ValueKey('productos_${_sitio.id}'),
+                sitioId: _sitio.id,
               ),
 
               // Historias, contenido y audioguías.
@@ -584,8 +607,8 @@ class _DetalleSitioUsuarioScreenState
                 ),
               ),
               SeccionResenasSitio(
-                key: ValueKey('resenas_${widget.sitio.id}'),
-                sitioId: widget.sitio.id,
+                key: ValueKey('resenas_${_sitio.id}'),
+                sitioId: _sitio.id,
                 onRequiereCuenta: widget.onRequiereCuenta,
                 mostrarEncabezado: false,
               ),
