@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../../models/sitio_turistico_model.dart';
@@ -22,6 +21,7 @@ class DetalleUbicacion extends StatelessWidget {
     final direccion = sitio.direccion.trim();
     final ciudad = sitio.ciudad.trim();
     final departamento = sitio.departamento.trim();
+    final horario = sitio.horario.trim();
 
     final ubicacion = [
       if (direccion.isNotEmpty) direccion,
@@ -126,6 +126,40 @@ class DetalleUbicacion extends StatelessWidget {
               ],
             ),
           ),
+
+          // Horario (lo edita el sitio desde su panel).
+          if (horario.isNotEmpty) ...[
+            const SizedBox(height: AppDimensions.spacingSm),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              decoration: BoxDecoration(
+                color: AppColors.sitioSurfaceSoft,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.schedule_rounded,
+                    color: AppColors.sitioAccent,
+                    size: AppDimensions.iconMd,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Expanded(
+                    child: Text(
+                      horario,
+                      style: const TextStyle(
+                        color: AppColors.sitioTextSecondary,
+                        fontSize: 14,
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           const SizedBox(height: AppDimensions.spacingMd),
 

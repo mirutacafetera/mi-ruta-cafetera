@@ -16,6 +16,7 @@ class SitioTuristicoModel {
   final List<String> etiquetas;
   final bool activo;
   final String imagen;
+  final String horario;
 
   const SitioTuristicoModel({
     required this.id,
@@ -30,6 +31,7 @@ class SitioTuristicoModel {
     required this.etiquetas,
     required this.activo,
     this.imagen = '',
+    this.horario = '',
   });
 
   // ============================================================
@@ -165,6 +167,10 @@ class SitioTuristicoModel {
 
       imagen: _stringValue(
         json['imagen'],
+      ),
+
+      horario: _stringValue(
+        json['horario'],
       ),
     );
   }
