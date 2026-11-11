@@ -1,3 +1,4 @@
+
 import '../usuario/avatar_cafetero_model.dart';
 
 class ResenaAdmin {
@@ -11,6 +12,9 @@ class ResenaAdmin {
   final String? fotoPerfil;
   final AvatarCafeteroModel? avatar;
 
+  // Imágenes adjuntadas por el usuario
+  final List<String> imagenes;
+
   const ResenaAdmin({
     required this.id,
     required this.usuario,
@@ -21,6 +25,7 @@ class ResenaAdmin {
     this.fecha,
     this.fotoPerfil,
     this.avatar,
+    this.imagenes = const [],
   });
 
   factory ResenaAdmin.fromJson(Map<String, dynamic> json) {
@@ -37,28 +42,47 @@ class ResenaAdmin {
 
     final foto = usuarioMap['fotoPerfil']?.toString().trim();
 
+    // Obtener las imágenes de la reseña
+    final List<String> imagenes = json['imagenes'] is List
+        ? (json['imagenes'] as List)
+            .where((imagen) => imagen != null)
+            .map((imagen) => imagen.toString().trim())
+            .where((imagen) => imagen.isNotEmpty)
+            .toList()
+        : [];
+
     return ResenaAdmin(
       id: json['_id']?.toString() ?? '',
+
       usuario: usuarioJson is Map
           ? '${usuarioMap['nombre'] ?? ''} '
                   '${usuarioMap['apellido'] ?? ''}'
               .trim()
           : 'Usuario no disponible',
+
       sitio: sitioJson is Map
           ? sitioMap['nombre']?.toString() ?? 'Sitio desconocido'
           : 'Sitio desconocido',
+
       comentario: json['comentario']?.toString() ?? '',
+
       calificacion: json['calificacion'] is num
           ? (json['calificacion'] as num).toInt()
           : 0,
+
       activo: json['activo'] == true,
+
       fecha: DateTime.tryParse(
         json['createdAt']?.toString() ?? '',
       ),
+
       fotoPerfil: foto == null || foto.isEmpty ? null : foto,
+
       avatar: AvatarCafeteroModel.desdeDinamico(
         usuarioMap['avatar'],
       ),
+
+      imagenes: imagenes,
     );
   }
 }

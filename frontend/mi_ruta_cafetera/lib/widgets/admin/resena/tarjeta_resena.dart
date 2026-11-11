@@ -27,7 +27,9 @@ class TarjetaResena extends StatelessWidget {
 
     return InkWell(
       onTap: () => _mostrarHistorial(context),
-      borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
+      borderRadius: BorderRadius.circular(
+        AppDimensions.cardRadius,
+      ),
       child: Container(
         margin: const EdgeInsets.symmetric(
           horizontal: AppDimensions.pageHorizontalSmall,
@@ -61,6 +63,10 @@ class TarjetaResena extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // =====================================
+                // USUARIO Y SITIO
+                // =====================================
+
                 Row(
                   children: [
                     SitioAvatarPerfil(
@@ -110,9 +116,15 @@ class TarjetaResena extends StatelessWidget {
                     _menu(context, activa),
                   ],
                 ),
+
                 const SizedBox(
                   height: AppDimensions.spacingMd,
                 ),
+
+                // =====================================
+                // CALIFICACIÓN
+                // =====================================
+
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingMd,
@@ -150,9 +162,15 @@ class TarjetaResena extends StatelessWidget {
                     ],
                   ),
                 ),
+
                 const SizedBox(
                   height: AppDimensions.spacingMd,
                 ),
+
+                // =====================================
+                // COMENTARIO
+                // =====================================
+
                 Text(
                   resena.comentario,
                   style: Theme.of(context)
@@ -163,16 +181,30 @@ class TarjetaResena extends StatelessWidget {
                         height: 1.5,
                       ),
                 ),
+
+                // =====================================
+                // IMÁGENES DEL USUARIO
+                // =====================================
+
+                _imagenesResena(context),
+
                 const SizedBox(
                   height: AppDimensions.spacingLg,
                 ),
+
                 Container(
                   height: 1,
                   color: _bordeCafe.withValues(alpha: 0.45),
                 ),
+
                 const SizedBox(
                   height: AppDimensions.spacingMd,
                 ),
+
+                // =====================================
+                // ESTADO Y FECHA
+                // =====================================
+
                 Row(
                   children: [
                     _estado(activa),
@@ -211,6 +243,144 @@ class TarjetaResena extends StatelessWidget {
       ),
     );
   }
+
+  // ======================================================
+  // MOSTRAR IMÁGENES DE LA RESEÑA
+  // ======================================================
+
+  Widget _imagenesResena(BuildContext context) {
+    if (resena.imagenes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 14),
+
+        Row(
+          children: [
+            const Icon(
+              Icons.photo_library_outlined,
+              color: AppColors.secondary,
+              size: 19,
+            ),
+            const SizedBox(width: 7),
+            Text(
+              'Fotografías del usuario (${resena.imagenes.length})',
+              style: const TextStyle(
+                color: AppColors.coffeeDark,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        SizedBox(
+          height: 85,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: resena.imagenes.length,
+            separatorBuilder: (_, __) =>
+                const SizedBox(width: 9),
+            itemBuilder: (context, index) {
+              final url = resena.imagenes[index];
+
+              return GestureDetector(
+                onTap: () => _mostrarImagen(context, url),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: 90,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: _bordeCafe,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Image.network(
+                      url,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) {
+                        return const Icon(
+                          Icons.broken_image_outlined,
+                          color: AppColors.textSecondary,
+                        );
+                      },
+                      loadingBuilder: (
+                        context,
+                        child,
+                        progress,
+                      ) {
+                        if (progress == null) return child;
+
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.secondary,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ======================================================
+  // AMPLIAR IMAGEN
+  // ======================================================
+
+  void _mostrarImagen(BuildContext context, String url) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(18),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            InteractiveViewer(
+              minScale: 0.8,
+              maxScale: 4,
+              child: Image.network(
+                url,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) {
+                  return const Icon(
+                    Icons.broken_image_outlined,
+                    color: Colors.white,
+                    size: 60,
+                  );
+                },
+              ),
+            ),
+            IconButton(
+              onPressed: () => Navigator.pop(ctx),
+              icon: const Icon(
+                Icons.close_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ======================================================
+  // MENÚ DE OPCIONES
+  // ======================================================
 
   Widget _menu(BuildContext context, bool activa) {
     return PopupMenuButton<String>(
@@ -276,6 +446,10 @@ class TarjetaResena extends StatelessWidget {
     );
   }
 
+  // ======================================================
+  // ESTADO
+  // ======================================================
+
   Widget _estado(bool activa) {
     final color = activa ? AppColors.success : AppColors.error;
 
@@ -316,6 +490,10 @@ class TarjetaResena extends StatelessWidget {
       ),
     );
   }
+
+  // ======================================================
+  // HISTORIAL DE LA RESEÑA
+  // ======================================================
 
   void _mostrarHistorial(BuildContext context) {
     showDialog<void>(
@@ -363,7 +541,9 @@ class TarjetaResena extends StatelessWidget {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 16),
+
                 Flexible(
                   child: SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
@@ -387,6 +567,53 @@ class TarjetaResena extends StatelessWidget {
                           'Comentario',
                           resena.comentario,
                         ),
+
+                        // FOTOGRAFÍAS EN EL HISTORIAL
+                        if (resena.imagenes.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Fotografías adjuntas',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: resena.imagenes.map((url) {
+                              return GestureDetector(
+                                onTap: () =>
+                                    _mostrarImagen(ctx, url),
+                                child: ClipRRect(
+                                  borderRadius:
+                                      BorderRadius.circular(9),
+                                  child: Image.network(
+                                    url,
+                                    width: 85,
+                                    height: 85,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) {
+                                      return const SizedBox(
+                                        width: 85,
+                                        height: 85,
+                                        child: Icon(
+                                          Icons
+                                              .broken_image_outlined,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+
+                        const SizedBox(height: 12),
+
                         _datoHistorial(
                           'Estado actual',
                           resena.activo ? 'Activa' : 'Inactiva',
@@ -401,7 +628,9 @@ class TarjetaResena extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -424,6 +653,10 @@ class TarjetaResena extends StatelessWidget {
       ),
     );
   }
+
+  // ======================================================
+  // DATOS DEL HISTORIAL
+  // ======================================================
 
   Widget _datoHistorial(String titulo, String? valor) {
     if (valor == null || valor.trim().isEmpty) {
@@ -455,6 +688,10 @@ class TarjetaResena extends StatelessWidget {
       ),
     );
   }
+
+  // ======================================================
+  // FORMATO DE FECHA
+  // ======================================================
 
   String _fecha(DateTime fecha) {
     return '${fecha.day.toString().padLeft(2, '0')}/'
