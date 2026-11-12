@@ -5,6 +5,9 @@ const Producto = require('../models/sitio/producto');
 const Actividad = require('../models/sitio/actividad');
 const SitioTuristico = require('../models/admin/sitio');
 const HistorialRevisionIA = require('../models/admin/historial_revision_ia');
+const {
+  notificarContenidoPublicado
+} = require('./notificacion.service');
 
 const MODELO_IA = process.env.GROQ_VISION_MODEL || 'qwen/qwen3.8-27b';
 const IMAGENES_POR_GRUPO = 3;
@@ -259,6 +262,14 @@ async function aplicarDecision(tipo, solicitud, sitioId, resultado) {
     sitioId,
     ...resultado
   });
+
+  // Avisa a los usuarios que siguen el sitio (no lanza errores).
+  if (
+    resultado.decision === 'aprobado' &&
+    ['actividad', 'producto'].includes(tipo)
+  ) {
+    await notificarContenidoPublicado(tipo, actualizada);
+  }
 
   return resultado;
 }

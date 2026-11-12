@@ -595,7 +595,28 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
             const SizedBox(width: AppDimensions.spacingSm),
             IconButton.filled(
               onPressed: _enviando ? null : () => _enviar(),
-              icon: const Icon(Icons.send_rounded),
+              // Estilo explícito: evita que el tema deje el círculo
+              // sin ícono visible (contraste/tamaño).
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textOnDark,
+                disabledBackgroundColor:
+                    AppColors.primary.withValues(alpha: 0.45),
+                disabledForegroundColor:
+                    AppColors.textOnDark.withValues(alpha: 0.8),
+                minimumSize: const Size(48, 48),
+              ),
+              iconSize: 24,
+              icon: _enviando
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.textOnDark,
+                      ),
+                    )
+                  : const Icon(Icons.send_rounded),
               tooltip: Textos.t('Enviar'),
             ),
           ],
@@ -604,3 +625,5 @@ class _ChatIaScreenState extends State<ChatIaScreen> {
     );
   }
 }
+
+

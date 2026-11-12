@@ -1,8 +1,10 @@
-
 const mongoose = require('mongoose');
 
 const Producto = require('../../models/sitio/producto');
 const HistorialRevisionIA = require('../../models/admin/historial_revision_ia');
+const {
+  notificarContenidoPublicado
+} = require('../../services/notificacion.service');
 
 // ======================================================
 // AGREGAR EVALUACIÓN DE IA
@@ -220,6 +222,9 @@ const aprobarProducto = async (req, res) => {
     producto.revisadoAt = new Date();
 
     await producto.save();
+
+    // Avisa a los usuarios que siguen el sitio (no lanza errores).
+    await notificarContenidoPublicado('producto', producto);
 
     const productoActualizado = await Producto.findOne({
       _id: producto._id,

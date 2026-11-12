@@ -23,7 +23,9 @@ const obtenerNotificaciones = async (req, res) => {
     const notificaciones = await Notificacion.find({
       usuario: usuarioId,
       activo: true
-    }).sort({ createdAt: -1 });
+    })
+      .sort({ createdAt: -1 })
+      .populate('sitioOrigen', 'nombre');
 
     res.json(notificaciones);
 
@@ -32,6 +34,26 @@ const obtenerNotificaciones = async (req, res) => {
 
     res.status(500).json({
       mensaje: 'No se pudieron obtener las notificaciones'
+    });
+  }
+};
+
+// CONTAR NO LEÍDAS (contador de la campana)
+const contarNoLeidas = async (req, res) => {
+  try {
+    const total = await Notificacion.countDocuments({
+      usuario: req.usuario.id,
+      activo: true,
+      leida: false
+    });
+
+    res.json({ total });
+
+  } catch (error) {
+    console.error('Error al contar notificaciones:', error);
+
+    res.status(500).json({
+      mensaje: 'No se pudo contar las notificaciones'
     });
   }
 };
@@ -78,7 +100,37 @@ const marcarLeida = async (req, res) => {
   }
 };
 
+// MARCAR TODAS COMO LEÍDAS (solo las propias)
+const marcarTodasLeidas = async (req, res) => {
+  try {
+    const resultado = await Notificacion.updateMany(
+      {
+        usuario: req.usuario.id,
+        activo: true,
+        leida: false
+      },
+      {
+        leida: true
+      }
+    );
+
+    res.json({
+      mensaje: 'Notificaciones marcadas como leídas',
+      actualizadas: resultado.modifiedCount
+    });
+
+  } catch (error) {
+    console.error('Error al marcar notificaciones:', error);
+
+    res.status(500).json({
+      mensaje: 'No se pudieron marcar las notificaciones'
+    });
+  }
+};
+
 module.exports = {
   obtenerNotificaciones,
-  marcarLeida
+  contarNoLeidas,
+  marcarLeida,
+  marcarTodasLeidas
 };

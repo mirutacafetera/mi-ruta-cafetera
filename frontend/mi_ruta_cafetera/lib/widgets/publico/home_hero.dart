@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimensions.dart';
 import '../../l10n/textos.dart';
+import '../usuario/campana_notificaciones.dart';
 
 class HomeHero extends StatefulWidget {
   final VoidCallback onLogin;
@@ -412,7 +413,7 @@ class _HomeHeroState extends State<HomeHero> {
         ],
       ),
       actions: widget.usuarioAutenticado
-          ? const <Widget>[]
+          ? const <Widget>[CampanaNotificaciones()]
           : [
               Padding(
                 padding: const EdgeInsets.only(
