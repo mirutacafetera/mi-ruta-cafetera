@@ -1,10 +1,10 @@
-
 import 'package:flutter/material.dart';
 
 import 'l10n/textos.dart';
 import 'screens/admin/pantalla_administrador.dart';
 import 'screens/mapa_screen_2.dart';
 import 'screens/publico/bienvenida_screen.dart';
+import 'screens/publico/public_shell_screen.dart';
 import 'screens/sitio/sitio_login_screen.dart';
 import 'screens/usuario/login_usuario_screen.dart';
 import 'screens/usuario/registro_usuario_screen.dart';
@@ -82,7 +82,15 @@ class MiRutaCafeteraApp extends StatelessWidget {
 
       routes: {
         // PRIMERA PANTALLA DE LA APLICACIÓN
-        '/': (context) => const BienvenidaScreen(),
+        // Con sesión válida → Home privado (menú de usuario);
+        // sin sesión → pantalla de bienvenida / Home público.
+        '/': (context) {
+          if (UsuarioSesionService.instance.sesionActual.value != null) {
+            return const PublicShellScreen();
+          }
+
+          return const BienvenidaScreen();
+        },
 
         // ADMINISTRADOR
         '/admin': (context) {
@@ -119,4 +127,3 @@ class MiRutaCafeteraApp extends StatelessWidget {
     );
   }
 }
-

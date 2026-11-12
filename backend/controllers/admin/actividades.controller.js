@@ -1,8 +1,10 @@
-
 const mongoose = require('mongoose');
 
 const Actividad = require('../../models/sitio/actividad');
 const HistorialRevisionIA = require('../../models/admin/historial_revision_ia');
+const {
+  notificarContenidoPublicado,
+} = require('../../services/notificacion.service');
 
 // Agregar la última evaluación de IA a cada actividad.
 const agregarEvaluacionIA = async (actividades) => {
@@ -163,6 +165,9 @@ const aprobarActividad = async (req, res) => {
     actividad.revisadoAt = new Date();
 
     await actividad.save();
+
+    // Avisa a los usuarios que siguen el sitio (no lanza errores).
+    await notificarContenidoPublicado('actividad', actividad);
 
     const actualizada = await Actividad.findById(actividad._id).populate(
       'sitio',
