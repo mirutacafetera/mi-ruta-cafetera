@@ -27,14 +27,15 @@ class MapaBuscador extends StatelessWidget {
         controller.text.trim().isNotEmpty &&
         resultados.isNotEmpty;
 
+    final tecladoVisible =
+        MediaQuery.viewInsetsOf(context).bottom > 0;
+
     return Material(
       color: Colors.transparent,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // =====================================================
           // CAMPO DE BÚSQUEDA
-          // =====================================================
-
           Container(
             height: AppDimensions.buttonHeightLarge,
             decoration: BoxDecoration(
@@ -49,10 +50,7 @@ class MapaBuscador extends StatelessWidget {
                   ),
                   blurRadius:
                       AppDimensions.elevationFloating * 2,
-                  offset: const Offset(
-                    0,
-                    3,
-                  ),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -73,9 +71,7 @@ class MapaBuscador extends StatelessWidget {
                 suffixIcon: controller.text.isNotEmpty
                     ? IconButton(
                         onPressed: onLimpiar,
-                        icon: const Icon(
-                          Icons.close,
-                        ),
+                        icon: const Icon(Icons.close),
                         tooltip: Textos.t('Limpiar búsqueda'),
                         color: AppColors.textSecondary,
                       )
@@ -90,10 +86,7 @@ class MapaBuscador extends StatelessWidget {
             ),
           ),
 
-          // =====================================================
-          // RESULTADOS
-          // =====================================================
-
+          // RESULTADOS DE BÚSQUEDA
           if (mostrarResultados) ...[
             const SizedBox(
               height: AppDimensions.spacingXs +
@@ -101,8 +94,8 @@ class MapaBuscador extends StatelessWidget {
             ),
 
             Container(
-              constraints: const BoxConstraints(
-                maxHeight: 260,
+              constraints: BoxConstraints(
+                maxHeight: tecladoVisible ? 150 : 260,
               ),
               decoration: BoxDecoration(
                 color: AppColors.white,
@@ -116,10 +109,7 @@ class MapaBuscador extends StatelessWidget {
                     ),
                     blurRadius:
                         AppDimensions.elevationFloating * 2,
-                    offset: const Offset(
-                      0,
-                      3,
-                    ),
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
@@ -140,11 +130,6 @@ class MapaBuscador extends StatelessWidget {
 
                   return ListTile(
                     dense: true,
-
-                    // =================================================
-                    // ICONO DEL RESULTADO
-                    // =================================================
-
                     leading: const CircleAvatar(
                       backgroundColor: AppColors.cream,
                       child: Icon(
@@ -153,11 +138,6 @@ class MapaBuscador extends StatelessWidget {
                         size: AppDimensions.iconMd,
                       ),
                     ),
-
-                    // =================================================
-                    // NOMBRE DEL SITIO
-                    // =================================================
-
                     title: Text(
                       sitio.nombre,
                       maxLines: 1,
@@ -167,29 +147,17 @@ class MapaBuscador extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-
-                    // =================================================
-                    // CATEGORÍA
-                    // =================================================
-
                     subtitle:
                         sitio.categoriaNombre.isNotEmpty
                             ? Text(
                                 sitio.categoriaNombre,
                                 maxLines: 1,
-                                overflow:
-                                    TextOverflow.ellipsis,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  color:
-                                      AppColors.textSecondary,
+                                  color: AppColors.textSecondary,
                                 ),
                               )
                             : null,
-
-                    // =================================================
-                    // SELECCIÓN
-                    // =================================================
-
                     onTap: () {
                       onSeleccionar(sitio);
                     },
