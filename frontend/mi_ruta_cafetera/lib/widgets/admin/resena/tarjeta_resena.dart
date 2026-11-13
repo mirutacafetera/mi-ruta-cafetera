@@ -284,8 +284,8 @@ class TarjetaResena extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: resena.imagenes.length,
-            separatorBuilder: (_, __) =>
-                const SizedBox(width: 9),
+            separatorBuilder: (_, _) =>
+            const SizedBox(width: 9),
             itemBuilder: (context, index) {
               final url = resena.imagenes[index];
 
@@ -304,7 +304,7 @@ class TarjetaResena extends StatelessWidget {
                     child: Image.network(
                       url,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) {
+                      errorBuilder: (_, _, _) {
                         return const Icon(
                           Icons.broken_image_outlined,
                           color: AppColors.textSecondary,
@@ -355,7 +355,7 @@ class TarjetaResena extends StatelessWidget {
               child: Image.network(
                 url,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) {
+                errorBuilder: (_, _, _) {
                   return const Icon(
                     Icons.broken_image_outlined,
                     color: Colors.white,
@@ -595,16 +595,12 @@ class TarjetaResena extends StatelessWidget {
                                     width: 85,
                                     height: 85,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) {
-                                      return const SizedBox(
-                                        width: 85,
-                                        height: 85,
-                                        child: Icon(
-                                          Icons
-                                              .broken_image_outlined,
-                                        ),
-                                      );
-                                    },
+                                    errorBuilder: (_, _, _) {
+  return const Icon(
+    Icons.broken_image_outlined,
+    color: AppColors.textSecondary,
+  );
+},
                                   ),
                                 ),
                               );
