@@ -9,7 +9,6 @@ import '../../../widgets/admin/sitio_turistico/sitio_formulario/boton_cancelar_s
 import '../../../widgets/admin/sitio_turistico/sitio_formulario/boton_guardar_sitio.dart';
 import '../../../widgets/admin/sitio_turistico/sitio_formulario/contacto_sitio.dart';
 import '../../../widgets/admin/sitio_turistico/sitio_formulario/encabezado_formulario_sitio.dart';
-import '../../../widgets/admin/sitio_turistico/sitio_formulario/sitio_datos_acceso.dart';
 import '../../../widgets/admin/sitio_turistico/sitio_formulario/sitio_imagen.dart';
 import '../../../widgets/admin/sitio_turistico/sitio_formulario/sitio_informacion.dart';
 import '../../../widgets/admin/sitio_turistico/sitio_formulario/sitio_informacion_turistica.dart';
@@ -123,20 +122,6 @@ class _FormularioSitioState extends State<FormularioSitio> {
                         key: _formKey,
                         child: Column(
                           children: [
-                            if (!edicion)
-                              SitioDatosAcceso(
-                                esEdicion: false,
-                                controladorNombre:
-                                    controlador.nombreCuentaController,
-                                controladorApellido:
-                                    controlador.apellidoCuentaController,
-                                controladorCorreo:
-                                    controlador.correoController,
-                                controladorContrasena:
-                                    controlador.passwordController,
-                                controladorTelefono:
-                                    controlador.telefonoCuentaController,
-                              ),
                             SitioInformacion(
                               nombreController:
                                   controlador.nombreController,
