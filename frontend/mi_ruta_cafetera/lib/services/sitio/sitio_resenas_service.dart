@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../config/api_config.dart';
 import '../../models/sitio/sitio_resena_model.dart';
@@ -76,6 +77,30 @@ class SitioResenasService {
     }
 
     return const [];
+  }
+
+  MediaType _tipoImagen(XFile imagen) {
+    // Primero intenta con el tipo que reporta image_picker (puede venir nulo).
+    final mime = imagen.mimeType;
+    if (mime != null && mime.startsWith('image/')) {
+      final partes = mime.split('/');
+      return MediaType(partes[0], partes[1]);
+    }
+
+    // Si no, deduce el tipo por la extensión del nombre o de la ruta.
+    final nombre = imagen.name.isNotEmpty ? imagen.name : imagen.path;
+    final ext = nombre.toLowerCase().split('.').last;
+
+    switch (ext) {
+      case 'png':
+        return MediaType('image', 'png');
+      case 'webp':
+        return MediaType('image', 'webp');
+      case 'avif':
+        return MediaType('image', 'avif');
+      default:
+        return MediaType('image', 'jpeg');
+    }
   }
 
   Future<List<SitioResenaModel>> obtenerPorSitio(
@@ -157,7 +182,8 @@ class SitioResenasService {
       'comentario': texto,
     });
 
-    // CORREGIDO: Usamos fromBytes para total compatibilidad Web y Móvil
+    // fromBytes para compatibilidad Web y Móvil, con contentType explícito
+    // para que el backend no reciba application/octet-stream.
     for (final imagen in imagenes) {
       final bytes = await imagen.readAsBytes();
       request.files.add(
@@ -165,6 +191,7 @@ class SitioResenasService {
           'imagenes',
           bytes,
           filename: imagen.name.isNotEmpty ? imagen.name : 'resena_imagen.jpg',
+          contentType: _tipoImagen(imagen),
         ),
       );
     }

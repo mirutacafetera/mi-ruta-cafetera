@@ -18,22 +18,24 @@ const uploadResenas = multer({
     fileSize: 10 * 1024 * 1024,
     files: 10
   },
+  
   fileFilter: (req, file, callback) => {
-    const mimetypesValidos = [
-      'image/jpeg',
-      'image/png',
-      'image/webp',
-      'image/avif'
-    ];
+  const mimetypesValidos = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/avif',
+    'application/octet-stream'
+  ];
 
-    if (!mimetypesValidos.includes(file.mimetype)) {
-      return callback(
-        new Error('Solo se permiten imágenes JPG, PNG, WEBP o AVIF.')
-      );
-    }
-
-    callback(null, true);
+  if (!file.mimetype || mimetypesValidos.includes(file.mimetype)) {
+    return callback(null, true);
   }
+
+  callback(
+    new Error('Solo se permiten imágenes JPG, PNG, WEBP o AVIF.')
+  );
+}
 });
 
 module.exports = uploadResenas;
