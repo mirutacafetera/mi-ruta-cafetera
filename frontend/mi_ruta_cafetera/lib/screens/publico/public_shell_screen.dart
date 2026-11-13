@@ -418,6 +418,11 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      // El teclado se dibuja ENCIMA del contenido y del menú, sin
+      // encoger el cuerpo. Así el mapa conserva todo su tamaño y no
+      // queda la franja vacía al buscar. Las pantallas internas que
+      // tienen su propio Scaffold siguen ajustándose al teclado.
+      resizeToAvoidBottomInset: false,
       extendBody: true,
       body: Stack(
         fit: StackFit.expand,
