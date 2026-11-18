@@ -14,7 +14,7 @@ publish_to: 'none'
 # Read more about versioning at
 # https://dart.dev/tools/pub/pubspec
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.12.2

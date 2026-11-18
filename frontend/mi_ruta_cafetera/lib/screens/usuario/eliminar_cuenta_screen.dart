@@ -160,9 +160,9 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
         ),
       );
 
-      // Mi perfil vuelve solo a su versión pública al quedar
-      // sin sesión.
-      navigator.pop();
+      // Vuelve a la primera pantalla (sin sesión = Bienvenida)
+      // y borra todo el historial para que no quede nada debajo.
+      navigator.pushNamedAndRemoveUntil('/', (route) => false);
       return;
     }
 

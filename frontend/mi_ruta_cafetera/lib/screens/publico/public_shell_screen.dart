@@ -236,21 +236,8 @@ class _PublicShellScreenState extends State<PublicShellScreen> {
   // detrás de los botones para que se vea su fondo; el resto de las
   // secciones conservan su espacio de siempre, sin quedar tapadas.
   Widget _construirSeccion(int indice, UsuarioSesionModel sesion) {
-    final seccion = _seccion(indice, sesion);
-
-    if (indice == 0) {
-      return seccion;
-    }
-
-    return MediaQuery.removePadding(
-      context: context,
-      removeBottom: true,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: _alturaMenu(context)),
-        child: seccion,
-      ),
-    );
-  }
+  return _seccion(indice, sesion);
+}
 
   Widget _seccion(int indice, UsuarioSesionModel sesion) {
     final llave = ValueKey<String>('seccion-$indice-${_versiones[indice]}');
